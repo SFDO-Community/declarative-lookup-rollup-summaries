@@ -26,11 +26,13 @@
 
 public abstract with sharing class SObjectSelector
 {
-	StringBuilder.FieldListBuilder m_fieldListBuilder;
+	private StringBuilder.FieldListBuilder m_fieldListBuilder;
+	
+	private static Set<String> whiteListStandardWithoutCurrencyIso = 
+		new Set<String> { 'AsyncApexJob', 'ApexClass', 'ApexTrigger' };	
 	
 	public SObjectSelector()
 	{
-		setFieldListBuilder ( new StringBuilder.MultiCurrencyFieldListBuilder( getSObjectFieldList() ) );
 	}
 	
 	abstract List<Schema.SObjectField> getSObjectFieldList();
@@ -39,6 +41,10 @@ public abstract with sharing class SObjectSelector
 
 	public StringBuilder.FieldListBuilder getFieldListBuilder()
 	{
+		if(m_fieldListBuilder == null)
+			m_fieldListBuilder = whiteListStandardWithoutCurrencyIso.contains(getSObjectType().getDescribe().getName()) ?
+				new StringBuilder.FieldListBuilder( getSObjectFieldList() ) : 
+				new StringBuilder.MultiCurrencyFieldListBuilder( getSObjectFieldList());				
 		return m_fieldListBuilder;
 	}
 	
