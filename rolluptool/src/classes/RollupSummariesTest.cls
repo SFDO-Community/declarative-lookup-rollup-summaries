@@ -147,5 +147,15 @@ private with sharing class RollupSummariesTest
 		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
 		System.assertEquals('Field does not exist.', SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(LookupRollupSummary__c.AggregateResultField__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field);
-	}		
+	}	
+	
+	private testmethod static void testTriggerAndTestClassNaming()
+	{	
+		System.assertEquals('dlrs_ContactTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'Contact')));		
+		System.assertEquals('dlrs_ContactTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'Contact')));		
+		System.assertEquals('dlrs_pse_AssignmentTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c')));		
+		System.assertEquals('dlrs_pse_AssignmentTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c')));		
+		System.assertEquals('dlrs_MyCustomObjectTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c')));		
+		System.assertEquals('dlrs_MyCustomObjectTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c')));		
+	}
 }

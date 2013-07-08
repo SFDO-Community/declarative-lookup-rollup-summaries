@@ -141,7 +141,7 @@ public with sharing class RollupSummaries extends SObjectDomain
 		if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Opportunity')
 			return 'RollupServiceTestTrigger';
 		else		
-			return 'dlrs_' + lookupRollupSummary.ChildObject__c + 'Trigger';
+			return 'dlrs_' + lookupRollupSummary.ChildObject__c.replace('__c', '').replace('__', '_') + 'Trigger';
 	}
 	
 	/**
@@ -149,6 +149,6 @@ public with sharing class RollupSummaries extends SObjectDomain
 	 **/
 	public static String makeTriggerTestName(LookupRollupSummary__c lookupRollupSummary)
 	{
-		return 'dlrs_' + lookupRollupSummary.ChildObject__c + 'Test';
+		return 'dlrs_' + lookupRollupSummary.ChildObject__c.replace('__c', '').replace('__', '_') + 'Test';
 	}
 }
