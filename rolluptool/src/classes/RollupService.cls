@@ -126,6 +126,9 @@ global with sharing class RollupService
 		List<SObject> masterRecords = new List<SObject>();		
 		for(LREngine.Context ctx : engineCtxByParentRelationship.values())
 			masterRecords.addAll(LREngine.rollup(ctx, childRecords));
+			
+		// TODO: Resolve issue where the same master record is included in this list more than once
+		//		 (multiple rollup definitions processed with same parent)
 		return masterRecords;					
 	}
 }
