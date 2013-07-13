@@ -149,6 +149,9 @@ public with sharing class RollupSummaries extends SObjectDomain
 	 **/
 	public static String makeTriggerTestName(LookupRollupSummary__c lookupRollupSummary)
 	{
-		return 'dlrs_' + lookupRollupSummary.ChildObject__c.replace('__c', '').replace('__', '_') + 'Test';
+		if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Opportunity')
+			return 'RollupSummariesTest';
+		else
+			return 'dlrs_' + lookupRollupSummary.ChildObject__c.replace('__c', '').replace('__', '_') + 'Test';
 	}
 }

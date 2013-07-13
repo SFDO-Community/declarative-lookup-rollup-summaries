@@ -219,7 +219,20 @@ public with sharing class RollupController
 								deployMessage.fileName + 
 									' (Line: ' + deployMessage.lineNumber + ': Column:' + deployMessage.columnNumber + ') : ' + 
 										deployMessage.problem));
+				
 				AsyncResult = null;
+				
+				// If this was an undeploy and was successful?
+				if(Deployed && !ApexPages.hasMessages(ApexPages.Severity.Error))
+				{
+					// Determine active rollups for this child and deactivate them
+					List<LookupRollupSummary__c> rollups = 
+						new RollupSummariesSelector().selectActiveByChildObject(
+							RollupSummaries.CalculationMode.Realtime, new Set<String> { RollupSummary.ChildObject__c });
+					for(LookupRollupSummary__c rollup : rollups)
+						rollup.Active__c = false;
+					update rollups;
+				}
 				
 				// Initialise view state to try again
 				init();
