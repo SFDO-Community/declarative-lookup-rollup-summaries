@@ -79,12 +79,16 @@ public class LREngine {
     	// #0 token : SOQL projection
     	String soqlProjection = ctx.lookupField.getName();
     	// k: detail field name, v: master field name
+    	Integer exprIdx = 0;
     	Map<String, String> detail2MasterFldMap = new Map<String, String>();
+    	Map<String, String> detail2AliasMap = new Map<String, String>();
     	for (RollupSummaryField rsf : ctx.fieldsToRoll) {
     		// create aggreate projection with alias for easy fetching via AggregateResult class
     		// i.e. SUM(Amount) Amount
-    		soqlProjection += ', ' + rsf.operation + '(' + rsf.detail.getName() + ') ' + rsf.detail.getName();
+    		String alias = 'lre'+exprIdx++; // Calculate an alias, using field name blew the 25 character limit in some cases
+    		soqlProjection += ', ' + rsf.operation + '(' + rsf.detail.getName() + ') ' + alias;
     		detail2MasterFldMap.put(rsf.detail.getName(), rsf.master.getName());
+    		detail2AliasMap.put(rsf.detail.getName(), alias);
     	}
 		
     	// #1 token for SOQL_TEMPLATE
@@ -112,7 +116,7 @@ public class LREngine {
 			}
 			
 			for (String detailFld : detail2MasterFldMap.keySet()) {
-				Object aggregatedDetailVal = res.get(detailFld);
+				Object aggregatedDetailVal = res.get(detail2AliasMap.get(detailFld));
 				masterObj.put(detail2MasterFldMap.get(detailFld), aggregatedDetailVal);
 			}    		
     	}
