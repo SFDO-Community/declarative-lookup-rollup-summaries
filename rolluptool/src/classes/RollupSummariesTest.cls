@@ -35,9 +35,9 @@ private with sharing class RollupSummariesTest
 		rollupSummary.ChildObject__c = 'Contact';
 		rollupSummary.RelationShipField__c = 'AccountId';
 		rollupSummary.RelationShipCriteria__c = null;
-		rollupSummary.FieldToAggregate__c = 'Birthdate';
-		rollupSummary.AggregateOperation__c = 'Max';
-		rollupSummary.AggregateResultField__c = 'Description';
+		rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
+		rollupSummary.AggregateOperation__c = 'Count';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
 		rollupSummary.Active__c = true;
 		rollupSummary.CalculationMode__c = 'Realtime';
 		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
@@ -147,6 +147,46 @@ private with sharing class RollupSummariesTest
 		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
 		System.assertEquals('Field does not exist.', SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(LookupRollupSummary__c.AggregateResultField__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field);
+	}	
+	
+	private testmethod static void testInsertBadFieldTypesStringNotValid()
+	{
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'Name';
+		rollupSummary.AggregateOperation__c = 'Sum';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Only Date/DateTime/Time/Numeric fields are allowed', SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(rollupSummary, ((SObjectDomain.ObjectError)SObjectDomain.Errors.getAll()[0]).record);
+	}	
+
+	private testmethod static void testInsertBadFieldTypeSumNotValid()
+	{
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'CloseDate';
+		rollupSummary.AggregateOperation__c = 'Sum';
+		rollupSummary.AggregateResultField__c = 'SLAExpirationDate__c';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Sum/Avg doesnt looks like valid for dates ! Still want, then implement the IRollerCoaster yourself and change this class as required.', SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(rollupSummary, ((SObjectDomain.ObjectError)SObjectDomain.Errors.getAll()[0]).record);
 	}	
 	
 	private testmethod static void testTriggerAndTestClassNaming()

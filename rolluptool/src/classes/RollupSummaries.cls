@@ -30,6 +30,18 @@
 public with sharing class RollupSummaries extends SObjectDomain
 {
 	/**
+	 * Maps LookupRollupSummary__c.AggregateOperation__c picklist values to LREngine.RollupOperation enum
+	 **/
+	public static Map<String, LREngine.RollupOperation> OPERATION_PICKLIST_TO_ENUMS = new Map<String, LREngine.RollupOperation> 
+		{
+			RollupSummaries.AggregateOperation.Sum.name() => LREngine.RollupOperation.Sum,
+        	RollupSummaries.AggregateOperation.Max.name() => LREngine.RollupOperation.Max,
+	        RollupSummaries.AggregateOperation.Min.name() => LREngine.RollupOperation.Min,
+	        RollupSummaries.AggregateOperation.Avg.name() => LREngine.RollupOperation.Avg,
+	        RollupSummaries.AggregateOperation.Count.name() => LREngine.RollupOperation.Count			
+		};
+	
+	/**
 	 * Enum reflecting CalculationMode__c field picklist values
 	 **/
 	public enum CalculationMode
@@ -94,34 +106,65 @@ public with sharing class RollupSummaries extends SObjectDomain
 			if(childObjectType==null)
 				lookupRollupSummary.ChildObject__c.addError(error('Object does not exist.', lookupRollupSummary, LookupRollupSummary__c.ChildObject__c));
 			// Child Object fields valid?
+			SObjectField relationshipField = null;
+			SObjectField fieldToAggregate = null;
 			Map<String, Schema.SObjectField> childObjectFields = gdFields.get(childObjectType);
 			if(childObjectFields!=null)
 			{
 				// Relationship field valid?
-				if(!childObjectFields.containsKey(lookupRollupSummary.RelationshipField__c))
+				relationshipField = childObjectFields.get(lookupRollupSummary.RelationshipField__c);
+				if(relationshipField==null)
 					lookupRollupSummary.RelationshipField__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.RelationshipField__c));
 				// Field to Aggregate valid?
-				if(!childObjectFields.containsKey(lookupRollupSummary.FieldToAggregate__c))
+				fieldToAggregate = childObjectFields.get(lookupRollupSummary.FieldToAggregate__c);
+				if(fieldToAggregate==null)
 					lookupRollupSummary.FieldToAggregate__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.FieldToAggregate__c));
 				// TODO: Validate relationship field is a lookup to the parent
 				// ...
 			}
 			// Parent Object fields valid?
+			SObjectField aggregateResultField = null;
 			Map<String, Schema.SObjectField> parentObjectFields = gdFields.get(parentObjectType);
 			if(parentObjectFields!=null)
 			{
 				// Aggregate Result field valid?
-				if(!parentObjectFields.containsKey(lookupRollupSummary.AggregateResultField__c))
+				aggregateResultField = parentObjectFields.get(lookupRollupSummary.AggregateResultField__c);
+				if(aggregateResultField==null)
 					lookupRollupSummary.AggregateResultField__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.AggregateResultField__c));
-				// TODO: Aggregate Result field is compatible with the aggregate operation				
-				// ...
 			}						
 			// Cannot activate Realtime rollup without the required trigger deployed
 			String triggerName = makeTriggerName(lookupRollupSummary); 
 			if(lookupRollupSummary.Active__c &&
 			   lookupRollupSummary.CalculationMode__c == CalculationMode.Realtime.name() && 
 			   !apexTriggers.containsKey(triggerName))
-				lookupRollupSummary.Active__c.addError(error('Apex Trigger ' + triggerName + ' has not been deployed. Click Manage Child Trigger and try again.', lookupRollupSummary, LookupRollupSummary__c.Active__c));	
+				lookupRollupSummary.Active__c.addError(error('Apex Trigger ' + triggerName + ' has not been deployed. Click Manage Child Trigger and try again.', lookupRollupSummary, LookupRollupSummary__c.Active__c));
+			try
+			{
+				// If all objects and fields valid...
+				if(parentObjectType!=null &&
+				   childObjectType!=null &&
+				   relationshipField!=null &&
+				   aggregateResultField!=null &&
+				   fieldToAggregate!=null)
+				{
+					// Validate via LREngine context
+					LREngine.Context lreContext = new LREngine.Context(
+						parentObjectType, // parent object
+		                childObjectType,  // child object
+		                relationshipField.getDescribe(), // relationship field name
+		                lookupRollupSummary.RelationShipCriteria__c); 
+					lreContext.add(
+			            new LREngine.RollupSummaryField(
+							aggregateResultField.getDescribe(),
+							fieldToAggregate.getDescribe(),
+							OPERATION_PICKLIST_TO_ENUMS.get(lookupRollupSummary.AggregateOperation__c)));
+				}
+			}
+			catch (LREngine.BadRollUpSummaryStateException e)
+			{
+				// Associate exception message with the lookup rollup summary error
+				lookupRollupSummary.addError(error(e.getMessage(), lookupRollupSummary));	
+			} 											
 		}
 	}
 	

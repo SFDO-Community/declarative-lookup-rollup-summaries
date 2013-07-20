@@ -28,19 +28,7 @@
  * Service class implements rollup functionality using LREngine library and based on lookups described in LookupRollupSummary__c
  **/
 global with sharing class RollupService 
-{
-	/**
-	 * Maps LookupRollupSummary__c.AggregateOperation__c picklist values to LREngine.RollupOperation enum
-	 **/
-	private static Map<String, LREngine.RollupOperation> MAP_ENUMS = new Map<String, LREngine.RollupOperation> 
-		{
-			RollupSummaries.AggregateOperation.Sum.name() => LREngine.RollupOperation.Sum,
-        	RollupSummaries.AggregateOperation.Max.name() => LREngine.RollupOperation.Max,
-	        RollupSummaries.AggregateOperation.Min.name() => LREngine.RollupOperation.Min,
-	        RollupSummaries.AggregateOperation.Avg.name() => LREngine.RollupOperation.Avg,
-	        RollupSummaries.AggregateOperation.Count.name() => LREngine.RollupOperation.Count			
-		};
-		
+{		
 	/**
 	 * Apex Trigger helper, automatically resolves child records to process via LREngine and lookups described in LookupRollupSummary__c
 	 *    also determines if based on the old trigger records the rollup processing needs to occur
@@ -139,8 +127,9 @@ global with sharing class RollupService
 	 **/
 	private static List<LookupRollupSummary__c> describeRollups(SObjectType childObjectType)
 	{	
+		// Query applicable lookup definitions
 		Schema.DescribeSObjectResult childRecordDescribe = childObjectType.getDescribe();
-		List<LookupRollupSummary__c> lookups = 
+		List<LookupRollupSummary__c> lookups =
 			new RollupSummariesSelector().selectActiveByChildObject(
 				RollupSummaries.CalculationMode.Realtime, 
 				new Set<String> { childRecordDescribe.getName() });
@@ -194,7 +183,7 @@ global with sharing class RollupService
 	            new LREngine.RollupSummaryField(
 					parentFields.get(lookup.AggregateResultField__c).getDescribe(),
 					childFields.get(lookup.FieldToAggregate__c).getDescribe(),
-					MAP_ENUMS.get(lookup.AggregateOperation__c))); 			
+					RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c)));		
 		}
 
 		// Process each context (parent child relationship) and its associated rollups
