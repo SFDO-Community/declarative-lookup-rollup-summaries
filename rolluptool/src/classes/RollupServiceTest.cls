@@ -39,7 +39,7 @@ private with sharing class RollupServiceTest
 		ACCOUNT_SLA_EXPIRATION_DATE = accountFields.get('SLAExpirationDate__c');
 		ACCOUNT_NUMBER_OF_LOCATIONS = accountFields.get('NumberOfLocations__c');
 	}
-	
+
 	private testmethod static void testSingleSumRollup()
 	{
 		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 600, RollupSummaries.AggregateOperation.Sum, null);	
@@ -276,6 +276,258 @@ private with sharing class RollupServiceTest
 		
 		// Assert rollup
 		System.assertEquals(0, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);					
+	}
+	
+	private testmethod static void testRollupWithoutChanges()
+	{
+		// Perform standard test
+		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 600, RollupSummaries.AggregateOperation.Sum, null);
+		List<Opportunity> opps = [select Id from Opportunity];
+		
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeRows = Limits.getQueryRows();
+		Integer beforeDescribes = Limits.getFieldsDescribes();
+		
+		// Update opportunities
+		update opps;
+		
+		// Assert no further limits have been used since the field to aggregate on the detail has not changed
+		System.assertEquals(beforeQueries + 1, Limits.getQueries()); // Only tolerate a query for the Lookup definition
+		System.assertEquals(beforeRows + 1, Limits.getQueryRows()); // Only tolerate a row for the Lookup definition
+		System.assertEquals(beforeDescribes, Limits.getFieldsDescribes()); // Zero tolerance on field describes		
+	}
+	
+	private testmethod static void testLimitsConsumedWithConditions()
+	{
+		// Avoid this test failing in a subscriber org due to intentionally unpackaged test fields not being present
+		if(ACCOUNT_NUMBER_OF_LOCATIONS==null)
+			return;
+
+		// Test data
+		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
+					
+		// Test data for rollup A
+		Decimal expectedResultA = 500;
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		String conditionA = 'Amount > 200';
+
+		// Test data for rollup B
+		Decimal expectedResultB = 4;
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count; 
+		String conditionB = null;
+		
+		// Configure rollup A
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummaryA.ParentObject__c = 'Account';
+		rollupSummaryA.ChildObject__c = 'Opportunity';
+		rollupSummaryA.RelationShipField__c = 'AccountId';
+		rollupSummaryA.RelationShipCriteria__c = conditionA;
+		rollupSummaryA.FieldToAggregate__c = 'Amount';
+		rollupSummaryA.AggregateOperation__c = operationA.name();
+		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = 'Realtime';
+
+		// Configure rollup B
+		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+		rollupSummaryB.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummaryB.ParentObject__c = 'Account';
+		rollupSummaryB.ChildObject__c = 'Opportunity';
+		rollupSummaryB.RelationShipField__c = 'AccountId';
+		rollupSummaryB.RelationShipCriteria__c = conditionB;
+		rollupSummaryB.FieldToAggregate__c = 'CloseDate';
+		rollupSummaryB.AggregateOperation__c = operationB.name();
+		rollupSummaryB.AggregateResultField__c = 'NumberOfLocations__c';
+		rollupSummaryB.Active__c = true;
+		rollupSummaryB.CalculationMode__c = 'Realtime';
+
+		// Insert rollup definitions
+		if(!insertRollupDefinitions(new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB }))
+			return;
+		
+		// Test data
+		Account account = new Account();
+		account.Name = 'Test Account';
+		account.AnnualRevenue = 0;
+		insert account;
+		List<Opportunity> opps = new List<Opportunity>(); 
+		for(Decimal rollupValue : rollups)
+		{
+			Opportunity opp = new Opportunity();
+			opp.Name = 'Test Opportunity';
+			opp.StageName = 'Open';
+			opp.CloseDate = System.today();
+			opp.AccountId = account.Id;
+			opp.Amount = rollupValue;
+			opps.add(opp);			
+		}
+		insert opps;
+
+		// One query on ApexTrigger (validation when inserting rollups)
+		// One query on Rollup object
+		// One query on Opportunity for rollup a
+		// One query on Opportunity for rollup b				
+		System.assertEquals(4, Limits.getQueries());	
+		
+		// One row for ApexTrigger
+		// Two rows for Rollup object
+		// Two rows for Opportunity for rollup a
+		// Four rows for Opportunity for rollup b
+		System.assertEquals(9, Limits.getQueryRows());
+		
+		// One for the statics at the top of the test
+		// One for the parent object validation on insert of lookup
+		// One for the child object validaiton on insert of lookup
+		// One for the lookup of the field type for the parent object during trigger
+		// One for the lookup of the field type for the child object during trigger
+		System.assertEquals(5, Limits.getFieldsDescribes());
+				
+		// Assert rollup
+		Id accountId = account.Id;
+		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
+		
+		// Modify the opps, but only the Amount, this should result in only the Amount rollup executing
+		for(Opportunity opp : opps)
+			opp.Amount++;
+		update opps;
+
+		// + One query for the Account query above
+		// + One query on Rollup object
+		// + One query on Opportunity for rollup a
+		System.assertEquals(7, Limits.getQueries());	
+
+		// + One query for the Account query above		
+		// + Two rows for Rollup object
+		// + Two rows for Opportunity for rollup a
+		System.assertEquals(14, Limits.getQueryRows());
+		
+		// + One for the lookup of the field type for the parent object during trigger
+		// + One for the lookup of the field type for the child object during trigger
+		System.assertEquals(7, Limits.getFieldsDescribes());
+
+		// Assert rollup
+		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(expectedResultA + 2, accountResult.AnnualRevenue);			
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));								
+	}
+	
+	private testmethod static void testLimitsConsumedWithoutConditions()
+	{
+		// Avoid this test failing in a subscriber org due to intentionally unpackaged test fields not being present
+		if(ACCOUNT_NUMBER_OF_LOCATIONS==null)
+			return;
+
+		// Test data
+		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
+					
+		// Test data for rollup A
+		Decimal expectedResultA = 600;
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		String conditionA = null;
+
+		// Test data for rollup B
+		Decimal expectedResultB = 4;
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count; 
+		String conditionB = null;
+		
+		// Configure rollup A
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummaryA.ParentObject__c = 'Account';
+		rollupSummaryA.ChildObject__c = 'Opportunity';
+		rollupSummaryA.RelationShipField__c = 'AccountId';
+		rollupSummaryA.RelationShipCriteria__c = conditionA;
+		rollupSummaryA.FieldToAggregate__c = 'Amount';
+		rollupSummaryA.AggregateOperation__c = operationA.name();
+		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = 'Realtime';
+
+		// Configure rollup B
+		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+		rollupSummaryB.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummaryB.ParentObject__c = 'Account';
+		rollupSummaryB.ChildObject__c = 'Opportunity';
+		rollupSummaryB.RelationShipField__c = 'AccountId';
+		rollupSummaryB.RelationShipCriteria__c = conditionB;
+		rollupSummaryB.FieldToAggregate__c = 'CloseDate';
+		rollupSummaryB.AggregateOperation__c = operationB.name();
+		rollupSummaryB.AggregateResultField__c = 'NumberOfLocations__c';
+		rollupSummaryB.Active__c = true;
+		rollupSummaryB.CalculationMode__c = 'Realtime';
+
+		// Insert rollup definitions
+		if(!insertRollupDefinitions(new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB }))
+			return;
+		
+		// Test data
+		Account account = new Account();
+		account.Name = 'Test Account';
+		account.AnnualRevenue = 0;
+		insert account;
+		List<Opportunity> opps = new List<Opportunity>(); 
+		for(Decimal rollupValue : rollups)
+		{
+			Opportunity opp = new Opportunity();
+			opp.Name = 'Test Opportunity';
+			opp.StageName = 'Open';
+			opp.CloseDate = System.today();
+			opp.AccountId = account.Id;
+			opp.Amount = rollupValue;
+			opps.add(opp);			
+		}
+		insert opps;
+
+		// One query on ApexTrigger (validation when inserting rollups)
+		// One query on Rollup object
+		// One query on Opportunity for both rollups
+		System.assertEquals(3, Limits.getQueries());	
+		
+		// One row for ApexTrigger
+		// Two rows for Rollup object
+		// Four rows for Opportunity for rollup a and b
+		System.assertEquals(7, Limits.getQueryRows());
+		
+		// One for the statics at the top of the test
+		// One for the parent object validation on insert of lookup
+		// One for the child object validaiton on insert of lookup
+		// One for the lookup of the field type for the parent object during trigger
+		// One for the lookup of the field type for the child object during trigger
+		System.assertEquals(5, Limits.getFieldsDescribes());
+				
+		// Assert rollup
+		Id accountId = account.Id;
+		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
+		
+		// Modify the opps, but only the Amount, this should result in only the Amount rollup executing
+		for(Opportunity opp : opps)
+			opp.Amount++;
+		update opps;
+
+		// + One query for the Account query above
+		// + One query on Rollup object
+		// + One query on Opportunity for rollup a
+		System.assertEquals(6, Limits.getQueries());	
+
+		// + One query for the Account query above		
+		// + Two rows for Rollup object
+		// + Four rows for Opportunity for rollup a and 
+		System.assertEquals(14, Limits.getQueryRows());
+		
+		// + One for the lookup of the field type for the parent object during trigger
+		// + One for the lookup of the field type for the child object during trigger
+		System.assertEquals(7, Limits.getFieldsDescribes());
+
+		// Assert rollup
+		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(expectedResultA + 4, accountResult.AnnualRevenue);			
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));								
 	}
 	
 	private static void testSingleRollup(List<Decimal> rollups, Decimal expectedResult, RollupSummaries.AggregateOperation operation, String condition)

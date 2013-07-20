@@ -43,14 +43,60 @@ global with sharing class RollupService
 		
 	/**
 	 * Apex Trigger helper, automatically resolves child records to process via LREngine and lookups described in LookupRollupSummary__c
+	 *    also determines if based on the old trigger records the rollup processing needs to occur
 	 **/
 	global static void triggerHandler()
 	{
 		// Currently no processing in the before phase
 		if(Trigger.isBefore)
 			return;		
+			
+		// Anything to rollup?
+		List<SObject> childRecords = Trigger.isDelete ? Trigger.old : Trigger.new;
+		SObjectType childObjectType = childRecords[0].Id.getSObjectType();		
+		List<LookupRollupSummary__c> lookups = describeRollups(childRecords[0].Id.getSObjectType());
+		if(lookups.size()==0)
+			return; // Nothing to see here! :)
+			
+		// Has anything changed on the child records in respect to the fields being aggregated?
+		if(Trigger.isUpdate)
+		{
+			// Set of field names to aggregate 
+			Set<String> searchFieldsToAggregate = new Set<String>();  
+			for(LookupRollupSummary__c lookup : lookups)
+				searchFieldsToAggregate.add(lookup.FieldToAggregate__c);
+				
+			// Determine if a specific aggregate field has changed and thus if the lookup itself needs recalculating
+			Set<String> fieldsToAggregate = new Set<String>();  
+			for(SObject childRecord : childRecords)
+			{
+				// Process each aggregate field for this record and determine if it has changed
+				for(String fieldToAggregate : searchFieldsToAggregate)
+				{
+					SObject oldChildRecord = Trigger.oldMap.get(childRecord.Id);
+					Object newAggregateValue = childRecord.get(fieldToAggregate);
+					Object oldAggregateValue = oldChildRecord.get(fieldToAggregate);
+					if(newAggregateValue != oldAggregateValue)
+					{
+						fieldsToAggregate.add(fieldToAggregate);
+						searchFieldsToAggregate.remove(fieldToAggregate);
+					}
+				}
+				// Break the search if all fields to aggregate have been processed 
+				if(searchFieldsToAggregate.size()==0)
+					break;
+			}
+			// Build a list of lookups where the field to aggregate value h
+			List<LookupRollupSummary__c> lookupsToProcess = new List<LookupRollupSummary__c>(); 
+			for(LookupRollupSummary__c lookup : lookups)
+				if(fieldsToAggregate.contains(lookup.FieldToAggregate__c))
+					lookupsToProcess.add(lookup);
+			lookups = lookupsToProcess;
+		}
+			
 		// Rollup child records and update master records
-		update rollup(Trigger.isDelete ? Trigger.old : Trigger.new);
+		if(lookups.size() > 0)
+			update rollup(lookups, childRecords);
 	}
 	
 	/**
@@ -63,7 +109,7 @@ global with sharing class RollupService
 	{
 		return null;	
 	}
-	
+
 	/**
 	 * Method wraps the LREngine.rolup method, provides context via the lookups described in LookupRollupSummary__c
 	 *
@@ -72,17 +118,46 @@ global with sharing class RollupService
 	 **/ 
 	global static List<SObject> rollup(List<SObject> childRecords)
 	{
-		// Anything to rollup?
-		SObjectType childObjectType = childRecords[0].Id.getSObjectType();
+		// Anything to process?
+		if(childRecords==null || childRecords.size()==0)
+			return new List<SObject>();
+			
+		// Describe rollups for these child records
+		SObjectType childObjectType = childRecords[0].Id.getSObjectType();		
+		List<LookupRollupSummary__c> lookups = describeRollups(childRecords[0].Id.getSObjectType());
+		if(lookups.size()==0)
+			return new List<SObject>(); // Nothing to see here! :)
+			
+		// Rollup child records and update master records
+		return rollup(lookups, childRecords);									
+	}
+	
+	/**
+	 * Queries for the defined rollups for the given child object type
+	 *
+	 * @returns List of rollup summary definitions
+	 **/
+	private static List<LookupRollupSummary__c> describeRollups(SObjectType childObjectType)
+	{	
 		Schema.DescribeSObjectResult childRecordDescribe = childObjectType.getDescribe();
 		List<LookupRollupSummary__c> lookups = 
 			new RollupSummariesSelector().selectActiveByChildObject(
 				RollupSummaries.CalculationMode.Realtime, 
 				new Set<String> { childRecordDescribe.getName() });
-		if(lookups.size()==0)
-			return new List<SObject>(); // Nothing to see here! :)
-		
+		return lookups;		
+	}
+	
+	/**
+	 * Method wraps the LREngine.rolup method, provides context via the lookups described in LookupRollupSummary__c
+	 *
+	 * @param lookups Lookup to calculate perform
+	 * @param childRecords Child records being modified
+	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
+	 **/ 
+	private static List<SObject> rollup(List<LookupRollupSummary__c> lookups, List<SObject> childRecords)
+	{							
 		// Group lookups by parent and relationship into LREngine ctx's
+		SObjectType childObjectType = childRecords[0].Id.getSObjectType();				
 		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
 		Map<SObjectType, Map<String, Schema.SObjectField>> gdFields = new Map<SObjectType, Map<String, Schema.SObjectField>>(); 	
 		Map<String, LREngine.Context> engineCtxByParentRelationship = 
