@@ -289,7 +289,7 @@ private with sharing class RollupServiceTest
 		Integer beforeRows = Limits.getQueryRows();
 		Integer beforeDescribes = Limits.getFieldsDescribes();
 		
-		// Update opportunities
+		// Update opportunities (no changes to the field being aggregted, thus no rollup processng)
 		update opps;
 		
 		// Assert no further limits have been used since the field to aggregate on the detail has not changed
