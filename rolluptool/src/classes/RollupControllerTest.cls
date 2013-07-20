@@ -131,7 +131,7 @@ private with sharing class RollupControllerTest
 		rollupSummary.ChildObject__c = 'Contact';
 		rollupSummary.RelationShipField__c = 'AccountId';
 		rollupSummary.RelationShipCriteria__c = null;
-		rollupSummary.FieldToAggregate__c = 'Name';
+		rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
 		rollupSummary.AggregateOperation__c = 'Count';
 		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
 		rollupSummary.Active__c = false;
