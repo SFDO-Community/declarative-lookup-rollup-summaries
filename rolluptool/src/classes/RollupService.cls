@@ -155,25 +155,30 @@ global with sharing class RollupService
 		{
 			// Resolve (and cache) SObjectType's and fields for Parent and Child objects
 			SObjectType parentObjectType = gd.get(lookup.ParentObject__c);
+			if(parentObjectType==null)
+				throw RollupServiceException.invalidRollup(lookup);
 			Map<String, Schema.SObjectField> parentFields = gdFields.get(parentObjectType);
 			if(parentFields==null)
 				gdFields.put(parentObjectType, ((parentFields = parentObjectType.getDescribe().fields.getMap())));
 			Map<String, Schema.SObjectField> childFields = gdFields.get(childObjectType);
 			if(childFields==null)
 				gdFields.put(childObjectType, ((childFields = childObjectType.getDescribe().fields.getMap())));
-				 
+			SObjectField fieldToAggregate = childFields.get(lookup.FieldToAggregate__c);
+			SObjectField relationshipField = childFields.get(lookup.RelationshipField__c);
+			SObjectField aggregateResultField = parentFields.get(lookup.AggregateResultField__c);
+			if(fieldToAggregate==null || relationshipField==null || aggregateResultField==null)
+				throw RollupServiceException.invalidRollup(lookup);
+								 
 			// Determine if an LREngine Context has been created for this parent child relationship and filter combination?
 			String contextKey = lookup.ParentObject__c + '#' + lookup.RelationshipField__c + '#' + lookup.RelationShipCriteria__c;
 			LREngine.Context lreContext = engineCtxByParentRelationship.get(contextKey);
 			if(lreContext==null)
 			{								
 				// Construct LREngine.Context
-				Schema.DescribeFieldResult relationShipFieldResult = 
-					childFields.get(lookup.RelationshipField__c).getDescribe();
 				lreContext = new LREngine.Context(
 					parentObjectType, // parent object
                     childObjectType,  // child object
-                    relationShipFieldResult, // relationship field name
+                    relationshipField.getDescribe(), // relationship field name
                     lookup.RelationShipCriteria__c); 
 				engineCtxByParentRelationship.put(contextKey, lreContext);
 			}
@@ -181,8 +186,8 @@ global with sharing class RollupService
 			// Add the lookup
 			lreContext.add(
 	            new LREngine.RollupSummaryField(
-					parentFields.get(lookup.AggregateResultField__c).getDescribe(),
-					childFields.get(lookup.FieldToAggregate__c).getDescribe(),
+					aggregateResultField.getDescribe(),
+					fieldToAggregate.getDescribe(),
 					RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c)));		
 		}
 
