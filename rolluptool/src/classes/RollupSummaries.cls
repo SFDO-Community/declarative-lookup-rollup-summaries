@@ -34,11 +34,11 @@ public with sharing class RollupSummaries extends SObjectDomain
 	 **/
 	public static Map<String, LREngine.RollupOperation> OPERATION_PICKLIST_TO_ENUMS = new Map<String, LREngine.RollupOperation> 
 		{
-			RollupSummaries.AggregateOperation.Sum.name() => LREngine.RollupOperation.Sum,
-        	RollupSummaries.AggregateOperation.Max.name() => LREngine.RollupOperation.Max,
-	        RollupSummaries.AggregateOperation.Min.name() => LREngine.RollupOperation.Min,
-	        RollupSummaries.AggregateOperation.Avg.name() => LREngine.RollupOperation.Avg,
-	        RollupSummaries.AggregateOperation.Count.name() => LREngine.RollupOperation.Count			
+			AggregateOperation.Sum.name() => LREngine.RollupOperation.Sum,
+        	AggregateOperation.Max.name() => LREngine.RollupOperation.Max,
+	        AggregateOperation.Min.name() => LREngine.RollupOperation.Min,
+	        AggregateOperation.Avg.name() => LREngine.RollupOperation.Avg,
+	        AggregateOperation.Count.name() => LREngine.RollupOperation.Count			
 		};
 	
 	/**
