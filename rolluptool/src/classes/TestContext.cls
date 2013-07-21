@@ -29,49 +29,10 @@ public with sharing class TestContext
 	private TestContext() { }
 	
 	/**
-	 * Disables the test trigger (not packaged) while the context is being determiend
-	 **/
-	public static Boolean isTestingContext {get;set;}
-	
-	/**
-	 * Many of the tests in this package require certain custom fields and ability to create Account and Opportunity records
-	 *   this method will return true if these fields exist and it has successfully created an Account and Opportunity
+	 * Tests are only executed when the test trigger is present (not packaged)
 	 **/
 	public static Boolean isSupported()
-	{ 
-		isTestingContext = true;
-		try
-		{
-			Account account = new Account();
-			account.Name = 'Test Account';
-			account.AnnualRevenue = 600;
-			account.get('SLAExpirationDate__c');
-			account.put('NumberOfLocations__c', 6);
-			insert account;
-			SObject camp = Schema.getGlobalDescribe().get('Campaign').newSObject();
-			camp.put('Name', 'Test Campaign');
-			insert camp; 
-			Opportunity opp = new Opportunity();
-			opp.Name = 'Test Opportunity';
-			opp.StageName = 'Open';
-			opp.CloseDate = System.today();
-			opp.AccountId = account.Id;
-			opp.Amount = 200;
-			opp.TotalOpportunityQuantity = 200;
-			opp.put('CampaignId', camp.Id);
-			insert opp;	
-			delete opp;
-			delete camp;
-			delete account;		
-		}
-		catch (Exception e)
-		{
-			return false;	
-		}
-		finally
-		{
-			isTestingContext = false;			
-		}
-		return true;
+	{
+		return new ApexTriggersSelector().selectByName(new Set<String> { 'RollupServiceTestTrigger' }).size() > 0; 
 	}
 }

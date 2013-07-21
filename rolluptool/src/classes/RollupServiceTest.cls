@@ -369,17 +369,19 @@ private with sharing class RollupServiceTest
 		}
 		insert opps;
 
+		// One query on ApexTrigger (in the TestContext.isSupported method)
 		// One query on ApexTrigger (validation when inserting rollups)
 		// One query on Rollup object
 		// One query on Opportunity for rollup a
 		// One query on Opportunity for rollup b				
-		System.assertEquals(4, Limits.getQueries());	
+		System.assertEquals(5, Limits.getQueries());	
 		
+		// One row for ApexTrigger (in the TestContext.isSupported method)		
 		// One row for ApexTrigger
 		// Two rows for Rollup object
 		// Two rows for Opportunity for rollup a
 		// Four rows for Opportunity for rollup b
-		System.assertEquals(9, Limits.getQueryRows());
+		System.assertEquals(10, Limits.getQueryRows());
 		
 		// One for the statics at the top of the test
 		// One for the parent object validation on insert of lookup
@@ -402,12 +404,12 @@ private with sharing class RollupServiceTest
 		// + One query for the Account query above
 		// + One query on Rollup object
 		// + One query on Opportunity for rollup a
-		System.assertEquals(7, Limits.getQueries());	
+		System.assertEquals(8, Limits.getQueries());	
 
 		// + One query for the Account query above		
 		// + Two rows for Rollup object
 		// + Two rows for Opportunity for rollup a
-		System.assertEquals(14, Limits.getQueryRows());
+		System.assertEquals(15, Limits.getQueryRows());
 		
 		// + One for the lookup of the field type for the parent object during trigger
 		// + One for the lookup of the field type for the child object during trigger
@@ -485,15 +487,17 @@ private with sharing class RollupServiceTest
 		}
 		insert opps;
 
+		// One query on ApexTrigger (in the TestContext.isSupported method)
 		// One query on ApexTrigger (validation when inserting rollups)
 		// One query on Rollup object
 		// One query on Opportunity for both rollups
-		System.assertEquals(3, Limits.getQueries());	
+		System.assertEquals(4, Limits.getQueries());	
 		
+		// One row for ApexTrigger (in the TestContext.isSupported method)
 		// One row for ApexTrigger
 		// Two rows for Rollup object
 		// Four rows for Opportunity for rollup a and b
-		System.assertEquals(7, Limits.getQueryRows());
+		System.assertEquals(8, Limits.getQueryRows());
 		
 		// One for the statics at the top of the test
 		// One for the parent object validation on insert of lookup
@@ -516,12 +520,12 @@ private with sharing class RollupServiceTest
 		// + One query for the Account query above
 		// + One query on Rollup object
 		// + One query on Opportunity for rollup a
-		System.assertEquals(6, Limits.getQueries());	
+		System.assertEquals(7, Limits.getQueries());	
 
 		// + One query for the Account query above		
 		// + Two rows for Rollup object
 		// + Four rows for Opportunity for rollup a and 
-		System.assertEquals(14, Limits.getQueryRows());
+		System.assertEquals(15, Limits.getQueryRows());
 		
 		// + One for the lookup of the field type for the parent object during trigger
 		// + One for the lookup of the field type for the child object during trigger
