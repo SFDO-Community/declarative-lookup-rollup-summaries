@@ -33,6 +33,7 @@
         <type>Default</type>
     </actionOverrides>
     <deploymentStatus>Deployed</deploymentStatus>
+    <deprecated>false</deprecated>
     <enableActivities>false</enableActivities>
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
@@ -40,6 +41,7 @@
     <fields>
         <fullName>Active__c</fullName>
         <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>For Realtime rollups can only be set when the Child Apex Trigger has been deployed.</inlineHelpText>
         <label>Active</label>
@@ -47,6 +49,7 @@
     </fields>
     <fields>
         <fullName>AggregateOperation__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>Rollup operation.</inlineHelpText>
         <label>Aggregate Operation</label>
@@ -77,6 +80,7 @@
     </fields>
     <fields>
         <fullName>AggregateResultField__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>API name of the field that will store the result of the rollup on the Parent Object, e.g. AnnualRevenue</inlineHelpText>
         <label>Aggregate Result Field</label>
@@ -87,6 +91,7 @@
     </fields>
     <fields>
         <fullName>CalculationMode__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>Realtime mode requires an Apex Trigger to be deployed for the Child Object. Click Manage Child Trigger button to deploy.</inlineHelpText>
         <label>Calculation Mode</label>
@@ -109,6 +114,7 @@
     </fields>
     <fields>
         <fullName>ChildObject__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>API name of the Child Object, e.g. Opportunity</inlineHelpText>
         <label>Child Object</label>
@@ -119,6 +125,7 @@
     </fields>
     <fields>
         <fullName>FieldToAggregate__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>API name of the field on the Child Object that contains the value to rollup, e.g. Amount</inlineHelpText>
         <label>Field to Aggregate</label>
@@ -129,6 +136,7 @@
     </fields>
     <fields>
         <fullName>ParentObject__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>API name of the Parent Object, e.g. Account</inlineHelpText>
         <label>Parent Object</label>
@@ -139,6 +147,7 @@
     </fields>
     <fields>
         <fullName>RelationshipCriteria__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>SOQL WHERE clause applied when querying Child Object records, e.g. Amount &gt; 200</inlineHelpText>
         <label>Relationship Criteria</label>
@@ -149,6 +158,7 @@
     </fields>
     <fields>
         <fullName>RelationshipField__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>API name of the Lookup field on the Child Object relating to the Parent Object, e.g. AccountId</inlineHelpText>
         <label>Relationship Field</label>
