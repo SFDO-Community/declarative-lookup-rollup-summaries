@@ -31,7 +31,7 @@ global with sharing class RollupService
 {		
 	/**
 	 * Apex Trigger helper, automatically resolves child records to process via LREngine and lookups described in LookupRollupSummary__c
-	 *    also determines if based on the old trigger records the rollup processing needs to occur
+	 *    also determines if based on the old trigger records if the rollup processing needs to occur
 	 **/
 	global static void triggerHandler()
 	{
@@ -93,7 +93,7 @@ global with sharing class RollupService
 	 * @param masterRecordIds ID's for master records to refresh rollups on
 	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
 	 **/
-	global static List<SObject> rollup(Set<Id> masterRecordIds)
+	public static List<SObject> rollup(Set<Id> masterRecordIds)
 	{
 		return null;	
 	}
@@ -104,7 +104,7 @@ global with sharing class RollupService
 	 * @param childRecords Child records being modified
 	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
 	 **/ 
-	global static List<SObject> rollup(List<SObject> childRecords)
+	public static List<SObject> rollup(List<SObject> childRecords)
 	{
 		// Anything to process?
 		if(childRecords==null || childRecords.size()==0)

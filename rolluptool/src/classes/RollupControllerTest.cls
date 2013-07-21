@@ -29,6 +29,10 @@ private with sharing class RollupControllerTest
 {
 	private testmethod static void testDeployedStatus()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
     	// Metadata API web Service mock implementation for tests
         Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
 		
@@ -55,8 +59,7 @@ private with sharing class RollupControllerTest
 		rollupSummaryB.AggregateResultField__c = 'NumberOfLocations__c';
 		rollupSummaryB.Active__c = true;
 		rollupSummaryB.CalculationMode__c = 'Realtime';
-		if(!insertRollupDefinitions(new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB }))
-			return;
+		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
 					
 		// Assert initial state of controller when the trigger for the child object is deployed
 		RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummaryA ));
@@ -121,6 +124,10 @@ private with sharing class RollupControllerTest
 
 	private testmethod static void testNotDeployedStatus()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
     	// Metadata API web Service mock implementation for tests
         Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
 
@@ -195,23 +202,6 @@ private with sharing class RollupControllerTest
 			    '<status>Active</status>' +
 			'</ApexClass>',		
 			controller.getTriggerTestCodeMetadata());						
-	}
-	
-	private static boolean insertRollupDefinitions(List<LookupRollupSummary__c> rollups)	
-	{
-		try	
-		{
-			// Attempt to insert the rollups, this code will tolerate one specific failure
-			insert rollups;
-		}
-		catch (Exception e)
-		{
-			// Activation errors are tolerated in order to allow tests like this to not fail in subscriber orgs 
-			if(((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field == LookupRollupSummary__c.Active__c)
-				return false;	
-			throw e;				
-		}		
-		return true;
 	}
 	
     /**

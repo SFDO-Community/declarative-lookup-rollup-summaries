@@ -34,7 +34,7 @@ private with sharing class RollupServiceTest
 	static Schema.SObjectField ACCOUNT_NUMBER_OF_LOCATIONS;		
 	static
 	{
-		// dynamically resolve these fields, if they are not present when the test runs, the test will return as passed to avoid failures in subscriber org when packaged
+		// Dynamically resolve these fields, if they are not present when the test runs, the test will return as passed to avoid failures in subscriber org when packaged
 		Map<String, Schema.SObjectField> accountFields = Schema.SObjectType.Account.fields.getMap();
 		ACCOUNT_SLA_EXPIRATION_DATE = accountFields.get('SLAExpirationDate__c');
 		ACCOUNT_NUMBER_OF_LOCATIONS = accountFields.get('NumberOfLocations__c');
@@ -72,8 +72,8 @@ private with sharing class RollupServiceTest
 	
 	private testmethod static void testMultiRollup()
 	{		
-		// Avoid this test failing in a subscriber org due to intentionally unpackaged test fields not being present
-		if(ACCOUNT_NUMBER_OF_LOCATIONS==null)
+		// Test supported?
+		if(!TestContext.isSupported())
 			return;
 
 		// Test data
@@ -116,8 +116,7 @@ private with sharing class RollupServiceTest
 		rollupSummaryB.CalculationMode__c = 'Realtime';
 
 		// Insert rollup definitions
-		if(!insertRollupDefinitions(new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB }))
-			return;
+		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
 		
 		// Test data
 		Account account = new Account();
@@ -146,8 +145,8 @@ private with sharing class RollupServiceTest
 	
 	private testmethod static void testMultiRollupWithTwoParents()
 	{		
-		// Avoid this test failing in a subscriber org due to intentionally unpackaged test fields not being present
-		if(ACCOUNT_NUMBER_OF_LOCATIONS==null)
+		// Test supported?
+		if(!TestContext.isSupported())
 			return;
 
 		// Test data
@@ -208,16 +207,15 @@ private with sharing class RollupServiceTest
 		rollupSummaryC.CalculationMode__c = 'Realtime';
 
 		// Insert rollup definitions
-		if(!insertRollupDefinitions(new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB, rollupSummaryC }))
-			return;
+		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB, rollupSummaryC };
 		
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		Campaign camp = new Campaign();
-		camp.Name = 'Test Campaign';
+		SObject camp = Schema.getGlobalDescribe().get('Campaign').newSObject();
+		camp.put('Name', 'Test Campaign');
 		insert camp; 
 		List<Opportunity> opps = new List<Opportunity>(); 
 		for(Decimal rollupValue : rollups)
@@ -229,7 +227,7 @@ private with sharing class RollupServiceTest
 			opp.AccountId = account.Id;
 			opp.Amount = rollupValue;
 			opp.TotalOpportunityQuantity = rollupValue;
-			opp.CampaignId = camp.Id;
+			opp.put('CampaignId', camp.Id);
 			opps.add(opp);			
 		}
 		insert opps;
@@ -240,12 +238,16 @@ private with sharing class RollupServiceTest
 		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
 		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));	
 		Id campId = camp.Id;		
-		Campaign campResult = Database.query('select NumberSent from Campaign where Id = :campId');
-		System.assertEquals(expectedResultC, campResult.NumberSent);			
+		SObject campResult = Database.query('select NumberSent from Campaign where Id = :campId');
+		System.assertEquals(expectedResultC, campResult.get('NumberSent'));			
 	}
 		
 	private testmethod static void testSingleRollupWithoutRelation()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		// Configure rollup
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
@@ -258,8 +260,7 @@ private with sharing class RollupServiceTest
 		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
 		rollupSummary.Active__c = true;
 		rollupSummary.CalculationMode__c = 'Realtime';
-		if(!insertRollupDefinitions(new List<LookupRollupSummary__c> { rollupSummary }))
-			return;
+		insert new List<LookupRollupSummary__c> { rollupSummary };
 		
 		// Test data
 		Account account = new Account();
@@ -280,6 +281,10 @@ private with sharing class RollupServiceTest
 	
 	private testmethod static void testRollupWithoutChanges()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		// Perform standard test
 		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 600, RollupSummaries.AggregateOperation.Sum, null);
 		List<Opportunity> opps = [select Id from Opportunity];
@@ -300,8 +305,8 @@ private with sharing class RollupServiceTest
 	
 	private testmethod static void testLimitsConsumedWithConditions()
 	{
-		// Avoid this test failing in a subscriber org due to intentionally unpackaged test fields not being present
-		if(ACCOUNT_NUMBER_OF_LOCATIONS==null)
+		// Test supported?
+		if(!TestContext.isSupported())
 			return;
 
 		// Test data
@@ -344,8 +349,7 @@ private with sharing class RollupServiceTest
 		rollupSummaryB.CalculationMode__c = 'Realtime';
 
 		// Insert rollup definitions
-		if(!insertRollupDefinitions(new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB }))
-			return;
+		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
 		
 		// Test data
 		Account account = new Account();
@@ -417,8 +421,8 @@ private with sharing class RollupServiceTest
 	
 	private testmethod static void testLimitsConsumedWithoutConditions()
 	{
-		// Avoid this test failing in a subscriber org due to intentionally unpackaged test fields not being present
-		if(ACCOUNT_NUMBER_OF_LOCATIONS==null)
+		// Test supported?
+		if(!TestContext.isSupported())
 			return;
 
 		// Test data
@@ -461,8 +465,7 @@ private with sharing class RollupServiceTest
 		rollupSummaryB.CalculationMode__c = 'Realtime';
 
 		// Insert rollup definitions
-		if(!insertRollupDefinitions(new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB }))
-			return;
+		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
 		
 		// Test data
 		Account account = new Account();
@@ -532,6 +535,10 @@ private with sharing class RollupServiceTest
 	
 	private static void testSingleRollup(List<Decimal> rollups, Decimal expectedResult, RollupSummaries.AggregateOperation operation, String condition)
 	{			 
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		// Configure rollup
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
@@ -544,8 +551,7 @@ private with sharing class RollupServiceTest
 		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
 		rollupSummary.Active__c = true;
 		rollupSummary.CalculationMode__c = 'Realtime';
-		if(!insertRollupDefinitions(new List<LookupRollupSummary__c> { rollupSummary }))
-			return;
+		insert new List<LookupRollupSummary__c> { rollupSummary };
 		
 		// Test data
 		Account account = new Account();
@@ -568,21 +574,4 @@ private with sharing class RollupServiceTest
 		// Assert rollup
 		System.assertEquals(expectedResult, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);			
 	}	
-	
-	private static boolean insertRollupDefinitions(List<LookupRollupSummary__c> rollups)	
-	{
-		try	
-		{
-			// Attempt to insert the rollups, this code will tolerate one specific failure
-			insert rollups;
-		}
-		catch (Exception e)
-		{
-			// Activation errors are tolerated in order to allow tests like this to not fail in subscriber orgs 
-			if(((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field == LookupRollupSummary__c.Active__c)
-				return false;	
-			throw e;				
-		}		
-		return true;
-	}
 }

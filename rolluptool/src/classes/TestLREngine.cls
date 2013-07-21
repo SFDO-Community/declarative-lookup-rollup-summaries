@@ -113,10 +113,10 @@ private class TestLREngine {
 		Tests sum and max operations on currency and date fields
 	*/
     static testMethod void testSumAndMaxOperations() {
-    	
-    	// test viable?
-    	if(ACCOUNT_SLA_EXPIRATION_DATE==null)
-    		return;
+    	    	
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
     	
     	// create seed data 
          prepareData();
@@ -164,9 +164,9 @@ private class TestLREngine {
 	*/
     static testMethod void testAvgAndCountOperations() {
     	
-    	// test viable?
-    	if(ACCOUNT_NUMBER_OF_LOCATIONS==null)
-    		return;
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
     	
     	// create seed data 
          prepareData();
@@ -216,9 +216,9 @@ private class TestLREngine {
 	*/
     static testMethod void testAvgAndCountOperationsWithFilter() {
     	
-    	// test viable?
-    	if(ACCOUNT_NUMBER_OF_LOCATIONS==null)
-    		return;
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
     		
     	// create seed data 
          prepareData();

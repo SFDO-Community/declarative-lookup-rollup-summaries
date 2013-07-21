@@ -29,6 +29,10 @@ private with sharing class RollupSummariesTest
 {
 	private testmethod static void testInsertActiveValidation()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Max Birthday for Contacts related to an Account';
 		rollupSummary.ParentObject__c = 'Account';
@@ -49,6 +53,10 @@ private with sharing class RollupSummariesTest
 	
 	private testmethod static void testInsertParentObjectValidation()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
 		rollupSummary.ParentObject__c = 'AccountX';
@@ -69,6 +77,10 @@ private with sharing class RollupSummariesTest
 	
 	private testmethod static void testInsertChildObjectValidation()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
 		rollupSummary.ParentObject__c = 'Account';
@@ -91,6 +103,10 @@ private with sharing class RollupSummariesTest
 	
 	private testmethod static void testInsertRelationshipFieldValidation()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
 		rollupSummary.ParentObject__c = 'Account';
@@ -111,6 +127,10 @@ private with sharing class RollupSummariesTest
 	
 	private testmethod static void testInsertFieldToAggregateValidation()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
 		rollupSummary.ParentObject__c = 'Account';
@@ -131,6 +151,10 @@ private with sharing class RollupSummariesTest
 	
 	private testmethod static void testInsertAggregateResultFieldValidation()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
 		rollupSummary.ParentObject__c = 'Account';
@@ -151,6 +175,10 @@ private with sharing class RollupSummariesTest
 	
 	private testmethod static void testInsertBadFieldTypesStringNotValid()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
 		rollupSummary.ParentObject__c = 'Account';
@@ -171,6 +199,10 @@ private with sharing class RollupSummariesTest
 
 	private testmethod static void testInsertBadFieldTypeSumNotValid()
 	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
 		rollupSummary.ParentObject__c = 'Account';
@@ -191,6 +223,10 @@ private with sharing class RollupSummariesTest
 	
 	private testmethod static void testTriggerAndTestClassNaming()
 	{	
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
 		System.assertEquals('dlrs_ContactTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'Contact')));		
 		System.assertEquals('dlrs_ContactTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'Contact')));		
 		System.assertEquals('dlrs_pse_AssignmentTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c')));		
