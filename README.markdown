@@ -11,11 +11,15 @@ There is also a video demonstration here...
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=6BST-TpyHHk" target="_blank"><img src="http://img.youtube.com/vi/6BST-TpyHHk/0.jpg" 
 width="420" height="315" border="10" /></a>
 
+Upcoming features include a Scheduled mode as alternative to the Realtime mode, for more details see my blog.
+
 Current Limitations and Known Issues
 ------------------------------------
 
 - Platform limitation of 50k records per request (which may process several rollups).
 - While the tool can be installed and enabled directly in production, sandbox testing is still strongly recommended.
+
+Please feel free to raise feedback and issues via the **Github Issues** page [here](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues).
 
 Packaged Release History
 ------------------------
