@@ -4,7 +4,18 @@ Declarative Rollups for Lookups!
 Documentation
 -------------
 
-You can read more information about this tool at my blog [here](http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollup-summaries-for-lookups).
+You can read more information about this tool at my blog [here](http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollup-summaries-for-lookups). 
+
+There is also a video demonstration here...
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=6BST-TpyHHk" target="_blank"><img src="http://img.youtube.com/vi/6BST-TpyHHk/0.jpg" 
+width="420" height="315" border="10" /></a>
+
+Current Limitations and Known Issues
+------------------------------------
+
+- Platform limitation of 50k records per request (which may process several rollups).
+- While the tool can be installed and enabled directly in production, sandbox testing is still strongly recommended.
 
 Packaged Release History
 ------------------------
