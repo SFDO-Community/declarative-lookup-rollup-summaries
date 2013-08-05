@@ -4,7 +4,7 @@ Declarative Rollups for Lookups!
 Documentation
 -------------
 
-You can read more information about this tool at my blog [here](http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollup-summaries-for-lookups). 
+You can read more information about this tool at my blog [here](http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/). 
 
 There is also a video demonstration here...
 
@@ -17,6 +17,8 @@ Current Limitations and Known Issues
 ------------------------------------
 
 - Platform limitation of 50k records per request (which may process several rollups).
+- For performance reasons ensure the fields used are indexed (lookups are by default) and also any fields used in the filter criteria. This can be very important as without this, a full table scan will occur when the platform executes the SOQL and cause performance issues.
+- Formula fields as fields to aggregate are not supported (validation will be added in a future release to block this). To work around this, use a Workflow Field Update to copy the formula field value to a physical field and reference that.
 - While the tool can be installed and enabled directly in production, sandbox testing is still strongly recommended.
 
 Please feel free to raise feedback and issues via the **Github Issues** page [here](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues).
