@@ -184,7 +184,7 @@ public with sharing class RollupController
         deployOptions.checkOnly = false;
         deployOptions.ignoreWarnings = false;
         deployOptions.performRetrieve = false;
-        deployOptions.purgeOnDelete = true;
+        deployOptions.purgeOnDelete = false;
         deployOptions.rollbackOnError = true;
         deployOptions.runAllTests = false;
         deployOptions.runTests = null;
