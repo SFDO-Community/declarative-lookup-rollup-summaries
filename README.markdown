@@ -30,9 +30,13 @@ You can obtain the source code for this tool via this repository.
 
 Alternatively you may install a packaged version of it into your production org (sandbox testing as always recommended).
 
-**Latest Version 1.2**
+**Latest Version 1.3**
 
-Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Q7ms)
+Pacakge [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Q7mx)
+
+- Fix for [Issue 2](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/2), relating to error 'purgeOnDelete option can only be used on a non-active org'
+
+**Version 1.2**
 
 - Support for Realtime calculations
 - Validation of valid fields and field types on Declarative Rollup definition fields
