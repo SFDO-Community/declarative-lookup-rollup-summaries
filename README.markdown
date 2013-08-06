@@ -26,9 +26,7 @@ Please feel free to raise feedback and issues via the **Github Issues** page [he
 Packaged Release History
 ------------------------
 
-You can obtain the source code for this tool via this repository.
-
-Alternatively you may install a packaged version of it into your production org (sandbox testing as always recommended).
+You can obtain the source code for this tool via this repository. Alternatively you may install a packaged version of it into your production org (sandbox testing as always recommended). Check the limatations and known issues above first!
 
 **Latest Version 1.3**
 
