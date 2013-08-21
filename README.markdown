@@ -13,8 +13,8 @@ width="420" height="315" border="10" /></a>
 
 Upcoming features include a Scheduled mode as alternative to the Realtime mode, for more details see my blog.
 
-Current Limitations and Known Issues
-------------------------------------
+Usage Information and Known Issues
+----------------------------------
 
 - This tool uses [SOQL Aggregate](http://www.salesforce.com/us/developer/docs/apexcode/Content/langCon_apex_SOQL_agg_fns.htm) queries and is subject to [platform limitations](http://www.salesforce.com/us/developer/docs/apexcode/Content/apex_gov_limits.htm).
 - For SOQL Aggregate queries, there is a platform limitation of 50k records per request (which may process several child records and their configured rollups). SOQL queries made over the child objects are constrained by the parent record relating to the child records being manipulated. And in addition optional rollup filter critiera. 
