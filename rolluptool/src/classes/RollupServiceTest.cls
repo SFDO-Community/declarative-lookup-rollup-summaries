@@ -278,6 +278,101 @@ private with sharing class RollupServiceTest
 		// Assert rollup
 		System.assertEquals(0, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);					
 	}
+		
+	private testmethod static void testSingleRollupWithInsertThenDelete()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		// Configure rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'Amount';
+		rollupSummary.AggregateOperation__c = 'Sum';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		insert new List<LookupRollupSummary__c> { rollupSummary };
+		
+		// Test data
+		Account account = new Account();
+		account.Name = 'Test Account';
+		account.AnnualRevenue = 0;
+		insert account;
+		Opportunity opp = new Opportunity(); 
+		opp.Name = 'Test Opportunity';
+		opp.StageName = 'Open';
+		opp.CloseDate = System.today();
+		opp.AccountId = account.Id;
+		opp.Amount = 100;
+		insert opp;
+		
+		// Assert rollup
+		System.assertEquals(100, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);
+		
+		// Delete Opportunity
+		delete opp;
+		
+		// Assert rollup
+		System.assertEquals(0, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);							
+	}
+
+	private testmethod static void testSingleRollupWithInsertsThenDelete()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		// Configure rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'Amount';
+		rollupSummary.AggregateOperation__c = 'Sum';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		insert new List<LookupRollupSummary__c> { rollupSummary };
+		
+		// Test data
+		Account account = new Account();
+		account.Name = 'Test Account';
+		account.AnnualRevenue = 0;
+		insert account;
+		{
+			Opportunity opp = new Opportunity(); 
+			opp.Name = 'Test Opportunity';
+			opp.StageName = 'Open';
+			opp.CloseDate = System.today();
+			opp.AccountId = account.Id;
+			opp.Amount = 100;
+			insert opp;
+		}
+		Opportunity opp = new Opportunity(); 
+		opp.Name = 'Test Opportunity';
+		opp.StageName = 'Open';
+		opp.CloseDate = System.today();
+		opp.AccountId = account.Id;
+		opp.Amount = 100;
+		insert opp;
+		
+		// Assert rollup
+		System.assertEquals(200, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);
+		
+		// Delete Opportunity
+		delete opp;
+		
+		// Assert rollup
+		System.assertEquals(100, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);							
+	}
 	
 	private testmethod static void testRollupWithoutChanges()
 	{

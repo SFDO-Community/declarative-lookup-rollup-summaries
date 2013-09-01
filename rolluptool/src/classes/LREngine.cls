@@ -118,8 +118,15 @@ public class LREngine {
 			for (String detailFld : detail2MasterFldMap.keySet()) {
 				Object aggregatedDetailVal = res.get(detail2AliasMap.get(detailFld));
 				masterObj.put(detail2MasterFldMap.get(detailFld), aggregatedDetailVal);
-			}    		
+			} 			
+			// Remove master Id record as its been processed   	
+			masterIds.remove(masterRecId);	
     	}
+    	
+    	// Zero rollups for unprocessed master records (those with no longer any child relationships)
+    	for(Id masterRecId : masterIds)
+			for (String detailFld : detail2MasterFldMap.keySet())
+				masterRecordsMap.get(masterRecId).put(detail2MasterFldMap.get(detailFld), 0);
     	
     	return masterRecordsMap.values();	
     }
