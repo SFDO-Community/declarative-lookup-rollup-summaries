@@ -10,7 +10,7 @@
  * - Redistributions in binary form must reproduce the above copyright notice, 
  *      this list of conditions and the following disclaimer in the documentation 
  *      and/or other materials provided with the distribution.
- * - Neither the name of the FinancialForce.com, inc nor the names of its contributors 
+ * - Neither the name of the Andrew Fawcett, inc nor the names of its contributors 
  *      may be used to endorse or promote products derived from this software without 
  *      specific prior written permission.
  *
@@ -94,9 +94,6 @@ public with sharing class RollupSummaries extends SObjectDomain
 		
 		for(LookupRollupSummary__c lookupRollupSummary : (List<LookupRollupSummary__c>) Records)
 		{
-			// TODO: Support Schedule mode
-			if(lookupRollupSummary.CalculationMode__c == CalculationMode.Scheduled.name())
-				lookupRollupSummary.CalculationMode__c.addError(error('Scheduled mode is not supported in this Beta.', lookupRollupSummary, LookupRollupSummary__c.CalculationMode__c));
 			// Parent Object valid?
 			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject__c);
 			if(parentObjectType==null)
