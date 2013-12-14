@@ -10,7 +10,7 @@
  * - Redistributions in binary form must reproduce the above copyright notice, 
  *      this list of conditions and the following disclaimer in the documentation 
  *      and/or other materials provided with the distribution.
- * - Neither the name of the Andrew Fawcett, inc nor the names of its contributors 
+ * - Neither the name of the Andrew Fawcett, nor the names of its contributors 
  *      may be used to endorse or promote products derived from this software without 
  *      specific prior written permission.
  *
@@ -238,6 +238,8 @@ private with sharing class RollupControllerTest
 				System.assertEquals('someid', ((MetadataService.checkDeployStatus_element) request).asyncProcessId);
 				MetadataService.checkDeployStatusResponse_element response_x = new MetadataService.checkDeployStatusResponse_element();
 				response_x.result = new MetadataService.DeployResult(); 
+				response_x.result.runTestResult = new MetadataService.RunTestsResult();
+				response_x.result.runTestResult.numFailures = 0;
 				response_x.result.messages = new List<MetadataService.DeployMessage>();
 				response.put('response_x', response_x);
 			}
