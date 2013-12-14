@@ -29,9 +29,13 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! If you are a developer obtain the source code from this repository if you wish to develop it further and/or contribute to it. Click [Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/afawcett/declarative-lookup-rollup-summaries) to deploy the source code to your developer org. 
 
-**Latest Version 1.4**
+**Latest Version 1.5**
 
-Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Q9eD)
+Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QCpr)
+
+- Fix for [Issue 7](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/7) and [Issue 8](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/8), relating to failure to report test execution errors in production org.
+
+**Version 1.4**
 
 - Fix for [Issue 3](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/4), relating to issue when deleting last child record not updating rollup fields to 0.
 
