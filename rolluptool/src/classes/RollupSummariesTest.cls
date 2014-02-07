@@ -27,6 +27,13 @@
 @IsTest
 private with sharing class RollupSummariesTest 
 {
+	// TODO: Write a test to validate the criteria fields validation
+	// ...		
+
+
+	// TODO: Write a test to validate the criteria fields are specified when criteria is specified
+	// ...		
+	
 	private testmethod static void testInsertActiveValidation()
 	{
 		// Test supported?

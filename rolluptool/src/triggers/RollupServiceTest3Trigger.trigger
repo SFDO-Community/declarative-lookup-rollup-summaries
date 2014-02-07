@@ -5,9 +5,9 @@
 /**
  * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)
  **/
-trigger RollupServiceTestTrigger on Opportunity
+trigger RollupServiceTest3Trigger on Account
     (before delete, before insert, before update, after delete, after insert, after undelete, after update)
 {
-	if(TestContext.OpportunityTestTriggerEnabled)
+	if(TestContext.AccountTestTriggerEnabled)
     	RollupService.triggerHandler();
 }

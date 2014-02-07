@@ -241,7 +241,7 @@ private with sharing class RollupServiceTest
 		SObject campResult = Database.query('select NumberSent from Campaign where Id = :campId');
 		System.assertEquals(expectedResultC, campResult.get('NumberSent'));			
 	}
-		
+	
 	private testmethod static void testSingleRollupWithoutRelation()
 	{
 		// Test supported?
@@ -404,6 +404,9 @@ private with sharing class RollupServiceTest
 		if(!TestContext.isSupported())
 			return;
 
+		// Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
+		TestContext.AccountTestTriggerEnabled = false;	
+
 		// Test data
 		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
 					
@@ -521,6 +524,9 @@ private with sharing class RollupServiceTest
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
+			
+		// Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
+		TestContext.AccountTestTriggerEnabled = false;	
 
 		// Test data
 		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };

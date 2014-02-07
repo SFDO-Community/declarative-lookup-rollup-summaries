@@ -69,6 +69,8 @@ public class LREngine {
 				because we want client or calling code to have this freedom to do some post processing and update when required.
 	*/
 	public static Sobject[] rollUp(Context ctx,  Set<Id> masterIds) {
+		// Clone this since we are about to modify it later
+		masterIds = masterIds.clone();
         // K: Id of master record
         // V: Empty sobject with ID field, this will be used for updating the masters
         Map<Id, Sobject> masterRecordsMap = new Map<Id, Sobject>(); 
@@ -104,6 +106,7 @@ public class LREngine {
     	String grpByFld = ctx.lookupField.getName();
     	
     	String soql = String.format(SOQL_TEMPLATE, new String[]{soqlProjection, detailTblName, whereClause, grpByFld});
+
     	// aggregated results 
     	List<AggregateResult> results = Database.query(soql);
     	
@@ -117,6 +120,7 @@ public class LREngine {
 			
 			for (String detailFld : detail2MasterFldMap.keySet()) {
 				Object aggregatedDetailVal = res.get(detail2AliasMap.get(detailFld));
+				System.debug(LoggingLevel.INFO, 'New aggregarte value ' + aggregatedDetailVal + ' for master ' + masterRecId);
 				masterObj.put(detail2MasterFldMap.get(detailFld), aggregatedDetailVal);
 			} 			
 			// Remove master Id record as its been processed   	

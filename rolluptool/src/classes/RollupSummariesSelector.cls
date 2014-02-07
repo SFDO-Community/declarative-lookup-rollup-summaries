@@ -41,6 +41,7 @@ public with sharing class RollupSummariesSelector extends SObjectSelector
 			LookupRollupSummary__c.FieldToAggregate__c,
 			LookupRollupSummary__c.ParentObject__c,
 			LookupRollupSummary__c.RelationshipCriteria__c,
+			LookupRollupSummary__c.RelationshipCriteriaFields__c,
 			LookupRollupSummary__c.RelationshipField__c
 		};
 	}
@@ -54,16 +55,25 @@ public with sharing class RollupSummariesSelector extends SObjectSelector
 	{
 		return (List<LookupRollupSummary__c>) selectSObjectsById(idSet);
 	}
-
 	/**
 	 * Returns active lookup rollup summary definitions for thr given calculation mode and child object
 	 **/
 	public List<LookupRollupSummary__c> selectActiveByChildObject(RollupSummaries.CalculationMode calculationMode, Set<String> childObjectNames)
 	{
+		return selectActiveByChildObject(new List<RollupSummaries.CalculationMode> { calculationMode }, childObjectNames);
+	}
+	
+	/**
+	 * Returns active lookup rollup summary definitions for thr given calculation modes and child object
+	 **/
+	public List<LookupRollupSummary__c> selectActiveByChildObject(List<RollupSummaries.CalculationMode> calculationModes, Set<String> childObjectNames)
+	{
 		assertIsAccessible();
-		String calculationModeName = calculationMode.name();
+		List<String> calculationModeNames = new List<String>();
+		for(RollupSummaries.CalculationMode calculationMode : calculationModes)
+			calculationModeNames.add(calculationMode.name());
 		return Database.query(String.format(
-			'select {0} from {1} where CalculationMode__c = :calculationModeName and ChildObject__c in :childObjectNames and Active__c = true order by ParentObject__c, RelationshipField__c', 
+			'select {0} from {1} where CalculationMode__c in :calculationModeNames and ChildObject__c in :childObjectNames and Active__c = true order by ParentObject__c, RelationshipField__c', 
 				new List<String>{getFieldListString(),
 					getSObjectName(),
 					getOrderBy()}));		

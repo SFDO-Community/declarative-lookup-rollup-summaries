@@ -1,31 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
-        <members>*</members>
+        <members>ApexClassesSelector</members>
+        <members>ApexTriggersSelector</members>
+        <members>LREngine</members>
+        <members>MetadataService</members>
+        <members>MetadataServiceTest</members>
+        <members>RollupController</members>
+        <members>RollupControllerTest</members>
+        <members>RollupJob</members>
+        <members>RollupJobTest</members>
+        <members>RollupService</members>
+        <members>RollupServiceException</members>
+        <members>RollupServiceTest</members>
+        <members>RollupServiceTest2</members>
+        <members>RollupSummaries</members>
+        <members>RollupSummariesSelector</members>
+        <members>RollupSummariesTest</members>
+        <members>RollupSummaryScheduleItemsSelector</members>
+        <members>SObjectDomain</members>
+        <members>SObjectDomainTest</members>
+        <members>SObjectSelector</members>
+        <members>SObjectSelectorTest</members>
+        <members>StringBuilder</members>
+        <members>TestContext</members>
+        <members>TestLREngine</members>
         <name>ApexClass</name>
     </types>
     <types>
-        <members>*</members>
+        <members>zip</members>
+        <members>zipEntry</members>
         <name>ApexComponent</name>
     </types>
     <types>
-        <members>*</members>
+        <members>managetrigger</members>
+        <members>rollupcalculate</members>
+        <members>welcome</members>
         <name>ApexPage</name>
     </types>
     <types>
-        <members>*</members>
+        <members>RollupServiceTest2Trigger</members>
+        <members>RollupServiceTest3Trigger</members>
+        <members>RollupServiceTestTrigger</members>
+        <members>RollupSummariesTrigger</members>
         <name>ApexTrigger</name>
     </types>
     <types>
-        <members>*</members>
+        <members>LookupRollupSummary__c</members>
         <name>CustomObject</name>
     </types>
     <types>
-        <members>*</members>
+        <members>Welcome</members>
         <name>CustomPageWebLink</name>
     </types>
     <types>
-        <members>*</members>
+        <members>LookupRollupSummary__c</members>
         <name>CustomTab</name>
     </types>
     <types>
@@ -33,7 +62,7 @@
         <name>Layout</name>
     </types>
     <types>
-        <members>*</members>
+        <members>jszip</members>
         <name>StaticResource</name>
     </types>
     <version>24.0</version>

@@ -28,6 +28,10 @@ public with sharing class TestContext
 {
 	private TestContext() { }
 	
+	public static Boolean OpportunityTestTriggerEnabled = true;
+	
+	public static Boolean AccountTestTriggerEnabled = true;
+	
 	/**
 	 * Tests are only executed when the test trigger is present (not packaged)
 	 **/

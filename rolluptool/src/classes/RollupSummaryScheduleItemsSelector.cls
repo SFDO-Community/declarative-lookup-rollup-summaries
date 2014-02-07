@@ -24,29 +24,36 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-/**
- * Processes chunks of Rollup Summary Schedule records on a scheduled basis
- **/
-global with sharing class RollupJob 
-	implements Schedulable, Database.Batchable<sObject>
+public with sharing class RollupSummaryScheduleItemsSelector extends SObjectSelector 
 {
-	global void execute(SchedulableContext sc)
+	public List<Schema.SObjectField> getSObjectFieldList()
 	{
-		// Run the job to process the scheduled records for rolling up
-		RollupService.runJob();
-	}
-	
-	public Database.QueryLocator start(Database.BatchableContext BC)
-	{
-		// Query all the currently available scheduled records indicating records requiring rollups
-		return new RollupSummaryScheduleItemsSelector().selectAllQueryLocator();
+		return new List<Schema.SObjectField> {
+			LookupRollupSummaryScheduleItems__c.Name,
+			LookupRollupSummaryScheduleItems__c.ParentId__c,
+			LookupRollupSummaryScheduleItems__c.LookupRollupSummary__c
+		};
 	}
 
-	public void execute(Database.BatchableContext BC, List<sObject> rollupSummaryScheduleItems)
+	public Schema.SObjectType getSObjectType()
 	{
-		// Process the given schedule item rollups
-		RollupService.processScheduleItems((List<LookupRollupSummaryScheduleItems__c>) rollupSummaryScheduleItems);					
+		return LookupRollupSummaryScheduleItems__c.sObjectType;
 	}
 	
-	public void finish(Database.BatchableContext BC) { }
+	public override String getOrderBy()
+	{
+		return 'LookupRollupSummary__r.ParentObject__c';
+	}
+	
+	public Database.Querylocator selectAllQueryLocator()
+	{
+		assertIsAccessible();
+		return Database.getQueryLocator(String.format('SELECT {0} FROM {1} ORDER BY {2}',
+			new List<String>{getFieldListString(),getSObjectName(),getOrderBy()}));
+	}
+
+	public List<LookupRollupSummaryScheduleItems__c> selectById(Set<ID> idSet)
+	{
+		return (List<LookupRollupSummaryScheduleItems__c>) selectSObjectsById(idSet);
+	}
 }
