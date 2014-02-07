@@ -39,6 +39,7 @@ private class TestLREngine {
 		static Account acc1, acc2;
 		// common bunch of detail records for the test case
 		static Opportunity[] detailRecords;
+		static Opportunity[] detailRecordsAcc1;
 		// dynamic reference to this field to avoid it being included in the package
 		static Schema.SObjectField ACCOUNT_SLA_EXPIRATION_DATE;
 		static Schema.SObjectField ACCOUNT_NUMBER_OF_LOCATIONS;		
@@ -105,6 +106,7 @@ private class TestLREngine {
 	                                                StageName = 'test'
 	         									);
 	         detailRecords = new Opportunity[] {o1Acc1, o2Acc1, o3Acc1, o1Acc2, o2Acc2, o3Acc2};
+	         detailRecordsAcc1 = new Opportunity[] {o1Acc1, o2Acc1, o3Acc1};
 	         insert detailRecords;			
 		}		
 
@@ -140,7 +142,7 @@ private class TestLREngine {
 	                                            LREngine.RollupOperation.Max
                                              ));                                       
                 
-         Sobject[] masters = LREngine.rollUp(ctx, detailRecords);                 
+         Sobject[] masters = LREngine.rollUp(ctx, detailRecords);  
          // 2 masters should be back  
          System.assertEquals(2, masters.size());
          
@@ -260,5 +262,36 @@ private class TestLREngine {
          
          System.assertEquals(1, reloadedAcc1.get(ACCOUNT_NUMBER_OF_LOCATIONS));
          System.assertEquals(2, reloadedAcc2.get(ACCOUNT_NUMBER_OF_LOCATIONS));
+    }
+    
+    static testMethod void testConstrainedAggregateQuery()
+    {
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+    	
+    	// create seed data 
+         prepareData();
+         
+         LREngine.Context ctx = new LREngine.Context(Account.SobjectType,  
+                                                Opportunity.SobjectType, 
+                                                Schema.SObjectType.Opportunity.fields.AccountId);         
+         ctx.add(
+                new LREngine.RollupSummaryField(
+	                                            Schema.SObjectType.Account.fields.AnnualRevenue,
+	                                            Schema.SObjectType.Opportunity.fields.Amount,
+	                                            LREngine.RollupOperation.Sum
+                                             )); 
+         ctx.add(
+         		new LREngine.RollupSummaryField(
+	                                            ACCOUNT_SLA_EXPIRATION_DATE.getDescribe(),
+	                                            Schema.SObjectType.Opportunity.fields.CloseDate,
+	                                            LREngine.RollupOperation.Max
+                                             ));                                       
+                
+         Sobject[] masters = LREngine.rollUp(ctx, detailRecordsAcc1);      
+         
+         // Only expect to have queried 4, 1 in TestContext.isSupported and 3 child records related to Account 1
+         System.assertEquals(4, Limits.getQueryRows());	
     }
 }

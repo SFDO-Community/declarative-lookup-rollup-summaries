@@ -37,7 +37,7 @@ public class LREngine {
 			2 : Optional WHERE clause filter to add
 			3 : Group By field name
 	*/
-	static String SOQL_TEMPLATE = 'SELECT {0} FROM {1} {2} GROUP BY {3}';
+	static String SOQL_TEMPLATE = 'SELECT {0} FROM {1} WHERE {3} in :masterIds {2} GROUP BY {3}';
 	
 	/**
 		Key driver method that rolls up lookup fields based on the context. This is specially useful in Trigger context.
@@ -99,7 +99,7 @@ public class LREngine {
     	// #2 Where clause
     	String whereClause = '';
     	if (ctx.detailWhereClause != null && ctx.detailWhereClause.trim().length() > 0) {
-    		whereClause = 'WHERE ' + ctx.detailWhereClause ;
+    		whereClause = 'AND ' + ctx.detailWhereClause ;
     	}
     	
     	// #3 Group by field
