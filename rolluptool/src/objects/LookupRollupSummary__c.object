@@ -146,6 +146,14 @@
         <unique>false</unique>
     </fields>
     <fields>
+        <fullName>RelationshipCriteriaFields__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>If you have specified a relationship criteria, you must confirm the fields referenced by it here on separate lines, e.g. Amount</inlineHelpText>
+        <label>Relationship Criteria Fields</label>
+        <required>false</required>
+        <type>TextArea</type>
+    </fields>
+    <fields>
         <fullName>RelationshipCriteria__c</fullName>
         <deprecated>false</deprecated>
         <externalId>false</externalId>

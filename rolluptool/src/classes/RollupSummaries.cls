@@ -180,7 +180,7 @@ public with sharing class RollupSummaries extends SObjectDomain
 	{
 		if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Opportunity')
 			return 'RollupServiceTestTrigger';
-		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'LookupChild__c')
+		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'dlrs__LookupChild__c')
 			return 'RollupServiceTest2Trigger';
 		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Account')
 			return 'RollupServiceTest3Trigger';

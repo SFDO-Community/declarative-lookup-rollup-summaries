@@ -36,4 +36,12 @@ public class RollupServiceException extends Exception
 	{ 
 		return new RollupServiceException('Lookup Rollup Summary  \'' + lookup.Name + '\' is invalid, your org configuration may have changed.');
 	}
+	
+	/**
+	 * Unable to find the given lookup
+	 **/
+	public static RollupServiceException rollupNotFound(Id lookupId)
+	{
+		return new RollupServiceException('Invalid rollup ' + lookupId + ' not found.');
+	}
 }

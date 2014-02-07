@@ -33,7 +33,7 @@ global with sharing class RollupJob
 	global void execute(SchedulableContext sc)
 	{
 		// Run the job to process the scheduled records for rolling up
-		RollupService.runJob();
+		RollupService.runJobToProcessScheduledItems();
 	}
 	
 	public Database.QueryLocator start(Database.BatchableContext BC)

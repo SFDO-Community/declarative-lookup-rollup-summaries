@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Layout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customButtons>Calculate</customButtons>
     <customButtons>ManageChildTrigger</customButtons>
     <excludeButtons>Submit</excludeButtons>
     <layoutSections>
@@ -52,6 +53,10 @@
             <layoutItems>
                 <behavior>Edit</behavior>
                 <field>RelationshipCriteria__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>RelationshipCriteriaFields__c</field>
             </layoutItems>
         </layoutColumns>
         <style>TwoColumnsLeftToRight</style>
@@ -106,6 +111,12 @@
         <layoutColumns/>
         <style>CustomLinks</style>
     </layoutSections>
+    <relatedLists>
+        <excludeButtons>New</excludeButtons>
+        <fields>NAME</fields>
+        <fields>ParentRecord__c</fields>
+        <relatedList>LookupRollupSummaryScheduleItems__c.LookupRollupSummary__c</relatedList>
+    </relatedLists>
     <showEmailCheckbox>false</showEmailCheckbox>
     <showHighlightsPanel>false</showHighlightsPanel>
     <showInteractionLogPanel>false</showInteractionLogPanel>

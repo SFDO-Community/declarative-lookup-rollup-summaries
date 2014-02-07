@@ -1,4 +1,3 @@
-<!--
 /**
  * Copyright (c) 2013, Andrew Fawcett
  * All rights reserved.
@@ -24,12 +23,31 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
--->
-<apex:page standardController="LookupRollupSummary__c" extensions="RollupCalculateController">
-	<apex:sectionHeader title="{!LookupRollupSummary__c.Name}" subtitle="Run Calculate Job"/>
-	<apex:pageMessages />
-	<apex:form >
-		<apex:commandButton action="{!runCalculateJob}" value="Run Calculate Job"/>
-		<apex:commandButton action="{!cancel}" value="Cancel"/>
-	</apex:form> 
-</apex:page>
+
+/**
+ * Job recaculates a given rollup for all master records
+ **/
+public with sharing class RollupCalculateJob 
+	implements Database.Batchable<sObject>
+{
+	private Id lookupId;
+	
+	public RollupCalculateJob(String lookupId)
+	{
+		this.lookupId = lookupId;
+	}
+	
+	public Database.QueryLocator start(Database.BatchableContext BC) 
+	{
+		// Query all the parent records as per the lookup definition
+		return RollupService.masterRecordsAsQueryLocator(lookupId);
+	}
+	
+	public void execute(Database.BatchableContext BC, List<sObject> masterRecords)
+	{
+		// Update the master records as per the lookup definition
+		RollupService.updateMasterRollups(new Set<Id> { lookupId }, new Map<Id, Sobject>(masterRecords).keySet());
+	}
+	
+	public void finish(Database.BatchableContext BC) { }
+}

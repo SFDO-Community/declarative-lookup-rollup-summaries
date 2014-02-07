@@ -1,4 +1,3 @@
-<!--
 /**
  * Copyright (c) 2013, Andrew Fawcett
  * All rights reserved.
@@ -24,12 +23,32 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
--->
-<apex:page standardController="LookupRollupSummary__c" extensions="RollupCalculateController">
-	<apex:sectionHeader title="{!LookupRollupSummary__c.Name}" subtitle="Run Calculate Job"/>
-	<apex:pageMessages />
-	<apex:form >
-		<apex:commandButton action="{!runCalculateJob}" value="Run Calculate Job"/>
-		<apex:commandButton action="{!cancel}" value="Cancel"/>
-	</apex:form> 
-</apex:page>
+
+public with sharing class RollupCalculateController 
+{
+	private ApexPages.StandardController standardController;
+	
+	public RollupCalculateController(ApexPages.StandardController standardController)
+	{
+		this.standardController = standardController;
+		
+		// Page load messages
+		ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Clicking the Run Calculate Job will start a background rebuild for this rollup only.'));
+		ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Once the job completes any failed rollups will be shown in the Rollup Summary Logs tab.'));
+	}
+	
+	public PageReference runCalculateJob()
+	{
+		try
+		{
+			// Kickoff the calculate job for this lookup
+			RollupService.runJobToCalculate(standardController.getId());
+			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Calculate job started for this lookup.'));
+		}
+		catch (Exception e)
+		{
+			ApexPages.addMessages(e);
+		}
+		return standardController.view();
+	}
+}

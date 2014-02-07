@@ -115,7 +115,7 @@ private with sharing class RollupServiceTest2
 		
 		// Run rollup job
 		Test.startTest();		
-		RollupService.runJob(); 
+		RollupService.runJobToProcessScheduledItems(); 
 		Test.stopTest();
 		
 		// Assert schedule items gone and rollup updated
@@ -123,69 +123,6 @@ private with sharing class RollupServiceTest2
 		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
 		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));			
 	}
-	
-	private testmethod static void testUnDeleteRealtime()
-	{		
-		// Test supported?
-		if(!TestContext.isSupported())
-			return;
-
-		// Test data
-		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
-					
-		// Test data for rollup A
-		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
-		String conditionA = 'Amount > 200';
-		
-		// Configure rollup A
-		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-		rollupSummaryA.ParentObject__c = 'Account';
-		rollupSummaryA.ChildObject__c = 'Opportunity';
-		rollupSummaryA.RelationShipField__c = 'AccountId';
-		rollupSummaryA.RelationShipCriteria__c = conditionA;
-		rollupSummaryA.FieldToAggregate__c = 'Amount';
-		rollupSummaryA.AggregateOperation__c = operationA.name();
-		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-		rollupSummaryA.Active__c = true;
-		rollupSummaryA.CalculationMode__c = 'Realtime';
-
-		// Insert rollup definitions
-		insert new List<LookupRollupSummary__c> { rollupSummaryA };
-		
-		// Test data
-		Account account = new Account();
-		account.Name = 'Test Account';
-		account.AnnualRevenue = 0;
-		insert account;
-		List<Opportunity> opps = new List<Opportunity>(); 
-		for(Decimal rollupValue : rollups)
-		{
-			Opportunity opp = new Opportunity();
-			opp.Name = 'Test Opportunity';
-			opp.StageName = 'Open';
-			opp.CloseDate = System.today();
-			opp.AccountId = account.Id;
-			opp.Amount = rollupValue;
-			opps.add(opp);			
-		}
-		insert opps;
-		
-		// Assert rollup
-		Id accountId = account.Id;
-		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(500, accountResult.AnnualRevenue);
-		
-		// Delete a child
-		delete opps[0];
-		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(250, accountResult.AnnualRevenue);
-		
-		// Undelete a child
-		Database.undelete(opps[0].Id);			
-		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(500, accountResult.AnnualRevenue);
-	}	
 	
 	private testmethod static void testScheduleItemsAndLogs()
 	{
@@ -246,18 +183,88 @@ private with sharing class RollupServiceTest2
 		
 		// Run rollup job
 		Test.startTest();		
-		RollupService.runJob(); 
+		RollupService.runJobToProcessScheduledItems(); 
 		Test.stopTest();
 		
 		// Assert scheduled items and log records
-		List<LookupRollupSummaryLog__c> logs = [select id, ErrorMessage__c from LookupRollupSummaryLog__c];
+		List<LookupRollupSummaryLog__c> logs = [select id, ParentId__c, ParentObject__c, ErrorMessage__c from LookupRollupSummaryLog__c];
+		System.assertEquals(parentC.Id, logs[0].ParentId__c);
+		System.assertEquals('dlrs__LookupParent__c', logs[0].ParentObject__c);
 		System.assertEquals(1, logs.size());
 		System.assertEquals('The answer is not 42! : FIELD_CUSTOM_VALIDATION_EXCEPTION (dlrs__Total__c)', logs[0].ErrorMessage__c);		
 		System.assertEquals(1, [select id from LookupRollupSummaryScheduleItems__c].size());
 	}
 	
-	// TODO: Do another test like above but tests the recover aspect, will have to spoof the log and schedule records
-	// ...	
+	private testmethod static void testScheduleItemsAndLogsCleanup()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = 'dlrs__LookupParent__c';
+		rollupSummary.ChildObject__c = 'dlrs__LookupChild__c';
+		rollupSummary.RelationShipField__c = 'dlrs__LookupParent__c';
+		rollupSummary.FieldToAggregate__c = 'dlrs__Amount__c';
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = 'dlrs__Total__c';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Scheduled';	
+		insert rollupSummary;
+		
+		// Insert parents
+		Schema.SObjectType parentType = Schema.getGlobalDescribe().get('dlrs__LookupParent__c');
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+		
+		// Insert children
+		Schema.SObjectType childType = Schema.getGlobalDescribe().get('dlrs__LookupChild__c');
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)		
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put('dlrs__LookupParent__c', parent.Id);
+			child1.put('dlrs__Amount__c', 20);
+			children.add(child1);				
+			SObject child2 = childType.newSObject();
+			child2.put('dlrs__LookupParent__c', parent.Id);
+			child2.put('dlrs__Amount__c', 20);
+			children.add(child2);				
+			SObject child3 = childType.newSObject();
+			child3.put('dlrs__LookupParent__c', parent.Id);
+			child3.put('dlrs__Amount__c', 2);
+			children.add(child3);				
+		}
+		insert children;
+		
+		// Assert scheduled items and log records
+		System.assertEquals(3, [select id from LookupRollupSummaryScheduleItems__c].size());
+		System.assertEquals(0, [select id from LookupRollupSummaryLog__c].size());
+		
+		// Insert dummy log record for Parent C (emulate position left from above test)
+		insert new LookupRollupSummaryLog__c(
+				ParentId__c = parentC.id,
+				ParentObject__c = 'dlrs__LookupParent__c',
+				ErrorMessage__c = 'The answer is not 42! : FIELD_CUSTOM_VALIDATION_EXCEPTION (dlrs__Total__c)'
+			);
+		
+		// Run rollup job
+		Test.startTest();		
+		RollupService.runJobToProcessScheduledItems(); 
+		Test.stopTest();
+		
+		// Assert scheduled items and log records are all gone!
+		System.assertEquals(0, [select id, ParentId__c, ErrorMessage__c from LookupRollupSummaryLog__c].size());		
+		System.assertEquals(0, [select id from LookupRollupSummaryScheduleItems__c].size());
+	}
 	
 	/**
 	 * Test to reproduce issue raised here, https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/11 
@@ -387,5 +394,68 @@ private with sharing class RollupServiceTest2
 		accountResults = new Map<Id, Account>((List<Account>)Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id in :parentIds'));
 		System.assertEquals(250, (Decimal) accountResults.get(parentAccount1.Id).get(ACCOUNT_NUMBER_OF_LOCATIONS));
 		System.assertEquals(350, (Decimal) accountResults.get(parentAccount2.Id).get(ACCOUNT_NUMBER_OF_LOCATIONS));
-	}	
+	}
+		
+	private testmethod static void testUnDeleteRealtime()
+	{		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		// Test data
+		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
+					
+		// Test data for rollup A
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		String conditionA = 'Amount > 200';
+		
+		// Configure rollup A
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummaryA.ParentObject__c = 'Account';
+		rollupSummaryA.ChildObject__c = 'Opportunity';
+		rollupSummaryA.RelationShipField__c = 'AccountId';
+		rollupSummaryA.RelationShipCriteria__c = conditionA;
+		rollupSummaryA.FieldToAggregate__c = 'Amount';
+		rollupSummaryA.AggregateOperation__c = operationA.name();
+		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = 'Realtime';
+
+		// Insert rollup definitions
+		insert new List<LookupRollupSummary__c> { rollupSummaryA };
+		
+		// Test data
+		Account account = new Account();
+		account.Name = 'Test Account';
+		account.AnnualRevenue = 0;
+		insert account;
+		List<Opportunity> opps = new List<Opportunity>(); 
+		for(Decimal rollupValue : rollups)
+		{
+			Opportunity opp = new Opportunity();
+			opp.Name = 'Test Opportunity';
+			opp.StageName = 'Open';
+			opp.CloseDate = System.today();
+			opp.AccountId = account.Id;
+			opp.Amount = rollupValue;
+			opps.add(opp);			
+		}
+		insert opps;
+		
+		// Assert rollup
+		Id accountId = account.Id;
+		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(500, accountResult.AnnualRevenue);
+		
+		// Delete a child
+		delete opps[0];
+		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(250, accountResult.AnnualRevenue);
+		
+		// Undelete a child
+		Database.undelete(opps[0].Id);			
+		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(500, accountResult.AnnualRevenue);
+	}			
 }

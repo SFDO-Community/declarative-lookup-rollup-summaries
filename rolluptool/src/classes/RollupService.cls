@@ -32,14 +32,26 @@
 global with sharing class RollupService 
 {	
 	/**
-	 * Starts the Job to process the scheduled items for rollup 
+	 * Starts the Job to recalculate the given rollup 
 	 **/
-	global static Id runJob()
+	global static Id runJobToCalculate(Id lookup)
 	{
 		// TODO: Drive this from a Custom Setting?
-		return Database.executeBatch(new RollupJob(), 100);		
-	}	
+		return Database.executeBatch(new RollupCalculateJob(lookup), 100);
+	}
 	
+	/**
+	 * Starts the Job to process the scheduled items for rollup 
+	 **/
+	global static Id runJobToProcessScheduledItems()
+	{
+		// TODO: Check if the Job is already running before starting a new one
+		// ...
+		
+		// TODO: Drive this from a Custom Setting?
+		return Database.executeBatch(new RollupJob(), 100);
+	}	
+		
 	/**
 	 * Method wraps the LREngine.rollup method, provides context via the lookups described in the LookupRollupSummary__c
 	 *
@@ -65,7 +77,7 @@ global with sharing class RollupService
 			
 		// Describe rollups for these child records
 		SObjectType childObjectType = childRecords[0].Id.getSObjectType();		
-		List<LookupRollupSummary__c> lookups = describeRollups(childRecords[0].Id.getSObjectType()); // TODO: This filter only Developer rollups?
+		List<LookupRollupSummary__c> lookups = describeRollups(childRecords[0].Id.getSObjectType());
 		if(lookups.size()==0)
 			return new List<SObject>(); // Nothing to see here! :)
 			
@@ -218,7 +230,7 @@ global with sharing class RollupService
 			}			
 		}
 
-		// Map rollup summary schedule items by parent id, in order to remove only those whos parent/master record was updated
+		// Map rollup summary schedule items by parent id, in order to remove only those whos parent/master record actually gets updated below
 		Map<Id, LookupRollupSummaryScheduleItems__c> rollupSummaryScheduleItemsByParentId = 
 			new Map<Id, LookupRollupSummaryScheduleItems__c>();
 		for(LookupRollupSummaryScheduleItems__c rollupSummaryScheduleItem : rollupSummaryScheduleItems)
@@ -259,6 +271,92 @@ global with sharing class RollupService
 		
 		// Delete any schedule items for successfully updated master records
 		delete rollupSummaryScheduleItemsByParentId.values();
+	}
+	
+	/**
+	 * Method returns a QueryLocator that returns master records (as per the lookup definition) meeting the criteria expressed (if defined)
+	 **/
+	public static Database.QueryLocator masterRecordsAsQueryLocator(Id lookupId)
+	{ 
+		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });
+		if(lookups.size()==0)
+			throw RollupServiceException.rollupNotFound(lookupId); 
+		LookupRollupSummary__c lookup = lookups[0];				
+		return Database.getQueryLocator('Select Id From ' + lookup.ParentObject__c);
+	}
+
+	/**
+	 * Performs a recalculate on the master records for the given rollup definitions, outputs any errors in the rollup summary log
+	 *
+	 * @param lookups Lookup to calculate perform
+	 * @param childRecords Child records being modified
+	 **/ 
+	public static void updateMasterRollups(Set<Id> lookupIds, Set<Id> masterRecordIds)
+	{		
+		// Process rollup
+		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(lookupIds);
+		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
+		for(LREngine.Context ctx : createLREngineContexts(lookups).values())
+		{
+			// Produce a set of master Id's applicable to this context (parent only)			
+			Set<Id> ctxMasterIds = new Set<Id>();
+			for(Id masterId : masterRecordIds)
+				if(masterId.getSObjectType() == ctx.master)
+					ctxMasterIds.add(masterId);
+			// Execute the rollup and process the resulting updated master records
+			for(SObject masterRecord : LREngine.rollup(ctx, ctxMasterIds)) 
+			{
+				// Skip master records without Id's (LREngine can return these where there was 
+				//	no related master records to children, for examlpe where a relationship is optional)
+				if(masterRecord.Id==null)
+					break;
+				// Merge this master record result into a previous one from another rollup ctx?
+				SObject existingRecord = masterRecords.get(masterRecord.Id);
+				if(existingRecord==null)
+					masterRecords.put(masterRecord.Id, masterRecord);
+				else
+					for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll)
+						existingRecord.put(fieldToRoll.master.getSObjectField(), 
+							masterRecord.get(fieldToRoll.master.getSObjectField()));
+			}			
+		}
+
+		// Update master records
+		List<SObject> masterRecordList = masterRecords.values();
+		List<Database.Saveresult> saveResults = Database.update(masterRecordList, false);
+		
+		// Log errors to the summary log
+		Integer masterRecordIdx = 0;
+		Set<Id> masterRecordsUpdatedId = new Set<Id>();
+		List<LookupRollupSummaryLog__c> rollupSummaryLogs = new List<LookupRollupSummaryLog__c>();		
+		for(Database.Saveresult saveResult : saveResults)
+		{
+			// Errors?
+			if(!saveResult.isSuccess())
+			{
+				// Log the failure updating the master record for review
+				LookupRollupSummaryLog__c logEntry = new LookupRollupSummaryLog__c();
+				logEntry.ErrorMessage__c = '';
+				logEntry.ParentId__c = masterRecordList[masterRecordIdx].Id;
+				logEntry.ParentObject__c = masterRecordList[masterRecordIdx].Id.getSObjectType().getDescribe().getName();
+				List<Database.Error> databaseErrors = saveResult.getErrors();
+				for(Database.Error databaseError : databaseErrors)
+					logEntry.ErrorMessage__c+= databaseError.getMessage() + ' : ' + databaseError.getStatusCode() + ' ' + databaseError.getFields() + '\n';
+				rollupSummaryLogs.add(logEntry);
+			}
+			else
+			{
+				// Success
+				masterRecordsUpdatedId.add(masterRecordList[masterRecordIdx].Id);
+			}
+			masterRecordIdx++;
+		}
+			
+		// Insert any logs for master records that failed to update (upsert to only show last message per parent)
+		upsert rollupSummaryLogs ParentId__c;
+		
+		// Delete any old logs entries for master records that have now been updated successfully
+		delete [select Id from LookupRollupSummaryLog__c where ParentId__c in :masterRecordsUpdatedId];
 	}
 	
 	/**
