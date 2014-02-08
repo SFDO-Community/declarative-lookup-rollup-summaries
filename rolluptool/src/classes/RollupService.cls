@@ -51,20 +51,9 @@ global with sharing class RollupService
 		// TODO: Drive this from a Custom Setting?
 		return Database.executeBatch(new RollupJob(), 100);
 	}	
-		
-	/**
-	 * Method wraps the LREngine.rollup method, provides context via the lookups described in the LookupRollupSummary__c
-	 *
-	 * @param masterRecordIds ID's for master records to refresh rollups on
-	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
-	 **/
-	global static List<SObject> rollup(Set<Id> masterRecordIds)
-	{
-		return null;	
-	}
 
 	/**
-	 * Method wraps the LREngine.rolup method, provides context via the lookups described in LookupRollupSummary__c
+	 * Developer API for the tool, only executes Rollup Summmaries with Calculation Mode set to Developer 
 	 *
 	 * @param childRecords Child records being modified
 	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
@@ -75,9 +64,13 @@ global with sharing class RollupService
 		if(childRecords==null || childRecords.size()==0)
 			return new List<SObject>();
 			
-		// Describe rollups for these child records
-		SObjectType childObjectType = childRecords[0].Id.getSObjectType();		
-		List<LookupRollupSummary__c> lookups = describeRollups(childRecords[0].Id.getSObjectType());
+		// Describe Developer rollups for these child records
+		SObjectType childObjectType = childRecords[0].Id.getSObjectType();
+		Schema.DescribeSObjectResult childRecordDescribe = childObjectType.getDescribe();		
+		List<LookupRollupSummary__c> lookups =
+			new RollupSummariesSelector().selectActiveByChildObject(
+				new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Developer }, 
+				new Set<String> { childRecordDescribe.getName() });
 		if(lookups.size()==0)
 			return new List<SObject>(); // Nothing to see here! :)
 			

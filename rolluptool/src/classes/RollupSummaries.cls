@@ -132,7 +132,8 @@ public with sharing class RollupSummaries extends SObjectDomain
 			// Cannot activate Realtime rollup without the required trigger deployed
 			String triggerName = makeTriggerName(lookupRollupSummary); 
 			if(lookupRollupSummary.Active__c &&
-			   lookupRollupSummary.CalculationMode__c == CalculationMode.Realtime.name() && 
+			   (lookupRollupSummary.CalculationMode__c == CalculationMode.Realtime.name() ||
+			    lookupRollupSummary.CalculationMode__c == CalculationMode.Scheduled.name()) && 
 			   !apexTriggers.containsKey(triggerName))
 				lookupRollupSummary.Active__c.addError(error('Apex Trigger ' + triggerName + ' has not been deployed. Click Manage Child Trigger and try again.', lookupRollupSummary, LookupRollupSummary__c.Active__c));
 			try
