@@ -129,13 +129,26 @@ public with sharing class RollupSummaries extends SObjectDomain
 				if(aggregateResultField==null)
 					lookupRollupSummary.AggregateResultField__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.AggregateResultField__c));
 			}						
-			// Cannot activate Realtime rollup without the required trigger deployed
+			// Cannot activate Realtime or Scheduled rollup without the required trigger deployed
 			String triggerName = makeTriggerName(lookupRollupSummary); 
 			if(lookupRollupSummary.Active__c &&
 			   (lookupRollupSummary.CalculationMode__c == CalculationMode.Realtime.name() ||
 			    lookupRollupSummary.CalculationMode__c == CalculationMode.Scheduled.name()) && 
 			   !apexTriggers.containsKey(triggerName))
 				lookupRollupSummary.Active__c.addError(error('Apex Trigger ' + triggerName + ' has not been deployed. Click Manage Child Trigger and try again.', lookupRollupSummary, LookupRollupSummary__c.Active__c));
+			// Check the list of fields expressed in the relationship critiera fields
+			if(lookupRollupSummary.RelationshipCriteriaFields__c!=null)
+			{
+				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields__c.split('\r\n');
+				String[] fieldsInError = new List<String>();
+				for(String field : fieldList)
+					if(childObjectFields.get(field)==null)
+						fieldsInError.add(field);
+				if(fieldsInError.size()==1)
+					lookupRollupSummary.RelationshipCriteriaFields__c.addError(error('Field ' + fieldsInError[0] + ' does not exist on the child object.', lookupRollupSummary, LookupRollupSummary__c.RelationshipCriteriaFields__c));
+				else if(fieldsInError.size()>1)
+					lookupRollupSummary.RelationshipCriteriaFields__c.addError(error('Fields ' + String.join(fieldsInError, ',') + ' do not exist on the child object.', lookupRollupSummary, LookupRollupSummary__c.RelationshipCriteriaFields__c));
+			} 	
 			try
 			{
 				// If all objects and fields valid...

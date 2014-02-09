@@ -28,16 +28,31 @@
  * Service class implements rollup functionality using LREngine library and based on lookups described in LookupRollupSummary__c
  *
  *   TODO: This class could do with using the fflib_Describe util class, it would cut down on describe cahcing logic and make things cleaner
+ *
+ *   TODO: As this class has developed to support schedule and develoepr API entry points some further refactoring for reuse can be done
  **/
 global with sharing class RollupService 
 {	
 	/**
 	 * Starts the Job to recalculate the given rollup 
 	 **/
-	global static Id runJobToCalculate(Id lookup)
+	global static Id runJobToCalculate(Id lookupId)
 	{
-		// TODO: Drive this from a Custom Setting?
-		return Database.executeBatch(new RollupCalculateJob(lookup), 100);
+		// Is another calculate job running for this lookup?
+		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });		
+		if(lookups.size()==0)
+			throw RollupServiceException.rollupNotFound(lookupId);
+		LookupRollupSummary__c lookup = lookups[0];
+		if(lookup.CalculateJobId__c!=null)
+			throw RollupServiceException.jobAlreadyRunning(lookup.Name);
+
+		// Start the job and record the Job Id
+		Integer scopeSize = (Integer) DeclarativeLookupRollupSummaries__c.getInstance().CalculateJobScopeSize__c;
+		Id jobId = Database.executeBatch(new RollupCalculateJob(lookupId), scopeSize == null ? 100 : scopeSize);
+		lookup.CalculateJobId__c = jobId;
+		update lookup;
+		
+		return jobId;
 	}
 	
 	/**
@@ -45,11 +60,13 @@ global with sharing class RollupService
 	 **/
 	global static Id runJobToProcessScheduledItems()
 	{
-		// TODO: Check if the Job is already running before starting a new one
-		// ...
-		
-		// TODO: Drive this from a Custom Setting?
-		return Database.executeBatch(new RollupJob(), 100);
+		// Check if the Job is already running before starting a new one
+		if(new AsyncApexJobsSelector().jobsExecuting(new Set<String> { 'RollupJob' }))
+			throw RollupServiceException.jobsExecuting('RollupJob');
+			
+		// Start the job to processed the scheduled items	
+		Integer scopeSize = (Integer) DeclarativeLookupRollupSummaries__c.getInstance().ScheduledJobScopeSize__c;
+		return Database.executeBatch(new RollupJob(), scopeSize == null ? 100 : scopeSize);
 	}	
 
 	/**
@@ -80,7 +97,34 @@ global with sharing class RollupService
 			for(LookupRollupSummary__c lookup : lookups)
 				if(childRecord.get(lookup.RelationShipField__c)!=null)
 					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField__c));
-		return rollup(lookups, masterRecordIds);
+
+		// Process each context (parent child relationship) and its associated rollups
+		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
+		for(LREngine.Context ctx : createLREngineContexts(lookups).values())
+		{
+			// Produce a set of master Id's applicable to this context (parent only)			
+			Set<Id> ctxMasterIds = new Set<Id>();
+			for(Id masterId : masterRecordIds)
+				if(masterId.getSObjectType() == ctx.master)
+					ctxMasterIds.add(masterId);
+			// Execute the rollup and process the resulting updated master records
+			for(SObject masterRecord : LREngine.rollup(ctx, ctxMasterIds)) 
+			{
+				// Skip master records without Id's (LREngine can return these where there was 
+				//	no related master records to children, for examlpe where a relationship is optional)
+				if(masterRecord.Id==null)
+					break;
+				// Merge this master record result into a previous one from another rollup ctx?
+				SObject existingRecord = masterRecords.get(masterRecord.Id);
+				if(existingRecord==null)
+					masterRecords.put(masterRecord.Id, masterRecord);
+				else
+					for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll)
+						existingRecord.put(fieldToRoll.master.getSObjectField(), 
+							masterRecord.get(fieldToRoll.master.getSObjectField()));
+			}			
+		}
+		return masterRecords.values();
 	}
 	
 	/**
@@ -114,7 +158,7 @@ global with sharing class RollupService
 				fieldsToSearchForChanges.add(lookup.FieldToAggregate__c);
 				fieldsToSearchForChanges.add(lookup.RelationShipField__c);
 				if(lookup.RelationshipCriteriaFields__c!=null)
-					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('/n'))
+					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n'))
 						fieldsToSearchForChanges.add(criteriaField);
 				relationshipFields.add(lookup.RelationShipField__c);
 			}
@@ -151,7 +195,7 @@ global with sharing class RollupService
 				   fieldsChanged.contains(lookup.RelationShipField__c))
 				   	processLookup = true;
 				if(lookup.RelationshipCriteriaFields__c!=null)
-					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('/n'))
+					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n'))
 						if(fieldsChanged.contains(criteriaField))
 							processLookup = true;
 				if(processLookup)
@@ -161,7 +205,7 @@ global with sharing class RollupService
 			
 			// Rollup child records and update master records 
 			if(lookupsToProcess.size()>0)
-				update rollup(lookups, masterRecordIds);
+				update updateMasterRollupsTrigger(lookups, masterRecordIds);
 			return;
 		}
 			
@@ -171,7 +215,30 @@ global with sharing class RollupService
 			for(LookupRollupSummary__c lookup : lookups)
 				if(childRecord.get(lookup.RelationShipField__c)!=null)
 					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField__c));
-		update rollup(lookups, masterRecordIds);
+		update updateMasterRollupsTrigger(lookups, masterRecordIds);
+	}
+	
+	/**
+	 * Method returns a QueryLocator that returns master records (as per the lookup definition) meeting the criteria expressed (if defined)
+	 **/
+	public static Database.QueryLocator masterRecordsAsQueryLocator(Id lookupId)
+	{ 
+		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });
+		if(lookups.size()==0)
+			throw RollupServiceException.rollupNotFound(lookupId); 
+		LookupRollupSummary__c lookup = lookups[0];				
+		return Database.getQueryLocator('Select Id From ' + lookup.ParentObject__c);
+	}
+
+	/**
+	 * Clears the Calcualte Job Id's on the given lookups preventng concurrent Calculate jobs
+	 **/ 	
+	public static void clearCalculateJobId(Set<Id> lookupIds)
+	{
+		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(lookupIds);
+		for(LookupRollupSummary__c lookup : lookups)
+			lookup.CalculateJobId__c = null;
+		update lookups;
 	}
 	
 	/**
@@ -265,18 +332,6 @@ global with sharing class RollupService
 		// Delete any schedule items for successfully updated master records
 		delete rollupSummaryScheduleItemsByParentId.values();
 	}
-	
-	/**
-	 * Method returns a QueryLocator that returns master records (as per the lookup definition) meeting the criteria expressed (if defined)
-	 **/
-	public static Database.QueryLocator masterRecordsAsQueryLocator(Id lookupId)
-	{ 
-		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });
-		if(lookups.size()==0)
-			throw RollupServiceException.rollupNotFound(lookupId); 
-		LookupRollupSummary__c lookup = lookups[0];				
-		return Database.getQueryLocator('Select Id From ' + lookup.ParentObject__c);
-	}
 
 	/**
 	 * Performs a recalculate on the master records for the given rollup definitions, outputs any errors in the rollup summary log
@@ -359,7 +414,7 @@ global with sharing class RollupService
 	 * @param childRecords Child records being modified
 	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
 	 **/ 
-	private static List<SObject> rollup(List<LookupRollupSummary__c> lookups, Set<Id> masterRecordIds)
+	private static List<SObject> updateMasterRollupsTrigger(List<LookupRollupSummary__c> lookups, Set<Id> masterRecordIds)
 	{
 		// Process lookups, 
 		//    Realtime are added to a list for later LRE context creation and processing, 

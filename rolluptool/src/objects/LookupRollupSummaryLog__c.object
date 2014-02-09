@@ -64,6 +64,16 @@
         <type>Text</type>
         <unique>false</unique>
     </fields>
+    <fields>
+        <fullName>ParentRecord__c</fullName>
+        <externalId>false</externalId>
+        <formula>HYPERLINK( ParentId__c , &apos;Parent Record&apos;)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Parent Record</label>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
     <label>Lookup Rollup Summary Log</label>
     <listViews>
         <fullName>All</fullName>
@@ -71,6 +81,7 @@
         <columns>ErrorMessage__c</columns>
         <columns>ParentId__c</columns>
         <columns>ParentObject__c</columns>
+        <columns>ParentRecord__c</columns>
         <filterScope>Everything</filterScope>
         <label>All</label>
     </listViews>
@@ -79,6 +90,10 @@
         <type>Text</type>
     </nameField>
     <pluralLabel>Lookup Rollup Summary Logs</pluralLabel>
-    <searchLayouts/>
+    <searchLayouts>
+        <excludedStandardButtons>New</excludedStandardButtons>
+        <excludedStandardButtons>ChangeOwner</excludedStandardButtons>
+        <excludedStandardButtons>Accept</excludedStandardButtons>
+    </searchLayouts>
     <sharingModel>ReadWrite</sharingModel>
 </CustomObject>

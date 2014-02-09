@@ -241,4 +241,52 @@ private with sharing class RollupSummariesTest
 		System.assertEquals('dlrs_MyCustomObjectTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c')));		
 		System.assertEquals('dlrs_MyCustomObjectTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c')));		
 	}
+	
+	private testmethod static void testRelationshipCriteriaFieldsValidationSingle()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = 'Stage = \'Won\'';
+		rollupSummary.RelationShipCriteriaFields__c = 'Stage';
+		rollupSummary.FieldToAggregate__c = 'Amount';
+		rollupSummary.AggregateOperation__c = 'Sum';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Field Stage does not exist on the child object.', SObjectDomain.Errors.getAll()[0].message);		
+	}	
+
+	private testmethod static void testRelationshipCriteriaFieldsValidationMulti()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = 'Stage = \'Won\'';
+		rollupSummary.RelationShipCriteriaFields__c = 'Stage\r\nAnother';
+		rollupSummary.FieldToAggregate__c = 'Amount';
+		rollupSummary.AggregateOperation__c = 'Sum';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Fields Stage,Another do not exist on the child object.', SObjectDomain.Errors.getAll()[0].message);		
+	}	
 }

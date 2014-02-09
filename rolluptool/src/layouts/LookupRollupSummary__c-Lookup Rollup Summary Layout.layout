@@ -89,6 +89,10 @@
                 <behavior>Required</behavior>
                 <field>CalculationMode__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>CalculateJobId__c</field>
+            </layoutItems>
         </layoutColumns>
         <style>TwoColumnsLeftToRight</style>
     </layoutSections>

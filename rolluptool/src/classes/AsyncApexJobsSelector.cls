@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, Andrew Fawcett
+ * Copyright (c), Andrew Fawcett
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, 
@@ -24,34 +24,53 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-/**
- * Job recaculates a given rollup for all master records
- **/
-public with sharing class RollupCalculateJob 
-	implements Database.Batchable<sObject>
+public with sharing class AsyncApexJobsSelector extends SObjectSelector
 {
-	private Id lookupId;
+    public override String getOrderBy()
+    {
+    	return 'CreatedDate';
+    }
+    
+    List<Schema.SObjectField> getSObjectFieldList()
+    {
+        return new List<Schema.SObjectField> {
+            AsyncApexJob.Id,
+            AsyncApexJob.Status,
+            AsyncApexJob.ExtendedStatus,
+            AsyncApexJob.CreatedDate,
+            AsyncApexJob.CompletedDate,
+            AsyncApexJob.JobItemsProcessed,
+            AsyncApexJob.TotalJobItems,
+            AsyncApexJob.NumberOfErrors
+        };
+    }
+    
+    Schema.SObjectType getSObjectType()
+    {
+        return AsyncApexJob.sObjectType;
+    }
 	
-	public RollupCalculateJob(String lookupId)
-	{
-		this.lookupId = lookupId;
-	}
-	
-	public Database.QueryLocator start(Database.BatchableContext BC) 
-	{
-		// Query all the parent records as per the lookup definition
-		return RollupService.masterRecordsAsQueryLocator(lookupId);
-	}
-	
-	public void execute(Database.BatchableContext BC, List<sObject> masterRecords)
-	{
-		// Update the master records as per the lookup definition
-		RollupService.updateMasterRollups(new Set<Id> { lookupId }, new Map<Id, Sobject>(masterRecords).keySet());
-	}
-	
-	public void finish(Database.BatchableContext BC) 
-	{
-		// Clear the Job Id which was preventing another calculate job running while this one was running
-		RollupService.clearCalculateJobId(new Set<Id> { lookupId }); 
-	}
+    public List<AsyncApexJob> selectById(Set<ID> idSet)
+    {
+        return (List<AsyncApexJob>) selectSObjectsById(idSet);
+    }
+    
+    /**
+     * True if any of the given jobs (expressed by their class names) are queued, processing or preparing
+     **/
+    public Boolean jobsExecuting(Set<String> classNames)
+    {
+    	Set<String> statuses = new Set<String> { 'Queued', 'Processing', 'Preparing' };
+    	String jobType = 'BatchApex';
+    	String query = 
+			String.format(
+					'select {0} from {1} ' + 
+					'where JobType = :jobType And ' + 
+						'ApexClass.Name in :classNames And ' + 
+						'Status in :statuses',
+				new List<String>{getFieldListString(),getSObjectName()});
+    	List<AsyncApexJob> jobs = (List<AsyncApexJob>) 
+    		Database.query(query);		    
+    	return jobs.size()>0;	
+    }
 }

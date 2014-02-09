@@ -3,6 +3,7 @@
     <types>
         <members>ApexClassesSelector</members>
         <members>ApexTriggersSelector</members>
+        <members>AsyncApexJobsSelector</members>
         <members>LREngine</members>
         <members>MetadataService</members>
         <members>MetadataServiceTest</members>

@@ -183,8 +183,17 @@ private with sharing class RollupServiceTest2
 		
 		// Run rollup job
 		Test.startTest();		
-		RollupService.runJobToProcessScheduledItems(); 
+		RollupService.runJobToProcessScheduledItems();
+		try {
+			// Assert not able to run more than one scheduled job at a time
+			RollupService.runJobToProcessScheduledItems();
+			System.assert(false, 'Expected exception');
+		} catch(Exception e) {
+			System.assertEquals('A previous Declarative Rollup Summary scheduled job \'RollupJob\' is still running, this scheduled execution will not occur.', e.getMessage());
+		} 
 		Test.stopTest();
+		// Assert the selector now reports the job is no longer running
+		System.assertEquals(false, new AsyncApexJobsSelector().jobsExecuting(new Set<String> { 'RollupJob' }));
 		
 		// Assert scheduled items and log records
 		List<LookupRollupSummaryLog__c> logs = [select id, ParentId__c, ParentObject__c, ErrorMessage__c from LookupRollupSummaryLog__c];

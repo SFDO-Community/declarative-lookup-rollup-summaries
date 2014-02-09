@@ -44,4 +44,20 @@ public class RollupServiceException extends Exception
 	{
 		return new RollupServiceException('Invalid rollup ' + lookupId + ' not found.');
 	}
+	
+	/**
+	 * Job alraedy executed to recalculate rollup 
+	 **/
+	public static RollupServiceException jobAlreadyRunning(String name)
+	{
+		return new RollupServiceException('A calculate job for rollup \'' + name + '\' is already executing. If you suspect it is not aleady running try clearing the Calculate Job Id field and try again.');
+	}
+	
+	/**
+	 * Jobs executing
+	 **/
+	public static RollupServiceException jobsExecuting(String className)
+	{
+		return new RollupServiceException('A previous Declarative Rollup Summary scheduled job \'' + className + '\' is still running, this scheduled execution will not occur.');
+	}
 }

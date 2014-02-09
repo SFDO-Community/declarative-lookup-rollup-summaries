@@ -90,6 +90,16 @@
         <unique>false</unique>
     </fields>
     <fields>
+        <fullName>CalculateJobId__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>This field is used by the system when using the Calculate button to track if a calculation job is already running.</inlineHelpText>
+        <label>Calculate Job Id</label>
+        <length>18</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>CalculationMode__c</fullName>
         <deprecated>false</deprecated>
         <externalId>false</externalId>
@@ -148,7 +158,7 @@
     <fields>
         <fullName>RelationshipCriteriaFields__c</fullName>
         <externalId>false</externalId>
-        <inlineHelpText>If you have specified a relationship criteria, you must confirm the fields referenced by it here on separate lines, e.g. Amount</inlineHelpText>
+        <inlineHelpText>If you have specified a relationship criteria, you must confirm the fields referenced by it here on separate lines, for example for criteria StageName = &apos;Won&apos; list StageName in this field.</inlineHelpText>
         <label>Relationship Criteria Fields</label>
         <required>false</required>
         <type>TextArea</type>

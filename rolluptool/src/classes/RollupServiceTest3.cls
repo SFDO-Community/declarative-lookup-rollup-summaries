@@ -96,8 +96,20 @@ private with sharing class RollupServiceTest3
 		
 		// Run rollup calculate job
 		Test.startTest();		
-		RollupService.runJobToCalculate(rollupSummary.Id); 
+		Id jobId = RollupService.runJobToCalculate(rollupSummary.Id);
+		rollupSummary = [select Id, CalculateJobId__c from LookupRollupSummary__c where Id  = :rollupSummary.Id];
+		System.assertEquals(jobId, rollupSummary.CalculateJobId__c); // Assert job id captured
+		try { 
+			// Assert not possible to start another
+			RollupService.runJobToCalculate(rollupSummary.Id);
+			System.assert(false, 'Expected an exception');
+		} catch (Exception e) {
+			System.assert(e.getMessage().equals('A calculate job for rollup \'Test Rollup\' is already executing. If you suspect it is not aleady running try clearing the Calculate Job Id field and try again.'));
+		}			 
 		Test.stopTest();
+		// Assert job id cleared
+		rollupSummary = [select Id, CalculateJobId__c from LookupRollupSummary__c where Id  = :rollupSummary.Id];
+		System.assertEquals(null, rollupSummary.CalculateJobId__c);  
 
 		// This should not generate any schedule items		
 		System.assertEquals(0, [select id from LookupRollupSummaryScheduleItems__c].size());
@@ -115,4 +127,81 @@ private with sharing class RollupServiceTest3
 		System.assertEquals(1, logs.size());
 		System.assertEquals('The answer is not 42! : FIELD_CUSTOM_VALIDATION_EXCEPTION (dlrs__Total__c)', logs[0].ErrorMessage__c);		
 	}
+	
+	private testmethod static void testDeveloperAPI()
+	{		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		// Create rollup		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = 'dlrs__LookupParent__c';
+		rollupSummary.ChildObject__c = 'dlrs__LookupChild__c';
+		rollupSummary.RelationShipField__c = 'dlrs__LookupParent__c';
+		rollupSummary.FieldToAggregate__c = 'dlrs__Amount__c';
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = 'dlrs__Total__c';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Developer.name();	
+		insert rollupSummary;
+		
+		// Insert parents
+		Schema.SObjectType parentType = Schema.getGlobalDescribe().get('dlrs__LookupParent__c');
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+		
+		// Insert children
+		Schema.SObjectType childType = Schema.getGlobalDescribe().get('dlrs__LookupChild__c');
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)		
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put('dlrs__LookupParent__c', parent.Id);
+			child1.put('dlrs__Amount__c', 20);
+			children.add(child1);				
+			SObject child2 = childType.newSObject();
+			child2.put('dlrs__LookupParent__c', parent.Id);
+			child2.put('dlrs__Amount__c', 20);
+			children.add(child2);				
+			if(name.equals('ParentA') || name.equals('ParentB'))
+			{
+				SObject child3 = childType.newSObject();
+				child3.put('dlrs__LookupParent__c', parent.Id);
+				child3.put('dlrs__Amount__c', 2);
+				children.add(child3);				
+			}
+		}
+		insert children;
+		
+		// Assert nothing has changed on db 
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query('select id, dlrs__Total__c from dlrs__LookupParent__c'));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get('dlrs__Total__c'));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get('dlrs__Total__c'));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get('dlrs__Total__c'));		
+				
+		// Call developer API
+		List<SObject> masterRecords = RollupService.rollup(children);
+
+		// Assert nothing has changed on db 
+		assertParents = new Map<Id, SObject>(Database.query('select id, dlrs__Total__c from dlrs__LookupParent__c'));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get('dlrs__Total__c'));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get('dlrs__Total__c'));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get('dlrs__Total__c'));		
+		
+		// Assert rollups produced
+		assertParents = new Map<Id, SObject>(masterRecords);
+		System.assertEquals(3, masterRecords.size()); 
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get('dlrs__Total__c'));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get('dlrs__Total__c'));
+		System.assertEquals(40, (Decimal) assertParents.get(parentC.id).get('dlrs__Total__c'));		
+	}	
 }
