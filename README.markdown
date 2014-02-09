@@ -9,6 +9,7 @@ Features Summary
 - Define filter criteria on rollups for example Rollup Amount on Opportunity onto Account for Closed Won
 - Supports Realtime, Scheduled and Developer API modes
 - Open source, available in code and managed package form.
+- Managed package has passed Salesforce Security Review and is Aloha enabled (does not consume app, tab limits)
 
 Please refer to the blog posts below for more detailed information.
 
