@@ -4,14 +4,11 @@ Declarative Rollups for Lookups!
 Documentation
 -------------
 
-You can read more information about this tool at my blog [here](http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/). 
-
-There is also a video demonstration here...
+You can read more detailed information about this tool and how to use it at my blog [here](http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/) and the latest features in the **Spring'14** release [here](http://andyinthecloud.com/2014/02/09/new-release-spring14-declarative-rollup-summary-tool/). There is also an early releaes video demonstration here...
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=6BST-TpyHHk" target="_blank"><img src="http://img.youtube.com/vi/6BST-TpyHHk/0.jpg" 
 width="420" height="315" border="10" /></a>
 
-Upcoming features include a Scheduled mode as alternative to the Realtime mode, for more details see my blog.
 
 Usage Information and Known Issues
 ----------------------------------
@@ -29,7 +26,15 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! If you are a developer obtain the source code from this repository if you wish to develop it further and/or contribute to it. Click [Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/afawcett/declarative-lookup-rollup-summaries) to deploy the source code to your developer org. 
 
-**Latest Version 1.5**
+**Latest Version 1.6 - 9th February 2014**
+
+Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QRXG)
+
+- Enhancements to support Schedule mode, Calculate historic records, Developer API and more, see [here](http://andyinthecloud.com/2014/02/09/new-release-spring14-declarative-rollup-summary-tool/).
+- Fix for [Issue 10](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/10)
+- Fix for [Issue 11](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/11)
+
+**Version 1.5**
 
 Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QCpr)
 
