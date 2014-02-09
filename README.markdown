@@ -1,6 +1,17 @@
 Declarative Rollups for Lookups!
 ================================
 
+Features Summary
+----------------
+
+- Rollup information between Lookup relationships not previously possible without writing Apex Triggers
+- Define rollups using standard UI declaratively, no coding required
+- Define filter criteria on rollups for example Rollup Amount on Opportunity onto Account for Closed Won
+- Supports Realtime, Scheduled and Developer API modes
+- Open source, available in code and managed package form.
+
+Please refer to the blog posts below for more detailed information.
+
 Documentation
 -------------
 
@@ -8,7 +19,6 @@ You can read more detailed information about this tool and how to use it at my b
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=6BST-TpyHHk" target="_blank"><img src="http://img.youtube.com/vi/6BST-TpyHHk/0.jpg" 
 width="420" height="315" border="10" /></a>
-
 
 Usage Information and Known Issues
 ----------------------------------
