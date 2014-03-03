@@ -1,8 +1,0 @@
-<apex:page showHeader="false" sidebar="false" tabStyle="LookupRollupSummary__c" standardStylesheets="true">
-<body class="homeTab">
-<apex:sectionHeader title="Declarative Rollups for Lookups" subtitle="Welcome"/>
-<img src="http://andrewfawcett.files.wordpress.com/2013/07/blog_chart1.jpg" width="200" height="200" align="left"/><p><b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships using the declarative mode of Force.com, but not between lookup relationships. You can read more about the tool and watch a video demo by reading this <a target="_new" href="http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/">blog</a>.</p>
-<p>Release details can be found <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries">here</a>.</p>
-<p><b>Important Post Install Step:</b> In order to utlise the realtime calculation feature of this tool you need to permit the tool access to the Salesforce Metadata API by adding a <a target="_new" href="http://eu2.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL https://dlrs.eu2.visual.force.com (modify eu2 to your instance).</p>
-</body>
-</apex:page>
