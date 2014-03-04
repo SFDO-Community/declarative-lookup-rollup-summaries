@@ -276,6 +276,13 @@ private with sharing class RollupServiceTest
 		insert opp;
 		
 		// Assert rollup
+		System.assertEquals(0, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);
+		
+		// Do an update
+		opp.Amount = 101;
+		update opp;		
+		
+		// Assert rollup
 		System.assertEquals(0, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);					
 	}
 		

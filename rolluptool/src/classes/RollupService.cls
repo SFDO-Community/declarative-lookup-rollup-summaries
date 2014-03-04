@@ -179,8 +179,10 @@ global with sharing class RollupService
 					// Add both old and new value to master record Id list for relationship fields to ensure old and new parent master records are updated (re-parenting)
 					if(relationshipFields.contains(fieldToSearch))
 					{
-						masterRecordIds.add((Id) newValue);
-						masterRecordIds.add((Id) oldValue);		
+						if(newValue!=null)
+							masterRecordIds.add((Id) newValue);
+						if(oldValue!=null)
+							masterRecordIds.add((Id) oldValue);		
 					}
 				}
 			}
