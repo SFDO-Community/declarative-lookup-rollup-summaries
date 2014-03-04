@@ -37,7 +37,13 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! If you are a developer obtain the source code from this repository if you wish to develop it further and/or contribute to it. Click [Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/afawcett/declarative-lookup-rollup-summaries) to deploy the source code to your developer org. 
 
-**Latest Version 1.6 - Spring'14 Release - 9th February 2014**
+**Latest Version 1.7**
+
+Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QYAW)
+
+- Fix for [Issue 14](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/14), relating to null pointer exception
+
+**Version 1.6 - Spring'14 Release - 9th February 2014**
 
 Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QRXG)
 
