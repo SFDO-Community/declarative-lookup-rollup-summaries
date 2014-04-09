@@ -16,7 +16,13 @@ Please refer to the blog posts below for more detailed information.
 Documentation
 -------------
 
-You can read more detailed information about this tool and how to use it at my blog [here](http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/) and the latest features in the **Spring'14** release [here](http://andyinthecloud.com/2014/02/09/new-release-spring14-declarative-rollup-summary-tool/). There is also an early releaes video demonstration here...
+The tool has been feature in a number of blog entries as it has evolved...
+
+- [New Tool : Declarative Rollups for Lookups!](http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/) 
+- [New Release: Spring’14 Declarative Rollup Summary Tool](http://andyinthecloud.com/2014/02/09/new-release-spring14-declarative-rollup-summary-tool/) 
+- [New Declarative Rollup Tool Release – Community Powered!](http://andyinthecloud.com/2014/04/09/new-declarative-rollup-tool-release-community-powered/)
+
+There is also an early releaes video demonstration here...
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=6BST-TpyHHk" target="_blank"><img src="http://img.youtube.com/vi/6BST-TpyHHk/0.jpg" 
 width="420" height="315" border="10" /></a>
@@ -37,7 +43,24 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! If you are a developer obtain the source code from this repository if you wish to develop it further and/or contribute to it. Click [Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/afawcett/declarative-lookup-rollup-summaries) to deploy the source code to your developer org. 
 
-**Latest Version 1.7**
+** Version 1.9 - Community Powered! **
+
+Read more about this release [here](http://andyinthecloud.com/2014/04/09/new-declarative-rollup-tool-release-community-powered)
+
+Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Qbz3)
+
+- Fix for [Issue 23](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/23)
+- Fix for [Issue 22](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/22)
+- Fix for [Issue 21](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/21)
+- Enhancement for [Issue 16](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/16)
+- Enhancement for [Issue 5](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/5)
+- Enhancement for [Issue 15](https://github.com/afawcett/declarative-lookup-rollup-summaries/pull/15)
+
+** Version 1.8 **
+
+Not released
+
+** Version 1.7 **
 
 Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QYAW)
 
