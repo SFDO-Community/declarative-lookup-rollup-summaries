@@ -6,6 +6,7 @@
     <fields>
         <fullName>CalculateJobScopeSize__c</fullName>
         <defaultValue>100</defaultValue>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Calculate Job Scope Size</label>
         <precision>6</precision>
@@ -17,6 +18,7 @@
     <fields>
         <fullName>ScheduledJobScopeSize__c</fullName>
         <defaultValue>100</defaultValue>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Scheduled Job Scope Size</label>
         <precision>6</precision>

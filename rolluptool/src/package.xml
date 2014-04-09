@@ -21,6 +21,8 @@
         <members>RollupSummaries</members>
         <members>RollupSummariesSelector</members>
         <members>RollupSummariesTest</members>
+        <members>RollupSummaryEnhancedController</members>
+        <members>RollupSummaryEnhancedControllerTest</members>
         <members>RollupSummaryScheduleItemsSelector</members>
         <members>SObjectDomain</members>
         <members>SObjectDomainTest</members>
@@ -39,6 +41,8 @@
     <types>
         <members>managetrigger</members>
         <members>rollupcalculate</members>
+        <members>rollupsummaryenhanced</members>
+        <members>rollupsummaryenhancednew</members>
         <members>welcome</members>
         <name>ApexPage</name>
     </types>
@@ -66,8 +70,17 @@
         <name>CustomTab</name>
     </types>
     <types>
+        <members>LookupChild__c-Lookup Child Layout</members>
+        <members>LookupParent__c-Lookup Parent Layout</members>
+        <members>LookupRollupSummaryLog__c-Lookup Rollup Summary Log Layout</members>
+        <members>LookupRollupSummaryScheduleItems__c-Lookup Rollup Summary Queue Layout</members>
         <members>LookupRollupSummary__c-Lookup Rollup Summary Layout</members>
         <name>Layout</name>
+    </types>
+    <types>
+        <members>LookupRollupSummariesFull</members>
+        <members>LookupRollupSummariesReadOnly</members>
+        <name>PermissionSet</name>
     </types>
     <types>
         <members>jszip</members>

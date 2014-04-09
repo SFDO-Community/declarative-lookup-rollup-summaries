@@ -54,7 +54,7 @@
     </nameField>
     <pluralLabel>Lookup Parents</pluralLabel>
     <searchLayouts/>
-    <sharingModel>ReadWrite</sharingModel>
+    <sharingModel>Read</sharingModel>
     <validationRules>
         <fullName>Not_42</fullName>
         <active>true</active>

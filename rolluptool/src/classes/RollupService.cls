@@ -45,6 +45,10 @@ global with sharing class RollupService
 		LookupRollupSummary__c lookup = lookups[0];
 		if(lookup.CalculateJobId__c!=null)
 			throw RollupServiceException.jobAlreadyRunning(lookup.Name);
+			
+		// Already active?
+		if(!lookup.Active__c)
+			throw new RollupServiceException('The rollup must be Active before you can run a Calculate job.');
 
 		// Start the job and record the Job Id
 		Integer scopeSize = (Integer) DeclarativeLookupRollupSummaries__c.getInstance().CalculateJobScopeSize__c;
@@ -207,7 +211,7 @@ global with sharing class RollupService
 			
 			// Rollup child records and update master records 
 			if(lookupsToProcess.size()>0)
-				update updateMasterRollupsTrigger(lookups, masterRecordIds);
+				updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
 			return;
 		}
 			
@@ -217,7 +221,7 @@ global with sharing class RollupService
 			for(LookupRollupSummary__c lookup : lookups)
 				if(childRecord.get(lookup.RelationShipField__c)!=null)
 					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField__c));
-		update updateMasterRollupsTrigger(lookups, masterRecordIds);
+		updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
 	}
 	
 	/**
@@ -301,7 +305,7 @@ global with sharing class RollupService
 		// Update master records
 		List<LookupRollupSummaryLog__c> rollupSummaryLogs = new List<LookupRollupSummaryLog__c>();
 		List<SObject> masterRecordList = masterRecords.values();
-		List<Database.Saveresult> saveResults = Database.update(masterRecordList, false);
+		List<Database.Saveresult> saveResults = updateRecords(masterRecordList, false, false);
 		
 		// Log errors to the summary log
 		Integer masterRecordIdx = 0;
@@ -373,7 +377,7 @@ global with sharing class RollupService
 
 		// Update master records
 		List<SObject> masterRecordList = masterRecords.values();
-		List<Database.Saveresult> saveResults = Database.update(masterRecordList, false);
+		List<Database.Saveresult> saveResults = updateRecords(masterRecordList, false, false);
 		
 		// Log errors to the summary log
 		Integer masterRecordIdx = 0;
@@ -549,5 +553,48 @@ global with sharing class RollupService
 					RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c)));
 		}		
 		return engineCtxByParentRelationship;
-	}	
+	}
+	
+	/**
+	 * Wrapper around DML allowing with or without sharing to be applied and all or nothing exception handling
+	 **/
+	private static List<Database.Saveresult> updateRecords(List<SObject> masterRecords, Boolean withSharing, Boolean allOrNothing)
+	{
+		return withSharing ?
+			new UpdateWithSharing(masterRecords).updateRecords(allOrNothing) :
+			new UpdateWithoutSharing(masterRecords).updateRecords(allOrNothing);
+	}
+	
+	private virtual class Updater	
+	{
+		protected List<SObject> masterRecords;
+		
+		public Updater(List<SObject> masterRecords)
+		{
+			this.masterRecords = masterRecords;	
+		}
+				
+		public virtual List<Database.Saveresult> updateRecords(boolean allOrNothing)
+		{
+			return Database.update(masterRecords, allOrNothing);
+		}						
+	}
+	
+	private with sharing class UpdateWithSharing extends Updater 
+	{ 
+		public UpdateWithSharing(List<SObject> masterRecords) 
+			{ super(masterRecords); }
+				
+		public override List<Database.Saveresult> updateRecords(boolean allOrNothing) 
+			{ return super.updateRecords(allOrNothing); }		
+	}
+	
+	private without sharing class UpdateWithoutSharing extends Updater 
+	{
+		public UpdateWithoutSharing(List<SObject> masterRecords) 
+			{ super(masterRecords); }
+		
+		public override List<Database.Saveresult> updateRecords(boolean allOrNothing) 
+			{ return super.updateRecords(allOrNothing); }		
+	}
 }

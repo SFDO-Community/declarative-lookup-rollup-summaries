@@ -33,12 +33,14 @@
         <type>Default</type>
     </actionOverrides>
     <deploymentStatus>Deployed</deploymentStatus>
+    <deprecated>false</deprecated>
     <enableActivities>false</enableActivities>
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>false</enableReports>
     <fields>
         <fullName>LookupRollupSummary__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Lookup Rollup Summary</label>
         <referenceTo>LookupRollupSummary__c</referenceTo>
@@ -49,6 +51,7 @@
     </fields>
     <fields>
         <fullName>ParentId__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Parent Id</label>
         <length>18</length>
@@ -58,6 +61,7 @@
     </fields>
     <fields>
         <fullName>ParentRecord__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <formula>HYPERLINK( ParentId__c , &apos;Parent Record&apos;)</formula>
         <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
@@ -69,6 +73,7 @@
     <fields>
         <fullName>QualifiedParentID__c</fullName>
         <caseSensitive>false</caseSensitive>
+        <deprecated>false</deprecated>
         <externalId>true</externalId>
         <label>Qualified Parent ID</label>
         <length>40</length>

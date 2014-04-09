@@ -33,12 +33,14 @@
         <type>Default</type>
     </actionOverrides>
     <deploymentStatus>Deployed</deploymentStatus>
+    <deprecated>false</deprecated>
     <enableActivities>false</enableActivities>
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>false</enableReports>
     <fields>
         <fullName>ErrorMessage__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Error Message</label>
         <length>32768</length>
@@ -48,6 +50,7 @@
     <fields>
         <fullName>ParentId__c</fullName>
         <caseSensitive>false</caseSensitive>
+        <deprecated>false</deprecated>
         <externalId>true</externalId>
         <label>Parent Id</label>
         <length>18</length>
@@ -57,6 +60,7 @@
     </fields>
     <fields>
         <fullName>ParentObject__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Parent Object</label>
         <length>60</length>
@@ -66,6 +70,7 @@
     </fields>
     <fields>
         <fullName>ParentRecord__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <formula>HYPERLINK( ParentId__c , &apos;Parent Record&apos;)</formula>
         <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>

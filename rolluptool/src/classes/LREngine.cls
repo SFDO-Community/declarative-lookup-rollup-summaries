@@ -129,8 +129,9 @@ public class LREngine {
     	
     	// Zero rollups for unprocessed master records (those with no longer any child relationships)
     	for(Id masterRecId : masterIds)
-			for (String detailFld : detail2MasterFldMap.keySet())
-				masterRecordsMap.get(masterRecId).put(detail2MasterFldMap.get(detailFld), 0);
+    		for (RollupSummaryField rsf : ctx.fieldsToRoll)
+				masterRecordsMap.get(masterRecId).put(rsf.master.getName(), 
+					rsf.isMasterTypeNumber ? 0 : null);
     	
     	return masterRecordsMap.values();	
     }

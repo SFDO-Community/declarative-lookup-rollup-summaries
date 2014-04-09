@@ -127,6 +127,72 @@ private with sharing class RollupServiceTest3
 		System.assertEquals(1, logs.size());
 		System.assertEquals('The answer is not 42! : FIELD_CUSTOM_VALIDATION_EXCEPTION (dlrs__Total__c)', logs[0].ErrorMessage__c);		
 	}
+
+	private testmethod static void testCalculateJobNotActive()
+	{		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		// Insert parents
+		Schema.SObjectType parentType = Schema.getGlobalDescribe().get('dlrs__LookupParent__c');
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+		
+		// Insert children
+		Schema.SObjectType childType = Schema.getGlobalDescribe().get('dlrs__LookupChild__c');
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)		
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put('dlrs__LookupParent__c', parent.Id);
+			child1.put('dlrs__Amount__c', 20);
+			children.add(child1);				
+			SObject child2 = childType.newSObject();
+			child2.put('dlrs__LookupParent__c', parent.Id);
+			child2.put('dlrs__Amount__c', 20);
+			children.add(child2);				
+			if(name.equals('ParentA') || name.equals('ParentB'))
+			{
+				SObject child3 = childType.newSObject();
+				child3.put('dlrs__LookupParent__c', parent.Id);
+				child3.put('dlrs__Amount__c', 2);
+				children.add(child3);				
+			}
+		}
+		insert children;
+
+		// Create rollup AFTER the data exists		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = 'dlrs__LookupParent__c';
+		rollupSummary.ChildObject__c = 'dlrs__LookupChild__c';
+		rollupSummary.RelationShipField__c = 'dlrs__LookupParent__c';
+		rollupSummary.FieldToAggregate__c = 'dlrs__Amount__c';
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = 'dlrs__Total__c';
+		rollupSummary.Active__c = false;
+		rollupSummary.CalculationMode__c = 'Scheduled';	
+		insert rollupSummary;
+		
+		// Run rollup calculate job
+		Test.startTest();		
+		try { 
+			// Assert not possible to start another
+			RollupService.runJobToCalculate(rollupSummary.Id);
+			System.assert(false, 'Expected an exception');
+		} catch (Exception e) {
+			System.assert(e.getMessage().equals('The rollup must be Active before you can run a Calculate job.'));
+		}			 
+		Test.stopTest();
+	}
 	
 	private testmethod static void testDeveloperAPI()
 	{		
@@ -203,5 +269,186 @@ private with sharing class RollupServiceTest3
 		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get('dlrs__Total__c'));
 		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get('dlrs__Total__c'));
 		System.assertEquals(40, (Decimal) assertParents.get(parentC.id).get('dlrs__Total__c'));		
+	}	
+	
+	
+	/**
+	 * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/23
+	 */
+	private testmethod static void testDateRollupDeleteChild()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		// Configure rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'CloseDate';
+		rollupSummary.AggregateOperation__c = 'Max';
+		rollupSummary.AggregateResultField__c = 'SLAExpirationDate__c';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		insert new List<LookupRollupSummary__c> { rollupSummary };
+		
+		// Test data
+		Account account = new Account();
+		account.Name = 'Test Account';
+		account.AnnualRevenue = 0;
+		insert account;
+		Opportunity opp = new Opportunity(); 
+		opp.Name = 'Test Opportunity';
+		opp.StageName = 'Open';
+		opp.CloseDate = System.today();
+		opp.AccountId = account.Id;
+		opp.Amount = 100;
+		insert opp;
+		
+		// Assert rollup
+		Id accountId = account.Id;
+		System.assertEquals(System.today(), Database.query('select SLAExpirationDate__c from Account where Id = :accountId')[0].get(ACCOUNT_SLA_EXPIRATION_DATE));
+		
+		// Delete Opportunity
+		delete opp;
+		
+		// Assert rollup
+		System.assertEquals(null, Database.query('select SLAExpirationDate__c from Account where Id = :accountId')[0].get(ACCOUNT_SLA_EXPIRATION_DATE));								 	
+	}
+	
+	/**
+	 * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/23
+	 */
+	private testmethod static void testDateRollupInsertConditionalChild()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		// Configure rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = 'CloseDate < TODAY';
+		rollupSummary.FieldToAggregate__c = 'CloseDate';
+		rollupSummary.AggregateOperation__c = 'Max';
+		rollupSummary.AggregateResultField__c = 'SLAExpirationDate__c';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		insert new List<LookupRollupSummary__c> { rollupSummary };
+		
+		// Test data
+		Account account = new Account();
+		account.Name = 'Test Account';
+		account.AnnualRevenue = 0;
+		insert account;
+		Opportunity opp = new Opportunity(); 
+		opp.Name = 'Test Opportunity';
+		opp.StageName = 'Open';
+		opp.CloseDate = System.today();
+		opp.AccountId = account.Id;
+		opp.Amount = 100;
+		insert opp;
+		
+		// Assert rollup
+		Id accountId = account.Id;
+		System.assertEquals(null, Database.query('select SLAExpirationDate__c from Account where Id = :accountId')[0].get(ACCOUNT_SLA_EXPIRATION_DATE));
+		
+		// Delete Opportunity
+		delete opp;
+		
+		// Assert rollup
+		System.assertEquals(null, Database.query('select SLAExpirationDate__c from Account where Id = :accountId')[0].get(ACCOUNT_SLA_EXPIRATION_DATE));								 	
+	}
+	
+	private testmethod static void testRollupWithInAccessibleParent()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		// Configure rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = 'dlrs__LookupParent__c';
+		rollupSummary.ChildObject__c = 'dlrs__LookupChild__c';
+		rollupSummary.RelationShipField__c = 'dlrs__LookupParent__c';
+		rollupSummary.FieldToAggregate__c = 'dlrs__Amount__c';
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = 'dlrs__Total__c';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';	
+		insert rollupSummary;
+				
+		// Insert parents
+		Schema.SObjectType parentType = Schema.getGlobalDescribe().get('dlrs__LookupParent__c');
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		insert parentA;
+		
+		// Insert children
+		Schema.SObjectType childType = Schema.getGlobalDescribe().get('dlrs__LookupChild__c');
+		SObject child1 = childType.newSObject();
+		child1.put('dlrs__LookupParent__c', parentA.Id);
+		insert child1;
+		
+		// Assert rollup		
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query('select id, dlrs__Total__c from dlrs__LookupParent__c'));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get('dlrs__Total__c'));
+					
+		// Create test user
+		User testUser = null;
+		System.runAs ( new User(Id = UserInfo.getUserId()) ) {
+ 			testUser = createUser();
+		}
+		
+		// Test data insert children as new user (who cannot see the parent)
+		System.runAs(testUser)
+		{
+			// Ensure this user can read it (the Sharing setting for LookupParent__c is Public Read Only)
+			assertParents = new Map<Id, SObject>(Database.query('select id, dlrs__Total__c from dlrs__LookupParent__c'));
+			System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get('dlrs__Total__c'));
+			
+			// Attempt to indirectly via rollup trigger to update parent record
+			child1.put('dlrs__Amount__c', 42);
+			update child1;
+		}
+		
+		// Assert rollup
+		assertParents = new Map<Id, SObject>(Database.query('select id, dlrs__Total__c from dlrs__LookupParent__c'));
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get('dlrs__Total__c'));
+	}
+	
+	/**
+	 * Create test user
+	 **/
+	private static User createUser()
+	{
+		// Can only proceed with test if we have a suitable profile
+		List<Profile> testProfiles = [Select Id From Profile where Name='Standard User' limit 1];
+		if(testProfiles.size()!=1)
+			return null; 		
+
+		// Can only proceed with test if we can successfully insert a test user 
+		String testUsername = System.now().format('yyyyMMddhhmmss') + '@testorg.com';
+		User testUser = new User(Alias = 'test1', Email='testuser1@testorg.com', EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', LocaleSidKey='en_US', ProfileId = testProfiles[0].Id, TimeZoneSidKey='America/Los_Angeles', UserName=testUsername);
+		try {
+			insert testUser;
+			
+			// Assign permission sets
+			Set<String> psNames = new Set<String> { 'LookupRollupSummariesFull', 'LookupRollupSummariesTest' };
+			List<PermissionSet> ps = [select Id from PermissionSet where Name in :psNames];
+			insert new List<PermissionSetAssignment> {
+				new PermissionSetAssignment(AssigneeId = testUser.Id, PermissionSetId = ps[0].Id),
+				new PermissionSetAssignment(AssigneeId = testUser.Id, PermissionSetId = ps[1].Id) };
+		} catch (Exception e) {
+			return null;
+		}		
+		return testUser;
 	}	
 }
