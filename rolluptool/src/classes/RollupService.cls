@@ -47,7 +47,7 @@ global with sharing class RollupService
 			throw RollupServiceException.jobAlreadyRunning(lookup.Name);
 			
 		// Already active?
-		if(!lookup.Active__c)
+		if(lookup.Active__c==null || lookup.Active__c==false)
 			throw new RollupServiceException('The rollup must be Active before you can run a Calculate job.');
 
 		// Start the job and record the Job Id

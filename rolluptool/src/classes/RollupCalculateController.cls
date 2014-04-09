@@ -48,6 +48,7 @@ public with sharing class RollupCalculateController
 		catch (Exception e)
 		{
 			ApexPages.addMessages(e);
+			return null;
 		}
 		return standardController.view();
 	}
