@@ -24,6 +24,12 @@
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
+
+/**
+ * Contributed by Wes Weingartner, https://github.com/wes1278
+ *
+ * https://github.com/afawcett/declarative-lookup-rollup-summaries/pull/15
+ **/
 -->
 
 <apex:page standardController="LookupRollupSummary__c" extensions="RollupSummaryEnhancedController" showHeader="true" sidebar="true">
