@@ -24,6 +24,11 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
+/**
+ * Contributed by Wes Weingartner, https://github.com/wes1278
+ *
+ * https://github.com/afawcett/declarative-lookup-rollup-summaries/pull/15
+ **/
 public class RollupSummaryEnhancedController {
 	private ApexPages.StandardController controller {get; set;}
 	private LookupRollupSummary__c rus;
