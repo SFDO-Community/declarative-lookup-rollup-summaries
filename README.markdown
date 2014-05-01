@@ -54,7 +54,10 @@ Package [Install URL](https://login.salesforce.com/packaging/installPackage.apex
 - Fix for [Issue 21](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/21)
 - Enhancement for [Issue 16](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/16)
 - Enhancement for [Issue 5](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/5)
-- Enhancement for [Issue 15](https://github.com/afawcett/declarative-lookup-rollup-summaries/pull/15)
+- Enhancement for [Issue 15](https://github.com/afawcett/declarative-lookup-rollup-summaries/pull/15) 
+
+**KNOWN INSTALL ISSUE** There appears to be an install issue identified when installing into orgs without Ideas installed for v1.9, if you encourter this enable Ideas if you can, otherwise use v1.6 until the issue is resolved.
+
 
 **Version 1.8**
 
