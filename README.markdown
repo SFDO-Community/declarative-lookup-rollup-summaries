@@ -21,6 +21,7 @@ The tool has been feature in a number of blog entries as it has evolved...
 - [New Tool : Declarative Rollups for Lookups!](http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/) 
 - [New Release: Spring’14 Declarative Rollup Summary Tool](http://andyinthecloud.com/2014/02/09/new-release-spring14-declarative-rollup-summary-tool/) 
 - [New Release: Declarative Rollup Summary Tool Community Powered!](http://andyinthecloud.com/2014/04/09/new-declarative-rollup-tool-release-community-powered/)
+- [Account Hierarchy Rollups #ClicksNotCode](https://github.com/afawcett/declarative-lookup-rollup-summaries)
 
 There is also an early releaes video demonstration here...
 
