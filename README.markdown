@@ -99,6 +99,9 @@ Package [Install URL](https://login.salesforce.com/packaging/installPackage.apex
 - Optimisation during update of child records to only apply rollup when field to aggregate changes
 - More extensive unit tests, also those around use of limits such as queries, rows etc.
 
+![Upload](https://raw.githubusercontent.com/afawcett/declarative-lookup-rollup-summaries/master/images/PublisherConsole.png)
+![Review Passed](https://raw.githubusercontent.com/afawcett/declarative-lookup-rollup-summaries/master/images/UploadedPackages.png)
+
 **Version Beta 6**
 
 - Support for Realtime calculations
