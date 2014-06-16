@@ -48,7 +48,7 @@ You can install a packaged version of the tool into your production org (sandbox
 
 Read more about this release [here](http://andyinthecloud.com/2014/04/09/new-declarative-rollup-tool-release-community-powered)
 
-Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Qbz3)
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Qbz3), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Qbz3)
 
 - Fix for [Issue 23](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/23)
 - Fix for [Issue 22](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/22)
@@ -66,13 +66,13 @@ Not released
 
 **Version 1.7**
 
-Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QYAW)
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QYAW), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QYAW)
 
 - Fix for [Issue 14](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/14), relating to null pointer exception
 
 **Version 1.6 - Spring'14 Release - 9th February 2014**
 
-Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QRXG)
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QRXG), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QRXG)
 
 - Enhancements to support Schedule mode, Calculate historic records, Developer API and more, see [here](http://andyinthecloud.com/2014/02/09/new-release-spring14-declarative-rollup-summary-tool/).
 - Fix for [Issue 10](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/10)
@@ -80,7 +80,7 @@ Package [Install URL](https://login.salesforce.com/packaging/installPackage.apex
 
 **Version 1.5**
 
-Package [Install URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QCpr)
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QCpr), [Sandbox URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QCpr)
 
 - Fix for [Issue 7](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/7) and [Issue 8](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/8), relating to failure to report test execution errors in production org.
 
