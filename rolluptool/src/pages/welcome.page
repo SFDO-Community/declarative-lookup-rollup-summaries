@@ -1,8 +1,67 @@
-<apex:page showHeader="false" sidebar="false" tabStyle="LookupRollupSummary__c" standardStylesheets="true">
+<apex:page controller="WelcomeController" showHeader="false" sidebar="false" tabStyle="LookupRollupSummary__c" standardStylesheets="true" action="{!checkMetadataAPIConnection}">
+<script>
+function createRemoteSite()
+{ 
+	// Calls the Metdata API from JavaScript to create the Remote Site Setting to permit Apex callouts
+	var binding = new XMLHttpRequest();
+	var metadataURL = window.top.location.protocol+'//'+window.top.location.hostname+'/';
+	var request = 
+		'<?xml version="1.0" encoding="utf-8"?>' + 
+		'<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'+
+			'<env:Header>' + 
+				'<urn:SessionHeader xmlns:urn="http://soap.sforce.com/2006/04/metadata">' + 
+					'<urn:sessionId>{!$Api.Session_ID}</urn:sessionId>' + 
+				'</urn:SessionHeader>' + 
+			'</env:Header>' + 
+			'<env:Body>' +
+				'<createMetadata xmlns="http://soap.sforce.com/2006/04/metadata">' + 
+					'<metadata xsi:type="RemoteSiteSetting">' + 
+						'<fullName>dlrs_mdapi</fullName>' + 
+						'<description>Metadata API Remote Site Setting for Declarative Rollup Tool (DLRS)</description>' + 
+						'<disableProtocolSecurity>false</disableProtocolSecurity>' + 
+						'<isActive>true</isActive>' + 
+						'<url>' + metadataURL + '</url>' +
+					'</metadata>' +
+				'</createMetadata>' +
+			'</env:Body>' + 
+		'</env:Envelope>';
+	binding.open('POST', window.top.location.protocol+'//'+window.top.location.hostname+'/services/Soap/m/31.0');
+	binding.setRequestHeader('SOAPAction','""');
+	binding.setRequestHeader('Content-Type', 'text/xml');
+	binding.onreadystatechange = 
+		function() { 
+			if(this.readyState==4) {
+				var parser = new DOMParser();
+				var doc  = parser.parseFromString(this.response, 'application/xml');
+				var errors = doc.getElementsByTagName('errors');
+				var messageText = '';
+				for(var errorIdx = 0; errorIdx < errors.length; errorIdx++)
+				{
+					var message = errors.item(errorIdx).getElementsByTagName('message');
+					messageText+= message.item(0).innerHTML + '\n';
+				}
+				displayMetadataResponse(messageText);
+			} 
+		}
+	binding.send(request);
+}
+</script>
 <body class="homeTab">
-<apex:sectionHeader title="Declarative Rollups for Lookups" subtitle="Welcome"/>
-<img src="http://andrewfawcett.files.wordpress.com/2013/07/blog_chart1.jpg" width="200" height="200" align="left"/><p><b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships using the declarative mode of Force.com, but not between lookup relationships. You can read more about the tool and watch a video demo by reading this <a target="_new" href="http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/">blog</a>.</p>
-<p>Release details can be found <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries">here</a>.</p>
-<p><b>Important Post Install Step:</b> In order to utlise the realtime calculation feature of this tool you need to permit the tool access to the Salesforce Metadata API by adding a <a target="_new" href="http://eu2.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL https://dlrs.eu2.visual.force.com (modify eu2 to your instance).</p>
+	<apex:form id="myForm">
+		<apex:actionFunction name="displayMetadataResponse" action="{!displayMetadataResponse}" rerender="myForm">
+			<apex:param name="metadataResponse" assignTo="{!metadataResponse}" value="{!metadataResponse}"/>
+		</apex:actionFunction>
+		<apex:sectionHeader title="Declarative Rollups for Lookups" subtitle="Welcome"/>
+		<apex:pageMessages />
+		<img src="http://andrewfawcett.files.wordpress.com/2013/07/blog_chart1.jpg" width="200" height="200" align="left"/>
+		<apex:outputPanel rendered="{!MetadataConnectionWarning}">
+			<h1>Important Post Install Step:</h1> 
+			<p>In order to utlise the features of this tool you need to permit the tool access to the Salesforce Metadata API by adding a <a target="_new" href="http://na1.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL <b>https://{!Host}</b></p>
+			<p> Click the <b>Create Remote Site Setting</b> button to have the tool perform this step for you.</p>
+			<input type="button" onclick="createRemoteSite();" value="Create Remote Site Setting"/>
+		</apex:outputPanel>
+		<p><b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships using the declarative mode of Force.com, but not between lookup relationships. You can read more about the tool and watch a video demo by reading this <a target="_new" href="http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/">blog</a>.</p>
+		<p>Release details can be found <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries">here</a>.</p>
+	</apex:form>
 </body>
 </apex:page>
