@@ -44,7 +44,7 @@ global with sharing class RollupService
 			remoteSites.type_x = 'RemoteSiteSetting';
 			queries.add(remoteSites);					
 			service.listMetadata(queries, 28);			
-		} catch (System.CalloutException e) {
+		} catch (Exception e) {
 			return false;
 		}
 		return true;
