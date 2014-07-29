@@ -33,29 +33,34 @@
 	<apex:form id="form">
 	    <apex:sectionHeader title="Lookup Rollup Summary" subtitle="Manage Apex Trigger for {!RollupSummary.ChildObject__c}"/>
 		<apex:pageMessages escape="false" />
-		<apex:pageBlock >
-			<apex:pageBlockSection >
-			<pre>{!TriggerCode}</pre>
-			</apex:pageBlockSection>
-			<apex:pageBlockSection >
-			<pre>{!TriggerTestCode}</pre>
-			</apex:pageBlockSection>
-		</apex:pageBlock>
-		<apex:actionPoller action="{!checkAsyncRequest}" interval="5" rerender="form" rendered="{!NOT(ISNULL(AsyncResult))}"/>
-		<apex:actionFunction name="deployZip" action="{!deployZip}" rendered="{!ISNULL(AsyncResult)}" rerender="form">
-			<apex:param name="data" assignTo="{!ZipData}" value=""/>
-		</apex:actionFunction>
-		<c:zip name="generateZip" oncomplete="deployZip(data);" rendered="{!ISNULL(AsyncResult)}">
-			<c:zipEntry path="package.xml" data="{!PackageXml}"/>
-			<c:zipEntry path="destructiveChanges.xml" data="{!DestructiveChangesXml}" rendered="{!Deployed}"/>
-			<c:zipEntry path="classes/{!RollupTriggerTestName}.cls-meta.xml" data="{!TriggerTestCodeMetadata}" rendered="{!NOT(Deployed)}"/>
-			<c:zipEntry path="classes/{!RollupTriggerTestName}.cls" data="{!TriggerTestCode}" rendered="{!NOT(Deployed)}"/>
-			<c:zipEntry path="triggers/{!RollupTriggerName}.trigger-meta.xml" data="{!TriggerCodeMetadata}" rendered="{!NOT(Deployed)}"/>
-			<c:zipEntry path="triggers/{!RollupTriggerName}.trigger" data="{!TriggerCode}" rendered="{!NOT(Deployed)}"/>
-		</c:zip>
-		<apex:outputPanel rendered="{!ISNULL(AsyncResult)}">
-			<input type="button" onclick="generateZip();" value="{!IF(Deployed, 'Remove', 'Deploy')}" class="btn"/>
-			<apex:commandButton value="Cancel" action="{!cancel}"/>
+		<apex:outputPanel rendered="{!MetadataConnectionError==true}">
+			<apex:outputLink value="{!$Page.welcome}?showHeader=1">Return to the Welcome page</apex:outputLink>
+		</apex:outputPanel>
+		<apex:outputPanel rendered="{!MetadataConnectionError==false}">		
+			<apex:pageBlock >
+				<apex:pageBlockSection >
+				<pre>{!TriggerCode}</pre>
+				</apex:pageBlockSection>
+				<apex:pageBlockSection >
+				<pre>{!TriggerTestCode}</pre>
+				</apex:pageBlockSection>
+			</apex:pageBlock>
+			<apex:actionPoller action="{!checkAsyncRequest}" interval="5" rerender="form" rendered="{!NOT(ISNULL(AsyncResult))}"/>
+			<apex:actionFunction name="deployZip" action="{!deployZip}" rendered="{!ISNULL(AsyncResult)}" rerender="form">
+				<apex:param name="data" assignTo="{!ZipData}" value=""/>
+			</apex:actionFunction>
+			<c:zip name="generateZip" oncomplete="deployZip(data);" rendered="{!ISNULL(AsyncResult)}">
+				<c:zipEntry path="package.xml" data="{!PackageXml}"/>
+				<c:zipEntry path="destructiveChanges.xml" data="{!DestructiveChangesXml}" rendered="{!Deployed}"/>
+				<c:zipEntry path="classes/{!RollupTriggerTestName}.cls-meta.xml" data="{!TriggerTestCodeMetadata}" rendered="{!NOT(Deployed)}"/>
+				<c:zipEntry path="classes/{!RollupTriggerTestName}.cls" data="{!TriggerTestCode}" rendered="{!NOT(Deployed)}"/>
+				<c:zipEntry path="triggers/{!RollupTriggerName}.trigger-meta.xml" data="{!TriggerCodeMetadata}" rendered="{!NOT(Deployed)}"/>
+				<c:zipEntry path="triggers/{!RollupTriggerName}.trigger" data="{!TriggerCode}" rendered="{!NOT(Deployed)}"/>
+			</c:zip>
+			<apex:outputPanel rendered="{!ISNULL(AsyncResult)}">
+				<input type="button" onclick="generateZip();" value="{!IF(Deployed, 'Remove', 'Deploy')}" class="btn"/>
+				<apex:commandButton value="Cancel" action="{!cancel}"/>
+			</apex:outputPanel>
 		</apex:outputPanel>
  	</apex:form>
 </apex:page>

@@ -31,6 +31,8 @@
         <members>StringBuilder</members>
         <members>TestContext</members>
         <members>TestLREngine</members>
+        <members>WelcomeController</members>
+        <members>WelcomeControllerTest</members>
         <name>ApexClass</name>
     </types>
     <types>

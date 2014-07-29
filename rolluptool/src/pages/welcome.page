@@ -1,10 +1,11 @@
-<apex:page controller="WelcomeController" showHeader="false" sidebar="false" tabStyle="LookupRollupSummary__c" standardStylesheets="true" action="{!checkMetadataAPIConnection}">
+<apex:page controller="WelcomeController" showHeader="{!IF($CurrentPage.Parameters.ShowHeader == '1', true, false)}" sidebar="false" tabStyle="LookupRollupSummary__c" standardStylesheets="true" action="{!checkMetadataAPIConnection}">
 <script>
 function createRemoteSite()
 { 
+	// Disable button 
+	document.getElementById('createremotesitebtn').disabled = true;
 	// Calls the Metdata API from JavaScript to create the Remote Site Setting to permit Apex callouts
 	var binding = new XMLHttpRequest();
-	var metadataURL = window.top.location.protocol+'//'+window.top.location.hostname+'/';
 	var request = 
 		'<?xml version="1.0" encoding="utf-8"?>' + 
 		'<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'+
@@ -20,12 +21,12 @@ function createRemoteSite()
 						'<description>Metadata API Remote Site Setting for Declarative Rollup Tool (DLRS)</description>' + 
 						'<disableProtocolSecurity>false</disableProtocolSecurity>' + 
 						'<isActive>true</isActive>' + 
-						'<url>' + metadataURL + '</url>' +
+						'<url>https://{!Host}</url>' +
 					'</metadata>' +
 				'</createMetadata>' +
 			'</env:Body>' + 
 		'</env:Envelope>';
-	binding.open('POST', window.top.location.protocol+'//'+window.top.location.hostname+'/services/Soap/m/31.0');
+	binding.open('POST', 'https://{!Host}/services/Soap/m/31.0');
 	binding.setRequestHeader('SOAPAction','""');
 	binding.setRequestHeader('Content-Type', 'text/xml');
 	binding.onreadystatechange = 
@@ -36,10 +37,7 @@ function createRemoteSite()
 				var errors = doc.getElementsByTagName('errors');
 				var messageText = '';
 				for(var errorIdx = 0; errorIdx < errors.length; errorIdx++)
-				{
-					var message = errors.item(errorIdx).getElementsByTagName('message');
-					messageText+= message.item(0).innerHTML + '\n';
-				}
+					messageText+= errors.item(errorIdx).getElementsByTagName('message').item(0).innerHTML + '\n';
 				displayMetadataResponse(messageText);
 			} 
 		}
@@ -58,7 +56,7 @@ function createRemoteSite()
 			<h1>Important Post Install Step:</h1> 
 			<p>In order to utlise the features of this tool you need to permit the tool access to the Salesforce Metadata API by adding a <a target="_new" href="http://na1.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL <b>https://{!Host}</b></p>
 			<p> Click the <b>Create Remote Site Setting</b> button to have the tool perform this step for you.</p>
-			<input type="button" onclick="createRemoteSite();" value="Create Remote Site Setting"/>
+			<input id="createremotesitebtn" type="button" onclick="createRemoteSite();" value="Create Remote Site Setting"/>
 		</apex:outputPanel>
 		<p><b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships using the declarative mode of Force.com, but not between lookup relationships. You can read more about the tool and watch a video demo by reading this <a target="_new" href="http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/">blog</a>.</p>
 		<p>Release details can be found <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries">here</a>.</p>

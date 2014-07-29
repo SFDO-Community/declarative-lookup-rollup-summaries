@@ -47,6 +47,8 @@ public with sharing class RollupController
 	
 	public Integer deployCount;
 	
+	public Boolean MetadataConnectionError {get;set;}	
+	
 	public RollupController(ApexPages.StandardController standardController)
 	{
 		// Query Lookup Rollup Summary record
@@ -254,6 +256,14 @@ public with sharing class RollupController
 	
 	private void init()
 	{
+		// Metadata API connection?
+		MetadataConnectionError = !RollupService.checkMetadataAPIConnection();
+		if(MetadataConnectionError)
+		{
+			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'Salesforce Metadata API connection failure, click the link below to configure.'));
+			return;			
+		}
+		
 		// Already deployed?
 		Map<String, ApexTrigger> apexTriggers = new ApexTriggersSelector().selectByName(new Set<String> { RollupTriggerName });
 		Map<String, ApexClass> apexClasses = new ApexClassesSelector().selectByName(new Set<String> { RollupTriggerTestName });
