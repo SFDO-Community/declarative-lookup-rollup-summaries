@@ -28,7 +28,11 @@
  * Validation and other behaviour for the Lookup Rollup Summary custom object
  **/
 public with sharing class RollupSummaries extends SObjectDomain
-{
+{		
+	private static final Integer APEXTRIGGER_NAME_LENGTH = 40; // ApexTrigger.Name.getDescribe().getLength(); gives 255?
+	
+	private static final Integer APEXCLASS_NAME_LENGTH = 40; // ApexClass.Name.getDescribe().getLength(); gives 255?
+	
 	/**
 	 * Maps LookupRollupSummary__c.AggregateOperation__c picklist values to LREngine.RollupOperation enum
 	 **/
@@ -198,8 +202,7 @@ public with sharing class RollupSummaries extends SObjectDomain
 			return 'RollupServiceTest2Trigger';
 		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Account')
 			return 'RollupServiceTest3Trigger';
-		else		
-			return 'dlrs_' + lookupRollupSummary.ChildObject__c.replace('__c', '').replace('__', '_') + 'Trigger';
+		return calculateComponentName(lookupRollupSummary.ChildObject__c, 'Trigger', APEXTRIGGER_NAME_LENGTH);
 	}
 	
 	/**
@@ -208,8 +211,29 @@ public with sharing class RollupSummaries extends SObjectDomain
 	public static String makeTriggerTestName(LookupRollupSummary__c lookupRollupSummary)
 	{
 		if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Opportunity')
-			return 'RollupSummariesTest';
-		else
-			return 'dlrs_' + lookupRollupSummary.ChildObject__c.replace('__c', '').replace('__', '_') + 'Test';
+			return 'RollupSummariesTest';		
+		return calculateComponentName(lookupRollupSummary.ChildObject__c, 'Test', APEXCLASS_NAME_LENGTH);
+	}
+	
+	/**
+	 * Ensures the component name never exceeds the given maximum length but yet still remains unique
+	 **/
+	private static String calculateComponentName(String childObjectName, String suffix, Integer maxComponentNameLength)
+	{
+		String trimmedObjectName = childObjectName.replace('__c', '').replace('__', '_');
+		String componentName = 'dlrs_' + trimmedObjectName + suffix;
+		Integer componentNameLength = componentName.length();
+		if(componentNameLength > maxComponentNameLength) // Do we need to trim the trigger name?
+		{
+			Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
+			SObjectType childObjectType = gd.get(childObjectName);		
+			String childObjectPrefix = childObjectType.getDescribe().getKeyPrefix(); // Key prefix will be used to make the trimmed name unique again
+			Integer overflowChars = componentNameLength - maxComponentNameLength; // How much do we need to trim the name by?
+			trimmedObjectName = trimmedObjectName.substring(0, trimmedObjectName.length() - overflowChars); // Trim the overflow characters from the name
+			trimmedObjectName = trimmedObjectName.substring(0, trimmedObjectName.length() - childObjectPrefix.length()); // Trim space for the prefix on the end
+			trimmedObjectName+= childObjectPrefix; // Add on the end the unique object prefix (to ensure the trimmed name is still unique)
+			componentName = 'dlrs_' + trimmedObjectName + suffix; 
+		}
+		return componentName;
 	}
 }
