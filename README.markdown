@@ -44,7 +44,15 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! If you are a developer obtain the source code from this repository if you wish to develop it further and/or contribute to it. Click [Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/afawcett/declarative-lookup-rollup-summaries) to deploy the source code to your developer org. 
 
-**Latest - Version 1.9 - Community Powered!**
+**Latest - Version 1.10**
+
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Qbz8), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Qbz8)
+
+- Fix for [Issue 52 Auto Create Remote Site Setting](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/52)
+- Fix for [Issue 25 Error with Manage Child Trigger button for very long object names](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/25)
+
+
+**Version 1.9 - Community Powered!**
 
 Read more about this release [here](http://andyinthecloud.com/2014/04/09/new-declarative-rollup-tool-release-community-powered)
 
@@ -58,7 +66,6 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 - Enhancement for [Issue 15](https://github.com/afawcett/declarative-lookup-rollup-summaries/pull/15) 
 
 **KNOWN INSTALL ISSUE** There appears to be an install issue identified when installing into orgs without Ideas installed for v1.9, if you encourter this enable Ideas if you can, otherwise use v1.7 until the issue is resolved.
-
 
 **Version 1.8**
 
