@@ -120,3 +120,6 @@ Installing the Source Code (Developers)
 =======================================
 
 If you are a developer obtain the source code from this repository if you wish to develop it further and/or contribute to it. Click [Deploy to Salesforce](https://githubsfdeploy.herokuapp.com/app/githubdeploy/afawcett/declarative-lookup-rollup-summaries) to deploy the source code to your developer org.
+
+**KNOWN INSTALL ISSUE** Sometimes the Permission Set files will not deploy, based on org differences, such as features enabled. If you encounter this problem, Clone the repo manually and use your IDE or Ant script to deploy without the Permission Sets. I will be looking into fixing this issue in the future.
+
