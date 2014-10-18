@@ -228,6 +228,14 @@ public with sharing class RollupController
 						ApexPages.addMessage(
 							new ApexPages.Message(ApexPages.Severity.Error, 
 								testFailure.name + '.' + testFailure.methodName + ' ' + testFailure.message + ' ' + testFailure.stackTrace));
+				// Code coverage warnings?
+				if(runTestResult.codeCoverageWarnings!=null)
+					for(MetadataService.CodeCoverageWarning codeCoverageWarning : runTestResult.codeCoverageWarnings)
+						ApexPages.addMessage(
+							new ApexPages.Message(ApexPages.Severity.Warning, 
+								(codeCoverageWarning.namespace!=null ? codeCoverageWarning.namespace+'.' : '') +
+								codeCoverageWarning.name + ':' +
+								codeCoverageWarning.message));
 				
 				AsyncResult = null;
 				
