@@ -26,124 +26,167 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**
-	LREngine("L"ookup "R"ollup Engine) : This class simplifies rolling up on the child records in lookup relationship.
+    LREngine("L"ookup "R"ollup Engine) : This class simplifies rolling up on the child records in lookup relationship.
 */
 public class LREngine {
-	
-	/*
-		Tempalte tokens
-			0 : Fields to project
-			1 : Object to query
-			2 : Optional WHERE clause filter to add
-			3 : Group By field name
-	*/
-	static String SOQL_TEMPLATE = 'SELECT {0} FROM {1} WHERE {3} in :masterIds {2} GROUP BY {3}';
-	
-	/**
-		Key driver method that rolls up lookup fields based on the context. This is specially useful in Trigger context.
-		
-		@param ctx Context the complete context required to rollup
-		@param detailRecordsFromTrigger child/detail records which are modified/created/deleted during the Trigger 
-		@returns Array of in memory master objects. These objects are not updated back to the database
-				because we want client or calling code to have this freedom to do some post processing and update when required.
-	*/
-	public static Sobject[] rollUp(Context ctx, Sobject[] detailRecordsFromTrigger) {
-		
-		// API name of the lookup field on detail sobject
+    
+    /*
+        Tempalte tokens
+            0 : Fields to project
+            1 : Object to query
+            2 : Optional WHERE clause filter to add
+            3 : Group By field name
+    */
+    static String SOQL_TEMPLATE = 'SELECT {0} FROM {1} WHERE {3} in :masterIds {2} GROUP BY {3}';
+    
+    /*
+    Support for multi-currency orgs
+    */
+    static String MASTERCURRENCYALIAS = 'mastercc';
+    public static String CURRENCYISOCODENAME = 'CurrencyIsoCode';
+    //http://advancedapex.com/2013/07/07/optional-features/
+    private static Boolean m_IsMultiCurrency = null;
+    public static Boolean IsMultiCurrencyOrg() {
+        if(m_IsMultiCurrency!=null) return m_IsMultiCurrency;
+        m_IsMultiCurrency = UserInfo.isMultiCurrencyOrganization();
+        return m_IsMultiCurrency;
+    }
+
+    // Currency lookup
+    static final Map<String,Decimal> currencyConversionMap = new Map<String,Decimal>();
+    private static Decimal convertCurrency(String iso, Decimal val) {
+        if(currencyConversionMap.isEmpty()){
+            String query = 'select IsoCode, ConversionRate from CurrencyType where IsActive = true';
+            for(sObject ct : Database.query(query))
+                currencyConversionMap.put((String)ct.get('IsoCode'), (Decimal)ct.get('ConversionRate'));
+        }
+        return val * currencyConversionMap.get(iso);
+    }
+
+    /**
+        Key driver method that rolls up lookup fields based on the context. This is specially useful in Trigger context.
+        
+        @param ctx Context the complete context required to rollup
+        @param detailRecordsFromTrigger child/detail records which are modified/created/deleted during the Trigger 
+        @returns Array of in memory master objects. These objects are not updated back to the database
+                because we want client or calling code to have this freedom to do some post processing and update when required.
+    */
+    public static Sobject[] rollUp(Context ctx, Sobject[] detailRecordsFromTrigger) {
+        
+        // API name of the lookup field on detail sobject
         String lookUpFieldName = ctx.lookupField.getName();
-		        
+                
         Set<Id> masterRecordIds = new Set<Id>(); 
         for (Sobject kid : detailRecordsFromTrigger) {
             masterRecordIds.add((Id)kid.get(lookUpFieldName));
         }
         return rollUp(ctx, masterRecordIds);
-	}
-	
-	/**
-		Key driver method that rolls up lookup fields based on the context. This is meant to be called from non trigger contexts like
-		scheduled/batch apex, where we want to rollup on some master record ids.
-		
-		@param Context the complete context required to rollup
-		@param masterIds Master record IDs whose child records should be rolled up. 
-		@returns Array of in memory master objects. These objects are not updated back to the database
-				because we want client or calling code to have this freedom to do some post processing and update when required.
-	*/
-	public static Sobject[] rollUp(Context ctx,  Set<Id> masterIds) {
-		// Clone this since we are about to modify it later
-		masterIds = masterIds.clone();
+    }
+    
+    /**
+        Key driver method that rolls up lookup fields based on the context. This is meant to be called from non trigger contexts like
+        scheduled/batch apex, where we want to rollup on some master record ids.
+        
+        @param Context the complete context required to rollup
+        @param masterIds Master record IDs whose child records should be rolled up. 
+        @returns Array of in memory master objects. These objects are not updated back to the database
+                because we want client or calling code to have this freedom to do some post processing and update when required.
+    */
+    public static Sobject[] rollUp(Context ctx,  Set<Id> masterIds) {
+        // Clone this since we are about to modify it later
+        masterIds = masterIds.clone();
         // K: Id of master record
         // V: Empty sobject with ID field, this will be used for updating the masters
         Map<Id, Sobject> masterRecordsMap = new Map<Id, Sobject>(); 
         for (Id mId : masterIds) {
             masterRecordsMap.put(mId, ctx.master.newSobject(mId));
         }
-		
-    	// #0 token : SOQL projection
-    	String soqlProjection = ctx.lookupField.getName();
-    	// k: detail field name, v: master field name
-    	Integer exprIdx = 0;
-    	Map<String, String> detail2MasterFldMap = new Map<String, String>();
-    	Map<String, String> detail2AliasMap = new Map<String, String>();
-    	for (RollupSummaryField rsf : ctx.fieldsToRoll) {
-    		// create aggreate projection with alias for easy fetching via AggregateResult class
-    		// i.e. SUM(Amount) Amount
-    		String alias = 'lre'+exprIdx++; // Calculate an alias, using field name blew the 25 character limit in some cases
-    		soqlProjection += ', ' + rsf.operation + '(' + rsf.detail.getName() + ') ' + alias;
-    		detail2MasterFldMap.put(rsf.detail.getName(), rsf.master.getName());
-    		detail2AliasMap.put(rsf.detail.getName(), alias);
-    	}
-		
-    	// #1 token for SOQL_TEMPLATE
-    	String detailTblName = ctx.detail.getDescribe().getName();
-    	
-    	// #2 Where clause
-    	String whereClause = '';
-    	if (ctx.detailWhereClause != null && ctx.detailWhereClause.trim().length() > 0) {
-    		whereClause = 'AND ' + ctx.detailWhereClause ;
-    	}
-    	
-    	// #3 Group by field
-    	String grpByFld = ctx.lookupField.getName();
-    	
-    	String soql = String.format(SOQL_TEMPLATE, new String[]{soqlProjection, detailTblName, whereClause, grpByFld});
+        
+        // #0 token : SOQL projection
+        String soqlProjection = ctx.lookupField.getName();
+        // k: detail field name, v: master field name
+        Integer exprIdx = 0;
+        Boolean needsCurrency = false;
+        Map<String, String> detail2MasterFldMap = new Map<String, String>();
+        Map<String, String> detail2AliasMap = new Map<String, String>();
+        Map<String, Boolean> isFieldCurrencyMap = new Map<String, Boolean>();
+        for (RollupSummaryField rsf : ctx.fieldsToRoll) {
+            // create aggreate projection with alias for easy fetching via AggregateResult class
+            // i.e. SUM(Amount) Amount
+            String alias = 'lre'+exprIdx++; // Calculate an alias, using field name blew the 25 character limit in some cases
+            soqlProjection += ', ' + rsf.operation + '(' + rsf.detail.getName() + ') ' + alias;
+            detail2MasterFldMap.put(rsf.detail.getName(), rsf.master.getName());
+            detail2AliasMap.put(rsf.detail.getName(), alias);
+            isFieldCurrencyMap.put(rsf.detail.getName(), rsf.isMasterTypeCurrency);
+            if(IsMultiCurrencyOrg() == true && needsCurrency == false && rsf.isMasterTypeCurrency){
+                needsCurrency = true;
+            }
+        }
+        
+        // Add a field selection to get the currency from the parent record if we are depositing values into a currency field
+        if(IsMultiCurrencyOrg() == true && needsCurrency == true){
+            String masterTblName = ctx.master.getDescribe().getName();
+            soqlProjection += ', ' + RollupOperation.Max + '(' + masterTblName + 
+                    '.' + CURRENCYISOCODENAME + ') ' + MASTERCURRENCYALIAS;
+        }
 
-    	// aggregated results 
-    	List<AggregateResult> results = Database.query(soql);
-    	
-    	for (AggregateResult res : results){
-			Id masterRecId = (Id)res.get(grpByFld);
-			Sobject masterObj = masterRecordsMap.get(masterRecId);
-			if (masterObj == null) {
-				System.debug(Logginglevel.WARN, 'No master record found for ID :' + masterRecId);
-				continue;
-			}
-			
-			for (String detailFld : detail2MasterFldMap.keySet()) {
-				Object aggregatedDetailVal = res.get(detail2AliasMap.get(detailFld));
-				System.debug(LoggingLevel.INFO, 'New aggregarte value ' + aggregatedDetailVal + ' for master ' + masterRecId);
-				masterObj.put(detail2MasterFldMap.get(detailFld), aggregatedDetailVal);
-			} 			
-			// Remove master Id record as its been processed   	
-			masterIds.remove(masterRecId);	
-    	}
-    	
-    	// Zero rollups for unprocessed master records (those with no longer any child relationships)
-    	for(Id masterRecId : masterIds)
-    		for (RollupSummaryField rsf : ctx.fieldsToRoll)
-				masterRecordsMap.get(masterRecId).put(rsf.master.getName(), 
-					rsf.isMasterTypeNumber ? 0 : null);
-    	
-    	return masterRecordsMap.values();	
+        // #1 token for SOQL_TEMPLATE
+        String detailTblName = ctx.detail.getDescribe().getName();
+        
+        // #2 Where clause
+        String whereClause = '';
+        if (ctx.detailWhereClause != null && ctx.detailWhereClause.trim().length() > 0) {
+            whereClause = 'AND ' + ctx.detailWhereClause ;
+        }
+        
+        // #3 Group by field
+        String grpByFld = ctx.lookupField.getName();
+        
+        String soql = String.format(SOQL_TEMPLATE, new String[]{soqlProjection, detailTblName, whereClause, grpByFld});
+        System.debug('SOQL is ' + soql);
+
+        // aggregated results 
+        List<AggregateResult> results = Database.query(soql);
+        
+        for (AggregateResult res : results){
+            Id masterRecId = (Id)res.get(grpByFld);
+            Sobject masterObj = masterRecordsMap.get(masterRecId);
+            if (masterObj == null) {
+                System.debug(Logginglevel.WARN, 'No master record found for ID :' + masterRecId);
+                continue;
+            }
+            
+            for (String detailFld : detail2MasterFldMap.keySet()) {
+                Object aggregatedDetailVal = res.get(detail2AliasMap.get(detailFld));
+                System.debug(LoggingLevel.INFO, 'New aggregarte value ' + aggregatedDetailVal + ' for master ' + masterRecId);
+                // Should also test for necessity
+                if(IsMultiCurrencyOrg() == true && isFieldCurrencyMap.get(detailFld) == true){
+                    masterObj.put(detail2MasterFldMap.get(detailFld), convertCurrency((String)res.get(MASTERCURRENCYALIAS),(Decimal)aggregatedDetailVal));
+                } else {
+                    masterObj.put(detail2MasterFldMap.get(detailFld), aggregatedDetailVal);
+                }
+            }           
+            // Remove master Id record as its been processed    
+            masterIds.remove(masterRecId);  
+        }
+        
+        // Zero rollups for unprocessed master records (those with no longer any child relationships)
+        for(Id masterRecId : masterIds)
+            for (RollupSummaryField rsf : ctx.fieldsToRoll)
+                masterRecordsMap.get(masterRecId).put(rsf.master.getName(), 
+                    rsf.isMasterTypeNumber ? 0 : null);
+        
+        return masterRecordsMap.values();   
     }
-	
-	
-	
-	
+    
+    
+    
+    
     /**
         Exception throwed if Rollup Summary field is in bad state
     */
     public class BadRollUpSummaryStateException extends Exception {}
-	
+    
    /**
        Which rollup operation you want to perform 
     */ 
@@ -152,11 +195,11 @@ public class LREngine {
     }
     
     /**
-    	Represents a "Single" roll up field, it contains
-    	- Master field where the rolled up info will be saved
-    	- Detail field that will be rolled up via any operation i.e. sum, avg etc 
-    	- Operation to perform i.e. sum, avg, count etc
-    		
+        Represents a "Single" roll up field, it contains
+        - Master field where the rolled up info will be saved
+        - Detail field that will be rolled up via any operation i.e. sum, avg etc 
+        - Operation to perform i.e. sum, avg, count etc
+            
     */
     public class RollupSummaryField {
         public Schema.Describefieldresult master;
@@ -169,6 +212,7 @@ public class LREngine {
         public boolean isDetailTypeNumber;
         public boolean isMasterTypeDateOrTime;
         public boolean isDetailTypeDateOrTime; 
+        public boolean isMasterTypeCurrency;
         
         public RollupSummaryField(Schema.Describefieldresult m, 
                                          Schema.Describefieldresult d, RollupOperation op) {
@@ -182,6 +226,7 @@ public class LREngine {
             this.isDetailTypeNumber = isNumber(detail.getType());
             this.isMasterTypeDateOrTime = isDateOrTime(master.getType());
             this.isDetailTypeDateOrTime = isDateOrTime(detail.getType()); 
+            this.isMasterTypeCurrency = isCurrency(master.getType());
             // validate if field is good to work on later 
             validate();
         }   
@@ -212,44 +257,48 @@ public class LREngine {
                    || dt == Schema.Displaytype.Date
                    || dt == Schema.Displaytype.Datetime;
         }
+
+        boolean isCurrency(Schema.DisplayType dt) {
+            return dt == Schema.Displaytype.Currency;
+        }
     }
     
     /**
-    	Context having all the information about the rollup to be done. 
-    	Please note : This class encapsulates many rollup summary fields with different operations.
+        Context having all the information about the rollup to be done. 
+        Please note : This class encapsulates many rollup summary fields with different operations.
     */
-	public class Context {
-	    // Master Sobject Type
-	    public Schema.Sobjecttype master;
-	    // Child/Details Sobject Type
-	    public Schema.Sobjecttype detail;
-	    // Lookup field on Child/Detail Sobject
-	    public Schema.Describefieldresult lookupField;
-	    // various fields to rollup on
-	    public List<RollupSummaryField> fieldsToRoll;
-		
-		// Where clause or filters to apply while aggregating detail records
-		public String detailWhereClause;		    
-		
-	    public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
+    public class Context {
+        // Master Sobject Type
+        public Schema.Sobjecttype master;
+        // Child/Details Sobject Type
+        public Schema.Sobjecttype detail;
+        // Lookup field on Child/Detail Sobject
+        public Schema.Describefieldresult lookupField;
+        // various fields to rollup on
+        public List<RollupSummaryField> fieldsToRoll;
+        
+        // Where clause or filters to apply while aggregating detail records
+        public String detailWhereClause;            
+        
+        public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
                            Schema.Describefieldresult lf) {
-			this(m, d, lf, '');                           	
+            this(m, d, lf, '');                             
         }
         
-	    public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
+        public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
                            Schema.Describefieldresult lf, String detailWhereClause) {
-	        this.master = m;
-	        this.detail = d;
-	        this.lookupField = lf;
-	        this.detailWhereClause = detailWhereClause;
-	        this.fieldsToRoll = new List<RollupSummaryField>();
-	    }
-	    
-	    /**
-	    	Adds new rollup summary fields to the context
-	    */
-	    public void add(RollupSummaryField fld) {
-	        this.fieldsToRoll.add(fld);
-	    }
-	}    
+            this.master = m;
+            this.detail = d;
+            this.lookupField = lf;
+            this.detailWhereClause = detailWhereClause;
+            this.fieldsToRoll = new List<RollupSummaryField>();
+        }
+        
+        /**
+            Adds new rollup summary fields to the context
+        */
+        public void add(RollupSummaryField fld) {
+            this.fieldsToRoll.add(fld);
+        }
+    }    
 }

@@ -30,9 +30,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	any dependency on custom objects and keep the code base simple and easy to deploy in new orgs.
 	
 */
-/**
-    Modification by Andrew Fawcett to use dynamic references to custom Account fields, to avoid packaging them
-*/
 @isTest
 private class TestLREngine {
 		// common master records for the test case
@@ -42,13 +39,36 @@ private class TestLREngine {
 		static Opportunity[] detailRecordsAcc1;
 		// dynamic reference to this field to avoid it being included in the package
 		static Schema.SObjectField ACCOUNT_SLA_EXPIRATION_DATE;
-		static Schema.SObjectField ACCOUNT_NUMBER_OF_LOCATIONS;		
+		static Schema.SObjectField ACCOUNT_NUMBER_OF_EMPLOYEES;
+        static Schema.SObjectField ANNUALIZED_RECCURING_REVENUE;
 		static
 		{
 			// dynamically resolve these fields, if they are not present when the test runs, the test will return as passed to avoid failures in subscriber org when packaged
 			Map<String, Schema.SObjectField> accountFields = Schema.SObjectType.Account.fields.getMap();
 			ACCOUNT_SLA_EXPIRATION_DATE = accountFields.get('SLAExpirationDate__c');
-			ACCOUNT_NUMBER_OF_LOCATIONS = accountFields.get('NumberOfLocations__c');
+			ACCOUNT_NUMBER_OF_EMPLOYEES = accountFields.get('NumberOfEmployees');
+            Map<String, Schema.SObjectField> opportunityFields = Schema.SObjectType.Opportunity.fields.getMap();
+            ANNUALIZED_RECCURING_REVENUE = opportunityFields.get('Annualized_Recurring_Revenue__c');            
+		}
+
+		/*
+		 added to support multi-currency detection
+		 */
+
+		private static String CURRENCYISOCODENAME = 'CurrencyIsoCode';
+		//http://advancedapex.com/2013/07/07/optional-features/
+		private static Boolean m_IsMultiCurrency = null;
+		public static Boolean IsMultiCurrencyOrg() {
+			if(m_IsMultiCurrency!=null) return m_IsMultiCurrency;
+            m_IsMultiCurrency = UserInfo.isMultiCurrencyOrganization();
+			return m_IsMultiCurrency;
+		}
+
+		private static Boolean m_HasMultiCurrency = null;
+		public static Boolean hasMultiCurrency() {
+			if(m_HasMultiCurrency!=null) return m_HasMultiCurrency;
+			m_HasMultiCurrency = (Database.countQuery('select count() from CurrencyType WHERE IsActive = true AND IsCorporate = false AND ConversionRate != 1') > 0);
+			return m_HasMultiCurrency;
 		}
 		
 		/*
@@ -106,6 +126,9 @@ private class TestLREngine {
 	                                                StageName = 'test'
 	         									);
 	         detailRecords = new Opportunity[] {o1Acc1, o2Acc1, o3Acc1, o1Acc2, o2Acc2, o3Acc2};
+             if(ANNUALIZED_RECCURING_REVENUE!=null)
+                for(Opportunity detailRecord : detailRecords)
+                    detailRecord.put(ANNUALIZED_RECCURING_REVENUE, 1000);
 	         detailRecordsAcc1 = new Opportunity[] {o1Acc1, o2Acc1, o3Acc1};
 	         insert detailRecords;			
 		}		
@@ -116,10 +139,10 @@ private class TestLREngine {
 	*/
     static testMethod void testSumAndMaxOperations() {
     	    	
-		// Test supported?
-		if(!TestContext.isSupported())
-			return;
-    	
+        // Required custom field/s present?
+        if(ACCOUNT_SLA_EXPIRATION_DATE==null)
+            return;
+
     	// create seed data 
          prepareData();
          
@@ -166,10 +189,10 @@ private class TestLREngine {
 	*/
     static testMethod void testAvgAndCountOperations() {
     	
-		// Test supported?
-		if(!TestContext.isSupported())
-			return;
-    	
+        // Required custom field/s present?
+        if(ACCOUNT_NUMBER_OF_EMPLOYEES==null)
+            return;
+
     	// create seed data 
          prepareData();
          
@@ -187,7 +210,7 @@ private class TestLREngine {
                                              )); 
          ctx.add(
          		new LREngine.RollupSummaryField(
-	                                            ACCOUNT_NUMBER_OF_LOCATIONS.getDescribe(),
+	                                            ACCOUNT_NUMBER_OF_EMPLOYEES.getDescribe(),
 	                                            Schema.SObjectType.Opportunity.fields.CloseDate,
 	                                            LREngine.RollupOperation.Count
                                              ));                                       
@@ -206,8 +229,8 @@ private class TestLREngine {
          System.assertEquals(150.00, reloadedAcc1.AnnualRevenue);
          System.assertEquals(300.00, reloadedAcc2.AnnualRevenue);
          
-         System.assertEquals(3, reloadedAcc1.get(ACCOUNT_NUMBER_OF_LOCATIONS));
-         System.assertEquals(3, reloadedAcc2.get(ACCOUNT_NUMBER_OF_LOCATIONS));
+         System.assertEquals(3, reloadedAcc1.get(ACCOUNT_NUMBER_OF_EMPLOYEES));
+         System.assertEquals(3, reloadedAcc2.get(ACCOUNT_NUMBER_OF_EMPLOYEES));
     }
     
     
@@ -218,10 +241,10 @@ private class TestLREngine {
 	*/
     static testMethod void testAvgAndCountOperationsWithFilter() {
     	
-		// Test supported?
-		if(!TestContext.isSupported())
-			return;
-    		
+        // Required custom field/s present?
+        if(ACCOUNT_NUMBER_OF_EMPLOYEES==null)
+            return;
+
     	// create seed data 
          prepareData();
          
@@ -241,7 +264,7 @@ private class TestLREngine {
                                              )); 
          ctx.add(
          		new LREngine.RollupSummaryField(
-	                                            ACCOUNT_NUMBER_OF_LOCATIONS.getDescribe(),
+	                                            ACCOUNT_NUMBER_OF_EMPLOYEES.getDescribe(),
 	                                            Schema.SObjectType.Opportunity.fields.CloseDate,
 	                                            LREngine.RollupOperation.Count
                                              ));                                       
@@ -260,16 +283,56 @@ private class TestLREngine {
          System.assertEquals(300, reloadedAcc1.AnnualRevenue);
          System.assertEquals(350.00, reloadedAcc2.AnnualRevenue);
          
-         System.assertEquals(1, reloadedAcc1.get(ACCOUNT_NUMBER_OF_LOCATIONS));
-         System.assertEquals(2, reloadedAcc2.get(ACCOUNT_NUMBER_OF_LOCATIONS));
+         System.assertEquals(1, reloadedAcc1.get(ACCOUNT_NUMBER_OF_EMPLOYEES));
+         System.assertEquals(2, reloadedAcc2.get(ACCOUNT_NUMBER_OF_EMPLOYEES));
+    }
+
+    /**
+     * Test fix where rollup field on master records where not
+     * cleared or zerod when all children deleted
+     **/
+    static testMethod void testDeletingChildRecords()
+    {
+        // create seed data 
+        prepareData();
+
+        LREngine.Context ctx = new LREngine.Context(
+            Account.SobjectType, 
+            Opportunity.SobjectType, 
+            Schema.SObjectType.Opportunity.fields.AccountId,
+            'Amount > 200'); // filter out any opps with amount less than 200
+        ctx.add(
+            new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.AnnualRevenue,
+                Schema.SObjectType.Opportunity.fields.Amount,
+                LREngine.RollupOperation.Avg)); 
+
+        Sobject[] masters = LREngine.rollUp(ctx, detailRecords);
+        Map<Id, Sobject> mastersById = new Map<Id, Sobject>(masters);
+        System.assertEquals(2, masters.size());         
+        System.assertEquals(300, ((Account)mastersById.get(acc1.id)).AnnualRevenue);
+        System.assertEquals(350.00, ((Account)mastersById.get(acc2.id)).AnnualRevenue);
+
+        // Delete all children
+        delete [select Id from Opportunity];
+
+        // Recacluate rollups again
+        masters = LREngine.rollUp(ctx, detailRecords);  
+        mastersById = new Map<Id, Sobject>(masters);               
+        System.assertEquals(0, ((Account)mastersById.get(acc1.id)).AnnualRevenue);
+        System.assertEquals(0, ((Account)mastersById.get(acc2.id)).AnnualRevenue);
     }
     
+    /**
+     * Test enhancement to ensure the SOQL Aggregate only applies to child records 
+     *  related to masters referenced in incoming child records
+     **/
     static testMethod void testConstrainedAggregateQuery()
     {
-		// Test supported?
-		if(!TestContext.isSupported())
-			return;
-    	
+        // Required custom field/s present?
+        if(ACCOUNT_SLA_EXPIRATION_DATE==null)
+            return;
+
     	// create seed data 
          prepareData();
          
@@ -291,7 +354,106 @@ private class TestLREngine {
                 
          Sobject[] masters = LREngine.rollUp(ctx, detailRecordsAcc1);      
          
-         // Only expect to have queried 4, 1 in TestContext.isSupported and 3 child records related to Account 1
-         System.assertEquals(4, Limits.getQueryRows());	
+		// Verify the results of the query
+		 System.assertEquals(1, masters.size());
+		 System.assertEquals(450.00, masters.get(0).get('AnnualRevenue'));
     }
+
+    /*
+        Fixed crash when using field names longer then 25 chars.
+        System.QueryException: alias is too long, maximum of 25 characters: Annualized_Recurring_Revenue__c
+        To test this please create a custom Number field by api name "Annualized_Recurring_Revenue__c" in Opportunity
+    */
+    static testMethod void testLongDetailFields() {
+
+        // Required custom field/s present?
+        if(ANNUALIZED_RECCURING_REVENUE==null || ACCOUNT_NUMBER_OF_EMPLOYEES==null)
+            return;
+
+        // create seed data 
+         prepareData();
+         
+         LREngine.Context ctx = new LREngine.Context(Account.SobjectType, 
+                                                Opportunity.SobjectType, 
+                                                Schema.SObjectType.Opportunity.fields.AccountId,
+                                                'Amount > 200' // filter out any opps with amount less than 200
+                                                );
+         
+         ctx.add(
+                new LREngine.RollupSummaryField(
+                                                ACCOUNT_NUMBER_OF_EMPLOYEES.getDescribe(),
+                                                ANNUALIZED_RECCURING_REVENUE.getDescribe(),
+                                                LREngine.RollupOperation.Count
+                                             )); 
+                
+         Sobject[] masters = LREngine.rollUp(ctx, detailRecords);                 
+         // 2 masters should be back  
+         System.assertEquals(2, masters.size());
+         
+         Account reloadedAcc1, reloadedAcc2;         
+         for (Sobject so : masters) { 
+            if (so.Id == acc1.id) reloadedAcc1 = (Account)so;
+            if (so.Id == acc2.id) reloadedAcc2 = (Account)so;
+         }
+         
+         System.assertEquals(1, reloadedAcc1.get(ACCOUNT_NUMBER_OF_EMPLOYEES));
+         System.assertEquals(2, reloadedAcc2.get(ACCOUNT_NUMBER_OF_EMPLOYEES));
+    }
+
+	/*
+	Test Multi-Currency installations
+	*/
+	static testMethod void testCurrencyConversionFields() {
+
+		// is org multi-currency?
+		// org has at least one non-corporate, not equivalent, currency installed.
+		if(IsMultiCurrencyOrg() == false || hasMultiCurrency() == false)
+			return;
+
+		// create seed data 
+		prepareData();
+
+		// change the currency of one of the master records to force currency conversion
+		sObject ct = Database.query('select IsoCode, ConversionRate from CurrencyType where IsActive = true AND IsCorporate = false AND ConversionRate != 1 limit 1');
+		acc1.put(CURRENCYISOCODENAME, ct.get('IsoCode'));
+		update acc1;
+
+		//change currency of one account
+		LREngine.Context ctx = new LREngine.Context(Account.SobjectType, 
+		Opportunity.SobjectType, 
+		Schema.SObjectType.Opportunity.fields.AccountId
+		);
+
+		ctx.add(
+				new LREngine.RollupSummaryField(
+									Schema.SObjectType.Account.fields.AnnualRevenue,
+									Schema.SObjectType.Opportunity.fields.Amount,
+									LREngine.RollupOperation.Sum
+								));
+
+		Sobject[] masters = LREngine.rollUp(ctx, detailRecords);
+
+		Decimal acct1Val = 0.0;
+		Decimal acct2Val = 0.0;
+		for(Sobject so : detailRecords){
+			if(so.get('AccountId') == acc1.Id) acct1Val += (Decimal)so.get('Amount');
+			if(so.get('AccountId') == acc2.Id) acct2Val += (Decimal)so.get('Amount');
+		}
+		System.Debug('Conversion Rate:'+ct.get('ConversionRate'));
+		System.Debug('Acct1 Val:'+acct1Val);
+
+		acct1Val = acct1Val * (Decimal)ct.get('ConversionRate');
+
+		System.Debug('Acct1 Conv Val:'+acct1Val);
+
+		Account reloadedAcc1, reloadedAcc2;
+		for (Sobject so : masters) {
+			if (so.Id == acc1.id) reloadedAcc1 = (Account)so;
+			if (so.Id == acc2.id) reloadedAcc2 = (Account)so;
+		}
+
+		//Test amount values for conversion accuracy
+		System.assertEquals(acct1Val, (Decimal)reloadedAcc1.get('AnnualRevenue'));
+		System.assertEquals(acct2Val, (Decimal)reloadedAcc2.get('AnnualRevenue'));
+	}
 }
