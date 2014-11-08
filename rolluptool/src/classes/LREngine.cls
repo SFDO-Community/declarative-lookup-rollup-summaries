@@ -125,8 +125,8 @@ public class LREngine {
         
         // Add a field selection to get the currency from the parent record if we are depositing values into a currency field
         if(IsMultiCurrencyOrg() == true && needsCurrency == true){
-            String masterTblName = ctx.master.getDescribe().getName();
-            soqlProjection += ', ' + RollupOperation.Max + '(' + masterTblName + 
+            String lookupRelationshipName = ctx.lookupField.getRelationshipName();
+            soqlProjection += ', ' + RollupOperation.Max + '(' + lookupRelationshipName + 
                     '.' + CURRENCYISOCODENAME + ') ' + MASTERCURRENCYALIAS;
         }
 
