@@ -45,7 +45,13 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! 
 
-**Lastet Version 1.12**
+**Latest Version 1.13**
+
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QeLD), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QeLD)
+
+- Fix for [Apex Error Query Exception](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/83)
+
+**Version 1.12**
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QeFj), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QeFj)
 
