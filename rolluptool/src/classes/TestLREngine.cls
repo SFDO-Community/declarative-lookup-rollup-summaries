@@ -233,6 +233,55 @@ private class TestLREngine {
          System.assertEquals(3, reloadedAcc2.get(ACCOUNT_NUMBER_OF_EMPLOYEES));
     }
     
+
+    /*
+        Tests sum and max operations on currency and date fields
+    */
+    static testMethod void testAvgAndCountOperationsSameAggregateField() {
+        
+        // Required custom field/s present?
+        if(ACCOUNT_NUMBER_OF_EMPLOYEES==null)
+            return;
+
+        // create seed data 
+         prepareData();
+         
+         LREngine.Context ctx = new LREngine.Context(Account.SobjectType, 
+                                                Opportunity.SobjectType, 
+                                                Schema.SObjectType.Opportunity.fields.AccountId);
+         
+         //Select o.TotalOpportunityQuantity, o.ExpectedRevenue, o.CloseDate, o.Account.rollups__SLAExpirationDate__c, 
+         // o.Account.rollups__NumberofLocations__c, o.AccountId From Opportunity o
+         ctx.add(
+                new LREngine.RollupSummaryField(
+                                                Schema.SObjectType.Account.fields.AnnualRevenue,
+                                                Schema.SObjectType.Opportunity.fields.Amount,
+                                                LREngine.RollupOperation.Avg
+                                             )); 
+         ctx.add(
+                new LREngine.RollupSummaryField(
+                                                ACCOUNT_NUMBER_OF_EMPLOYEES.getDescribe(),
+                                                Schema.SObjectType.Opportunity.fields.Amount,
+                                                LREngine.RollupOperation.Count
+                                             ));                                       
+                
+         Sobject[] masters = LREngine.rollUp(ctx, detailRecords);                 
+         // 2 masters should be back  
+         System.assertEquals(2, masters.size());
+         
+         System.debug(masters + ' '  + acc1 + ' '  + acc2);
+         Account reloadedAcc1, reloadedAcc2;         
+         for (Sobject so : masters) { 
+            if (so.Id == acc1.id) reloadedAcc1 = (Account)so;
+            if (so.Id == acc2.id) reloadedAcc2 = (Account)so;
+         }
+         // avg would be (50 + 100 + 300) / 3 = 150
+         System.assertEquals(150.00, reloadedAcc1.AnnualRevenue);
+         System.assertEquals(300.00, reloadedAcc2.AnnualRevenue);
+         
+         System.assertEquals(3, reloadedAcc1.get(ACCOUNT_NUMBER_OF_EMPLOYEES));
+         System.assertEquals(3, reloadedAcc2.get(ACCOUNT_NUMBER_OF_EMPLOYEES));
+    }
     
     
     /*
@@ -456,4 +505,33 @@ private class TestLREngine {
 		System.assertEquals(acct1Val, (Decimal)reloadedAcc1.get('AnnualRevenue'));
 		System.assertEquals(acct2Val, (Decimal)reloadedAcc2.get('AnnualRevenue'));
 	}
+
+    static testMethod void testRollupSummaryFieldValidation() {
+
+         LREngine.Context ctx = new LREngine.Context(Account.SobjectType, 
+                                                Opportunity.SobjectType, 
+                                                Schema.SObjectType.Opportunity.fields.AccountId);
+         
+         // Valid
+         ctx.add(
+                new LREngine.RollupSummaryField(
+                                                Schema.SObjectType.Account.fields.AnnualRevenue,
+                                                Schema.SObjectType.Opportunity.fields.Id,
+                                                LREngine.RollupOperation.Count
+                                             ));                 
+
+         try {
+            // Not Valid
+            ctx.add(
+                    new LREngine.RollupSummaryField(
+                                                Schema.SObjectType.Account.fields.AnnualRevenue,
+                                                Schema.SObjectType.Opportunity.fields.Id,
+                                                LREngine.RollupOperation.Sum
+                                             ));                 
+            System.assert(false, 'Expecting an exception');
+         }
+         catch (Exception e) {
+            System.assertEquals('Only Date/DateTime/Time/Numeric fields are allowed for Sum, Max, Min and Avg', e.getMessage());
+         }
+    }    
 }

@@ -200,7 +200,7 @@ private with sharing class RollupSummariesTest
 		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
 		SObjectDomain.triggerHandler(RollupSummaries.class);		
 		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
-		System.assertEquals('Only Date/DateTime/Time/Numeric fields are allowed', SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals('Only Date/DateTime/Time/Numeric fields are allowed for Sum, Max, Min and Avg', SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(rollupSummary, ((SObjectDomain.ObjectError)SObjectDomain.Errors.getAll()[0]).record);
 	}	
 
@@ -291,4 +291,27 @@ private with sharing class RollupSummariesTest
 		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
 		System.assertEquals('Fields Stage,Another do not exist on the child object.', SObjectDomain.Errors.getAll()[0].message);		
 	}	
+
+	private testmethod static void testInsertCountByCloseDateNoErrors()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'CloseDate';
+		rollupSummary.AggregateOperation__c = 'Count';
+		rollupSummary.AggregateResultField__c = 'SLAExpirationDate__c';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(0, SObjectDomain.Errors.getAll().size());	
+	}	
+
 }

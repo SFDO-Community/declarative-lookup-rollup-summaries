@@ -107,17 +107,13 @@ public class LREngine {
         // k: detail field name, v: master field name
         Integer exprIdx = 0;
         Boolean needsCurrency = false;
-        Map<String, String> detail2MasterFldMap = new Map<String, String>();
-        Map<String, String> detail2AliasMap = new Map<String, String>();
-        Map<String, Boolean> isFieldCurrencyMap = new Map<String, Boolean>();
+        Map<String, RollupSummaryField> rsfByAlais = new Map<String, RollupSummaryField>();
         for (RollupSummaryField rsf : ctx.fieldsToRoll) {
             // create aggreate projection with alias for easy fetching via AggregateResult class
             // i.e. SUM(Amount) Amount
             String alias = 'lre'+exprIdx++; // Calculate an alias, using field name blew the 25 character limit in some cases
             soqlProjection += ', ' + rsf.operation + '(' + rsf.detail.getName() + ') ' + alias;
-            detail2MasterFldMap.put(rsf.detail.getName(), rsf.master.getName());
-            detail2AliasMap.put(rsf.detail.getName(), alias);
-            isFieldCurrencyMap.put(rsf.detail.getName(), rsf.isMasterTypeCurrency);
+            rsfByAlais.put(alias, rsf);
             if(IsMultiCurrencyOrg() == true && needsCurrency == false && rsf.isMasterTypeCurrency){
                 needsCurrency = true;
             }
@@ -156,14 +152,15 @@ public class LREngine {
                 continue;
             }
             
-            for (String detailFld : detail2MasterFldMap.keySet()) {
-                Object aggregatedDetailVal = res.get(detail2AliasMap.get(detailFld));
+            for (String alias : rsfByAlais.keySet()) {
+                RollupSummaryField rsf = rsfByAlais.get(alias);
+                Object aggregatedDetailVal = res.get(alias);
                 System.debug(LoggingLevel.INFO, 'New aggregarte value ' + aggregatedDetailVal + ' for master ' + masterRecId);
                 // Should also test for necessity
-                if(IsMultiCurrencyOrg() == true && isFieldCurrencyMap.get(detailFld) == true){
-                    masterObj.put(detail2MasterFldMap.get(detailFld), convertCurrency((String)res.get(MASTERCURRENCYALIAS),(Decimal)aggregatedDetailVal));
+                if(IsMultiCurrencyOrg() == true && rsf.isMasterTypeCurrency){
+                    masterObj.put(rsf.master.getName(), convertCurrency((String)res.get(MASTERCURRENCYALIAS),(Decimal)aggregatedDetailVal));
                 } else {
-                    masterObj.put(detail2MasterFldMap.get(detailFld), aggregatedDetailVal);
+                    masterObj.put(rsf.master.getName(), aggregatedDetailVal);
                 }
             }           
             // Remove master Id record as its been processed    
@@ -235,9 +232,11 @@ public class LREngine {
             if (master == null || detail == null || operation == null) 
                 throw new BadRollUpSummaryStateException('All of Master/Detail Describefieldresult and RollupOperation info is mandantory');
 
-            if ( (!isMasterTypeDateOrTime && !isMasterTypeNumber) 
-                  || (!isDetailTypeDateOrTime && !isDetailTypeNumber)) {
-                    throw new BadRollUpSummaryStateException('Only Date/DateTime/Time/Numeric fields are allowed');
+            if (operation != RollupOperation.Count) {
+                if ( (!isMasterTypeDateOrTime && !isMasterTypeNumber) ||
+                     (!isDetailTypeDateOrTime && !isDetailTypeNumber)) {
+                    throw new BadRollUpSummaryStateException('Only Date/DateTime/Time/Numeric fields are allowed for Sum, Max, Min and Avg');
+                }
             }
             
             if (isMasterTypeDateOrTime && (RollupOperation.Sum == operation || RollupOperation.Avg == operation)) {
