@@ -314,10 +314,18 @@ global with sharing class RollupService
 		}
 
 		// Map rollup summary schedule items by parent id, in order to remove only those whos parent/master record actually gets updated below
-		Map<Id, LookupRollupSummaryScheduleItems__c> rollupSummaryScheduleItemsByParentId = 
-			new Map<Id, LookupRollupSummaryScheduleItems__c>();
+		Map<Id, List<LookupRollupSummaryScheduleItems__c>> rollupSummaryScheduleItemsByParentId = 
+			new Map<Id, List<LookupRollupSummaryScheduleItems__c>>();
 		for(LookupRollupSummaryScheduleItems__c rollupSummaryScheduleItem : rollupSummaryScheduleItems)
-			rollupSummaryScheduleItemsByParentId.put(rollupSummaryScheduleItem.ParentId__c, rollupSummaryScheduleItem);
+		{
+			List<LookupRollupSummaryScheduleItems__c> rollupsByParentId = rollupSummaryScheduleItemsByParentId.get(rollupSummaryScheduleItem.ParentId__c);
+			if(rollupsByParentId==null)
+			{
+				rollupsByParentId = new List<LookupRollupSummaryScheduleItems__c>();
+				rollupSummaryScheduleItemsByParentId.put(rollupSummaryScheduleItem.ParentId__c, rollupsByParentId);
+			}
+			rollupsByParentId.add(rollupSummaryScheduleItem);
+		}
 			
 		// Update master records
 		List<LookupRollupSummaryLog__c> rollupSummaryLogs = new List<LookupRollupSummaryLog__c>();
@@ -353,7 +361,10 @@ global with sharing class RollupService
 		delete [select Id from LookupRollupSummaryLog__c where ParentId__c in :rollupSummaryScheduleItemsByParentId.keySet()];
 		
 		// Delete any schedule items for successfully updated master records
-		delete rollupSummaryScheduleItemsByParentId.values();
+		List<LookupRollupSummaryScheduleItems__c> scheduleItemsToDelete = new List<LookupRollupSummaryScheduleItems__c>();
+		for(List<LookupRollupSummaryScheduleItems__c> scheduleItems : rollupSummaryScheduleItemsByParentId.values())
+			scheduleItemsToDelete.addAll(scheduleItems);
+		delete scheduleItemsToDelete;
 	}
 
 	/**
@@ -442,32 +453,32 @@ global with sharing class RollupService
 		// Process lookups, 
 		//    Realtime are added to a list for later LRE context creation and processing, 
 		//    Scheduled result in parent Id's being emitted to scheduled item object for later processing
-		List<LookupRollupSummary__c> realtimeLookups = new List<LookupRollupSummary__c>();  	
-		Map<Id, LookupRollupSummaryScheduleItems__c> scheduledItems = new Map<Id, LookupRollupSummaryScheduleItems__c>(); 
-		for(LookupRollupSummary__c lookup : lookups)
-		{
-			if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Realtime.name())
-			{
-				// Filter realtime looks in order to generate LRE contexts below
-				realtimeLookups.add(lookup);
-			}
-			else if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Scheduled.name())
-			{		
-				// For scheduled rollups queue the parent Id record for processing
-		        for (Id parentId : masterRecordIds)
-		        {
-					LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
-					scheduledItem.Name = parentId;
-					scheduledItem.LookupRollupSummary__c = lookup.Id;
-					scheduledItem.ParentId__c = parentId;
-					scheduledItem.QualifiedParentID__c = parentId + '#' + lookup.Id; 
-					scheduledItems.put(parentId, scheduledItem);
-		        }		            
-			}
-		}
-		
-		// Add parent Id's to schedule items object
-		upsert scheduledItems.values() QualifiedParentID__c;
+        List<LookupRollupSummary__c> realtimeLookups = new List<LookupRollupSummary__c>();      
+        List<LookupRollupSummaryScheduleItems__c> scheduledItems = new List<LookupRollupSummaryScheduleItems__c>(); 
+        for(LookupRollupSummary__c lookup : lookups)
+        {
+            if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Realtime.name())
+            {
+                // Filter realtime looks in order to generate LRE contexts below
+                realtimeLookups.add(lookup);
+            }
+            else if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Scheduled.name())
+            {       
+                // For scheduled rollups queue the parent Id record for processing
+                for (Id parentId : masterRecordIds)
+                {
+                    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
+                    scheduledItem.Name = parentId;
+                    scheduledItem.LookupRollupSummary__c = lookup.Id;
+                    scheduledItem.ParentId__c = parentId;
+                    scheduledItem.QualifiedParentID__c = parentId + '#' + lookup.Id; 
+                    scheduledItems.add(scheduledItem);
+                }                   
+            }
+        }
+
+        // Add parent Id's to schedule items object
+        upsert scheduledItems QualifiedParentID__c;
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
