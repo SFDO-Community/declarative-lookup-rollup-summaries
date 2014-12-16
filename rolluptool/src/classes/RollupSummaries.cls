@@ -141,7 +141,7 @@ public with sharing class RollupSummaries extends SObjectDomain
 			   !apexTriggers.containsKey(triggerName))
 				lookupRollupSummary.Active__c.addError(error('Apex Trigger ' + triggerName + ' has not been deployed. Click Manage Child Trigger and try again.', lookupRollupSummary, LookupRollupSummary__c.Active__c));
 			// Check the list of fields expressed in the relationship critiera fields
-			if(lookupRollupSummary.RelationshipCriteriaFields__c!=null)
+			if(childObjectFields!=null && lookupRollupSummary.RelationshipCriteriaFields__c!=null)
 			{
 				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields__c.split('\r\n');
 				String[] fieldsInError = new List<String>();
