@@ -80,6 +80,11 @@
         <name>Layout</name>
     </types>
     <types>
+        <members>LookupRollupSummariesFull</members>
+        <members>LookupRollupSummariesReadOnly</members>
+        <name>PermissionSet</name>
+    </types>
+    <types>
         <members>jszip</members>
         <name>StaticResource</name>
     </types>
