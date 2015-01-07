@@ -604,6 +604,20 @@ global with sharing class RollupService
 				
 		public virtual List<Database.Saveresult> updateRecords(boolean allOrNothing)
 		{
+			// sort (selection sort) masterRecords to avoid having more than 10 chunks in a single database operation
+			// masterRecords.sort() will not work
+			Integer indexOfMin;
+			for( Integer outerIndex = 0; outerIndex < masterRecords.size(); outerIndex++ ){
+				indexOfMin = outerIndex;
+				for( Integer innerIndex = outerIndex; innerIndex < masterRecords.size(); innerIndex++ ){
+					if( String.valueOf(masterRecords.get(indexOfMin).getSObjectType()).compareTo( String.valueOf(masterRecords.get(innerIndex).getSObjectType()) ) > 0 ){
+						indexOfMin = innerIndex;
+					}
+				}
+				SObject temp = masterRecords.get(outerIndex);
+				masterRecords.set( outerIndex, masterRecords.get(indexOfMin) );
+				masterRecords.set(indexOfMin, temp);
+			}
 			return Database.update(masterRecords, allOrNothing);
 		}						
 	}
