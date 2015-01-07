@@ -432,6 +432,102 @@ private with sharing class RollupServiceTest
 		System.assertEquals(expectedResultC, campResult.get('NumberSent'));			
 	}
 	
+	private testmethod static void testMultiRollupWithTwoParentsTenChunks()
+	{		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		// Test data
+		List<Decimal> rollups = new List<Decimal> { 
+			1, 2, 3, 4, 5
+			,6, 7, 8, 9, 10
+			,11, 12, 13, 14, 15
+		};
+					
+		// Test data for rollup A
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		String conditionA = null;
+
+		// Test data for rollup B
+		RollupSummaries.AggregateOperation operationC = RollupSummaries.AggregateOperation.Sum; 
+		String conditionB = null;
+		
+		// Configure rollup A
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummaryA.ParentObject__c = 'Account';
+		rollupSummaryA.ChildObject__c = 'Opportunity';
+		rollupSummaryA.RelationShipField__c = 'AccountId';
+		rollupSummaryA.RelationShipCriteria__c = conditionA;
+		rollupSummaryA.FieldToAggregate__c = 'Amount';
+		rollupSummaryA.AggregateOperation__c = operationA.name();
+		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = 'Realtime';
+
+		// Configure rollup B
+		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+		rollupSummaryB.Name = 'Total Opportunities into Num Sent on Campaign';
+		rollupSummaryB.ParentObject__c = 'Campaign';
+		rollupSummaryB.ChildObject__c = 'Opportunity';
+		rollupSummaryB.RelationShipField__c = 'CampaignId';
+		rollupSummaryB.RelationShipCriteria__c = conditionB;
+		rollupSummaryB.FieldToAggregate__c = 'TotalOpportunityQuantity';
+		rollupSummaryB.AggregateOperation__c = operationC.name();
+		rollupSummaryB.AggregateResultField__c = 'NumberSent';
+		rollupSummaryB.Active__c = true;
+		rollupSummaryB.CalculationMode__c = 'Realtime';
+
+		// Insert rollup definitions
+		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
+		
+		// Test data
+		List<SObject> accountList = new List<SObject>();
+		List<SObject> campaignList = new List<SObject>();
+
+		List<Opportunity> opps = new List<Opportunity>(); 
+		Integer index = 0;
+		for(Decimal rollupValue : rollups) {
+			// add each Opportunity to a new Account/Campaign to produce chunking
+			accountList.add(new Account());
+			accountList[index].put('Name', 'Test Account');
+			accountList[index].put('AnnualRevenue', 0);
+			insert accountList[index];
+
+			campaignList.add( Schema.getGlobalDescribe().get('Campaign').newSObject() );
+			campaignList[index].put('Name', 'Test Campaign');
+			insert campaignList[index];
+
+			Opportunity opp = new Opportunity();
+			opp.Name = 'Test Opportunity';
+			opp.StageName = 'Open';
+			opp.CloseDate = System.today();
+			opp.AccountId = accountList[index].Id;
+			opp.Amount = rollupValue;
+			opp.TotalOpportunityQuantity = rollupValue;
+			opp.put('CampaignId', campaignList[index].Id);
+			opps.add(opp);
+
+			index++;			
+		}
+		insert opps;
+
+		// Assert rollups for each Account/Campaign
+		index = 0;
+		for(Decimal rollupValue : rollups) {
+			Id accountId = accountList[index].Id;
+			Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+			System.assertEquals(rollupValue, accountResult.AnnualRevenue);			
+			
+			Id campId = campaignList[index].Id;		
+			SObject campResult = Database.query('select NumberSent from Campaign where Id = :campId');
+			System.assertEquals(rollupValue, campResult.get('NumberSent'));
+			
+			index++;			
+		}
+	}
+	
 	private testmethod static void testSingleRollupWithoutRelation()
 	{
 		// Test supported?
