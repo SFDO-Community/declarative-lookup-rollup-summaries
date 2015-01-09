@@ -50,7 +50,6 @@
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>false</enableReports>
-    <enableSharing>true</enableSharing>
     <fields>
         <fullName>Active__c</fullName>
         <defaultValue>false</defaultValue>
