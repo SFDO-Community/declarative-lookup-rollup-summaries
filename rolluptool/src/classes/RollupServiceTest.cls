@@ -680,7 +680,6 @@ private with sharing class RollupServiceTest
 		// Sample various limits prior to an update
 		Integer beforeQueries = Limits.getQueries();
 		Integer beforeRows = Limits.getQueryRows();
-		Integer beforeDescribes = Limits.getFieldsDescribes();
 		
 		// Update opportunities (no changes to the field being aggregted, thus no rollup processng)
 		update opps;
@@ -688,7 +687,6 @@ private with sharing class RollupServiceTest
 		// Assert no further limits have been used since the field to aggregate on the detail has not changed
 		System.assertEquals(beforeQueries + 1, Limits.getQueries()); // Only tolerate a query for the Lookup definition
 		System.assertEquals(beforeRows + 1, Limits.getQueryRows()); // Only tolerate a row for the Lookup definition
-		System.assertEquals(beforeDescribes, Limits.getFieldsDescribes()); // Zero tolerance on field describes		
 	}
 	
 	private testmethod static void testLimitsConsumedWithConditions()
@@ -762,10 +760,11 @@ private with sharing class RollupServiceTest
 
 		// One query on ApexTrigger (in the TestContext.isSupported method)
 		// One query on ApexTrigger (validation when inserting rollups)
+		// One query on Database.newQueryLocator (validation when insert rollup a)
 		// One query on Rollup object
 		// One query on Opportunity for rollup a
 		// One query on Opportunity for rollup b				
-		System.assertEquals(5, Limits.getQueries());	
+		System.assertEquals(6, Limits.getQueries());	
 		
 		// One row for ApexTrigger (in the TestContext.isSupported method)		
 		// One row for ApexTrigger
@@ -773,13 +772,6 @@ private with sharing class RollupServiceTest
 		// Two rows for Opportunity for rollup a
 		// Four rows for Opportunity for rollup b
 		System.assertEquals(10, Limits.getQueryRows());
-		
-		// One for the statics at the top of the test
-		// One for the parent object validation on insert of lookup
-		// One for the child object validaiton on insert of lookup
-		// One for the lookup of the field type for the parent object during trigger
-		// One for the lookup of the field type for the child object during trigger
-		System.assertEquals(5, Limits.getFieldsDescribes());
 				
 		// Assert rollup
 		Id accountId = account.Id;
@@ -795,16 +787,12 @@ private with sharing class RollupServiceTest
 		// + One query for the Account query above
 		// + One query on Rollup object
 		// + One query on Opportunity for rollup a
-		System.assertEquals(8, Limits.getQueries());	
+		System.assertEquals(9, Limits.getQueries());	
 
 		// + One query for the Account query above		
 		// + Two rows for Rollup object
 		// + Two rows for Opportunity for rollup a
 		System.assertEquals(15, Limits.getQueryRows());
-		
-		// + One for the lookup of the field type for the parent object during trigger
-		// + One for the lookup of the field type for the child object during trigger
-		System.assertEquals(7, Limits.getFieldsDescribes());
 
 		// Assert rollup
 		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
@@ -892,13 +880,6 @@ private with sharing class RollupServiceTest
 		// Two rows for Rollup object
 		// Four rows for Opportunity for rollup a and b
 		System.assertEquals(8, Limits.getQueryRows());
-		
-		// One for the statics at the top of the test
-		// One for the parent object validation on insert of lookup
-		// One for the child object validaiton on insert of lookup
-		// One for the lookup of the field type for the parent object during trigger
-		// One for the lookup of the field type for the child object during trigger
-		System.assertEquals(5, Limits.getFieldsDescribes());
 				
 		// Assert rollup
 		Id accountId = account.Id;
@@ -920,10 +901,6 @@ private with sharing class RollupServiceTest
 		// + Two rows for Rollup object
 		// + Four rows for Opportunity for rollup a and 
 		System.assertEquals(15, Limits.getQueryRows());
-		
-		// + One for the lookup of the field type for the parent object during trigger
-		// + One for the lookup of the field type for the child object during trigger
-		System.assertEquals(7, Limits.getFieldsDescribes());
 
 		// Assert rollup
 		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');

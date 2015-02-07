@@ -60,7 +60,7 @@ public class LREngine {
             for(sObject ct : Database.query(query))
                 currencyConversionMap.put((String)ct.get('IsoCode'), (Decimal)ct.get('ConversionRate'));
         }
-        return val * currencyConversionMap.get(iso);
+        return val!=null ? val * currencyConversionMap.get(iso) : 0;
     }
 
     /**
@@ -82,7 +82,7 @@ public class LREngine {
         }
         return rollUp(ctx, masterRecordIds);
     }
-    
+
     /**
         Key driver method that rolls up lookup fields based on the context. This is meant to be called from non trigger contexts like
         scheduled/batch apex, where we want to rollup on some master record ids.
@@ -93,6 +93,20 @@ public class LREngine {
                 because we want client or calling code to have this freedom to do some post processing and update when required.
     */
     public static Sobject[] rollUp(Context ctx,  Set<Id> masterIds) {
+        return rollUp(ctx, masterIds, false);
+    }
+    
+    /**
+        Key driver method that rolls up lookup fields based on the context. This is meant to be called from non trigger contexts like
+        scheduled/batch apex, where we want to rollup on some master record ids.
+        
+        @param Context the complete context required to rollup
+        @param masterIds Master record IDs whose child records should be rolled up. 
+        @param validateOnly Checks the SOQL query is valid, throws an exception if not, returns null if valid
+        @returns Array of in memory master objects. These objects are not updated back to the database
+                because we want client or calling code to have this freedom to do some post processing and update when required.
+    */
+    public static Sobject[] rollUp(Context ctx,  Set<Id> masterIds, Boolean validateOnly) {
         // Clone this since we are about to modify it later
         masterIds = masterIds.clone();
         // K: Id of master record
@@ -140,6 +154,12 @@ public class LREngine {
         
         String soql = String.format(SOQL_TEMPLATE, new String[]{soqlProjection, detailTblName, whereClause, grpByFld});
         System.debug('SOQL is ' + soql);
+
+        // validate only?
+        if(validateOnly) {
+            Database.getQueryLocator(soql);
+            return null;
+        }
 
         // aggregated results 
         List<AggregateResult> results = Database.query(soql);
