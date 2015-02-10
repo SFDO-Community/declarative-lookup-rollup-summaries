@@ -31,8 +31,10 @@
  *
  *   TODO: As this class has developed to support schedule and develoepr API entry points some further refactoring for reuse can be done
  **/
-global with sharing class RollupService 
+global with sharing class RollupService
 {	
+	global static Exception LastMetadataAPIConnectionException {get; private set;}
+
 	global static Boolean checkMetadataAPIConnection()
 	{
 		try {
@@ -45,8 +47,10 @@ global with sharing class RollupService
 			queries.add(remoteSites);					
 			service.listMetadata(queries, 28);			
 		} catch (Exception e) {
+			LastMetadataAPIConnectionException = e;
 			return false;
 		}
+		LastMetadataAPIConnectionException = null;
 		return true;
 	}
 	
