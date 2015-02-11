@@ -208,7 +208,7 @@ public class LREngine {
        Which rollup operation you want to perform 
     */ 
     public enum RollupOperation {
-        Sum, Max, Min, Avg, Count
+        Sum, Max, Min, Avg, Count, Count_Distinct
     }
     
     /**

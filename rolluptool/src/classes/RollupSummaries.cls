@@ -42,7 +42,8 @@ public with sharing class RollupSummaries extends SObjectDomain
         	AggregateOperation.Max.name() => LREngine.RollupOperation.Max,
 	        AggregateOperation.Min.name() => LREngine.RollupOperation.Min,
 	        AggregateOperation.Avg.name() => LREngine.RollupOperation.Avg,
-	        AggregateOperation.Count.name() => LREngine.RollupOperation.Count			
+	        AggregateOperation.Count.name() => LREngine.RollupOperation.Count,
+	        AggregateOperation.Count_Distinct.name().replace('_', ' ') => LREngine.RollupOperation.Count_Distinct
 		};
 	
 	/**
@@ -64,7 +65,8 @@ public with sharing class RollupSummaries extends SObjectDomain
         Max, 
         Min,
         Avg,
-        Count
+        Count,
+        Count_Distinct
     }
 		
 	public RollupSummaries(List<LookupRollupSummary__c> records)

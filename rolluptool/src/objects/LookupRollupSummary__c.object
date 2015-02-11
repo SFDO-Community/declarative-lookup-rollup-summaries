@@ -74,6 +74,10 @@
                 <fullName>Count</fullName>
                 <default>false</default>
             </picklistValues>
+            <picklistValues>
+                <fullName>Count Distinct</fullName>
+                <default>false</default>
+            </picklistValues>
             <sorted>false</sorted>
         </picklist>
         <type>Picklist</type>

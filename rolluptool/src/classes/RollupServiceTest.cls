@@ -64,7 +64,12 @@ private with sharing class RollupServiceTest
 	{
 		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 4, RollupSummaries.AggregateOperation.Count, null);	
 	}
-	
+
+	private testmethod static void testSingleCountDistinctRollup()
+	{
+		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 2, RollupSummaries.AggregateOperation.Count_Distinct, null);
+	}
+
 	private testmethod static void testSingleSumRollupConditional()
 	{
 		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 500, RollupSummaries.AggregateOperation.Sum, 'Amount > 200');	
@@ -922,7 +927,7 @@ private with sharing class RollupServiceTest
 		rollupSummary.RelationShipField__c = 'AccountId';
 		rollupSummary.RelationShipCriteria__c = condition; // 'Amount > 200';
 		rollupSummary.FieldToAggregate__c = 'Amount';
-		rollupSummary.AggregateOperation__c = operation.name();
+		rollupSummary.AggregateOperation__c = operation.name().replace('_', ' ');
 		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
 		rollupSummary.Active__c = true;
 		rollupSummary.CalculationMode__c = 'Realtime';
