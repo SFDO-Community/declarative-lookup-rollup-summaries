@@ -60,7 +60,7 @@ global with sharing class RollupService
 	global static Id runJobToCalculate(Id lookupId)
 	{
 		// Is another calculate job running for this lookup?
-		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });		
+		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });
 		if(lookups.size()==0)
 			throw RollupServiceException.rollupNotFound(lookupId);
 		LookupRollupSummary__c lookup = lookups[0];
@@ -559,30 +559,37 @@ global with sharing class RollupService
 			if(childFields==null)
 				gdFields.put(childObjectType, ((childFields = childObjectType.getDescribe().fields.getMap())));
 			SObjectField fieldToAggregate = childFields.get(lookup.FieldToAggregate__c);
+			SObjectField fieldToOrderBy = lookup.FieldToOrderBy__c!=null ? childFields.get(lookup.FieldToOrderBy__c) : null;
 			SObjectField relationshipField = childFields.get(lookup.RelationshipField__c);
 			SObjectField aggregateResultField = parentFields.get(lookup.AggregateResultField__c);
 			if(fieldToAggregate==null || relationshipField==null || aggregateResultField==null)
 				throw RollupServiceException.invalidRollup(lookup);
 			
-			// Determine if an LREngine Context has been created for this parent child relationship and filter combination?
-			String contextKey = lookup.ParentObject__c + '#' + lookup.RelationshipField__c + '#' + lookup.RelationShipCriteria__c;
+			// Summary field definition used by LREngine
+			LREngine.RollupSummaryField rsf = 
+	            new LREngine.RollupSummaryField(
+					aggregateResultField.getDescribe(),
+					fieldToAggregate.getDescribe(),
+					fieldToOrderBy !=null ? fieldToOrderBy.getDescribe() : null, // field to order by on child
+					RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c),
+	            	lookup.ConcatenateDelimiter__c);
+
+			// Determine if an LREngine Context has been created for this parent child relationship, filter combination or underlying query type?
+	        String rsfType = rsf.isAggregateBasedRollup() ? 'aggregate' : 'query';	        
+			String contextKey = lookup.ParentObject__c + '#' + lookup.RelationshipField__c + '#' + lookup.RelationShipCriteria__c + '#' + rsfType;
 			LREngine.Context lreContext = engineCtxByParentRelationship.get(contextKey);
 			if(lreContext==null)
 			{								
 				// Construct LREngine.Context
 				lreContext = new LREngine.Context(
 					parentObjectType, // parent object
-                    childObjectType,  // child object
+                    childObjectType,  // child object                    
                     relationshipField.getDescribe(), // relationship field name
                     lookup.RelationShipCriteria__c); 
 				engineCtxByParentRelationship.put(contextKey, lreContext);
 			}				
 			// Add the lookup
-			lreContext.add(
-	            new LREngine.RollupSummaryField(
-					aggregateResultField.getDescribe(),
-					fieldToAggregate.getDescribe(),
-					RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c)));
+			lreContext.add(rsf);
 		}		
 		return engineCtxByParentRelationship;
 	}

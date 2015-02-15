@@ -43,7 +43,11 @@ public with sharing class RollupSummaries extends SObjectDomain
 	        AggregateOperation.Min.name() => LREngine.RollupOperation.Min,
 	        AggregateOperation.Avg.name() => LREngine.RollupOperation.Avg,
 	        AggregateOperation.Count.name() => LREngine.RollupOperation.Count,
-	        AggregateOperation.Count_Distinct.name().replace('_', ' ') => LREngine.RollupOperation.Count_Distinct
+	        AggregateOperation.Count_Distinct.name().replace('_', ' ') => LREngine.RollupOperation.Count_Distinct,
+	        AggregateOperation.Concatenate.name() => LREngine.RollupOperation.Concatenate,
+	        AggregateOperation.Concatenate_Distinct.name().replace('_', ' ') => LREngine.RollupOperation.Concatenate_Distinct,
+	        AggregateOperation.First.name() => LREngine.RollupOperation.First,
+	        AggregateOperation.Last.name() => LREngine.RollupOperation.Last	        
 		};
 	
 	/**
@@ -66,7 +70,11 @@ public with sharing class RollupSummaries extends SObjectDomain
         Min,
         Avg,
         Count,
-        Count_Distinct
+        Count_Distinct,
+        Concatenate,
+        Concatenate_Distinct,
+        First,
+        Last
     }
 		
 	public RollupSummaries(List<LookupRollupSummary__c> records)
@@ -112,6 +120,7 @@ public with sharing class RollupSummaries extends SObjectDomain
 			// Child Object fields valid?
 			SObjectField relationshipField = null;
 			SObjectField fieldToAggregate = null;
+			SObjectField fieldToOrderBy = null;
 			Map<String, Schema.SObjectField> childObjectFields = gdFields.get(childObjectType);
 			if(childObjectFields!=null)
 			{
@@ -123,6 +132,12 @@ public with sharing class RollupSummaries extends SObjectDomain
 				fieldToAggregate = childObjectFields.get(lookupRollupSummary.FieldToAggregate__c);
 				if(fieldToAggregate==null)
 					lookupRollupSummary.FieldToAggregate__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.FieldToAggregate__c));
+				// Field to Order By valid?
+				if(lookupRollupSummary.FieldToOrderBy__c!=null) {
+					fieldToOrderBy = childObjectFields.get(lookupRollupSummary.FieldToOrderBy__c);
+					if(fieldToOrderBy==null)
+						lookupRollupSummary.FieldToOrderBy__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.FieldToOrderBy__c));					
+				}
 				// TODO: Validate relationship field is a lookup to the parent
 				// ...
 			}
@@ -178,7 +193,9 @@ public with sharing class RollupSummaries extends SObjectDomain
 			            new LREngine.RollupSummaryField(
 							aggregateResultField.getDescribe(),
 							fieldToAggregate.getDescribe(),
-							OPERATION_PICKLIST_TO_ENUMS.get(lookupRollupSummary.AggregateOperation__c)));
+							fieldToOrderBy!=null ? fieldToOrderBy.getDescribe() : null, // optional field to order by
+							OPERATION_PICKLIST_TO_ENUMS.get(lookupRollupSummary.AggregateOperation__c),
+							lookupRollupSummary.ConcatenateDelimiter__c));
 					// Validate the SOQL
 					if(lookupRollupSummary.RelationShipCriteria__c!=null && 
 					   lookupRollupSummary.RelationShipCriteria__c.length()>0) 
