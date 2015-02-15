@@ -33,6 +33,8 @@
         <members>TestLREngine</members>
         <members>WelcomeController</members>
         <members>WelcomeControllerTest</members>
+        <members>RollupActionCalculate</members>
+        <members>RollupActionCalculateTest</members>
         <name>ApexClass</name>
     </types>
     <types>

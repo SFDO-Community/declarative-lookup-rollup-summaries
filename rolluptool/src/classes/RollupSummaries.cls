@@ -57,7 +57,8 @@ public with sharing class RollupSummaries extends SObjectDomain
 	{
 		Realtime, 
 		Scheduled, 
-		Developer
+		Developer,
+		Process_Builder
 	}
 	
 	/**

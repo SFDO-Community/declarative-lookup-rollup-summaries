@@ -95,6 +95,66 @@ global with sharing class RollupService
 	}	
 
 	/**
+	 * Describes a specific rollup to process
+	 **/
+	global class RollupToCalculate {
+		global Id parentId;
+		global String rollupSummaryUniqueName;
+	}
+
+	/**
+	 * Executes Process Builder rollups
+	 **/
+	global static void rollup(List<RollupToCalculate> rollupsToCalculate) {
+
+		// Anything to process?
+		if(rollupsToCalculate==null || rollupsToCalculate.size()==0)
+			return;
+
+		// Load summaries
+		Set<String> uniqueNames = new Set<String>();
+		Set<Id> masterIds = new Set<Id>();
+		for(RollupToCalculate rollupToCalc : rollupsToCalculate) {
+			uniqueNames.add(rollupToCalc.rollupSummaryUniqueName);
+			masterIds.add(rollupToCalc.parentId);
+		}
+		List<LookupRollupSummary__c> lookups =
+			new RollupSummariesSelector().selectActiveByUniqueName(uniqueNames);
+		if(lookups.size()==0)
+			return;
+
+		// Process each context (parent child relationship) and its associated rollups
+		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
+		for(LREngine.Context ctx : createLREngineContexts(lookups).values())
+		{
+			// Produce a set of master Id's applicable to this context (parent only)			
+			Set<Id> ctxMasterIds = new Set<Id>();
+			for(Id masterId : masterIds)
+				if(masterId.getSObjectType() == ctx.master)
+					ctxMasterIds.add(masterId);
+			// Execute the rollup and process the resulting updated master records
+			for(SObject masterRecord : LREngine.rollup(ctx, ctxMasterIds)) 
+			{
+				// Skip master records without Id's (LREngine can return these where there was 
+				//	no related master records to children, for examlpe where a relationship is optional)
+				if(masterRecord.Id==null)
+					break;
+				// Merge this master record result into a previous one from another rollup ctx?
+				SObject existingRecord = masterRecords.get(masterRecord.Id);
+				if(existingRecord==null)
+					masterRecords.put(masterRecord.Id, masterRecord);
+				else
+					for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll)
+						existingRecord.put(fieldToRoll.master.getSObjectField(), 
+							masterRecord.get(fieldToRoll.master.getSObjectField()));
+			}			
+		}
+
+		// Update the master records
+		update masterRecords.values();
+	}
+
+	/**
 	 * Developer API for the tool, only executes Rollup Summmaries with Calculation Mode set to Developer 
 	 *
 	 * @param childRecords Child records being modified
