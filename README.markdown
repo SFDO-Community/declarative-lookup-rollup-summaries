@@ -63,7 +63,7 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 - Enhancement [Support for Lightning Process Builder](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/117)
 
 If you are upgrading, you will need to make the following changes to the Layout and Picklists.
-- Add **Concatenate Delimiter** and **Field to Order By** fields to the layout
+- Add **Lookup Rollup Summary Unique Name**, **Concatenate Delimiter**, **Field to Order By** fields to the layout
 - Add **Count Distinct**, **Concatenate**, **Concatenate Distinct**, **First** and **Last** picklist items to **Aggregate Operation**  
 - Add **Process Builder** picklist item to **Calculation Mode**
 
