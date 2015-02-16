@@ -62,6 +62,11 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 - Enhancement [Filter by last create date](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/79)
 - Enhancement [Support for Lightning Process Builder](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/117)
 
+If you are upgrading, you will need to make the following changes to the Layout and Picklists.
+- Add **Concatenate Delimiter** and **Field to Order By** fields to the layout
+- Add **Count Distinct**, **Concatenate**, **Concatenate Distinct**, **First** and **Last** picklist items to **Aggregate Operation**  
+- Add **Process Builder** picklist item to **Calculation Mode**
+
 **Version 1.17**
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Qeej), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Qeej)
