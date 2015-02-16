@@ -55,7 +55,7 @@ You can install a packaged version of the tool into your production org (sandbox
 
 **Latest Version 1.18**
 
-Read more about this releae [here](Declarative Lookup Rollup Summaries – Spring’15 Release).
+Read more about this releae [here](http://andyinthecloud.com/2015/02/16/declarative-lookup-rollup-summaries-tool-dlrs-spring15-release/).
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QeuE), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QeuE)
 
