@@ -53,7 +53,7 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! 
 
-[**Latest Version 1.18**](#Version1.18)
+[**Latest Version 1.18**](#Version1_18)
 
 Read more about this releae [here](http://andyinthecloud.com/2015/02/16/declarative-lookup-rollup-summaries-tool-dlrs-spring15-release/).
 
