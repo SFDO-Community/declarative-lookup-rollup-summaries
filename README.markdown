@@ -16,7 +16,7 @@ Please refer to the blog posts below for more detailed information.
 Documentation
 -------------
 
-The tool has been feature in a number of blog entries as it has evolved...
+The tool has been featured in a number of blog entries as it has evolved...
 
 - [Declarative Lookup Rollup Summaries – Spring’15 Release](http://andyinthecloud.com/2015/02/16/declarative-lookup-rollup-summaries-tool-dlrs-spring15-release/)
 - [A Declarative Rollup Summary Tool for Force.com Lookup Relationships](https://developer.salesforce.com/page/Declarative_Rollup_Summary_Tool_for_Force.com_Lookup_Relationships)
