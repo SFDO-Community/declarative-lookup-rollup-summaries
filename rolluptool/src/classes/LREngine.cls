@@ -259,8 +259,15 @@ public class LREngine {
                        rsf.operation == RollupOperation.Concatenate_Distinct) {                    
                         Concatenator concatenator =
                             new Concatenator(rsf.operation == RollupOperation.Concatenate_Distinct, rsf.concatenateDelimiter);
-                        for(SObject childDetailRecord : childDetailRecords)
-                            concatenator.add(String.valueOf(childDetailRecord.get(rsf.detail.getName())));
+                        for(SObject childDetailRecord : childDetailRecords) {
+                            if (rsf.detail.getType() == Schema.DisplayType.MultiPicklist) {
+                                for (String mspValue : String.valueOf(childDetailRecord.get(rsf.detail.getName())).split(';')) {
+                                    concatenator.add(mspValue);
+                                }
+                            } else {
+                                concatenator.add(String.valueOf(childDetailRecord.get(rsf.detail.getName())));
+                            }
+                        }
                         String concatenatedValues = concatenator.toString();
                         concatenatedValues = concatenatedValues.abbreviate(rsf.master.getLength());
                         masterRecordsMap.get(masterId).put(rsf.master.getName(), concatenatedValues);
