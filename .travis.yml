@@ -5,8 +5,8 @@ branches:
     - master
 env:
   global:
-    - secure: "ZLmCucvN1McJ2Ja85s4/IPUmHSkcODBsMobK79UpPnpyVj7/qAhw9BcMUkIo/Xg7tv5iIhsHofW3rWNvRXvFPCq0JuJCCLBo74D7kdIOfK09PVPiQhjtVmZszErmjovZe3q05qqcxVUbyABDBBj38Rp0bzS7siAkOovPr5uNZwc="
-    - secure: "egan0+a931l9Oly3Fo904QibRdOIdEiei1aQ2giA1e0RRCjegtkn6xXV9b9ayAhzgbZ30ssrpHFK1lsysJg6PKwsSc2NvofZ1TSCGnBWlBHMptbDaS7x/vFSvDFEwBJPKt9OFerKeKf8o3NYe4LKMmDtQl+/p9HvLWKL6Ey+Y4M="
+    - secure: "OmrJ9gTiMzTIWzO2X3vGIx1Yp7HnDY1SBsKChBcYhtb0G6XVlpit0GnkbSozEwnInATwC2XjrIwpliUJNizWuYhpwoH9r/iCVU7qG4MCYEVtFaDQmnPXeTvSOs5peC5tor0r6UkjiHIUF4WorFNidGXqXrCxGciF8RyV76ouuew="
+    - secure: "djA2xZYLFEhGyRYGJZBBUuZdWcUQqtJA5fFhknnDQUyG2B7VyLvoeIg2t8usQ1sCN8cdlIFuDVeRQhD/MOojFpRqwIbiDuz3kOaiVur/XPUBbMDmWsqAKdzkSehhenY5qhjnj58u/qpa6xoU4W/hquldoMiG4O5fzLOu3FEC7vQ="
 script: 
   - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && ant -lib lib/ant-salesforce.jar -Dsf.username=${SFUSER} -Dsf.password=${SFPWD} deployRunNoTests || [ "${TRAVIS_PULL_REQUEST}" != "false" ]'
   - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] && ant -lib lib/ant-salesforce.jar -Dsf.username=${SFUSER} -Dsf.password=${SFPWD} validateAllTests || [ "${TRAVIS_PULL_REQUEST}" = "false" ]'

@@ -1,7 +1,7 @@
 Declarative Rollups for Lookups!
 ================================
 
-[![Build Status](https://travis-ci.org/dhoechst/declarative-lookup-rollup-summaries.svg)](https://travis-ci.org/dhoechst/declarative-lookup-rollup-summaries)
+[![Build Status](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries.svg)](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries)
 
 Features Summary
 ----------------
