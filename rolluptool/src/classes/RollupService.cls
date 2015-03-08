@@ -211,13 +211,36 @@ global with sharing class RollupService
 		}
 		return masterRecords.values();
 	}
+
+	/**
+	 * Apex Test handler (call from Apex Test only)
+	 **/
+	global static void testHandler(SObject dummyChildRecord) 
+	{
+		try {
+			insert dummyChildRecord;
+		} catch (Exception e) {
+			// If the auto generated trigger was invoked this test served its purpose (code coverage wise) ignore this error
+			if(triggerHandleInvoked)
+				return;
+			// Otherwise fail the test with the underlying exception as it prevented our trigger being invoked
+			throw e;
+		}
+	}
 	
+	/**
+	 * Used in a test context to determine if errors from the dummy child insert should fail the test
+	 **/
+	private static boolean triggerHandleInvoked = false;
+
 	/**
 	 * Apex Trigger helper, automatically resolves child records to process via LREngine and lookups described in LookupRollupSummary__c
 	 *    also determines if based on the old trigger records if the rollup processing needs to occur
 	 **/
 	global static void triggerHandler()
 	{
+		triggerHandleInvoked = true;
+
 		// Currently no processing in the before phase
 		if(Trigger.isBefore)
 			return;		
