@@ -402,8 +402,8 @@ public class LREngine {
 
             if (operation == RollupOperation.First ||
                 operation == RollupOperation.Last) {
-                if (this.master.getSObjectField() != this.detail.getSObjectField() &&
-                    !isDetailTypeText && !isMasterTypeText) {
+                if ( (this.master.getType() != this.detail.getType()) &&
+                     (!isDetailTypeText && !isMasterTypeText) ) {
                     throw new BadRollUpSummaryStateException('Master and detail fields must be the same field type (or text based) for First or Last operations');
                 }
             }

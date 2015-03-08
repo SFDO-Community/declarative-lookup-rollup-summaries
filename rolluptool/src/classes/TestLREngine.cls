@@ -655,6 +655,19 @@ private class TestLREngine {
         } catch (Exception e) {
             System.assertEquals('Master and detail fields must be the same field type (or text based) for First or Last operations', e.getMessage());
         }
+        // Master and detail field type match
+        try {
+            LREngine.Context ctx = 
+                new LREngine.Context(
+                    Account.SobjectType, Opportunity.SobjectType, 
+                    Schema.SObjectType.Opportunity.fields.AccountId);
+            ctx.add(new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.AnnualRevenue,
+                Schema.SObjectType.Opportunity.fields.Amount,
+                LREngine.RollupOperation.First));                 
+        } catch (Exception e) {
+            System.assert(false, 'Not expecting an exception ' + e.getMessage());
+        }
     } 
 
     static testMethod void testRollupConcatenateTruncate() {
