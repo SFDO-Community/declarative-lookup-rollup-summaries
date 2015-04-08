@@ -260,12 +260,15 @@ public class LREngine {
                         Concatenator concatenator =
                             new Concatenator(rsf.operation == RollupOperation.Concatenate_Distinct, rsf.concatenateDelimiter);
                         for(SObject childDetailRecord : childDetailRecords) {
+                            String childFieldValue = String.valueOf(childDetailRecord.get(rsf.detail.getName()));
+                            if (childFieldValue != null) {
                             if (rsf.detail.getType() == Schema.DisplayType.MultiPicklist) {
-                                for (String mspValue : String.valueOf(childDetailRecord.get(rsf.detail.getName())).split(';')) {
+                                    for (String mspValue : childFieldValue.split(';')) {
                                     concatenator.add(mspValue);
                                 }
                             } else {
-                                concatenator.add(String.valueOf(childDetailRecord.get(rsf.detail.getName())));
+                                    concatenator.add(childFieldValue);
+                                }
                             }
                         }
                         String concatenatedValues = concatenator.toString();
