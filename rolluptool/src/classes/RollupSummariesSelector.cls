@@ -38,12 +38,15 @@ public with sharing class RollupSummariesSelector extends SObjectSelector
 			LookupRollupSummary__c.AggregateResultField__c,
 			LookupRollupSummary__c.CalculationMode__c,
 			LookupRollupSummary__c.ChildObject__c,
+			LookupRollupSummary__c.ConcatenateDelimiter__c,
 			LookupRollupSummary__c.FieldToAggregate__c,
+			LookupRollupSummary__c.FieldToOrderBy__c,
 			LookupRollupSummary__c.ParentObject__c,
 			LookupRollupSummary__c.RelationshipCriteria__c,
 			LookupRollupSummary__c.RelationshipCriteriaFields__c,
 			LookupRollupSummary__c.RelationshipField__c,
-			LookupRollupSummary__c.CalculateJobId__c
+			LookupRollupSummary__c.CalculateJobId__c,
+			LookupRollupSummary__c.UniqueName__c
 		};
 	}
 
@@ -78,5 +81,19 @@ public with sharing class RollupSummariesSelector extends SObjectSelector
 				new List<String>{getFieldListString(),
 					getSObjectName(),
 					getOrderBy()}));		
+	}
+
+	/**
+	 * Returns active lookup rollup summary definitions for the given rollup unique names
+	 **/
+	public List<LookupRollupSummary__c> selectActiveByUniqueName(Set<String> uniqueNames)
+	{
+		assertIsAccessible();
+		return Database.query(String.format(
+			'select {0} from {1} where UniqueName__c in :uniqueNames and Active__c = true order by ParentObject__c, RelationshipField__c', 
+				new List<String>{getFieldListString(),
+					getSObjectName(),
+					getOrderBy()}));		
+
 	}
 }

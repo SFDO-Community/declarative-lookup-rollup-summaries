@@ -33,7 +33,91 @@ private with sharing class RollupSummariesTest
 
 	// TODO: Write a test to validate the criteria fields are specified when criteria is specified
 	// ...		
-	
+
+	/**
+	 * Issue https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/108
+	 **/
+	private testmethod static void testBadCriteria()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = 'StageName Equals Won';
+		rollupSummary.RelationShipCriteriaFields__c = 'StageName';
+		rollupSummary.FieldToAggregate__c = 'Amount';
+		rollupSummary.AggregateOperation__c = 'Sum';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Relationship Criteria \'StageName Equals Won\' is not valid, see SOQL documentation http://www.salesforce.com/us/developer/docs/soql_sosl/Content/sforce_api_calls_soql_select_conditionexpression.htm, error is \'unexpected token: \'Equals\'\'', SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(LookupRollupSummary__c.RelationShipCriteria__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field);
+	}	
+
+	/**
+	 * Issue https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/115
+	 **/
+	private testmethod static void testInsertBadChildBigName()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Max Birthday for Contacts related to an Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'BadBadBadBadBadBadBadBadBadBad';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
+		rollupSummary.AggregateOperation__c = 'Count';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.RelationshipCriteriaFields__c = 'Bad';
+		rollupSummary.Active__c = false;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Object does not exist.', SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(LookupRollupSummary__c.ChildObject__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field);		
+	}	
+
+	/**
+	 * Issue https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/97
+	 **/
+	private testmethod static void testInsertBadChildBadCriteria()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Max Birthday for Contacts related to an Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Bad';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
+		rollupSummary.AggregateOperation__c = 'Count';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.RelationshipCriteriaFields__c = 'Bad';
+		rollupSummary.Active__c = false;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Object does not exist.', SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(LookupRollupSummary__c.ChildObject__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field);
+	}
+
 	private testmethod static void testInsertActiveValidation()
 	{
 		// Test supported?
@@ -101,11 +185,9 @@ private with sharing class RollupSummariesTest
 		rollupSummary.CalculationMode__c = 'Realtime';
 		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
 		SObjectDomain.triggerHandler(RollupSummaries.class);		
-		System.assertEquals(2, SObjectDomain.Errors.getAll().size());	
+		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
 		System.assertEquals('Object does not exist.', SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(LookupRollupSummary__c.ChildObject__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field);
-		System.assertEquals('Apex Trigger ' + RollupSummaries.makeTriggerName(rollupSummary) + ' has not been deployed. Click Manage Child Trigger and try again.', SObjectDomain.Errors.getAll()[1].message);
-		System.assertEquals(LookupRollupSummary__c.Active__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[1]).field);
 	}
 	
 	private testmethod static void testInsertRelationshipFieldValidation()
@@ -154,6 +236,31 @@ private with sharing class RollupSummariesTest
 		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
 		System.assertEquals('Field does not exist.', SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(LookupRollupSummary__c.FieldToAggregate__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field);
+	}		
+
+	private testmethod static void testInsertFieldToOrderByValidation()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'Amount';
+		rollupSummary.FieldToOrderBy__c = 'AmountX';
+		rollupSummary.AggregateOperation__c = 'Sum';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Field does not exist.', SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(LookupRollupSummary__c.FieldToOrderBy__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field);
 	}		
 	
 	private testmethod static void testInsertAggregateResultFieldValidation()
@@ -264,8 +371,11 @@ private with sharing class RollupSummariesTest
 		rollupSummary.CalculationMode__c = 'Realtime';
 		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
 		SObjectDomain.triggerHandler(RollupSummaries.class);		
-		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
-		System.assertEquals('Field Stage does not exist on the child object.', SObjectDomain.Errors.getAll()[0].message);		
+		System.assertEquals(2, SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Field Stage does not exist on the child object.', SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(LookupRollupSummary__c.RelationShipCriteriaFields__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field);
+		System.assertEquals('Relationship Criteria \'Stage = \'Won\'\' is not valid, see SOQL documentation http://www.salesforce.com/us/developer/docs/soql_sosl/Content/sforce_api_calls_soql_select_conditionexpression.htm, error is \'No such column \'Stage\' on entity \'Opportunity\'. If you are attempting to use a custom field, be sure to append the \'__c\' after the custom field name. Please reference your WSDL or the describe call for the appropriate names.\'', SObjectDomain.Errors.getAll()[1].message);
+		System.assertEquals(LookupRollupSummary__c.RelationShipCriteria__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[1]).field);
 	}	
 
 	private testmethod static void testRelationshipCriteriaFieldsValidationMulti()
@@ -288,8 +398,11 @@ private with sharing class RollupSummariesTest
 		rollupSummary.CalculationMode__c = 'Realtime';
 		SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
 		SObjectDomain.triggerHandler(RollupSummaries.class);		
-		System.assertEquals(1, SObjectDomain.Errors.getAll().size());	
-		System.assertEquals('Fields Stage,Another do not exist on the child object.', SObjectDomain.Errors.getAll()[0].message);		
+		System.assertEquals(2, SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Fields Stage,Another do not exist on the child object.', SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(LookupRollupSummary__c.RelationShipCriteriaFields__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[0]).field);
+		System.assertEquals('Relationship Criteria \'Stage = \'Won\'\' is not valid, see SOQL documentation http://www.salesforce.com/us/developer/docs/soql_sosl/Content/sforce_api_calls_soql_select_conditionexpression.htm, error is \'No such column \'Stage\' on entity \'Opportunity\'. If you are attempting to use a custom field, be sure to append the \'__c\' after the custom field name. Please reference your WSDL or the describe call for the appropriate names.\'', SObjectDomain.Errors.getAll()[1].message);
+		System.assertEquals(LookupRollupSummary__c.RelationShipCriteria__c, ((SObjectDomain.FieldError)SObjectDomain.Errors.getAll()[1]).field);		
 	}	
 
 	private testmethod static void testInsertCountByCloseDateNoErrors()

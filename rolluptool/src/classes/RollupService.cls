@@ -31,8 +31,10 @@
  *
  *   TODO: As this class has developed to support schedule and develoepr API entry points some further refactoring for reuse can be done
  **/
-global with sharing class RollupService 
+global with sharing class RollupService
 {	
+	global static Exception LastMetadataAPIConnectionException {get; private set;}
+
 	global static Boolean checkMetadataAPIConnection()
 	{
 		try {
@@ -45,8 +47,10 @@ global with sharing class RollupService
 			queries.add(remoteSites);					
 			service.listMetadata(queries, 28);			
 		} catch (Exception e) {
+			LastMetadataAPIConnectionException = e;
 			return false;
 		}
+		LastMetadataAPIConnectionException = null;
 		return true;
 	}
 	
@@ -56,7 +60,7 @@ global with sharing class RollupService
 	global static Id runJobToCalculate(Id lookupId)
 	{
 		// Is another calculate job running for this lookup?
-		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });		
+		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });
 		if(lookups.size()==0)
 			throw RollupServiceException.rollupNotFound(lookupId);
 		LookupRollupSummary__c lookup = lookups[0];
@@ -89,6 +93,66 @@ global with sharing class RollupService
 		Integer scopeSize = (Integer) DeclarativeLookupRollupSummaries__c.getInstance().ScheduledJobScopeSize__c;
 		return Database.executeBatch(new RollupJob(), scopeSize == null ? 100 : scopeSize);
 	}	
+
+	/**
+	 * Describes a specific rollup to process
+	 **/
+	global class RollupToCalculate {
+		global Id parentId;
+		global String rollupSummaryUniqueName;
+	}
+
+	/**
+	 * Executes Process Builder rollups
+	 **/
+	global static void rollup(List<RollupToCalculate> rollupsToCalculate) {
+
+		// Anything to process?
+		if(rollupsToCalculate==null || rollupsToCalculate.size()==0)
+			return;
+
+		// Load summaries
+		Set<String> uniqueNames = new Set<String>();
+		Set<Id> masterIds = new Set<Id>();
+		for(RollupToCalculate rollupToCalc : rollupsToCalculate) {
+			uniqueNames.add(rollupToCalc.rollupSummaryUniqueName);
+			masterIds.add(rollupToCalc.parentId);
+		}
+		List<LookupRollupSummary__c> lookups =
+			new RollupSummariesSelector().selectActiveByUniqueName(uniqueNames);
+		if(lookups.size()==0)
+			return;
+
+		// Process each context (parent child relationship) and its associated rollups
+		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
+		for(LREngine.Context ctx : createLREngineContexts(lookups).values())
+		{
+			// Produce a set of master Id's applicable to this context (parent only)			
+			Set<Id> ctxMasterIds = new Set<Id>();
+			for(Id masterId : masterIds)
+				if(masterId.getSObjectType() == ctx.master)
+					ctxMasterIds.add(masterId);
+			// Execute the rollup and process the resulting updated master records
+			for(SObject masterRecord : LREngine.rollup(ctx, ctxMasterIds)) 
+			{
+				// Skip master records without Id's (LREngine can return these where there was 
+				//	no related master records to children, for examlpe where a relationship is optional)
+				if(masterRecord.Id==null)
+					break;
+				// Merge this master record result into a previous one from another rollup ctx?
+				SObject existingRecord = masterRecords.get(masterRecord.Id);
+				if(existingRecord==null)
+					masterRecords.put(masterRecord.Id, masterRecord);
+				else
+					for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll)
+						existingRecord.put(fieldToRoll.master.getSObjectField(), 
+							masterRecord.get(fieldToRoll.master.getSObjectField()));
+			}			
+		}
+
+		// Update the master records
+		update masterRecords.values();
+	}
 
 	/**
 	 * Developer API for the tool, only executes Rollup Summmaries with Calculation Mode set to Developer 
@@ -147,13 +211,36 @@ global with sharing class RollupService
 		}
 		return masterRecords.values();
 	}
+
+	/**
+	 * Apex Test handler (call from Apex Test only)
+	 **/
+	global static void testHandler(SObject dummyChildRecord) 
+	{
+		try {
+			insert dummyChildRecord;
+		} catch (Exception e) {
+			// If the auto generated trigger was invoked this test served its purpose (code coverage wise) ignore this error
+			if(triggerHandleInvoked)
+				return;
+			// Otherwise fail the test with the underlying exception as it prevented our trigger being invoked
+			throw e;
+		}
+	}
 	
+	/**
+	 * Used in a test context to determine if errors from the dummy child insert should fail the test
+	 **/
+	private static boolean triggerHandleInvoked = false;
+
 	/**
 	 * Apex Trigger helper, automatically resolves child records to process via LREngine and lookups described in LookupRollupSummary__c
 	 *    also determines if based on the old trigger records if the rollup processing needs to occur
 	 **/
 	global static void triggerHandler()
 	{
+		triggerHandleInvoked = true;
+
 		// Currently no processing in the before phase
 		if(Trigger.isBefore)
 			return;		
@@ -314,10 +401,18 @@ global with sharing class RollupService
 		}
 
 		// Map rollup summary schedule items by parent id, in order to remove only those whos parent/master record actually gets updated below
-		Map<Id, LookupRollupSummaryScheduleItems__c> rollupSummaryScheduleItemsByParentId = 
-			new Map<Id, LookupRollupSummaryScheduleItems__c>();
+		Map<Id, List<LookupRollupSummaryScheduleItems__c>> rollupSummaryScheduleItemsByParentId = 
+			new Map<Id, List<LookupRollupSummaryScheduleItems__c>>();
 		for(LookupRollupSummaryScheduleItems__c rollupSummaryScheduleItem : rollupSummaryScheduleItems)
-			rollupSummaryScheduleItemsByParentId.put(rollupSummaryScheduleItem.ParentId__c, rollupSummaryScheduleItem);
+		{
+			List<LookupRollupSummaryScheduleItems__c> rollupsByParentId = rollupSummaryScheduleItemsByParentId.get(rollupSummaryScheduleItem.ParentId__c);
+			if(rollupsByParentId==null)
+			{
+				rollupsByParentId = new List<LookupRollupSummaryScheduleItems__c>();
+				rollupSummaryScheduleItemsByParentId.put(rollupSummaryScheduleItem.ParentId__c, rollupsByParentId);
+			}
+			rollupsByParentId.add(rollupSummaryScheduleItem);
+		}
 			
 		// Update master records
 		List<LookupRollupSummaryLog__c> rollupSummaryLogs = new List<LookupRollupSummaryLog__c>();
@@ -353,7 +448,10 @@ global with sharing class RollupService
 		delete [select Id from LookupRollupSummaryLog__c where ParentId__c in :rollupSummaryScheduleItemsByParentId.keySet()];
 		
 		// Delete any schedule items for successfully updated master records
-		delete rollupSummaryScheduleItemsByParentId.values();
+		List<LookupRollupSummaryScheduleItems__c> scheduleItemsToDelete = new List<LookupRollupSummaryScheduleItems__c>();
+		for(List<LookupRollupSummaryScheduleItems__c> scheduleItems : rollupSummaryScheduleItemsByParentId.values())
+			scheduleItemsToDelete.addAll(scheduleItems);
+		delete scheduleItemsToDelete;
 	}
 
 	/**
@@ -442,32 +540,32 @@ global with sharing class RollupService
 		// Process lookups, 
 		//    Realtime are added to a list for later LRE context creation and processing, 
 		//    Scheduled result in parent Id's being emitted to scheduled item object for later processing
-		List<LookupRollupSummary__c> realtimeLookups = new List<LookupRollupSummary__c>();  	
-		Map<Id, LookupRollupSummaryScheduleItems__c> scheduledItems = new Map<Id, LookupRollupSummaryScheduleItems__c>(); 
-		for(LookupRollupSummary__c lookup : lookups)
-		{
-			if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Realtime.name())
-			{
-				// Filter realtime looks in order to generate LRE contexts below
-				realtimeLookups.add(lookup);
-			}
-			else if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Scheduled.name())
-			{		
-				// For scheduled rollups queue the parent Id record for processing
-		        for (Id parentId : masterRecordIds)
-		        {
-					LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
-					scheduledItem.Name = parentId;
-					scheduledItem.LookupRollupSummary__c = lookup.Id;
-					scheduledItem.ParentId__c = parentId;
-					scheduledItem.QualifiedParentID__c = parentId + '#' + lookup.Id; 
-					scheduledItems.put(parentId, scheduledItem);
-		        }		            
-			}
-		}
-		
-		// Add parent Id's to schedule items object
-		upsert scheduledItems.values() QualifiedParentID__c;
+        List<LookupRollupSummary__c> realtimeLookups = new List<LookupRollupSummary__c>();      
+        List<LookupRollupSummaryScheduleItems__c> scheduledItems = new List<LookupRollupSummaryScheduleItems__c>(); 
+        for(LookupRollupSummary__c lookup : lookups)
+        {
+            if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Realtime.name())
+            {
+                // Filter realtime looks in order to generate LRE contexts below
+                realtimeLookups.add(lookup);
+            }
+            else if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Scheduled.name())
+            {       
+                // For scheduled rollups queue the parent Id record for processing
+                for (Id parentId : masterRecordIds)
+                {
+                    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
+                    scheduledItem.Name = parentId;
+                    scheduledItem.LookupRollupSummary__c = lookup.Id;
+                    scheduledItem.ParentId__c = parentId;
+                    scheduledItem.QualifiedParentID__c = parentId + '#' + lookup.Id; 
+                    scheduledItems.add(scheduledItem);
+                }                   
+            }
+        }
+
+        // Add parent Id's to schedule items object
+        upsert scheduledItems QualifiedParentID__c;
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
@@ -544,30 +642,37 @@ global with sharing class RollupService
 			if(childFields==null)
 				gdFields.put(childObjectType, ((childFields = childObjectType.getDescribe().fields.getMap())));
 			SObjectField fieldToAggregate = childFields.get(lookup.FieldToAggregate__c);
+			SObjectField fieldToOrderBy = lookup.FieldToOrderBy__c!=null ? childFields.get(lookup.FieldToOrderBy__c) : null;
 			SObjectField relationshipField = childFields.get(lookup.RelationshipField__c);
 			SObjectField aggregateResultField = parentFields.get(lookup.AggregateResultField__c);
 			if(fieldToAggregate==null || relationshipField==null || aggregateResultField==null)
 				throw RollupServiceException.invalidRollup(lookup);
 			
-			// Determine if an LREngine Context has been created for this parent child relationship and filter combination?
-			String contextKey = lookup.ParentObject__c + '#' + lookup.RelationshipField__c + '#' + lookup.RelationShipCriteria__c;
+			// Summary field definition used by LREngine
+			LREngine.RollupSummaryField rsf = 
+	            new LREngine.RollupSummaryField(
+					aggregateResultField.getDescribe(),
+					fieldToAggregate.getDescribe(),
+					fieldToOrderBy !=null ? fieldToOrderBy.getDescribe() : null, // field to order by on child
+					RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c),
+	            	lookup.ConcatenateDelimiter__c);
+
+			// Determine if an LREngine Context has been created for this parent child relationship, filter combination or underlying query type?
+	        String rsfType = rsf.isAggregateBasedRollup() ? 'aggregate' : 'query';	        
+			String contextKey = lookup.ParentObject__c + '#' + lookup.RelationshipField__c + '#' + lookup.RelationShipCriteria__c + '#' + rsfType;
 			LREngine.Context lreContext = engineCtxByParentRelationship.get(contextKey);
 			if(lreContext==null)
 			{								
 				// Construct LREngine.Context
 				lreContext = new LREngine.Context(
 					parentObjectType, // parent object
-                    childObjectType,  // child object
+                    childObjectType,  // child object                    
                     relationshipField.getDescribe(), // relationship field name
                     lookup.RelationShipCriteria__c); 
 				engineCtxByParentRelationship.put(contextKey, lreContext);
 			}				
 			// Add the lookup
-			lreContext.add(
-	            new LREngine.RollupSummaryField(
-					aggregateResultField.getDescribe(),
-					fieldToAggregate.getDescribe(),
-					RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c)));
+			lreContext.add(rsf);
 		}		
 		return engineCtxByParentRelationship;
 	}
@@ -593,6 +698,20 @@ global with sharing class RollupService
 				
 		public virtual List<Database.Saveresult> updateRecords(boolean allOrNothing)
 		{
+			// sort (selection sort) masterRecords to avoid having more than 10 chunks in a single database operation
+			// masterRecords.sort() will not work
+			Integer indexOfMin;
+			for( Integer outerIndex = 0; outerIndex < masterRecords.size(); outerIndex++ ){
+				indexOfMin = outerIndex;
+				for( Integer innerIndex = outerIndex; innerIndex < masterRecords.size(); innerIndex++ ){
+					if( String.valueOf(masterRecords.get(indexOfMin).getSObjectType()).compareTo( String.valueOf(masterRecords.get(innerIndex).getSObjectType()) ) > 0 ){
+						indexOfMin = innerIndex;
+					}
+				}
+				SObject temp = masterRecords.get(outerIndex);
+				masterRecords.set( outerIndex, masterRecords.get(indexOfMin) );
+				masterRecords.set(indexOfMin, temp);
+			}
 			return Database.update(masterRecords, allOrNothing);
 		}						
 	}

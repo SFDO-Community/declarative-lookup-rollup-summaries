@@ -40,6 +40,90 @@ private with sharing class RollupServiceTest2
 		ACCOUNT_NUMBER_OF_LOCATIONS = accountFields.get('NumberOfLocations__c');
 	}
 	
+	private testmethod static void testMultiRollupBothScheduledWithConditions()
+	{		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		// Test data
+		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
+					
+		// Test data for rollup A
+		Decimal expectedResultA = 500;
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		String conditionA = 'Amount > 200';
+
+		// Test data for rollup B
+		Decimal expectedResultB = 2;
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count; 
+		String conditionB = 'Amount < 200';
+		
+		// Configure rollup A
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummaryA.ParentObject__c = 'Account';
+		rollupSummaryA.ChildObject__c = 'Opportunity';
+		rollupSummaryA.RelationShipField__c = 'AccountId';
+		rollupSummaryA.RelationShipCriteria__c = conditionA;
+		rollupSummaryA.FieldToAggregate__c = 'Amount';
+		rollupSummaryA.AggregateOperation__c = operationA.name();
+		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = 'Scheduled';
+
+		// Configure rollup B
+		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+		rollupSummaryB.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummaryB.ParentObject__c = 'Account';
+		rollupSummaryB.ChildObject__c = 'Opportunity';
+		rollupSummaryB.RelationShipField__c = 'AccountId';
+		rollupSummaryB.RelationShipCriteria__c = conditionB;
+		rollupSummaryB.FieldToAggregate__c = 'CloseDate';
+		rollupSummaryB.AggregateOperation__c = operationB.name();
+		rollupSummaryB.AggregateResultField__c = 'NumberOfLocations__c';
+		rollupSummaryB.Active__c = true;
+		rollupSummaryB.CalculationMode__c = 'Scheduled';
+
+		// Insert rollup definitions
+		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
+				
+		// Test data
+		Account account = new Account();
+		account.Name = 'Test Account';
+		insert account;
+		List<Opportunity> opps = new List<Opportunity>(); 
+		for(Decimal rollupValue : rollups)
+		{
+			Opportunity opp = new Opportunity();
+			opp.Name = 'Test Opportunity';
+			opp.StageName = 'Open';
+			opp.CloseDate = System.today();
+			opp.AccountId = account.Id;
+			opp.Amount = rollupValue;
+			opps.add(opp);			
+		}
+		insert opps;
+		
+		// Assert rollup
+		Id accountId = account.Id;
+		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(null, accountResult.AnnualRevenue);	// This is a scheduled rollup so no realtime update
+		System.assertEquals(null, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)); // This is a scheduled rollup so no realtime update
+		System.assertEquals(2, [select Id from LookupRollupSummaryScheduleItems__c where ParentId__c = :account.Id].size()); // Assert a scheduled item has been created
+		
+		// Run rollup job
+		Test.startTest();		
+		RollupService.runJobToProcessScheduledItems(); 
+		Test.stopTest();
+		
+		// Assert schedule items gone and rollup updated
+		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));			
+		System.assertEquals(0, [select Id from LookupRollupSummaryScheduleItems__c where ParentId__c = :account.Id].size());
+	}
+
 	private testmethod static void testMultiRollupOneScheduled()
 	{		
 		// Test supported?

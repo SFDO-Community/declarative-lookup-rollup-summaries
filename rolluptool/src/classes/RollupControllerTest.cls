@@ -177,8 +177,8 @@ private with sharing class RollupControllerTest
 				'{\n' + 
 				'    private static testmethod void testTrigger()\n' +
 				'    {\n' + 
-				'        // Code to cover the one line trigger, the method called has been tested separately by the packaged tests.\n' +
-				'        try { insert new ' + rollupSummary.ChildObject__c + '(); } catch(Exception e) { }\n' +
+				'        // Force the ' + controller.RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
+				'        dlrs.RollupService.testHandler(new ' + rollupSummary.ChildObject__c + '());\n' +
 				'    }\n' +
 				'}', controller.getTriggerTestCode());
 		System.assertEquals(

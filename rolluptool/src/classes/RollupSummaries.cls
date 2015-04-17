@@ -42,7 +42,12 @@ public with sharing class RollupSummaries extends SObjectDomain
         	AggregateOperation.Max.name() => LREngine.RollupOperation.Max,
 	        AggregateOperation.Min.name() => LREngine.RollupOperation.Min,
 	        AggregateOperation.Avg.name() => LREngine.RollupOperation.Avg,
-	        AggregateOperation.Count.name() => LREngine.RollupOperation.Count			
+	        AggregateOperation.Count.name() => LREngine.RollupOperation.Count,
+	        AggregateOperation.Count_Distinct.name().replace('_', ' ') => LREngine.RollupOperation.Count_Distinct,
+	        AggregateOperation.Concatenate.name() => LREngine.RollupOperation.Concatenate,
+	        AggregateOperation.Concatenate_Distinct.name().replace('_', ' ') => LREngine.RollupOperation.Concatenate_Distinct,
+	        AggregateOperation.First.name() => LREngine.RollupOperation.First,
+	        AggregateOperation.Last.name() => LREngine.RollupOperation.Last	        
 		};
 	
 	/**
@@ -52,7 +57,8 @@ public with sharing class RollupSummaries extends SObjectDomain
 	{
 		Realtime, 
 		Scheduled, 
-		Developer
+		Developer,
+		Process_Builder
 	}
 	
 	/**
@@ -64,7 +70,12 @@ public with sharing class RollupSummaries extends SObjectDomain
         Max, 
         Min,
         Avg,
-        Count
+        Count,
+        Count_Distinct,
+        Concatenate,
+        Concatenate_Distinct,
+        First,
+        Last
     }
 		
 	public RollupSummaries(List<LookupRollupSummary__c> records)
@@ -77,13 +88,8 @@ public with sharing class RollupSummaries extends SObjectDomain
 	 **/ 
 	public override void onValidate()
 	{
-		// Query for any related Apex triggers
+		// Cache Apex Describes and calculate child object tigger names
 		Set<String> rollupTriggerNames = new Set<String>();
-		for(LookupRollupSummary__c lookupRollupSummary : (List<LookupRollupSummary__c>) Records)
-			rollupTriggerNames.add(makeTriggerName(lookupRollupSummary));
-		Map<String, ApexTrigger> apexTriggers = new ApexTriggersSelector().selectByName(rollupTriggerNames);
-
-		// Cache Apex Describes		
 		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
 		Map<SObjectType, Map<String, Schema.SObjectField>> gdFields = new Map<SObjectType, Map<String, Schema.SObjectField>>(); 	
 		for(LookupRollupSummary__c lookupRollupSummary : (List<LookupRollupSummary__c>) Records)
@@ -94,7 +100,13 @@ public with sharing class RollupSummaries extends SObjectDomain
 				gdFields.put(parentObjectType, parentObjectType.getDescribe().fields.getMap());
 			if(childObjectType!=null && !gdFields.containsKey(childObjectType))
 				gdFields.put(childObjectType, childObjectType.getDescribe().fields.getMap());
+			// Calculate trigger name child object reqquires in order to check existance
+			if(childObjectType!=null)
+				rollupTriggerNames.add(makeTriggerName(lookupRollupSummary));				
 		}
+
+		// Query for any related Apex triggers
+		Map<String, ApexTrigger> apexTriggers = new ApexTriggersSelector().selectByName(rollupTriggerNames);
 		
 		for(LookupRollupSummary__c lookupRollupSummary : (List<LookupRollupSummary__c>) Records)
 		{
@@ -109,6 +121,7 @@ public with sharing class RollupSummaries extends SObjectDomain
 			// Child Object fields valid?
 			SObjectField relationshipField = null;
 			SObjectField fieldToAggregate = null;
+			SObjectField fieldToOrderBy = null;
 			Map<String, Schema.SObjectField> childObjectFields = gdFields.get(childObjectType);
 			if(childObjectFields!=null)
 			{
@@ -120,6 +133,12 @@ public with sharing class RollupSummaries extends SObjectDomain
 				fieldToAggregate = childObjectFields.get(lookupRollupSummary.FieldToAggregate__c);
 				if(fieldToAggregate==null)
 					lookupRollupSummary.FieldToAggregate__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.FieldToAggregate__c));
+				// Field to Order By valid?
+				if(lookupRollupSummary.FieldToOrderBy__c!=null) {
+					fieldToOrderBy = childObjectFields.get(lookupRollupSummary.FieldToOrderBy__c);
+					if(fieldToOrderBy==null)
+						lookupRollupSummary.FieldToOrderBy__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.FieldToOrderBy__c));					
+				}
 				// TODO: Validate relationship field is a lookup to the parent
 				// ...
 			}
@@ -134,14 +153,17 @@ public with sharing class RollupSummaries extends SObjectDomain
 					lookupRollupSummary.AggregateResultField__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.AggregateResultField__c));
 			}						
 			// Cannot activate Realtime or Scheduled rollup without the required trigger deployed
-			String triggerName = makeTriggerName(lookupRollupSummary); 
-			if(lookupRollupSummary.Active__c &&
-			   (lookupRollupSummary.CalculationMode__c == CalculationMode.Realtime.name() ||
-			    lookupRollupSummary.CalculationMode__c == CalculationMode.Scheduled.name()) && 
-			   !apexTriggers.containsKey(triggerName))
-				lookupRollupSummary.Active__c.addError(error('Apex Trigger ' + triggerName + ' has not been deployed. Click Manage Child Trigger and try again.', lookupRollupSummary, LookupRollupSummary__c.Active__c));
+			if(childObjectType!=null) 
+			{
+				String triggerName = makeTriggerName(lookupRollupSummary); 
+				if(lookupRollupSummary.Active__c &&
+				   (lookupRollupSummary.CalculationMode__c == CalculationMode.Realtime.name() ||
+				    lookupRollupSummary.CalculationMode__c == CalculationMode.Scheduled.name()) && 
+				   !apexTriggers.containsKey(triggerName))
+					lookupRollupSummary.Active__c.addError(error('Apex Trigger ' + triggerName + ' has not been deployed. Click Manage Child Trigger and try again.', lookupRollupSummary, LookupRollupSummary__c.Active__c));				
+			}
 			// Check the list of fields expressed in the relationship critiera fields
-			if(lookupRollupSummary.RelationshipCriteriaFields__c!=null)
+			if(childObjectFields!=null && lookupRollupSummary.RelationshipCriteriaFields__c!=null)
 			{
 				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields__c.split('\r\n');
 				String[] fieldsInError = new List<String>();
@@ -172,7 +194,21 @@ public with sharing class RollupSummaries extends SObjectDomain
 			            new LREngine.RollupSummaryField(
 							aggregateResultField.getDescribe(),
 							fieldToAggregate.getDescribe(),
-							OPERATION_PICKLIST_TO_ENUMS.get(lookupRollupSummary.AggregateOperation__c)));
+							fieldToOrderBy!=null ? fieldToOrderBy.getDescribe() : null, // optional field to order by
+							OPERATION_PICKLIST_TO_ENUMS.get(lookupRollupSummary.AggregateOperation__c),
+							lookupRollupSummary.ConcatenateDelimiter__c));
+					// Validate the SOQL
+					if(lookupRollupSummary.RelationShipCriteria__c!=null && 
+					   lookupRollupSummary.RelationShipCriteria__c.length()>0) 
+					{
+						try {
+							// Validate only mode ensures no query is actually made should it be valid
+							LREngine.rollUp(lreContext, new Set<Id>(), true);	
+						} catch (QueryException e) {
+							lookupRollupSummary.RelationShipCriteria__c.addError(
+								error(String.format(MSG_INVALID_CRITERIA, new String[] { lookupRollupSummary.RelationShipCriteria__c, e.getMessage() }), lookupRollupSummary, LookupRollupSummary__c.RelationShipCriteria__c));
+						}											
+					}
 				}
 			}
 			catch (LREngine.BadRollUpSummaryStateException e)
@@ -182,6 +218,8 @@ public with sharing class RollupSummaries extends SObjectDomain
 			} 											
 		}
 	}
+
+	private static final String MSG_INVALID_CRITERIA = 'Relationship Criteria \'\'{0}\'\' is not valid, see SOQL documentation http://www.salesforce.com/us/developer/docs/soql_sosl/Content/sforce_api_calls_soql_select_conditionexpression.htm, error is \'\'{1}\'\'';
 	
 	public class Constructor implements SObjectDomain.IConstructable
 	{

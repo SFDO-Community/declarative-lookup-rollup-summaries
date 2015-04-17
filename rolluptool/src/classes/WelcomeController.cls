@@ -34,6 +34,8 @@ public with sharing class WelcomeController {
 	public String MetadataResponse {get;set;}
 	
 	public Boolean MetadataConnectionWarning {get;set;}
+
+	public String MetadataApiException {get;set;}
 		
 	public PageReference checkMetadataAPIConnection()
 	{
@@ -48,6 +50,9 @@ public with sharing class WelcomeController {
 			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'A Remote Site Setting must be created in your org before you can use this tool.'));
 			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'Press the Create Remote Site Setting button to perform this step or refer to the post install step below to perform this manually.'));
 			MetadataConnectionWarning = true;
+			MetadataApiException = '';
+			if(RollupService.LastMetadataAPIConnectionException!=null)
+				MetadataApiException = RollupService.LastMetadataAPIConnectionException.getMessage();
 		}
 		
 		return null;				

@@ -121,6 +121,12 @@ public with sharing class RollupController
 			// Display currently deployed code for confirmation
 			return RollupTriggerTest.Body; 
 		else
+		{
+			// Namespace?
+			Schema.DescribeSObjectResult describe = LookupRollupSummary__c.sObjectType.getDescribe();
+			String name = describe.getName();
+			String localName = describe.getLocalName();
+			String namespace = name.removeEnd(localName).removeEnd('__');					
 			// Deploy generated code
 			return
 			 	'/**\n' +
@@ -131,10 +137,11 @@ public with sharing class RollupController
 				'{\n' + 
 				'    private static testmethod void testTrigger()\n' +
 				'    {\n' + 
-				'        // Code to cover the one line trigger, the method called has been tested separately by the packaged tests.\n' +
-				'        try { insert new ' + RollupSummary.ChildObject__c + '(); } catch(Exception e) { }\n' +
+				'        // Force the ' + RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
+				'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ChildObject__c + '());\n'+
 				'    }\n' +
-				'}';
+				'}';			
+		}
 	}
 	
 	public String getTriggerCodeMetadata()
