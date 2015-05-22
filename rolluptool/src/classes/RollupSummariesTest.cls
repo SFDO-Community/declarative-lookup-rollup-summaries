@@ -341,14 +341,19 @@ private with sharing class RollupSummariesTest
 		if(!TestContext.isSupported())
 			return;
 		
-		System.assertEquals('dlrs_ContactTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'Contact')));		
-		System.assertEquals('dlrs_ContactTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'Contact')));		
-		System.assertEquals('dlrs_pse_AssignmentTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c')));		
-		System.assertEquals('dlrs_pse_AssignmentTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c')));		
-		System.assertEquals('dlrs_MyCustomObjectTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c')));		
-		System.assertEquals('dlrs_MyCustomObjectTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c')));
-		System.assertEquals('dlrs_dlrs_LookupChildAReallyRea06Trigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'dlrs__LookupChildAReallyReallyReallyBigBigName__c')));		
-		System.assertEquals('dlrs_dlrs_LookupChildAReallyRealla06Test', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'dlrs__LookupChildAReallyReallyReallyBigBigName__c')));		
+		String componentPrefix = Utilities.componentPrefix();
+		String objectPrefix = Utilities.objectPrefix();
+		System.assertEquals(componentPrefix + 'ContactTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'Contact')));
+		System.assertEquals(componentPrefix + 'ContactTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'Contact')));
+		System.assertEquals(componentPrefix + 'pse_AssignmentTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c')));
+		System.assertEquals(componentPrefix + 'pse_AssignmentTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c')));
+		System.assertEquals(componentPrefix + 'MyCustomObjectTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c')));
+		System.assertEquals(componentPrefix + 'MyCustomObjectTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c')));
+
+		String dlrsKeyPrefix = DeclarativeLookupRollupSummaries__c.sObjectType.getDescribe().getKeyPrefix();
+		// Test RollupSummaries.calculateComponentName directly so we can override the maxComponentNameLength
+		System.assertEquals(componentPrefix + componentPrefix + 'DeclarativeLookupRollupSu' + dlrsKeyPrefix + 'Trigger', RollupSummaries.calculateComponentName(objectPrefix + 'DeclarativeLookupRollupSummaries__c', 'Trigger', 35 + 2 * componentPrefix.length()));
+		System.assertEquals(componentPrefix + componentPrefix + 'DeclarativeLookupRollupSumma' + dlrsKeyPrefix + 'Test', RollupSummaries.calculateComponentName(objectPrefix + 'DeclarativeLookupRollupSummaries__c', 'Test', 35 + 2 * componentPrefix.length()));
 	}
 	
 	private testmethod static void testRelationshipCriteriaFieldsValidationSingle()
