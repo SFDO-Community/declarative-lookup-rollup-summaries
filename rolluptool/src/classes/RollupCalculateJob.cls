@@ -31,16 +31,23 @@ public with sharing class RollupCalculateJob
 	implements Database.Batchable<sObject>
 {
 	private Id lookupId;
+	private String masterWhereClause;
 	
 	public RollupCalculateJob(String lookupId)
 	{
 		this.lookupId = lookupId;
 	}
+
+	public RollupCalculateJob(String lookupId, String masterWhereClause)
+	{
+		this.lookupId = lookupId;
+		this.masterWhereClause = masterWhereClause;
+	}
 	
 	public Database.QueryLocator start(Database.BatchableContext BC) 
 	{
 		// Query all the parent records as per the lookup definition
-		return RollupService.masterRecordsAsQueryLocator(lookupId);
+		return RollupService.masterRecordsAsQueryLocator(lookupId, masterWhereClause);
 	}
 	
 	public void execute(Database.BatchableContext BC, List<sObject> masterRecords)

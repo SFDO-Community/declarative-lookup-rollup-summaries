@@ -29,7 +29,9 @@
 	<apex:sectionHeader title="{!LookupRollupSummary__c.Name}" subtitle="Run Calculate Job"/>
 	<apex:pageMessages />
 	<apex:form >
+		<p>Filter master object using WHERE clause (OPTIONAL):</p>
+		<apex:inputTextarea html-placeholder="Name LIKE 'Fred%' AND Custom__c > 0" cols="80" value="{!masterObjectWhere}" /><p/>
 		<apex:commandButton action="{!runCalculateJob}" value="Run Calculate Job"/>
 		<apex:commandButton action="{!cancel}" value="Cancel"/>
-	</apex:form> 
+	</apex:form>
 </apex:page>
