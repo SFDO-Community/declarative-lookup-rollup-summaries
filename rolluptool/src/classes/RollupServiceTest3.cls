@@ -441,11 +441,11 @@ private with sharing class RollupServiceTest3
 			insert testUser;
 			
 			// Assign permission sets
-			Set<String> psNames = new Set<String> { 'LookupRollupSummariesFull', 'LookupRollupSummariesTest' };
+			Set<String> psNames = new Set<String> { 'LookupRollupSummariesFull' };
 			List<PermissionSet> ps = [select Id from PermissionSet where Name in :psNames];
 			insert new List<PermissionSetAssignment> {
-				new PermissionSetAssignment(AssigneeId = testUser.Id, PermissionSetId = ps[0].Id),
-				new PermissionSetAssignment(AssigneeId = testUser.Id, PermissionSetId = ps[1].Id) };
+				new PermissionSetAssignment(AssigneeId = testUser.Id, PermissionSetId = ps[0].Id)
+			};
 		} catch (Exception e) {
 			return null;
 		}		
