@@ -155,8 +155,8 @@ private with sharing class RollupControllerTest
 		// Assert initial state of controller when the trigger for the child object is deployed
 		RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummary ));
 		System.assertEquals(false, controller.Deployed);
-		System.assertEquals('dlrs_ContactTrigger', controller.RollupTriggerName);
-		System.assertEquals('dlrs_ContactTest', controller.RollupTriggerTestName);
+		System.assertEquals(Utilities.componentPrefix() + 'ContactTrigger', controller.RollupTriggerName);
+		System.assertEquals(Utilities.componentPrefix() + 'ContactTest', controller.RollupTriggerTestName);
 		System.assertEquals(null, controller.RollupTrigger);
 		System.assertEquals(null, controller.RollupTriggerTest);
 		System.assertEquals(
@@ -166,7 +166,7 @@ private with sharing class RollupControllerTest
 				'trigger ' + controller.RollupTriggerName + ' on ' + rollupSummary.ChildObject__c + '\n' + 
 				'    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n'+ 
 				'{\n'+
-				'    dlrs.RollupService.triggerHandler();\n'+
+				'    ' + Utilities.classPrefix() + 'RollupService.triggerHandler();\n'+
 				'}\n', controller.getTriggerCode());
 		System.assertEquals(
 			 	'/**\n' +
@@ -178,7 +178,7 @@ private with sharing class RollupControllerTest
 				'    private static testmethod void testTrigger()\n' +
 				'    {\n' + 
 				'        // Force the ' + controller.RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-				'        dlrs.RollupService.testHandler(new ' + rollupSummary.ChildObject__c + '());\n' +
+				'        ' + Utilities.classPrefix() + 'RollupService.testHandler(new ' + rollupSummary.ChildObject__c + '());\n' +
 				'    }\n' +
 				'}', controller.getTriggerTestCode());
 		System.assertEquals(

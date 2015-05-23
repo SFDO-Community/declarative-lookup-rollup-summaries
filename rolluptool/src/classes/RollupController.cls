@@ -123,10 +123,7 @@ public with sharing class RollupController
 		else
 		{
 			// Namespace?
-			Schema.DescribeSObjectResult describe = LookupRollupSummary__c.sObjectType.getDescribe();
-			String name = describe.getName();
-			String localName = describe.getLocalName();
-			String namespace = name.removeEnd(localName).removeEnd('__');					
+			String namespace = Utilities.namespace();
 			// Deploy generated code
 			return
 			 	'/**\n' +
@@ -164,10 +161,7 @@ public with sharing class RollupController
 		else
 		{
 			// Namespace?
-			Schema.DescribeSObjectResult describe = LookupRollupSummary__c.sObjectType.getDescribe();
-			String name = describe.getName();
-			String localName = describe.getLocalName();
-			String namespace = name.removeEnd(localName).removeEnd('__');					
+			String namespace = Utilities.namespace();
 			// Deploy generated code		
 			return 
 				'/**\n' +

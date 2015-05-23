@@ -236,13 +236,13 @@ public with sharing class RollupSummaries extends SObjectDomain
 	{
 		if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Opportunity')
 			return 'RollupServiceTestTrigger';
-		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'dlrs__LookupChild__c')
+		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == LookupChild__c.sObjectType.getDescribe().getName())
 			return 'RollupServiceTest2Trigger';
 		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Account')
 			return 'RollupServiceTest3Trigger';
 		return calculateComponentName(lookupRollupSummary.ChildObject__c, 'Trigger', APEXTRIGGER_NAME_LENGTH);
 	}
-	
+
 	/**
 	 * Apex test name for given lookup rollup summary
 	 **/
@@ -252,25 +252,27 @@ public with sharing class RollupSummaries extends SObjectDomain
 			return 'RollupSummariesTest';		
 		return calculateComponentName(lookupRollupSummary.ChildObject__c, 'Test', APEXCLASS_NAME_LENGTH);
 	}
-	
+
 	/**
 	 * Ensures the component name never exceeds the given maximum length but yet still remains unique
 	 **/
+	@TestVisible
 	private static String calculateComponentName(String childObjectName, String suffix, Integer maxComponentNameLength)
 	{
 		String trimmedObjectName = childObjectName.replace('__c', '').replace('__', '_');
-		String componentName = 'dlrs_' + trimmedObjectName + suffix;
+		String prefix = Utilities.componentPrefix();
+		String componentName = prefix + trimmedObjectName + suffix;
 		Integer componentNameLength = componentName.length();
 		if(componentNameLength > maxComponentNameLength) // Do we need to trim the trigger name?
 		{
 			Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
-			SObjectType childObjectType = gd.get(childObjectName);		
+			SObjectType childObjectType = gd.get(childObjectName);
 			String childObjectPrefix = childObjectType.getDescribe().getKeyPrefix(); // Key prefix will be used to make the trimmed name unique again
 			Integer overflowChars = componentNameLength - maxComponentNameLength; // How much do we need to trim the name by?
 			trimmedObjectName = trimmedObjectName.substring(0, trimmedObjectName.length() - overflowChars); // Trim the overflow characters from the name
 			trimmedObjectName = trimmedObjectName.substring(0, trimmedObjectName.length() - childObjectPrefix.length()); // Trim space for the prefix on the end
 			trimmedObjectName+= childObjectPrefix; // Add on the end the unique object prefix (to ensure the trimmed name is still unique)
-			componentName = 'dlrs_' + trimmedObjectName + suffix; 
+			componentName = prefix + trimmedObjectName + suffix;
 		}
 		return componentName;
 	}

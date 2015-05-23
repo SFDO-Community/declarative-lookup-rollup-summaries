@@ -1035,22 +1035,29 @@ private with sharing class RollupServiceTest
 		if(!TestContext.isSupported())
 			return;
 
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Colours__c.getDescribe().getName();
+
 		// Create a picklist rollup
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Test Rollup';
-		rollupSummary.ParentObject__c = 'dlrs__LookupParent__c';
-		rollupSummary.ChildObject__c = 'dlrs__LookupChild__c';
-		rollupSummary.RelationShipField__c = 'dlrs__LookupParent__c';
-		rollupSummary.FieldToAggregate__c = 'dlrs__Color__c';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
 		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Concatenate.name();
-		rollupSummary.AggregateResultField__c = 'dlrs__Colours__c';
+		rollupSummary.AggregateResultField__c = aggregateResultField;
 		rollupSummary.ConcatenateDelimiter__c = ';';
 		rollupSummary.Active__c = true;
-		rollupSummary.CalculationMode__c = 'Realtime';	
+		rollupSummary.CalculationMode__c = 'Realtime';
 		insert rollupSummary;
-		
+
 		// Insert parents
-		Schema.SObjectType parentType = Schema.getGlobalDescribe().get('dlrs__LookupParent__c');
 		SObject parentA = parentType.newSObject();
 		parentA.put('Name', 'ParentA');
 		SObject parentB = parentType.newSObject();
@@ -1059,35 +1066,34 @@ private with sharing class RollupServiceTest
 		parentC.put('Name', 'ParentC');
 		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
 		insert parents;
-		
+
 		// Insert children
-		Schema.SObjectType childType = Schema.getGlobalDescribe().get('dlrs__LookupChild__c');
 		List<SObject> children = new List<SObject>();
-		for(SObject parent : parents)		
+		for(SObject parent : parents)
 		{
 			String name = (String) parent.get('Name');
 			SObject child1 = childType.newSObject();
-			child1.put('dlrs__LookupParent__c', parent.Id);
-			child1.put('dlrs__Color__c', 'Red');
-			children.add(child1);				
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 'Red');
+			children.add(child1);
 			SObject child2 = childType.newSObject();
-			child2.put('dlrs__LookupParent__c', parent.Id);
-			child2.put('dlrs__Color__c', 'Yellow');
-			children.add(child2);				
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 'Yellow');
+			children.add(child2);
 			if(name.equals('ParentA') || name.equals('ParentB'))
 			{
 				SObject child3 = childType.newSObject();
-				child3.put('dlrs__LookupParent__c', parent.Id);
-				child3.put('dlrs__Color__c', 'Blue');
-				children.add(child3);				
+				child3.put(relationshipField, parent.Id);
+				child3.put(aggregateField, 'Blue');
+				children.add(child3);
 			}
 		}
 		insert children;
-				
-		// Assert rollups 
-		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query('select id, dlrs__Colours__c from dlrs__LookupParent__c'));
-		System.assertEquals('Red;Yellow;Blue', (String) assertParents.get(parentA.id).get('dlrs__Colours__c'));
-		System.assertEquals('Red;Yellow;Blue', (String) assertParents.get(parentB.id).get('dlrs__Colours__c'));
-		System.assertEquals('Red;Yellow', (String) assertParents.get(parentC.id).get('dlrs__Colours__c'));		
+
+		// Assert rollups
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals('Red;Yellow;Blue', (String) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals('Red;Yellow;Blue', (String) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals('Red;Yellow', (String) assertParents.get(parentC.id).get(aggregateResultField));
 	}
 }

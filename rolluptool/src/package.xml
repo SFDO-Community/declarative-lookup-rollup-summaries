@@ -35,6 +35,7 @@
         <members>WelcomeControllerTest</members>
         <members>RollupActionCalculate</members>
         <members>RollupActionCalculateTest</members>
+        <members>Utilities</members>
         <name>ApexClass</name>
     </types>
     <types>
