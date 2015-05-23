@@ -134,6 +134,85 @@ private with sharing class RollupServiceTest3
 		System.assertEquals('The answer is not 42! : FIELD_CUSTOM_VALIDATION_EXCEPTION (' + aggregateResultField + ')', logs[0].ErrorMessage__c);
 	}
 
+	private testmethod static void testFilteredCalculateJob()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Total__c.getDescribe().getName();
+
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 20);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 20);
+			children.add(child2);
+			if(name.equals('ParentA') || name.equals('ParentB'))
+			{
+				SObject child3 = childType.newSObject();
+				child3.put(relationshipField, parent.Id);
+				child3.put(aggregateField, 2);
+				children.add(child3);
+			}
+		}
+		insert children;
+
+		// Create rollup AFTER the data exists
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Scheduled';
+		insert rollupSummary;
+
+		// Run rollup calculate job with WHERE clause
+		Test.startTest();
+		Id jobId = RollupService.runJobToCalculate(rollupSummary.Id, 'Name = \'ParentB\'');
+		Test.stopTest();
+
+		// This should not generate any schedule items
+		System.assertEquals(0, [select id from LookupRollupSummaryScheduleItems__c].size());
+
+		// Assert rollups
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// Assert scheduled items and log records
+		List<LookupRollupSummaryLog__c> logs = [select id, ParentId__c, ParentObject__c, ErrorMessage__c from LookupRollupSummaryLog__c];
+		System.assertEquals(0, logs.size());
+	}
+
 	private testmethod static void testCalculateJobNotActive()
 	{
 		// Test supported?

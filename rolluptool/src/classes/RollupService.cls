@@ -59,6 +59,14 @@ global with sharing class RollupService
 	 **/
 	global static Id runJobToCalculate(Id lookupId)
 	{
+		return runJobToCalculate(lookupId, null);
+	}
+
+	/**
+	 * Starts the Job to recalculate the given rollup filtering the master object records by the WHERE clause
+	 **/
+	global static Id runJobToCalculate(Id lookupId, String masterWhereClause)
+	{
 		// Is another calculate job running for this lookup?
 		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });
 		if(lookups.size()==0)
@@ -66,20 +74,20 @@ global with sharing class RollupService
 		LookupRollupSummary__c lookup = lookups[0];
 		if(lookup.CalculateJobId__c!=null)
 			throw RollupServiceException.jobAlreadyRunning(lookup.Name);
-			
+
 		// Already active?
 		if(lookup.Active__c==null || lookup.Active__c==false)
 			throw new RollupServiceException('The rollup must be Active before you can run a Calculate job.');
 
 		// Start the job and record the Job Id
 		Integer scopeSize = (Integer) DeclarativeLookupRollupSummaries__c.getInstance().CalculateJobScopeSize__c;
-		Id jobId = Database.executeBatch(new RollupCalculateJob(lookupId), scopeSize == null ? 100 : scopeSize);
+		Id jobId = Database.executeBatch(new RollupCalculateJob(lookupId, masterWhereClause), scopeSize == null ? 100 : scopeSize);
 		lookup.CalculateJobId__c = jobId;
 		update lookup;
-		
+
 		return jobId;
 	}
-	
+
 	/**
 	 * Starts the Job to process the scheduled items for rollup 
 	 **/
@@ -332,12 +340,21 @@ global with sharing class RollupService
 	 * Method returns a QueryLocator that returns master records (as per the lookup definition) meeting the criteria expressed (if defined)
 	 **/
 	public static Database.QueryLocator masterRecordsAsQueryLocator(Id lookupId)
-	{ 
+	{
+		return masterRecordsAsQueryLocator(lookupId, null);
+	}
+
+	public static Database.QueryLocator masterRecordsAsQueryLocator(Id lookupId, String whereClause)
+	{
 		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });
 		if(lookups.size()==0)
-			throw RollupServiceException.rollupNotFound(lookupId); 
-		LookupRollupSummary__c lookup = lookups[0];				
-		return Database.getQueryLocator('Select Id From ' + lookup.ParentObject__c);
+			throw RollupServiceException.rollupNotFound(lookupId);
+		LookupRollupSummary__c lookup = lookups[0];
+		if (String.isBlank(whereClause)) {
+			return Database.getQueryLocator('Select Id From ' + lookup.ParentObject__c);
+		} else {
+			return Database.getQueryLocator(String.format('Select Id From {0} WHERE {1}', new List<String>{lookup.ParentObject__c, whereClause}));
+		}
 	}
 
 	/**
