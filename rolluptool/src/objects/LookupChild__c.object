@@ -113,5 +113,5 @@
     </nameField>
     <pluralLabel>Lookup Children</pluralLabel>
     <searchLayouts/>
-    <sharingModel>ReadWrite</sharingModel>
+    <sharingModel>Private</sharingModel>
 </CustomObject>

@@ -83,6 +83,17 @@
         <visibleLines>4</visibleLines>
     </fields>
     <fields>
+        <fullName>Total2__c</fullName>
+        <externalId>false</externalId>
+        <label>Total 2</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>Total__c</fullName>
         <deprecated>false</deprecated>
         <externalId>false</externalId>
@@ -95,6 +106,11 @@
         <unique>false</unique>
     </fields>
     <label>Lookup Parent</label>
+    <listViews>
+        <fullName>All</fullName>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
     <nameField>
         <label>Lookup Parent Name</label>
         <type>Text</type>

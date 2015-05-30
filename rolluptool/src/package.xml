@@ -18,6 +18,7 @@
         <members>RollupServiceTest</members>
         <members>RollupServiceTest2</members>
         <members>RollupServiceTest3</members>
+        <members>RollupServiceTest4</members>
         <members>RollupSummaries</members>
         <members>RollupSummariesSelector</members>
         <members>RollupSummariesTest</members>

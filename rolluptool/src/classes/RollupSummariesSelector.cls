@@ -46,7 +46,8 @@ public with sharing class RollupSummariesSelector extends SObjectSelector
 			LookupRollupSummary__c.RelationshipCriteriaFields__c,
 			LookupRollupSummary__c.RelationshipField__c,
 			LookupRollupSummary__c.CalculateJobId__c,
-			LookupRollupSummary__c.UniqueName__c
+			LookupRollupSummary__c.UniqueName__c,
+			LookupRollupSummary__c.CalculationSharingMode__c
 		};
 	}
 

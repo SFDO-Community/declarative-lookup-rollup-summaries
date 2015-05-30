@@ -674,9 +674,14 @@ global with sharing class RollupService
 					RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c),
 	            	lookup.ConcatenateDelimiter__c);
 
-			// Determine if an LREngine Context has been created for this parent child relationship, filter combination or underlying query type?
-	        String rsfType = rsf.isAggregateBasedRollup() ? 'aggregate' : 'query';	        
-			String contextKey = lookup.ParentObject__c + '#' + lookup.RelationshipField__c + '#' + lookup.RelationShipCriteria__c + '#' + rsfType;
+	        // Apply sharing rules when calculating the rollup?
+			LREngine.SharingMode sharingMode = 
+				lookup.CalculationSharingMode__c == null || lookup.CalculationSharingMode__c == 'User' ?
+					LREngine.SharingMode.User : LREngine.SharingMode.System_x;
+
+			// Determine if an LREngine Context has been created for this parent child relationship, filter combination or underlying query type and sharing mode?
+	        String rsfType = rsf.isAggregateBasedRollup() ? 'aggregate' : 'query';
+			String contextKey = lookup.ParentObject__c + '#' + lookup.RelationshipField__c + '#' + lookup.RelationShipCriteria__c + '#' + rsfType + '#' + sharingMode;
 			LREngine.Context lreContext = engineCtxByParentRelationship.get(contextKey);
 			if(lreContext==null)
 			{								
@@ -685,7 +690,8 @@ global with sharing class RollupService
 					parentObjectType, // parent object
                     childObjectType,  // child object                    
                     relationshipField.getDescribe(), // relationship field name
-                    lookup.RelationShipCriteria__c); 
+                    lookup.RelationShipCriteria__c,
+                    sharingMode); 
 				engineCtxByParentRelationship.put(contextKey, lreContext);
 			}				
 			// Add the lookup

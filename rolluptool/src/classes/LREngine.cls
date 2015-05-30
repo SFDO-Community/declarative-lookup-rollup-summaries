@@ -206,8 +206,17 @@ public class LREngine {
             return null;
         }
 
+        // consider sharing rules or not?
+        QueryExecutor qe = null;
+        if (ctx.SharingMode == SharingMode.User)
+            qe = new WithSharingQueryExecutor();
+        else if (ctx.SharingMode == SharingMode.System_x)
+            qe = new WithoutSharingQueryExecutor();
+        else // Default
+            qe = new WithSharingQueryExecutor();
+
         // query results 
-        Object queryResults = Database.query(soql);
+        Object queryResults = qe.query(soql, masterIds);
         if(queryResults instanceof List<AggregateResult>) {
 
             // Process Aggregate query results from RollupOperations related to Aggergate operations
@@ -467,11 +476,18 @@ public class LREngine {
         }
     }
     
+    public enum SharingMode {
+        User,
+        System_x
+    }
+
     /**
         Context having all the information about the rollup to be done. 
         Please note : This class encapsulates many rollup summary fields with different operations.
     */
     public class Context {
+        // Sharing mode
+        public SharingMode sharingMode;
         // Master Sobject Type
         public Schema.Sobjecttype master;
         // Child/Details Sobject Type
@@ -494,11 +510,17 @@ public class LREngine {
         
         public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
                            Schema.Describefieldresult lf, String detailWhereClause) {
+            this(m, d, lf, detailWhereClause, null);                             
+        }
+
+        public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
+                           Schema.Describefieldresult lf, String detailWhereClause, SharingMode sharingMode) {
             this.master = m;
             this.detail = d;
             this.lookupField = lf;
             this.detailWhereClause = detailWhereClause;
             this.fieldsToRoll = new List<RollupSummaryField>();
+            this.sharingMode = sharingMode;
         }
         
         /**
@@ -521,4 +543,32 @@ public class LREngine {
             this.fieldsToRoll.add(fld);
         }
     }    
+
+    /**
+     * Wraps platform query executor to permit override of sharing rule consideration or not
+     **/
+    public abstract class QueryExecutor {
+        public virtual List<SObject> query(String query, Set<Id> masterIds) {
+            return Database.query(query);
+        }
+    }
+
+    /**
+     * Query executor that considers sharing rules
+     **/
+    public with sharing class WithSharingQueryExecutor extends QueryExecutor {
+        public override List<SObject> query(String query, Set<Id> masterIds) {
+            return super.query(query, masterIds);
+        }
+    }
+
+    /**
+     * QUery executor that ignores sharing rules
+     **/
+    public without sharing class WithoutSharingQueryExecutor extends QueryExecutor {
+        public override List<SObject> query(String query, Set<Id> masterIds) {
+            return super.query(query, masterIds);
+        }
+    }
+
 }
