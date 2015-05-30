@@ -27,7 +27,7 @@
 /**
  * Validation and other behaviour for the Lookup Rollup Summary custom object
  **/
-public with sharing class RollupSummaries extends SObjectDomain
+public without sharing class RollupSummaries extends SObjectDomain
 {		
 	private static final Integer APEXTRIGGER_NAME_LENGTH = 40; // ApexTrigger.Name.getDescribe().getLength(); gives 255?
 	
