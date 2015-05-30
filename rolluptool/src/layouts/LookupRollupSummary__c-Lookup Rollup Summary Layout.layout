@@ -99,6 +99,10 @@
                 <field>CalculationMode__c</field>
             </layoutItems>
             <layoutItems>
+                <behavior>Required</behavior>
+                <field>CalculationSharingMode__c</field>
+            </layoutItems>
+            <layoutItems>
                 <behavior>Readonly</behavior>
                 <field>CalculateJobId__c</field>
             </layoutItems>
