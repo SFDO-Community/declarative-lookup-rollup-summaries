@@ -70,6 +70,9 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 - Fix for [Some tests have hard-coded namespace](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/175) thanks to [Christian G. Warden](https://github.com/cwarden)
 - Fix for [Rollup fails when child field is Multi-select picklist and is null](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/150) thanks to [Daniel Hoechst](https://github.com/dhoechst)
 
+If you are upgrading, you will need to make the following changes to the Layout.
+- Add **Calculation Sharing Mode** field to the layout
+
 **Version 1.19**
 _______________________
 
