@@ -73,6 +73,8 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 If you are upgrading, you will need to make the following changes to the Layout.
 - Add **Calculation Sharing Mode** field to the layout
 
+![Calculation Sharing Mode](https://cloud.githubusercontent.com/assets/1167760/7896771/29740d96-06bd-11e5-926f-a6fc402c85b1.png)
+
 **Version 1.19**
 _______________________
 
