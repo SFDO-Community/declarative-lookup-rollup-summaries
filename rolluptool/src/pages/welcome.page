@@ -17,7 +17,7 @@ function createRemoteSite()
 			'<env:Body>' +
 				'<createMetadata xmlns="http://soap.sforce.com/2006/04/metadata">' + 
 					'<metadata xsi:type="RemoteSiteSetting">' + 
-						'<fullName>dlrs_mdapi</fullName>' + 
+						'<fullName>{!RemoteSiteName}</fullName>' +
 						'<description>Metadata API Remote Site Setting for Declarative Rollup Tool (DLRS)</description>' + 
 						'<disableProtocolSecurity>false</disableProtocolSecurity>' + 
 						'<isActive>true</isActive>' + 
