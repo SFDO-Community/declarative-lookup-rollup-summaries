@@ -81,7 +81,7 @@ public abstract with sharing class SObjectSelector
 
 	public void assertIsAccessible()
 	{
-    	if(!getSObjectType().getDescribe().isAccessible())
-    	   throw new SObjectDomain.DomainException('Permission to access an ' + getSObjectType().getDescribe().getName() + ' dennied.');		
+		if(!getSObjectType().getDescribe().isAccessible())
+			throw new SObjectDomain.DomainException('Permission to access an ' + getSObjectType().getDescribe().getName() + ' denied.');
 	}
 }

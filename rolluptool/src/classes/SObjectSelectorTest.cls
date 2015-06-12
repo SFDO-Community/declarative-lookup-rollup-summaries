@@ -91,7 +91,7 @@ private with sharing class SObjectSelectorTest
 			}
 			catch(SObjectDomain.DomainException e)
 			{
-				System.assertEquals('Permission to access an Account dennied.',e.getMessage());
+				System.assertEquals('Permission to access an Account denied.',e.getMessage());
 			}
 		}
 	}
