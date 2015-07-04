@@ -240,6 +240,8 @@ public with sharing class RollupSummaries extends SObjectDomain
 			return 'RollupServiceTest2Trigger';
 		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Account')
 			return 'RollupServiceTest3Trigger';
+		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Task')
+			return 'RollupServiceTest4Trigger';
 		return calculateComponentName(lookupRollupSummary.ChildObject__c, 'Trigger', APEXTRIGGER_NAME_LENGTH);
 	}
 

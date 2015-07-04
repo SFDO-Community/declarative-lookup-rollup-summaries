@@ -19,6 +19,7 @@
         <members>RollupServiceTest2</members>
         <members>RollupServiceTest3</members>
         <members>RollupServiceTest4</members>
+        <members>RollupServiceTest5</members>
         <members>RollupSummaries</members>
         <members>RollupSummariesSelector</members>
         <members>RollupSummariesTest</members>
@@ -53,6 +54,7 @@
         <name>ApexPage</name>
     </types>
     <types>
+        <members>RollupServiceTest4Trigger</members>        
         <members>RollupServiceTest2Trigger</members>
         <members>RollupServiceTest3Trigger</members>
         <members>RollupServiceTestTrigger</members>

@@ -557,6 +557,7 @@ global with sharing class RollupService
 		// Process lookups, 
 		//    Realtime are added to a list for later LRE context creation and processing, 
 		//    Scheduled result in parent Id's being emitted to scheduled item object for later processing
+        Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
         List<LookupRollupSummary__c> realtimeLookups = new List<LookupRollupSummary__c>();      
         List<LookupRollupSummaryScheduleItems__c> scheduledItems = new List<LookupRollupSummaryScheduleItems__c>(); 
         for(LookupRollupSummary__c lookup : lookups)
@@ -568,15 +569,21 @@ global with sharing class RollupService
             }
             else if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Scheduled.name())
             {       
+            	// For polymoprhic relationships the master Id list maybe mixed types, associated with the correct rollup
+                SObjectType parentType = gd.get(lookup.ParentObject__c);
+                if(parentType==null)
+                	continue;
                 // For scheduled rollups queue the parent Id record for processing
                 for (Id parentId : masterRecordIds)
                 {
-                    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
-                    scheduledItem.Name = parentId;
-                    scheduledItem.LookupRollupSummary__c = lookup.Id;
-                    scheduledItem.ParentId__c = parentId;
-                    scheduledItem.QualifiedParentID__c = parentId + '#' + lookup.Id; 
-                    scheduledItems.add(scheduledItem);
+                	if(parentId.getSobjectType() == parentType) {
+	                    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
+	                    scheduledItem.Name = parentId;
+	                    scheduledItem.LookupRollupSummary__c = lookup.Id;
+	                    scheduledItem.ParentId__c = parentId;
+	                    scheduledItem.QualifiedParentID__c = parentId + '#' + lookup.Id; 
+	                    scheduledItems.add(scheduledItem);
+	                }
                 }                   
             }
         }
