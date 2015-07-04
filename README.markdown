@@ -18,7 +18,7 @@ Please refer to the blog posts below for more detailed information.
 Community
 ---------
 
-This is a community driven tool, please help support it and share your experiences in this [Chatter group](https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p).
+This is a community driven tool, please help support it, share your experiences in this [Chatter group](https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p).
 
 Documentation
 -------------
