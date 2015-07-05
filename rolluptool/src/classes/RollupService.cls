@@ -389,7 +389,7 @@ global with sharing class RollupService
 			LookupRollupSummary__c lookup = lookups.get(scheduleItem.LookupRollupSummary__c);
 			// The lookup definition could have been changed or due to a historic bug in correctly associated
 			if(parentId.getSobjectType() != gd.get(lookup.ParentObject__c))
-				break;
+				continue;
 			Set<Id> parentIds = parentIdsByParentType.get(lookup.ParentObject__c);
 			if(parentIds==null)
 				parentIdsByParentType.put(lookup.ParentObject__c, (parentIds = new Set<Id>()));
@@ -404,21 +404,24 @@ global with sharing class RollupService
 		for(LREngine.Context ctx : engineCtxByParentRelationship.values())
 		{
 			Set<Id> masterIds = parentIdsByParentType.get(ctx.master.getDescribe().getName());
-			for(SObject masterRecord : LREngine.rollup(ctx, masterIds))
-			{
-				// Skip master records without Id's (LREngine can return these where there was 
-				//	no related master records to children, for examlpe where a relationship is optional)
-				if(masterRecord.Id==null)
-					break;
-				// Merge this master record result into a previous one from another rollup ctx?
-				SObject existingRecord = masterRecords.get(masterRecord.Id);
-				if(existingRecord==null)
-					masterRecords.put(masterRecord.Id, masterRecord);
-				else
-					for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll)
-						existingRecord.put(fieldToRoll.master.getSObjectField(), 
-							masterRecord.get(fieldToRoll.master.getSObjectField()));
-			}			
+			// This maybe null if the reconcilation check above to match master ID to lookup parent failed
+			if(masterIds!=null && masterIds.size()>0) {
+				for(SObject masterRecord : LREngine.rollup(ctx, masterIds))
+				{
+					// Skip master records without Id's (LREngine can return these where there was 
+					//	no related master records to children, for examlpe where a relationship is optional)
+					if(masterRecord.Id==null)
+						continue;
+					// Merge this master record result into a previous one from another rollup ctx?
+					SObject existingRecord = masterRecords.get(masterRecord.Id);
+					if(existingRecord==null)
+						masterRecords.put(masterRecord.Id, masterRecord);
+					else
+						for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll)
+							existingRecord.put(fieldToRoll.master.getSObjectField(), 
+								masterRecord.get(fieldToRoll.master.getSObjectField()));
+				}
+			}
 		}
 
 		// Map rollup summary schedule items by parent id, in order to remove only those whos parent/master record actually gets updated below
