@@ -381,11 +381,15 @@ global with sharing class RollupService
 			new Map<Id, LookupRollupSummary__c>(new RollupSummariesSelector().selectById(lookupIds));
 			
 		// Group the parent Id's by parent type
+		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
 		Map<String, Set<Id>> parentIdsByParentType = new Map<String, Set<Id>>();  
 		for(LookupRollupSummaryScheduleItems__c scheduleItem : rollupSummaryScheduleItems)
 		{
 			Id parentId = scheduleItem.ParentId__c;
 			LookupRollupSummary__c lookup = lookups.get(scheduleItem.LookupRollupSummary__c);
+			// The lookup definition could have been changed or due to a historic bug in correctly associated
+			if(parentId.getSobjectType() != gd.get(lookup.ParentObject__c))
+				break;
 			Set<Id> parentIds = parentIdsByParentType.get(lookup.ParentObject__c);
 			if(parentIds==null)
 				parentIdsByParentType.put(lookup.ParentObject__c, (parentIds = new Set<Id>()));
