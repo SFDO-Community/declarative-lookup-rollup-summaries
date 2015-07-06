@@ -134,6 +134,8 @@ public class LREngine {
         Integer exprIdx = 0;
         Boolean needsCurrency = false;
         Boolean builtAggregateQuery = false;
+        Set<String> selectedFields = new Set<String>();
+        Set<String> orderByFieldsSet = new Set<String>();
         Map<String, RollupSummaryField> rsfByAlais = new Map<String, RollupSummaryField>();
         for (RollupSummaryField rsf : ctx.fieldsToRoll) {
             if(rsf.operation == RollupOperation.Sum ||
@@ -151,15 +153,22 @@ public class LREngine {
                 if(IsMultiCurrencyOrg() == true && needsCurrency == false && rsf.isMasterTypeCurrency){
                     needsCurrency = true;
                 }                
-            } else {
+            } else {    
                 // create field projection 
                 // i.e. Amount
-                soqlProjection += ', ' + rsf.detail.getName();
+                String selectField = rsf.detail.getName();
+                if(!selectedFields.contains(selectField)) {
+                    soqlProjection += ', ' + selectField;
+                    selectedFields.add(selectField);                    
+                }
                 // create order by projections
                 // i.e. Amount ASC NULLS FIRST
                 String orderByField = 
                     rsf.detailOrderBy!=null ? rsf.detailOrderBy.getName() : rsf.detail.getName();
-                orderByFields.add(orderByField);
+                if(!orderByFieldsSet.contains(orderByField)) {
+                    orderByFields.add(orderByField);
+                    orderByFieldsSet.add(orderByField);
+                }
             }
         }
         

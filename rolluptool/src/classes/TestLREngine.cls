@@ -765,6 +765,41 @@ private class TestLREngine {
                 'Lost');
     } 
 
+    static testMethod void testMultipleRollupsSameResultField() {
+        prepareData();
+
+        LREngine.Context ctx = new LREngine.Context(
+            Account.SobjectType, 
+            Opportunity.SobjectType, 
+            Schema.SObjectType.Opportunity.fields.AccountId);
+
+        LREngine.RollupSummaryField rollupField1 = 
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    Schema.SObjectType.Opportunity.fields.Amount,
+                    LREngine.RollupOperation.Last, null);
+        ctx.add(rollupField1);
+        LREngine.RollupSummaryField rollupField2 =         
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Sic,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    Schema.SObjectType.Opportunity.fields.Amount,
+                    LREngine.RollupOperation.First, null);
+        ctx.add(rollupField2);
+
+        SObject[] masters = LREngine.rollUp(ctx, detailRecords);
+
+        Map<Id, SObject> mastersById = new Map<Id, SObject>(masters);
+        Account reloadedAcc1 = (Account)mastersById.get(acc1.Id);
+        Account reloadedAcc2 = (Account)mastersById.get(acc2.Id);
+        System.assertEquals(2, masters.size());
+        System.assertEquals('test', reloadedAcc1.get(rollupField1.master.getName()));
+        System.assertEquals('test', reloadedAcc1.get(rollupField2.master.getName()));
+        System.assertEquals('Lost', reloadedAcc2.get(rollupField1.master.getName()));        
+        System.assertEquals('Won', reloadedAcc2.get(rollupField2.master.getName()));                
+    }
+
     static private void testRollup(LREngine.RollupSummaryField rollupField, String expected1, String expected2) {
 
         prepareData();
