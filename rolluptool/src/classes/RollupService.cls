@@ -639,7 +639,7 @@ global with sharing class RollupService
 		// Query applicable lookup definitions
 		Schema.DescribeSObjectResult childRecordDescribe = childObjectType.getDescribe();
 		List<LookupRollupSummary__c> lookups =
-			new RollupSummariesSelector().selectActiveByChildObject(
+			new RollupSummariesSelector(false).selectActiveByChildObject(
 				new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Realtime, RollupSummaries.CalculationMode.Scheduled }, 
 				new Set<String> { childRecordDescribe.getName() });
 		return lookups;		

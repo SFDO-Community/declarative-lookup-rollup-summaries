@@ -25,7 +25,7 @@
 **/
 
 @IsTest
-private with sharing class RollupControllerTest 
+private class RollupControllerTest 
 {
 	private testmethod static void testDeployedStatus()
 	{

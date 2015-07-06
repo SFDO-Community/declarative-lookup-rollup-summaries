@@ -24,7 +24,7 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-public with sharing class RollupSummaryScheduleItemsSelector extends SObjectSelector 
+public class RollupSummaryScheduleItemsSelector extends fflib_SObjectSelector 
 {
 	public List<Schema.SObjectField> getSObjectFieldList()
 	{
@@ -47,9 +47,7 @@ public with sharing class RollupSummaryScheduleItemsSelector extends SObjectSele
 	
 	public Database.Querylocator selectAllQueryLocator()
 	{
-		assertIsAccessible();
-		return Database.getQueryLocator(String.format('SELECT {0} FROM {1} ORDER BY {2}',
-			new List<String>{getFieldListString(),getSObjectName(),getOrderBy()}));
+		return Database.getQueryLocator(newQueryFactory().toSOQL());
 	}
 
 	public List<LookupRollupSummaryScheduleItems__c> selectById(Set<ID> idSet)

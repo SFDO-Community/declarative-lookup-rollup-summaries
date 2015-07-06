@@ -25,7 +25,7 @@
 **/
 
 @IsTest
-private with sharing class RollupJobTest 
+private class RollupJobTest 
 {
 
 }

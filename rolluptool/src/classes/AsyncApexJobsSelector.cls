@@ -24,13 +24,8 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-public with sharing class AsyncApexJobsSelector extends SObjectSelector
-{
-    public override String getOrderBy()
-    {
-    	return 'CreatedDate';
-    }
-    
+public class AsyncApexJobsSelector extends fflib_SObjectSelector
+{    
     List<Schema.SObjectField> getSObjectFieldList()
     {
         return new List<Schema.SObjectField> {
@@ -49,6 +44,11 @@ public with sharing class AsyncApexJobsSelector extends SObjectSelector
     {
         return AsyncApexJob.sObjectType;
     }
+
+    public override String getOrderBy()
+    {
+        return 'CreatedDate';
+    }
 	
     public List<AsyncApexJob> selectById(Set<ID> idSet)
     {
@@ -63,12 +63,11 @@ public with sharing class AsyncApexJobsSelector extends SObjectSelector
     	Set<String> statuses = new Set<String> { 'Queued', 'Processing', 'Preparing' };
     	String jobType = 'BatchApex';
     	String query = 
-			String.format(
-					'select {0} from {1} ' + 
-					'where JobType = :jobType And ' + 
+			newQueryFactory().
+                setCondition(
+					'JobType = :jobType And ' + 
 						'ApexClass.Name in :classNames And ' + 
-						'Status in :statuses',
-				new List<String>{getFieldListString(),getSObjectName()});
+						'Status in :statuses').toSOQL();
     	List<AsyncApexJob> jobs = (List<AsyncApexJob>) 
     		Database.query(query);		    
     	return jobs.size()>0;	

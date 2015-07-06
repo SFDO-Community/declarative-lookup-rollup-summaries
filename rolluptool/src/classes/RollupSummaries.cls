@@ -27,7 +27,7 @@
 /**
  * Validation and other behaviour for the Lookup Rollup Summary custom object
  **/
-public with sharing class RollupSummaries extends SObjectDomain
+public class RollupSummaries extends fflib_SObjectDomain
 {		
 	private static final Integer APEXTRIGGER_NAME_LENGTH = 40; // ApexTrigger.Name.getDescribe().getLength(); gives 255?
 	
@@ -221,9 +221,9 @@ public with sharing class RollupSummaries extends SObjectDomain
 
 	private static final String MSG_INVALID_CRITERIA = 'Relationship Criteria \'\'{0}\'\' is not valid, see SOQL documentation http://www.salesforce.com/us/developer/docs/soql_sosl/Content/sforce_api_calls_soql_select_conditionexpression.htm, error is \'\'{1}\'\'';
 	
-	public class Constructor implements SObjectDomain.IConstructable
+	public class Constructor implements fflib_SObjectDomain.IConstructable
 	{
-		public SObjectDomain construct(List<SObject> sObjectList)
+		public fflib_SObjectDomain construct(List<SObject> sObjectList)
 		{
 			return new RollupSummaries(sObjectList);
 		}
