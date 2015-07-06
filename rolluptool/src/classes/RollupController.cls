@@ -134,8 +134,12 @@ public with sharing class RollupController
 				'{\n' + 
 				'    private static testmethod void testTrigger()\n' +
 				'    {\n' + 
-				'        // Force the ' + RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-				'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ChildObject__c + '());\n'+
+					((RollupSummary.TestCode__c!=null && RollupSummary.TestCode__c.length()>0) ? 
+						RollupSummary.TestCode__c + '\n' : 
+						(
+							'        // Force the ' + RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
+							'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ChildObject__c + '());\n')
+						) +
 				'    }\n' +
 				'}';			
 		}

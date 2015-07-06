@@ -212,6 +212,49 @@ private class RollupControllerTest
 											
 		Test.stopTest();
 	}
+
+	private testmethod static void testDeployedStatusWithCustomTestCode()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		// Test data
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummaryA.ParentObject__c = 'Account';
+		rollupSummaryA.ChildObject__c = 'Opportunity';
+		rollupSummaryA.RelationShipField__c = 'AccountId';
+		rollupSummaryA.RelationShipCriteria__c = null;
+		rollupSummaryA.FieldToAggregate__c = 'Amount';
+		rollupSummaryA.AggregateOperation__c = 'Sum';
+		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = 'Realtime';			
+		rollupSummaryA.TestCode__c = 'System.assertEquals(1,1)';
+					
+		// Assert initial state of controller when the trigger for the child object is deployed
+		RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummaryA ));
+		System.assertEquals(true, controller.Deployed);
+		System.assertEquals('RollupServiceTestTrigger', controller.RollupTriggerName);
+		System.assertEquals('RollupSummariesTest', controller.RollupTriggerTestName);
+		System.assertEquals('RollupServiceTestTrigger', controller.RollupTrigger.Name);
+		System.assertEquals('RollupSummariesTest', controller.RollupTriggerTest.Name);
+		System.assertEquals(controller.RollupTrigger.Body, controller.getTriggerCode());
+		System.assertEquals(controller.RollupTriggerTest.Body, controller.getTriggerTestCode());
+		System.assertEquals(
+			 	'/**\n' +
+				' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+				' **/\n' +	
+				'@IsTest\n' +	 
+			    'private class ' + controller.RollupTriggerTestName + '\n' +  
+				'{\n' + 
+				'    private static testmethod void testTrigger()\n' +
+				'    {\n' + 
+				'System.assertEquals(1,1)\n' +
+				'    }\n' +
+				'}', controller.getTriggerTestCode());
+	}	
 	
     /**
      * Metadata API web service mock class for tests above

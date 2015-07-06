@@ -170,6 +170,7 @@
     </fields>
     <fields>
         <fullName>CalculationSharingMode__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>Determines if the Sharing Rules defined on the Child Object are considered when calculating the rollup. Default is User.</inlineHelpText>
         <label>Calculation Sharing Mode</label>
@@ -290,6 +291,16 @@
         <trackTrending>false</trackTrending>
         <type>Text</type>
         <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>TestCode__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>This tool utilises a dynamically generated Apex Trigger and by default a generated Apex Test. Use this field if instructed by a developer to replace the generated test code. For more information see the tools Wiki on GitHub.</inlineHelpText>
+        <label>Test Code</label>
+        <length>32768</length>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>12</visibleLines>
     </fields>
     <fields>
         <fullName>UniqueName__c</fullName>

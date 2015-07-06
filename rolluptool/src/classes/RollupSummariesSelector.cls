@@ -55,7 +55,8 @@ public class RollupSummariesSelector extends fflib_SObjectSelector
 			LookupRollupSummary__c.RelationshipField__c,
 			LookupRollupSummary__c.CalculateJobId__c,
 			LookupRollupSummary__c.UniqueName__c,
-			LookupRollupSummary__c.CalculationSharingMode__c
+			LookupRollupSummary__c.CalculationSharingMode__c,
+			LookupRollupSummary__c.TestCode__c
 		};
 	}
 
