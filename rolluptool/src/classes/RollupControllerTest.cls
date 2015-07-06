@@ -213,35 +213,35 @@ private class RollupControllerTest
 		Test.stopTest();
 	}
 
-	private testmethod static void testDeployedStatusWithCustomTestCode()
+	private testmethod static void testWithCustomTestCode()
 	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
 		
+    	// Metadata API web Service mock implementation for tests
+        Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+		
 		// Test data
-		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-		rollupSummaryA.ParentObject__c = 'Account';
-		rollupSummaryA.ChildObject__c = 'Opportunity';
-		rollupSummaryA.RelationShipField__c = 'AccountId';
-		rollupSummaryA.RelationShipCriteria__c = null;
-		rollupSummaryA.FieldToAggregate__c = 'Amount';
-		rollupSummaryA.AggregateOperation__c = 'Sum';
-		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-		rollupSummaryA.Active__c = true;
-		rollupSummaryA.CalculationMode__c = 'Realtime';			
-		rollupSummaryA.TestCode__c = 'System.assertEquals(1,1)';
-					
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Contact';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
+		rollupSummary.AggregateOperation__c = 'Count';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.Active__c = false;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		rollupSummary.TestCode__c = 'System.assertEquals(1,1);';
+		insert rollupSummary;
+
+		// Open test context, permits callouts following DML
+		Test.startTest();
+
 		// Assert initial state of controller when the trigger for the child object is deployed
-		RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummaryA ));
-		System.assertEquals(true, controller.Deployed);
-		System.assertEquals('RollupServiceTestTrigger', controller.RollupTriggerName);
-		System.assertEquals('RollupSummariesTest', controller.RollupTriggerTestName);
-		System.assertEquals('RollupServiceTestTrigger', controller.RollupTrigger.Name);
-		System.assertEquals('RollupSummariesTest', controller.RollupTriggerTest.Name);
-		System.assertEquals(controller.RollupTrigger.Body, controller.getTriggerCode());
-		System.assertEquals(controller.RollupTriggerTest.Body, controller.getTriggerTestCode());
+		RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummary ));
 		System.assertEquals(
 			 	'/**\n' +
 				' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
@@ -251,7 +251,7 @@ private class RollupControllerTest
 				'{\n' + 
 				'    private static testmethod void testTrigger()\n' +
 				'    {\n' + 
-				'System.assertEquals(1,1)\n' +
+				'System.assertEquals(1,1);\n' +
 				'    }\n' +
 				'}', controller.getTriggerTestCode());
 	}	
