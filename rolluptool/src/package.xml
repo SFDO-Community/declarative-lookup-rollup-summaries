@@ -106,6 +106,10 @@
         <name>CustomTab</name>
     </types>
     <types>
+        <members>*</members>
+        <name>CustomLabel</name>
+    </types>
+    <types>
         <members>LookupChild__c-Lookup Child Layout</members>
         <members>LookupParent__c-Lookup Parent Layout</members>
         <members>LookupRollupSummaryLog__c-Lookup Rollup Summary Log Layout</members>
