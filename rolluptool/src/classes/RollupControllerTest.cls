@@ -25,7 +25,7 @@
 **/
 
 @IsTest
-private class RollupControllerTest 
+private class RollupControllerTest
 {
 	private testmethod static void testDeployedStatus()
 	{
@@ -232,14 +232,15 @@ private class RollupControllerTest
 				response_x.result.state = 'Complete';
 				response.put('response_x', response_x);
 			}			
-			else if(request instanceof MetadataService.checkStatus_element)
+			else if(request instanceof MetadataService.checkDeployStatus_element)
 			{
-				System.assertEquals('someid', ((MetadataService.checkStatus_element) request).asyncProcessId[0]);
-				MetadataService.checkStatusResponse_element response_x = new MetadataService.checkStatusResponse_element();
-				response_x.result = new List<MetadataService.AsyncResult>();
-				response_x.result.add(new MetadataService.AsyncResult());
-				response_x.result[0].done = true;
-				response_x.result[0].state = 'Complete';
+				System.assertEquals('someid', ((MetadataService.checkDeployStatus_element) request).asyncProcessId);
+				MetadataService.checkDeployStatusResponse_element response_x = new MetadataService.checkDeployStatusResponse_element();
+				response_x.result = new MetadataService.DeployResult();
+				response_x.result.details = new MetadataService.DeployDetails();
+				response_x.result.details.runTestResult = new MetadataService.RunTestsResult();
+				response_x.result.details.runTestResult.numFailures = 0;
+				response_x.result.details.componentFailures = new List<MetadataService.DeployMessage>();
 				response.put('response_x', response_x);
 			}
 			else if(request instanceof MetadataService.checkDeployStatus_element)
@@ -247,9 +248,10 @@ private class RollupControllerTest
 				System.assertEquals('someid', ((MetadataService.checkDeployStatus_element) request).asyncProcessId);
 				MetadataService.checkDeployStatusResponse_element response_x = new MetadataService.checkDeployStatusResponse_element();
 				response_x.result = new MetadataService.DeployResult(); 
-				response_x.result.runTestResult = new MetadataService.RunTestsResult();
-				response_x.result.runTestResult.numFailures = 0;
-				response_x.result.messages = new List<MetadataService.DeployMessage>();
+				response_x.result.details = new MetadataService.DeployDetails();
+				response_x.result.details.runTestResult = new MetadataService.RunTestsResult();
+				response_x.result.details.runTestResult.numFailures = 0;
+				response_x.result.details.componentFailures = new List<MetadataService.DeployMessage>();
 				response.put('response_x', response_x);
 			}
 			else if(request instanceof MetadataService.listMetadata_element)
