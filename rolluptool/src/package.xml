@@ -54,11 +54,6 @@
         <members>RollupSummaryEnhancedController</members>
         <members>RollupSummaryEnhancedControllerTest</members>
         <members>RollupSummaryScheduleItemsSelector</members>
-        <members>SObjectDomain</members>
-        <members>SObjectDomainTest</members>
-        <members>SObjectSelector</members>
-        <members>SObjectSelectorTest</members>
-        <members>StringBuilder</members>
         <members>TestContext</members>
         <members>TestLREngine</members>
         <members>WelcomeController</members>
