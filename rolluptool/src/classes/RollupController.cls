@@ -132,7 +132,8 @@ public with sharing class RollupController
 				'@IsTest\n' +	 
 			    'private class ' + RollupTriggerTestName + '\n' +  
 				'{\n' + 
-				'    private static testmethod void testTrigger()\n' +
+					 (RollupSummary.TestCodeSeeAllData__c == true ? '    @IsTest(SeeAllData=true)\n' : '    @IsTest\n') +
+				'    private static void testTrigger()\n' +
 				'    {\n' + 
 					((RollupSummary.TestCode__c!=null && RollupSummary.TestCode__c.length()>0) ? 
 						RollupSummary.TestCode__c + '\n' : 

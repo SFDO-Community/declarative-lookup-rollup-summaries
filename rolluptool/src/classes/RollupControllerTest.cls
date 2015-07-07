@@ -175,7 +175,8 @@ private class RollupControllerTest
 				'@IsTest\n' +	 
 			    'private class ' + controller.RollupTriggerTestName + '\n' +  
 				'{\n' + 
-				'    private static testmethod void testTrigger()\n' +
+				'    @IsTest\n' +
+				'    private static void testTrigger()\n' +
 				'    {\n' + 
 				'        // Force the ' + controller.RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
 				'        ' + Utilities.classPrefix() + 'RollupService.testHandler(new ' + rollupSummary.ChildObject__c + '());\n' +
@@ -235,6 +236,7 @@ private class RollupControllerTest
 		rollupSummary.Active__c = false;
 		rollupSummary.CalculationMode__c = 'Realtime';
 		rollupSummary.TestCode__c = 'System.assertEquals(1,1);';
+		rollupSummary.TestCodeSeeAllData__c = true;
 		insert rollupSummary;
 
 		// Open test context, permits callouts following DML
@@ -249,7 +251,8 @@ private class RollupControllerTest
 				'@IsTest\n' +	 
 			    'private class ' + controller.RollupTriggerTestName + '\n' +  
 				'{\n' + 
-				'    private static testmethod void testTrigger()\n' +
+				'    @IsTest(SeeAllData=true)\n' +
+				'    private static void testTrigger()\n' +
 				'    {\n' + 
 				'System.assertEquals(1,1);\n' +
 				'    }\n' +
