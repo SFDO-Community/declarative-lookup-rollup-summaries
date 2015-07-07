@@ -293,7 +293,17 @@
         <unique>false</unique>
     </fields>
     <fields>
+        <fullName>TestCodeSeeAllData__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <inlineHelpText>Only use this option as a last resort to get the generated test or custom test code working. It is generally considered bad practice to make your test dependent on org data. Always try to create test data in the test code if possible.</inlineHelpText>
+        <label>Test Code See All Data</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
         <fullName>TestCode__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>This tool utilises a dynamically generated Apex Trigger and by default a generated Apex Test. Use this field if instructed by a developer to replace the generated test code. For more information see the tools Wiki on GitHub.</inlineHelpText>
         <label>Test Code</label>
