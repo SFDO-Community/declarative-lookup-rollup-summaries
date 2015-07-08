@@ -61,7 +61,19 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! 
 
-**Latest Version 1.21**
+**Latest Version 1.22**
+_______________________
+
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Qg9t), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000Qg9t)
+
+- Enhancement for [Ability to enable SeeAllData in the generated tests](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/202)
+- Bug fix for [Error with multi-currency](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/204)
+- Bug fix for [Some of the new fields in the last release are not in the Manage Rollup Permission Set](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/201)
+
+If you are upgrading, you will need to make the following changes to the Layout.
+- Add **Test Code See All Data** field to the layout
+
+**Version 1.21**
 _______________________
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QfxT), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QfxT)
@@ -74,7 +86,6 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 
 If you are upgrading, you will need to make the following changes to the Layout.
 - Add **Test Code** field to the layout
-
 
 **Version 1.20**
 _______________________
