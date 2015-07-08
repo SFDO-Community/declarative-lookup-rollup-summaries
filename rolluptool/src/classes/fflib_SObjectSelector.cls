@@ -34,6 +34,7 @@ public abstract with sharing class fflib_SObjectSelector
      * This overrides the Multi Currency handling, preventing it from injecting the CurrencyIsoCode fie ld for certain System objects that don't ever support it
      **/
     private static Set<String> STANDARD_WITHOUT_CURRENCYISO = new Set<String> { AsyncApexJob.SObjectType.getDescribe().getName()
+                                                                                , ApexTrigger.SObjectType.getDescribe().getName()
                                                                                 , ApexClass.SObjectType.getDescribe().getName()
                                                                                 , Attachment.SObjectType.getDescribe().getName()
                                                                                 , RecordType.SObjectType.getDescribe().getName() };
