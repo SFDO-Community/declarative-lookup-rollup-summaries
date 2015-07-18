@@ -170,6 +170,17 @@ global with sharing class RollupService
 	 **/ 
 	global static List<SObject> rollup(List<SObject> childRecords)
 	{
+		return rollup(childRecords, new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Developer });
+	}
+
+	/**
+	 * Developer API for the tool, executes Rollup Summmaries with specified Calculation Modes
+	 *
+	 * @param childRecords Child records being modified
+	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
+	 **/ 
+	public static List<SObject> rollup(List<SObject> childRecords, List<RollupSummaries.CalculationMode> calculationModes)
+	{
 		// Anything to process?
 		if(childRecords==null || childRecords.size()==0)
 			return new List<SObject>();
@@ -179,7 +190,7 @@ global with sharing class RollupService
 		Schema.DescribeSObjectResult childRecordDescribe = childObjectType.getDescribe();		
 		List<LookupRollupSummary__c> lookups =
 			new RollupSummariesSelector().selectActiveByChildObject(
-				new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Developer }, 
+				calculationModes, 
 				new Set<String> { childRecordDescribe.getName() });
 		if(lookups.size()==0)
 			return new List<SObject>(); // Nothing to see here! :)
