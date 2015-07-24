@@ -174,6 +174,33 @@ private class RollupSummariesTest
 		System.assertEquals('Apex Trigger ' + RollupSummaries.makeTriggerName(rollupSummary) + ' has not been deployed. Click Manage Child Trigger and try again.', fflib_SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(LookupRollupSummary__c.Active__c, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field);
 	}
+
+	private testmethod static void testInsertActiveBypassValidation()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		// enable bypass of trigger check for this test
+		DeclarativeLookupRollupSummaries__c setting = DeclarativeLookupRollupSummaries__c.getInstance();
+		setting.BypassTriggerCheckDuringActivation__c = true;
+		upsert setting;
+
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Max Birthday for Contacts related to an Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Contact';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
+		rollupSummary.AggregateOperation__c = 'Count';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		fflib_SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		fflib_SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(0, fflib_SObjectDomain.Errors.getAll().size());	
+	}	
 	
 	private testmethod static void testInsertParentObjectValidation()
 	{

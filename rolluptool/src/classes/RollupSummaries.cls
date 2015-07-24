@@ -153,7 +153,9 @@ public class RollupSummaries extends fflib_SObjectDomain
 					lookupRollupSummary.AggregateResultField__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.AggregateResultField__c));
 			}						
 			// Cannot activate Realtime or Scheduled rollup without the required trigger deployed
-			if(childObjectType!=null) 
+			// unless bypass is enabled
+			Boolean bypassTriggerCheck = (Boolean) DeclarativeLookupRollupSummaries__c.getInstance().BypassTriggerCheckDuringActivation__c;
+			if(childObjectType!=null && !bypassTriggerCheck) 
 			{
 				String triggerName = makeTriggerName(lookupRollupSummary); 
 				if(lookupRollupSummary.Active__c &&
