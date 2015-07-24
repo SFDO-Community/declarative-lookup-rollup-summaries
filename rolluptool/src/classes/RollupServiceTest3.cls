@@ -514,6 +514,123 @@ private with sharing class RollupServiceTest3
 	}
 
 	/**
+	 * Test Developer API with Developer and Scheduled rollups defined but CalculationMode of Realtime only
+	 **/
+	private testmethod static void testDeveloperAPIRealtime()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		// Disable the LookupChild trigger for this test to defer rollup execution using Developer API
+		TestContext.LookupChildTestTriggerEnabled = false;		
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateFieldA = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultFieldA = LookupParent__c.Total__c.getDescribe().getName();
+		String aggregateFieldB = LookupChild__c.Color__c.getDescribe().getName();
+		String aggregateResultFieldB = LookupParent__c.Colours__c.getDescribe().getName();
+
+		// Create rollup
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Test Rollup Sum';
+		rollupSummaryA.ParentObject__c = parentObjectName;
+		rollupSummaryA.ChildObject__c = childObjectName;
+		rollupSummaryA.RelationShipField__c = relationshipField;
+		rollupSummaryA.FieldToAggregate__c = aggregateFieldA;
+		rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummaryA.AggregateResultField__c = aggregateResultFieldA;
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+
+		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+		rollupSummaryB.Name = 'Test Rollup Concat';
+		rollupSummaryB.ParentObject__c = parentObjectName;
+		rollupSummaryB.ChildObject__c = childObjectName;
+		rollupSummaryB.RelationShipField__c = relationshipField;
+		rollupSummaryB.FieldToAggregate__c = aggregateFieldB;
+		rollupSummaryB.AggregateOperation__c = RollupSummaries.AggregateOperation.Concatenate.name();
+		rollupSummaryB.AggregateResultField__c = aggregateResultFieldB;
+		rollupSummaryB.ConcatenateDelimiter__c = ';';
+		rollupSummaryB.Active__c = true;
+		rollupSummaryB.CalculationMode__c = RollupSummaries.CalculationMode.Developer.name();		
+
+		// Insert rollup definitions
+		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
+
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateFieldA, 20);
+			child1.put(aggregateFieldB, 'Red');
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateFieldA, 20);
+			child2.put(aggregateFieldB, 'Yellow');
+			children.add(child2);
+			if(name.equals('ParentA') || name.equals('ParentB'))
+			{
+				SObject child3 = childType.newSObject();
+				child3.put(relationshipField, parent.Id);
+				child3.put(aggregateFieldA, 2);
+				child3.put(aggregateFieldB, 'Blue');
+				children.add(child3);
+			}
+		}
+		insert children;
+
+		// Assert nothing has changed on db
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateResultFieldA, aggregateResultFieldB, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultFieldA));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultFieldA));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultFieldA));
+		System.assertEquals(null, (String) assertParents.get(parentA.id).get(aggregateResultFieldB));
+		System.assertEquals(null, (String) assertParents.get(parentB.id).get(aggregateResultFieldB));
+		System.assertEquals(null, (String) assertParents.get(parentC.id).get(aggregateResultFieldB));
+
+		// Call developer API to force realtime rollups
+		List<SObject> masterRecords = RollupService.rollupRealtime(children);
+
+		// Assert nothing has changed on db
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateResultFieldA, aggregateResultFieldB, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultFieldA));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultFieldA));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultFieldA));
+		System.assertEquals(null, (String) assertParents.get(parentA.id).get(aggregateResultFieldB));
+		System.assertEquals(null, (String) assertParents.get(parentB.id).get(aggregateResultFieldB));
+		System.assertEquals(null, (String) assertParents.get(parentC.id).get(aggregateResultFieldB));
+
+		// Assert rollups produced
+		assertParents = new Map<Id, SObject>(masterRecords);
+		System.assertEquals(3, masterRecords.size());
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultFieldA));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultFieldA));
+		System.assertEquals(40, (Decimal) assertParents.get(parentC.id).get(aggregateResultFieldA));
+		System.assertEquals(null, (String) assertParents.get(parentA.id).get(aggregateResultFieldB));
+		System.assertEquals(null, (String) assertParents.get(parentB.id).get(aggregateResultFieldB));
+		System.assertEquals(null, (String) assertParents.get(parentC.id).get(aggregateResultFieldB));		
+	}	
+
+	/**
 	 * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/23
 	 */
 	private testmethod static void testDateRollupDeleteChild()

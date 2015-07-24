@@ -174,6 +174,17 @@ global with sharing class RollupService
 	}
 
 	/**
+	 * Developer API for the tool, only executes Rollup Summmaries with Calculation Mode set to Realtime
+	 *
+	 * @param childRecords Child records being modified
+	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
+	 **/ 
+	global static List<SObject> rollupRealtime(List<SObject> childRecords)
+	{
+		return rollup(childRecords, new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Realtime });
+	}
+
+	/**
 	 * Developer API for the tool, executes Rollup Summmaries with specified Calculation Modes
 	 *
 	 * @param childRecords Child records being modified
