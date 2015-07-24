@@ -88,7 +88,40 @@ private class RollupSummariesTest
 		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());	
 		System.assertEquals('Object does not exist.', fflib_SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(LookupRollupSummary__c.ChildObject__c, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field);		
-	}	
+	}
+
+	/**
+	 * Issue https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/212
+	 **/
+	private testmethod static void testUpdateBadChildBigName()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		String rsId = fflib_IDGenerator.generate(LookupRollupSummary__c.SObjectType);
+
+		LookupRollupSummary__c oldRollupSummary = new LookupRollupSummary__c(Id=rsId);
+		oldRollupSummary.Name = 'Max Birthday for Contacts related to an Account';
+		oldRollupSummary.ParentObject__c = 'Account';
+		oldRollupSummary.ChildObject__c = 'Contact';
+		oldRollupSummary.RelationShipField__c = 'AccountId';
+		oldRollupSummary.RelationShipCriteria__c = null;
+		oldRollupSummary.FieldToAggregate__c = 'LastCURequestDate';
+		oldRollupSummary.AggregateOperation__c = 'Count';
+		oldRollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		oldRollupSummary.Active__c = false;
+		oldRollupSummary.CalculationMode__c = 'Realtime';
+
+		LookupRollupSummary__c newRollupSummary = oldRollupSummary.clone(true, true, true, true);
+		newRollupSummary.ChildObject__c = 'BadBadBadBadBadBadBadBadBadBad';
+		fflib_SObjectDomain.Test.Database.onUpdate(new LookupRollupSummary__c[] { newRollupSummary }, new Map<Id, SObject> { oldRollupSummary.Id => oldRollupSummary } );
+
+		fflib_SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Object does not exist.', fflib_SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(LookupRollupSummary__c.ChildObject__c, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field);		
+	}
 
 	/**
 	 * Issue https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/97

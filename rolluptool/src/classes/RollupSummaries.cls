@@ -85,8 +85,8 @@ public class RollupSummaries extends fflib_SObjectDomain
 	
 	/**
 	 * Validations for inserts and updates of records
-	 **/ 
-	public override void onValidate()
+	 **/ 	
+	private void validateCommon()
 	{
 		// Cache Apex Describes and calculate child object tigger names
 		Set<String> rollupTriggerNames = new Set<String>();
@@ -217,6 +217,24 @@ public class RollupSummaries extends fflib_SObjectDomain
 				lookupRollupSummary.addError(error(e.getMessage(), lookupRollupSummary));	
 			} 											
 		}
+	}
+
+	/**
+	 * Validations for inserts of records
+	 **/ 
+	public override void onValidate()
+	{
+		// invoke validation that should occur for insert & update		
+		validateCommon();
+	}
+
+	/**
+	 * Validations for updates of records
+	 **/ 
+	public override void onValidate(Map<Id,SObject> existingRecords)
+	{
+		// invoke validation that should occur for insert & update
+		validateCommon();
 	}
 
 	private static final String MSG_INVALID_CRITERIA = 'Relationship Criteria \'\'{0}\'\' is not valid, see SOQL documentation http://www.salesforce.com/us/developer/docs/soql_sosl/Content/sforce_api_calls_soql_select_conditionexpression.htm, error is \'\'{1}\'\'';
