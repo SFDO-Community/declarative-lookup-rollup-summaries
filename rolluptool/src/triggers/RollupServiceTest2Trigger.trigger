@@ -8,5 +8,6 @@
 trigger RollupServiceTest2Trigger on LookupChild__c
     (before delete, before insert, before update, after delete, after insert, after undelete, after update)
 {
-    RollupService.triggerHandler();
+	if(TestContext.LookupChildTestTriggerEnabled)
+    	RollupService.triggerHandler();
 }

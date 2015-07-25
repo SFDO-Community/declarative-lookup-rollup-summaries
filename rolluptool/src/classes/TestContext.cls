@@ -31,6 +31,8 @@ public class TestContext
 	public static Boolean OpportunityTestTriggerEnabled = true;
 	
 	public static Boolean AccountTestTriggerEnabled = true;
+
+	public static Boolean LookupChildTestTriggerEnabled = true;	
 	
 	/**
 	 * Tests are only executed when the test trigger is present (not packaged)
