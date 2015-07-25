@@ -147,6 +147,79 @@ private with sharing class RollupServiceTest
 		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
 		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));			
 	}
+	
+	private testmethod static void testMultiRollupSumAndAvg()
+	{		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		// Test data
+		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
+					
+		// Test data for rollup A
+		Decimal expectedResultA = 600;
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		String conditionA = null;
+
+		// Test data for rollup B
+		Decimal expectedResultB = 150;
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Avg; 
+		String conditionB = null;
+		
+		// Configure rollup A
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Total Opportunities into Annual Revenue on Account';
+		rollupSummaryA.ParentObject__c = 'Account';
+		rollupSummaryA.ChildObject__c = 'Opportunity';
+		rollupSummaryA.RelationShipField__c = 'AccountId';
+		rollupSummaryA.RelationShipCriteria__c = conditionA;
+		rollupSummaryA.FieldToAggregate__c = 'Amount';
+		rollupSummaryA.AggregateOperation__c = operationA.name();
+		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = 'Realtime';
+
+		// Configure rollup B
+		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+		rollupSummaryB.Name = 'Avg Opportunities into Annual Revenue on Account';
+		rollupSummaryB.ParentObject__c = 'Account';
+		rollupSummaryB.ChildObject__c = 'Opportunity';
+		rollupSummaryB.RelationShipField__c = 'AccountId';
+		rollupSummaryB.RelationShipCriteria__c = conditionB;
+		rollupSummaryB.FieldToAggregate__c = 'Amount';
+		rollupSummaryB.AggregateOperation__c = operationB.name();
+		rollupSummaryB.AggregateResultField__c = 'NumberOfLocations__c';
+		rollupSummaryB.Active__c = true;
+		rollupSummaryB.CalculationMode__c = 'Realtime';
+
+		// Insert rollup definitions
+		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
+		
+		// Test data
+		Account account = new Account();
+		account.Name = 'Test Account';
+		account.AnnualRevenue = 0;
+		insert account;
+		List<Opportunity> opps = new List<Opportunity>(); 
+		for(Decimal rollupValue : rollups)
+		{
+			Opportunity opp = new Opportunity();
+			opp.Name = 'Test Opportunity';
+			opp.StageName = 'Open';
+			opp.CloseDate = System.today();
+			opp.AccountId = account.Id;
+			opp.Amount = rollupValue;
+			opps.add(opp);			
+		}
+		insert opps;
+		
+		// Assert rollup
+		Id accountId = account.Id;
+		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));			
+	}
 
 	private testmethod static void testMultiRollupNoConditions()
 	{		
