@@ -4,6 +4,16 @@
     <customSettingsVisibility>Public</customSettingsVisibility>
     <enableFeeds>false</enableFeeds>
     <fields>
+        <fullName>BypassTriggerCheckDuringActivation__c</fullName>
+        <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>        
+        <description>By default (false), Trigger must exist in order to activate rollup.  Setting to true will allow rollup to be activate without requiring trigger exist.  This supports scenarios were rollups are invoked in separate trigger</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Set to true to allow rollups to be activated without requiring a specifically named trigger</inlineHelpText>
+        <label>Bypass Trigger Check During Activation</label>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
         <fullName>CalculateJobScopeSize__c</fullName>
         <defaultValue>100</defaultValue>
         <deprecated>false</deprecated>
