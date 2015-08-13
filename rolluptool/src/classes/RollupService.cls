@@ -165,6 +165,26 @@ global with sharing class RollupService
 	/**
 	 * Developer API for the tool, only executes Rollup Summmaries with Calculation Mode set to Developer 
 	 *
+	 * Automatically resolves child records to process via LREngine and lookups described in LookupRollupSummary__c
+	 *    also determines if based on the old trigger records if the rollup processing needs to occur
+	 *
+	 * @param existingRecords Existing records corresponding to the childRecords.	 
+	 * @param newRecords Child records being modified
+	 * @param sObjectType SObjectType of the existing/new records
+	 *
+	 * @usage rollup(Trigger.oldMap, Trigger.newMap, Account.SObjectType)
+	 *
+	 * @remark All SObjects (existing and new) must be of the same SObjectType
+	 **/ 
+	global static void rollup(Map<Id, SObject> existingRecords, Map<Id, SObject> newRecords, Schema.SObjectType sObjectType)
+	{
+		handleRollups(existingRecords, newRecords, sObjectType, new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Developer });
+	}
+
+
+	/**
+	 * Developer API for the tool, only executes Rollup Summmaries with Calculation Mode set to Developer 
+	 *
 	 * @param childRecords Child records being modified
 	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
 	 **/ 
@@ -256,86 +276,9 @@ global with sharing class RollupService
 		// Anything to rollup?
 		List<SObject> childRecords = Trigger.isDelete ? Trigger.old : Trigger.new;
 		SObjectType childObjectType = childRecords[0].Id.getSObjectType();		
-		List<LookupRollupSummary__c> lookups = describeRollups(childRecords[0].Id.getSObjectType());
-		if(lookups.size()==0)
-			return; // Nothing to see here! :)
-			
-		// Has anything changed on the child records in respect to the fields referenced on the lookup definition?
-		if(Trigger.isUpdate)
-		{
-			// Master records to update
-			Set<Id> masterRecordIds = new Set<Id>();
-			 
-			// Set of field names from the child used in the rollup to search for changes on
-			Set<String> fieldsToSearchForChanges = new Set<String>(); 
-			Set<String> relationshipFields = new Set<String>(); 
-			for(LookupRollupSummary__c lookup : lookups)
-			{
-				fieldsToSearchForChanges.add(lookup.FieldToAggregate__c);
-				fieldsToSearchForChanges.add(lookup.RelationShipField__c);
-				if(lookup.RelationshipCriteriaFields__c!=null)
-					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n'))
-						fieldsToSearchForChanges.add(criteriaField);
-				relationshipFields.add(lookup.RelationShipField__c);
-			}
-				
-			// Determine if a a field referenced on the lookup has changed and thus if the lookup itself needs recalculating
-			Set<String> fieldsChanged = new Set<String>();  
-			for(SObject childRecord : childRecords)
-			{
-				// Determine if any of the fields referenced on our selected rollups have changed on this record
-				for(String fieldToSearch : fieldsToSearchForChanges)
-				{
-					SObject oldChildRecord = Trigger.oldMap.get(childRecord.Id);
-					Object newValue = childRecord.get(fieldToSearch);
-					Object oldValue = oldChildRecord.get(fieldToSearch);
-					// Register this field as having changed?
-					if(newValue != oldValue)
-						fieldsChanged.add(fieldToSearch);
-					// Add both old and new value to master record Id list for relationship fields to ensure old and new parent master records are updated (re-parenting)
-					if(relationshipFields.contains(fieldToSearch))
-					{
-						if(newValue!=null)
-							masterRecordIds.add((Id) newValue);
-						if(oldValue!=null)
-							masterRecordIds.add((Id) oldValue);		
-					}
-				}
-			}
-			
-			// Build a revised list of lookups to process that includes only where fields used in the rollup have changed
-			List<LookupRollupSummary__c> lookupsToProcess = new List<LookupRollupSummary__c>(); 
-			for(LookupRollupSummary__c lookup : lookups)
-			{
-				// Are any of the changed fields used by this lookup?
-				Boolean processLookup = false; 
-				if(fieldsChanged.contains(lookup.FieldToAggregate__c) ||
-				   fieldsChanged.contains(lookup.RelationShipField__c))
-				   	processLookup = true;
-				if(lookup.RelationshipCriteriaFields__c!=null)
-					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n'))
-						if(fieldsChanged.contains(criteriaField))
-							processLookup = true;
-				if(processLookup)
-					lookupsToProcess.add(lookup);
-			}
-			lookups = lookupsToProcess;
-			
-			// Rollup child records and update master records 
-			if(lookupsToProcess.size()>0)
-				updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
-			return;
-		}
-			
-		// Rollup child records and update master records
-		Set<Id> masterRecordIds = new Set<Id>();
-		for(SObject childRecord : childRecords)
-			for(LookupRollupSummary__c lookup : lookups)
-				if(childRecord.get(lookup.RelationShipField__c)!=null)
-					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField__c));
-		updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
+		handleRollups(Trigger.oldMap, Trigger.newMap, childObjectType, new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Realtime, RollupSummaries.CalculationMode.Scheduled });
 	}
-	
+
 	/**
 	 * Method returns a QueryLocator that returns master records (as per the lookup definition) meeting the criteria expressed (if defined)
 	 **/
@@ -551,6 +494,126 @@ global with sharing class RollupService
 		// Delete any old logs entries for master records that have now been updated successfully
 		delete [select Id from LookupRollupSummaryLog__c where ParentId__c in :masterRecordsUpdatedId];
 	}
+
+	/**
+	 * Process rollups for specified modes 
+	 *
+	 * @param childRecords List of childRecords to process rollups against
+	 * @param existingRecords Map of existing records.  Pass null if no existing records are available.
+	 * @param calculationModes Modes to use to determine which rollups to evaluate and process
+	 *
+	 * @remark Will process both lists looking for insert/update/delete/undelete and execute rollups on the following conditions:
+	 *             1) if in newRecords and not in existingRecords (insert and undelete)
+	 *             2) if in existingRecords and not in newRecords (delete)
+	 *             3) if in existingRecords and newRecords and rollup FieldToAggregate__c has changed (update)
+	 *
+	 **/	 
+	private static void handleRollups(Map<Id, SObject> existingRecords, Map<Id, SObject> newRecords, Schema.SObjectType sObjectType, List<RollupSummaries.CalculationMode> calculationModes)
+	{
+		// make sure we have Maps to avoid conditional statements in loops below
+		if (existingRecords == null) {
+			existingRecords = new Map<Id, SObject>();
+		}
+		if (newRecords == null) {
+			newRecords = new Map<Id, SObject>();
+		}
+
+		// Anything to process?
+		if (existingRecords.isEmpty() && newRecords.isEmpty()) {
+			return;
+		}
+	
+		List<LookupRollupSummary__c> lookups = describeRollups(sObjectType, calculationModes);
+		if(lookups.isEmpty())
+			return; // Nothing to see here! :)
+			
+		// Has anything changed on the child records in respect to the fields referenced on the lookup definition?
+		if(existingRecords != null && !existingRecords.isEmpty())
+		{
+			// Master records to update
+			Set<Id> masterRecordIds = new Set<Id>();
+			 
+			// Set of field names from the child used in the rollup to search for changes on
+			Set<String> fieldsToSearchForChanges = new Set<String>(); 
+			Set<String> relationshipFields = new Set<String>(); 
+			for(LookupRollupSummary__c lookup : lookups)
+			{
+				fieldsToSearchForChanges.add(lookup.FieldToAggregate__c);
+				fieldsToSearchForChanges.add(lookup.RelationShipField__c);
+				if(lookup.RelationshipCriteriaFields__c!=null)
+					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n'))
+						fieldsToSearchForChanges.add(criteriaField);
+				relationshipFields.add(lookup.RelationShipField__c);
+			}
+			
+			// merge all record Id's
+			Set<Id> mergedRecordIds = new Set<Id>(existingRecords.keySet());
+			mergedRecordIds.addAll(newRecords.keySet());
+
+			// Determine if a a field referenced on the lookup has changed and thus if the lookup itself needs recalculating
+			Set<String> fieldsChanged = new Set<String>();  
+			for(Id recordId : mergedRecordIds)
+			{
+				// Determine if any of the fields referenced on our selected rollups have changed on this record
+				for(String fieldToSearch : fieldsToSearchForChanges)
+				{
+					// retrieve old and new records and values if they exist
+					SObject oldRecord = existingRecords.get(recordId);
+					Object oldValue = oldRecord == null ? null : oldRecord.get(fieldToSearch);
+					SObject newRecord = newRecords.get(recordId);
+					Object newValue = newRecord == null ? null : newRecord.get(fieldToSearch);					
+
+					// Register this field as having changed?
+					// if in old but not in new then its a delete and rollup should be processed
+					// if in new but not in old then its an insert and rollup should be processed
+					// if in both then its an update and field change detection should occur
+					if((oldRecord == null) || (newRecord == null) || (newValue != oldValue)) {
+						fieldsChanged.add(fieldToSearch);
+					}
+
+					// Add both old and new value to master record Id list for relationship fields to ensure old and new parent master records are updated (re-parenting)
+					if(relationshipFields.contains(fieldToSearch))
+					{
+						if(newValue!=null)
+							masterRecordIds.add((Id) newValue);
+						if(oldValue!=null)
+							masterRecordIds.add((Id) oldValue);		
+					}
+				}
+			}
+			
+			// Build a revised list of lookups to process that includes only where fields used in the rollup have changed
+			List<LookupRollupSummary__c> lookupsToProcess = new List<LookupRollupSummary__c>(); 
+			for(LookupRollupSummary__c lookup : lookups)
+			{
+				// Are any of the changed fields used by this lookup?
+				Boolean processLookup = false; 
+				if(fieldsChanged.contains(lookup.FieldToAggregate__c) ||
+				   fieldsChanged.contains(lookup.RelationShipField__c))
+				   	processLookup = true;
+				if(lookup.RelationshipCriteriaFields__c!=null)
+					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n'))
+						if(fieldsChanged.contains(criteriaField))
+							processLookup = true;
+				if(processLookup)
+					lookupsToProcess.add(lookup);
+			}
+			lookups = lookupsToProcess;
+			
+			// Rollup child records and update master records 
+			if(lookupsToProcess.size()>0)
+				updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
+			return;
+		}
+			
+		// Rollup child records and update master records
+		Set<Id> masterRecordIds = new Set<Id>();
+		for(SObject childRecord : newRecords.values())
+			for(LookupRollupSummary__c lookup : lookups)
+				if(childRecord.get(lookup.RelationShipField__c)!=null)
+					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField__c));
+		updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
+	}	
 	
 	/**
 	 * Method wraps the LREngine.rolup method, provides context via the lookups described in LookupRollupSummary__c
@@ -562,17 +625,18 @@ global with sharing class RollupService
 	private static List<SObject> updateMasterRollupsTrigger(List<LookupRollupSummary__c> lookups, Set<Id> masterRecordIds)
 	{
 		// Process lookups, 
-		//    Realtime are added to a list for later LRE context creation and processing, 
+		//    Realtime & Developer are added to a list for later LRE context creation and processing, 
 		//    Scheduled result in parent Id's being emitted to scheduled item object for later processing
         Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
-        List<LookupRollupSummary__c> realtimeLookups = new List<LookupRollupSummary__c>();      
+        List<LookupRollupSummary__c> runnowLookups = new List<LookupRollupSummary__c>();      
         List<LookupRollupSummaryScheduleItems__c> scheduledItems = new List<LookupRollupSummaryScheduleItems__c>(); 
         for(LookupRollupSummary__c lookup : lookups)
         {
-            if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Realtime.name())
+            if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Realtime.name() ||
+            	lookup.CalculationMode__c == RollupSummaries.CalculationMode.Developer.name())
             {
-                // Filter realtime looks in order to generate LRE contexts below
-                realtimeLookups.add(lookup);
+                // Filter realtime & Developer lookups in order to generate LRE contexts below
+                runnowLookups.add(lookup);
             }
             else if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Scheduled.name())
             {       
@@ -600,7 +664,7 @@ global with sharing class RollupService
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
-		for(LREngine.Context ctx : createLREngineContexts(realtimeLookups).values())
+		for(LREngine.Context ctx : createLREngineContexts(runnowLookups).values())
 		{
 			// Produce a set of master Id's applicable to this context (parent only)			
 			Set<Id> ctxMasterIds = new Set<Id>();
@@ -634,13 +698,13 @@ global with sharing class RollupService
 	 *
 	 * @returns List of rollup summary definitions
 	 **/
-	private static List<LookupRollupSummary__c> describeRollups(SObjectType childObjectType)
+	private static List<LookupRollupSummary__c> describeRollups(SObjectType childObjectType, List<RollupSummaries.CalculationMode> calculationModes)
 	{	
 		// Query applicable lookup definitions
 		Schema.DescribeSObjectResult childRecordDescribe = childObjectType.getDescribe();
 		List<LookupRollupSummary__c> lookups =
 			new RollupSummariesSelector(false).selectActiveByChildObject(
-				new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Realtime, RollupSummaries.CalculationMode.Scheduled }, 
+				calculationModes, 
 				new Set<String> { childRecordDescribe.getName() });
 		return lookups;		
 	}
