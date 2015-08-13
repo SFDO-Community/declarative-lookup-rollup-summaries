@@ -712,6 +712,74 @@ private class TestLREngine {
                 'Won,Won,Lost');
     } 
 
+    /**
+     * Current default behavior of LREngine is to build the order by clause based on the following
+     *    1) LookupField then by 
+     *    2) For each RollupSummaryField in context (in the order specified in the context)
+     *          a) if detailOrderBy is specified use detailOrderBy.getName()
+     *          b) else use detail.getName()
+     *
+     * This results in all queries having an order by even if one is not specified.
+     * Also, results in summary fields after the first having their order by influenced by previous summary fields
+     * 
+     * For example, if two rollup summary fields are in the context as follows:
+     *    1) Order By Amount
+     *    2) Order By CloseDate
+     *
+     * A single SOQL will be executed with an order by of AccountId, Amount, CloseDate
+     */
+    static testMethod void testMultipleRollupsDifferentFieldWithDifferentOrderBy() {
+        // create seed data 
+         prepareData();
+
+        // force the 'Lost' Opportunity to be the oldest to demonstrate that
+        // even when ordering by CloseDate, order by will be based on AccountId, Amount, CloseDate
+        // since summaries are in the same context and context applies order by fields
+        // using "Then By" approach
+        Opportunity makeOldest = [SELECT Id, CloseDate FROM Opportunity WHERE AccountId = :acc2.Id AND Name = 'o2Acc2' LIMIT 1];
+        makeOldest.CloseDate = System.today().addMonths(-24);
+        update makeOldest;
+
+        // assert that the oldest opportunity is the 400 one that we just changed and that its 
+        // stage name is lost
+        Opportunity assertOldest = [SELECT Id, Amount, StageName FROM Opportunity WHERE AccountId = :acc2.Id ORDER BY AccountId,CloseDate LIMIT 1];
+        System.assertEquals(400, assertOldest.Amount);
+        System.assertEquals('Lost', assertOldest.StageName);
+         
+        LREngine.Context ctx = new LREngine.Context(Account.SobjectType, 
+                                                Opportunity.SobjectType, 
+                                                Schema.SObjectType.Opportunity.fields.AccountId);
+         
+        LREngine.RollupSummaryField rollupField1 = 
+            new LREngine.RollupSummaryField(
+                                            Schema.SObjectType.Account.fields.Description,
+                                            Schema.SObjectType.Opportunity.fields.StageName,
+                                            Schema.SObjectType.Opportunity.fields.Amount,
+                                            LREngine.RollupOperation.Concatenate, ','
+                                         ); 
+        ctx.add(rollupField1);
+        LREngine.RollupSummaryField rollupField2 =         
+            new LREngine.RollupSummaryField(
+                                            Schema.SObjectType.Account.fields.Sic,
+                                            Schema.SObjectType.Opportunity.fields.StageName,
+                                            Schema.SObjectType.Opportunity.fields.CloseDate,
+                                            LREngine.RollupOperation.First, null
+                                         );   
+        ctx.add(rollupField2);
+
+        SObject[] masters = LREngine.rollUp(ctx, detailRecords);
+
+        Map<Id, SObject> mastersById = new Map<Id, SObject>(masters);
+        Account reloadedAcc1 = (Account)mastersById.get(acc1.Id);
+        Account reloadedAcc2 = (Account)mastersById.get(acc2.Id);
+        System.assertEquals(2, masters.size());
+        System.assertEquals('test,test,test', reloadedAcc1.get(rollupField1.master.getName()));
+        System.assertEquals('test', reloadedAcc1.get(rollupField2.master.getName()));
+        System.assertEquals('Won,Won,Lost', reloadedAcc2.get(rollupField1.master.getName()));
+        // the oldest is 'Lost' but due to Then By approach, the oldest should be 'Won'
+        System.assertEquals('Won', reloadedAcc2.get(rollupField2.master.getName())); 
+    }     
+
     static testMethod void testRollupConcatenateNoDelimiter() {
         testRollup(
             new LREngine.RollupSummaryField(
