@@ -166,21 +166,22 @@ global with sharing class RollupService
 	 * Developer API for the tool, only executes Rollup Summmaries with Calculation Mode set to Developer 
 	 *
 	 * Automatically resolves child records to process via LREngine and lookups described in LookupRollupSummary__c
-	 *    also determines if based on the old trigger records if the rollup processing needs to occur
+	 *    also determines if based on the old records if the rollup processing needs to occur
 	 *
-	 * @param existingRecords Existing records corresponding to the childRecords.	 
-	 * @param newRecords Child records being modified
+	 * @param existingRecords Deleted or existing version of Updated records
+	 * @param newRecords Inserted/Updated/Undeleted records
 	 * @param sObjectType SObjectType of the existing/new records
 	 *
 	 * @usage rollup(Trigger.oldMap, Trigger.newMap, Account.SObjectType)
 	 *
 	 * @remark All SObjects (existing and new) must be of the same SObjectType
+	 * @remark Supports mixture of old/new records.  For example, you can include a record in existing 
+	 *         that was deleted and a record in new that was inserted.
 	 **/ 
 	global static void rollup(Map<Id, SObject> existingRecords, Map<Id, SObject> newRecords, Schema.SObjectType sObjectType)
 	{
 		handleRollups(existingRecords, newRecords, sObjectType, new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Developer });
 	}
-
 
 	/**
 	 * Developer API for the tool, only executes Rollup Summmaries with Calculation Mode set to Developer 
@@ -527,8 +528,10 @@ global with sharing class RollupService
 		if(lookups.isEmpty())
 			return; // Nothing to see here! :)
 			
+		// if records exist in both maps, then we need to go through change detection.
 		// Has anything changed on the child records in respect to the fields referenced on the lookup definition?
-		if(existingRecords != null && !existingRecords.isEmpty())
+		// Or does a record exist in one map but not the other
+		if(!existingRecords.isEmpty() && !newRecords.isEmpty())
 		{
 			// Master records to update
 			Set<Id> masterRecordIds = new Set<Id>();
@@ -606,9 +609,11 @@ global with sharing class RollupService
 			return;
 		}
 			
-		// Rollup child records and update master records
+		// Rollup whichever side has records and update master records
+		// only one map should have records at this point
 		Set<Id> masterRecordIds = new Set<Id>();
-		for(SObject childRecord : newRecords.values())
+		Map<Id, SObject> recordsToProcess = existingRecords.isEmpty() ? newRecords : existingRecords;
+		for(SObject childRecord : recordsToProcess.values())
 			for(LookupRollupSummary__c lookup : lookups)
 				if(childRecord.get(lookup.RelationShipField__c)!=null)
 					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField__c));
