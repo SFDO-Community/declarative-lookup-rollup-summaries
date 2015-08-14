@@ -1102,6 +1102,112 @@ private with sharing class RollupServiceTest
 		System.assertEquals(expectedResultB, accountResult.Description);			
 	}
 
+	/**
+	 * Current default behavior of LREngine  is to order by relationship field, then by each 
+	 * rollup summary detail field (FieldToAggregate__c) in the order specified (e.g. AccountId, StageName, Name)
+	 * within the context (RollupSummaryField order).  If no order by is specified on a rollupsummaryfield
+	 * the detail field is used for the order by following the Then By approach based on order
+	 * in the context.
+	 *
+	 * Current default behavior of DLRS is to build the context with all rollupsummaries
+	 * retrieving them ordered by ParentObject__c (Account) and then by RelationshipField__c (e.g. AccountId)
+	 * which results in non-deterministic result so a test cannot reliabily be written against
+	 * multiple rollups on same parent/child relationship when no order by is specified.
+	 */
+	private static Id setupMultiRollupDifferentTypes(RollupSummaries.AggregateOperation operationA, Schema.DescribeFieldResult orderByFieldA, RollupSummaries.AggregateOperation operationB, Schema.DescribeFieldResult orderByFieldB)
+	{
+		// Test data
+		// OpportunityName => Amount;CloseDateAddMonthsToToday;StageName
+		Map<String, String> opportunityData = new Map<String, String> {
+			'Joe' => '250;0;Open',
+			'Steve' => '50;1;Prospecting',
+			'Kim' => '100;-2;Closed Won',
+			'Charlie' => '225;-1;Needs Analysis'};
+
+		// Configure rollup A
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'First Opportunity Name into Sic on Account';
+		rollupSummaryA.ParentObject__c = 'Account';
+		rollupSummaryA.ChildObject__c = 'Opportunity';
+		rollupSummaryA.RelationShipField__c = 'AccountId';
+		rollupSummaryA.RelationShipCriteria__c = null;
+		rollupSummaryA.FieldToAggregate__c = 'StageName';
+		rollupSummaryA.FieldToOrderBy__c = orderByFieldA != null ? orderByFieldA.getName() : null;
+		rollupSummaryA.AggregateOperation__c = operationA.name();
+		rollupSummaryA.AggregateResultField__c = 'Sic';
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = 'Realtime';
+
+		// Configure rollup B
+		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+		rollupSummaryB.Name = 'Concatenate Opportunities Stage Name into Description on Account';
+		rollupSummaryB.ParentObject__c = 'Account';
+		rollupSummaryB.ChildObject__c = 'Opportunity';
+		rollupSummaryB.RelationShipField__c = 'AccountId';
+		rollupSummaryB.RelationShipCriteria__c = null;
+		rollupSummaryB.FieldToAggregate__c = 'Name';
+		rollupSummaryB.FieldToOrderBy__c = orderByFieldB != null ? orderByFieldB.getName() : null;
+		rollupSummaryB.AggregateOperation__c = operationB.name();
+		rollupSummaryB.AggregateResultField__c = 'Description';
+		rollupSummaryB.ConcatenateDelimiter__c = ',';
+		rollupSummaryB.Active__c = true;
+		rollupSummaryB.CalculationMode__c = 'Realtime';
+
+		// Insert rollup definitions
+		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
+		
+		// Test data
+		Account account = new Account();
+		account.Name = 'Test Account';
+		account.AnnualRevenue = 0;
+		insert account;
+
+		Date today = System.today();
+		List<Opportunity> opps = new List<Opportunity>(); 
+		for (String opportunityName :opportunityData.keySet())
+		{
+			List<String> oppFieldValues = opportunityData.get(opportunityName).split(';');
+			Opportunity opp = new Opportunity();
+			opp.Name = opportunityName;
+			opp.AccountId = account.Id;			
+			opp.Amount = Decimal.valueOf(oppFieldValues[0]);
+			opp.CloseDate = today.addMonths(Integer.valueOf(oppFieldValues[1]));			
+			opp.StageName = oppFieldValues[2];
+			opps.add(opp);			
+		}
+		insert opps;
+
+		return account.Id;		
+	}
+
+	/**
+	 * Test default behavior with different order by on each rollup
+	 */	 
+	private testmethod static void testMultiRollupOfDifferentTypesDifferentOrderBy()
+	{		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		// Test data for rollup A
+		String expectedResultA = 'Closed Won';
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.First;
+		Schema.DescribeFieldResult orderByFieldA = Schema.SObjectType.Opportunity.fields.CloseDate;
+
+		// Test data for rollup B
+		String expectedResultB = 'Steve,Kim,Charlie,Joe';
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate; 
+		Schema.DescribeFieldResult orderByFieldB = Schema.SObjectType.Opportunity.fields.Amount;
+
+		// generate rollups and data
+		Id accountId = setupMultiRollupDifferentTypes(operationA, orderByFieldA, operationB, orderByFieldB);
+
+		// Assert rollup
+		Account accountResult = Database.query('select Sic, Description from Account where Id = :accountId');
+		System.assertEquals(expectedResultA, accountResult.Sic);			
+		System.assertEquals(expectedResultB, accountResult.Description);			
+	}
+
 	private testmethod static void testPicklistRollup()
 	{		
 		// Test supported?
