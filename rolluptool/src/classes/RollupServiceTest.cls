@@ -1362,11 +1362,6 @@ private with sharing class RollupServiceTest
 		update oppsToModify;
 
 		// Assert limits
-		// TODO: Remove debug statements - in-place to get full picture when test fails
-		System.debug(LoggingLevel.ERROR, String.format('%%LIMITS%% Queries - before:{0} after:{1}', new List<String> { String.valueOf(beforeQueries), String.valueOf(Limits.getQueries()) }));
-		System.debug(LoggingLevel.ERROR, String.format('%%LIMITS%% QueryRows - before:{0} after:{1}', new List<String> { String.valueOf(beforeRows), String.valueOf(Limits.getQueryRows()) }));
-		System.debug(LoggingLevel.ERROR, String.format('%%LIMITS%% DMLRows - before:{0} after:{1}', new List<String> { String.valueOf(beforeDMLRows), String.valueOf(Limits.getDMLRows()) }));
-
 		// + One query on Rollup object
 		// + One query on Opportunity for rollup	
 		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
@@ -1477,11 +1472,6 @@ private with sharing class RollupServiceTest
 		update children;
 
 		// Assert limits
-		// TODO: Remove debug statements - in-place to get full picture when test fails
-		System.debug(LoggingLevel.ERROR, String.format('%%LIMITS%% Queries - before:{0} after:{1}', new List<String> { String.valueOf(beforeQueries), String.valueOf(Limits.getQueries()) }));
-		System.debug(LoggingLevel.ERROR, String.format('%%LIMITS%% QueryRows - before:{0} after:{1}', new List<String> { String.valueOf(beforeRows), String.valueOf(Limits.getQueryRows()) }));
-		System.debug(LoggingLevel.ERROR, String.format('%%LIMITS%% DMLRows - before:{0} after:{1}', new List<String> { String.valueOf(beforeDMLRows), String.valueOf(Limits.getDMLRows()) }));
-
 		// + One query on Rollup object
 		// + One query on LookupChild__c for rollup	
 		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
