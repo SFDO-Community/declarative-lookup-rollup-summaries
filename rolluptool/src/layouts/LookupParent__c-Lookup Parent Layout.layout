@@ -61,6 +61,10 @@
         <fields>NAME</fields>
         <relatedList>LookupChild__c.LookupParent__c</relatedList>
     </relatedLists>
+    <relatedLists>
+        <fields>NAME</fields>
+        <relatedList>LookupChild__c.LookupParent2__c</relatedList>
+    </relatedLists>
     <showEmailCheckbox>false</showEmailCheckbox>
     <showHighlightsPanel>false</showHighlightsPanel>
     <showInteractionLogPanel>false</showInteractionLogPanel>
