@@ -1057,23 +1057,59 @@ private class RollupServiceTest4 {
 		insert rollupSummary;
 
 		// Assert field values were updated to describe info
-		LookupRollupSummary__c assertSummary = [SELECT Name, ParentObject__c, ChildObject__c, RelationshipField__c, RelationShipCriteria__c, RelationShipCriteriaFields__c,
+		LookupRollupSummary__c existingSummary = [SELECT Id, Name, ParentObject__c, ChildObject__c, RelationshipField__c, RelationShipCriteria__c, RelationShipCriteriaFields__c,
 													FieldToAggregate__c, FieldToOrderBy__c, AggregateOperation__c, AggregateResultField__c, CalculationMode__c, CalculationSharingMode__c FROM LookupRollupSummary__c WHERE Name = :rollupName];
 
-		// name & condition are not updated with describe info													
-		System.assertEquals(rollupName.toLowerCase(), assertSummary.Name);													
-		System.assertEquals(condition.toLowerCase(), assertSummary.RelationShipCriteria__c);
 
+		// name & condition are not updated with describe info													
+		System.assertEquals(rollupName.toLowerCase(), existingSummary.Name);													
+		System.assertEquals(condition.toLowerCase(), existingSummary.RelationShipCriteria__c);
 		// all remaining fields should match describe
-		System.assertEquals(parentObjectName, assertSummary.ParentObject__c);
-		System.assertEquals(childObjectName, assertSummary.ChildObject__c);
-		System.assertEquals(relationshipField, assertSummary.RelationShipField__c);
-		System.assertEquals(String.join(relationshipCriteriaFields, '\r\n'), assertSummary.RelationShipCriteriaFields__c);
-		System.assertEquals(aggregateField, assertSummary.FieldToAggregate__c);
-		System.assertEquals(fieldToOrderBy, assertSummary.FieldToOrderBy__c);
-		System.assertEquals(RollupSummaries.AggregateOperation.First.name(), assertSummary.AggregateOperation__c);
-		System.assertEquals(aggregateResultField, assertSummary.AggregateResultField__c);
-		System.assertEquals(RollupSummaries.CalculationMode.Realtime.name(), assertSummary.CalculationMode__c);
-		System.assertEquals(sharingMode, assertSummary.CalculationSharingMode__c);
+		System.assertEquals(parentObjectName, existingSummary.ParentObject__c);
+		System.assertEquals(childObjectName, existingSummary.ChildObject__c);
+		System.assertEquals(relationshipField, existingSummary.RelationShipField__c);
+		System.assertEquals(String.join(relationshipCriteriaFields, '\r\n'), existingSummary.RelationShipCriteriaFields__c);
+		System.assertEquals(aggregateField, existingSummary.FieldToAggregate__c);
+		System.assertEquals(fieldToOrderBy, existingSummary.FieldToOrderBy__c);
+		System.assertEquals(RollupSummaries.AggregateOperation.First.name(), existingSummary.AggregateOperation__c);
+		System.assertEquals(aggregateResultField, existingSummary.AggregateResultField__c);
+		System.assertEquals(RollupSummaries.CalculationMode.Realtime.name(), existingSummary.CalculationMode__c);
+		System.assertEquals(sharingMode, existingSummary.CalculationSharingMode__c);
+
+		// Set summary values to lowered and update
+		existingSummary.Name = rollupName.toLowerCase();
+		existingSummary.ParentObject__c = parentObjectName.toLowerCase();
+		existingSummary.ChildObject__c = childObjectName.toLowerCase();
+		existingSummary.RelationShipField__c = relationshipField.toLowerCase();
+		existingSummary.RelationShipCriteria__c = condition.toLowerCase();
+		existingSummary.RelationShipCriteriaFields__c = String.join(relationshipCriteriaFields, '\r\n').toLowerCase();
+		existingSummary.FieldToAggregate__c = aggregateField.toLowerCase();
+		existingSummary.FieldToOrderBy__c = fieldToOrderBy.toLowerCase();
+		existingSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.First.name().toLowerCase();
+		existingSummary.AggregateResultField__c = aggregateResultField.toLowerCase();
+		existingSummary.Active__c = true;
+		existingSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name().toLowerCase();
+		existingSummary.CalculationSharingMode__c = sharingMode.toLowerCase();
+		update rollupSummary;
+
+		// Assert field values were updated to describe info
+		existingSummary = [SELECT Id, Name, ParentObject__c, ChildObject__c, RelationshipField__c, RelationShipCriteria__c, RelationShipCriteriaFields__c,
+													FieldToAggregate__c, FieldToOrderBy__c, AggregateOperation__c, AggregateResultField__c, CalculationMode__c, CalculationSharingMode__c FROM LookupRollupSummary__c WHERE Name = :rollupName];
+
+
+		// name & condition are not updated with describe info													
+		System.assertEquals(rollupName.toLowerCase(), existingSummary.Name);													
+		System.assertEquals(condition.toLowerCase(), existingSummary.RelationShipCriteria__c);
+		// all remaining fields should match describe
+		System.assertEquals(parentObjectName, existingSummary.ParentObject__c);
+		System.assertEquals(childObjectName, existingSummary.ChildObject__c);
+		System.assertEquals(relationshipField, existingSummary.RelationShipField__c);
+		System.assertEquals(String.join(relationshipCriteriaFields, '\r\n'), existingSummary.RelationShipCriteriaFields__c);
+		System.assertEquals(aggregateField, existingSummary.FieldToAggregate__c);
+		System.assertEquals(fieldToOrderBy, existingSummary.FieldToOrderBy__c);
+		System.assertEquals(RollupSummaries.AggregateOperation.First.name(), existingSummary.AggregateOperation__c);
+		System.assertEquals(aggregateResultField, existingSummary.AggregateResultField__c);
+		System.assertEquals(RollupSummaries.CalculationMode.Realtime.name(), existingSummary.CalculationMode__c);
+		System.assertEquals(sharingMode, existingSummary.CalculationSharingMode__c);
 	}	
 }
