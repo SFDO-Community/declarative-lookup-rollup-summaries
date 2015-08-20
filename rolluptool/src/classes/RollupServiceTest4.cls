@@ -137,4 +137,496 @@ private class RollupServiceTest4 {
 		}		
 		return testUser;
 	}	
+
+	/**
+	 *	Test for issue https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/229
+	 *	Two identical Aggregate (Sum) rollups (except for AggregateResultField) differing only by case used for rollups summary field values
+	 *	Should result in a single context used, a single SOQL for the rollup itself and 3 DML rows (1 for each parent)
+	 **/
+	private testmethod static void testLimitsAndContextsUsedMultipleAggregateRollupsDifferByCaseOnly()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField1 = LookupParent__c.Total__c.getDescribe().getName();
+		String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe().getName();
+		String condition = 'Amount__c > 1';
+		String relationshipCriteriaFields = 'Amount__c';
+		String sharingMode = LREngine.SharingMode.User.name();
+		String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
+
+		// Configure rollups
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Test Rollup A';
+		rollupSummaryA.ParentObject__c = parentObjectName.toLowerCase();
+		rollupSummaryA.ChildObject__c = childObjectName.toLowerCase();
+		rollupSummaryA.RelationShipField__c = relationshipField.toLowerCase();
+		rollupSummaryA.RelationShipCriteria__c = condition.toLowerCase();		
+		rollupSummaryA.RelationShipCriteriaFields__c = relationshipCriteriaFields.toLowerCase();
+		rollupSummaryA.FieldToAggregate__c = aggregateField.toLowerCase();
+		rollupSummaryA.FieldToOrderBy__c = fieldToOrderBy.toLowerCase();
+		rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummaryA.AggregateResultField__c = aggregateResultField1.toLowerCase();
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+		rollupSummaryA.CalculationSharingMode__c = sharingMode.toLowerCase();		
+
+		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+		rollupSummaryB.Name = 'Test Rollup B';
+		rollupSummaryB.ParentObject__c = parentObjectName;
+		rollupSummaryB.ChildObject__c = childObjectName;
+		rollupSummaryB.RelationShipField__c = relationshipField;
+		rollupSummaryB.RelationShipCriteria__c = condition;
+		rollupSummaryB.RelationShipCriteriaFields__c = relationshipCriteriaFields;
+		rollupSummaryB.FieldToAggregate__c = aggregateField;
+		rollupSummaryB.FieldToOrderBy__c = fieldToOrderBy;
+		rollupSummaryB.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummaryB.AggregateResultField__c = aggregateResultField2;
+		rollupSummaryB.Active__c = true;
+		rollupSummaryB.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+		rollupSummaryB.CalculationSharingMode__c = sharingMode;
+
+		List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
+		insert rollups;
+		
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 20);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 20);
+			children.add(child2);
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField, 2);
+			children.add(child3);
+		}
+
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+
+		insert children;
+
+		// Assert limits
+		// + One query on Rollup object
+		// + One query on LookupChild__c for rollup
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
+		
+		// + Two rows for Rollup object
+		// + Nine rows for LookupChild__c
+		System.assertEquals(beforeRows + 11, Limits.getQueryRows());
+
+		// + Nine rows for LookupChild__c (from the update statement itself)
+		// + Three rows for LookupParent__c (from rollup processing)
+		System.assertEquals(beforeDMLRows + 12, Limits.getDMLRows());		
+
+		// Assert rollups
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateResultField1, aggregateResultField2, parentObjectName })));
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField2));
+
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField2));
+
+		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField2));
+	}
+
+	/**
+	 *	Test for issue https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/229
+	 *	Two identical Query (Last) rollups (except for AggregateResultField) differing only by case used for rollups summary field values
+	 *	Should result in a single context used, a single SOQL for the rollup itself and 3 DML rows (1 for each parent)
+	 **/
+	private testmethod static void testLimitsAndContextsUsedMultipleQueryRollupsDifferByCaseOnly()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField1 = LookupParent__c.Total__c.getDescribe().getName();
+		String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe().getName();
+		String condition = 'Amount__c > 1';
+		String relationshipCriteriaFields = 'Amount__c';
+		String sharingMode = LREngine.SharingMode.User.name();
+		String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
+
+		// Configure rollups
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Test Rollup A';
+		rollupSummaryA.ParentObject__c = parentObjectName.toLowerCase();
+		rollupSummaryA.ChildObject__c = childObjectName.toLowerCase();
+		rollupSummaryA.RelationShipField__c = relationshipField.toLowerCase();
+		rollupSummaryA.RelationShipCriteria__c = condition.toLowerCase();		
+		rollupSummaryA.RelationShipCriteriaFields__c = relationshipCriteriaFields.toLowerCase();
+		rollupSummaryA.FieldToAggregate__c = aggregateField.toLowerCase();
+		rollupSummaryA.FieldToOrderBy__c = fieldToOrderBy.toLowerCase();
+		rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.Last.name();
+		rollupSummaryA.AggregateResultField__c = aggregateResultField1.toLowerCase();
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+		rollupSummaryA.CalculationSharingMode__c = sharingMode.toLowerCase();		
+
+		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+		rollupSummaryB.Name = 'Test Rollup B';
+		rollupSummaryB.ParentObject__c = parentObjectName;
+		rollupSummaryB.ChildObject__c = childObjectName;
+		rollupSummaryB.RelationShipField__c = relationshipField;
+		rollupSummaryB.RelationShipCriteria__c = condition;
+		rollupSummaryB.RelationShipCriteriaFields__c = relationshipCriteriaFields;
+		rollupSummaryB.FieldToAggregate__c = aggregateField;
+		rollupSummaryB.FieldToOrderBy__c = fieldToOrderBy;
+		rollupSummaryB.AggregateOperation__c = RollupSummaries.AggregateOperation.Last.name();
+		rollupSummaryB.AggregateResultField__c = aggregateResultField2;
+		rollupSummaryB.Active__c = true;
+		rollupSummaryB.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+		rollupSummaryB.CalculationSharingMode__c = sharingMode;
+
+		List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
+		insert rollups;
+		
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 42);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 10);
+			children.add(child2);
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField, 10);
+			children.add(child3);
+		}
+
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+
+		insert children;
+
+		// Assert limits
+		// + One query on Rollup object
+		// + One query on LookupChild__c for rollup
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
+		
+		// + Two rows for Rollup object
+		// + Nine rows for LookupChild__c
+		System.assertEquals(beforeRows + 11, Limits.getQueryRows());
+
+		// + Nine rows for LookupChild__c (from the update statement itself)
+		// + Three rows for LookupParent__c (from rollup processing)
+		System.assertEquals(beforeDMLRows + 12, Limits.getDMLRows());		
+
+		// Assert rollups
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateResultField1, aggregateResultField2, parentObjectName })));
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField2));
+
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField2));
+
+		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField2));
+	}
+
+	/**
+	 *	Test for issue https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/229
+	 *	Two similar rollups differing by:
+	 *		- AggregateFieldResult
+	 *		- Operation (both use Query base rollup First/Last)
+	 *		- AggregateField
+	 *		- All other properties same differing only by case used for rollups summary field values
+	 *	Should result in a single context used, a single SOQL for the rollup itself and 3 DML rows (1 for each parent)
+	 **/
+	private testmethod static void testLimitsAndContextsUsedMultipleQueryRollupsDifferByOperationFieldAndCase()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField1 = LookupChild__c.Color__c.getDescribe().getName();
+		String aggregateField2 = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField1 = LookupParent__c.Colours__c.getDescribe().getName();
+		String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe().getName();
+		String condition = 'Amount__c > 1';
+		String relationshipCriteriaFields = 'Amount__c';
+		String sharingMode = LREngine.SharingMode.User.name();
+		String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
+
+		// Configure rollups
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Test Rollup A';
+		rollupSummaryA.ParentObject__c = parentObjectName.toLowerCase();
+		rollupSummaryA.ChildObject__c = childObjectName.toLowerCase();
+		rollupSummaryA.RelationShipField__c = relationshipField.toLowerCase();
+		rollupSummaryA.RelationShipCriteria__c = condition.toLowerCase();		
+		rollupSummaryA.RelationShipCriteriaFields__c = relationshipCriteriaFields.toLowerCase();
+		rollupSummaryA.FieldToAggregate__c = aggregateField1.toLowerCase();
+		rollupSummaryA.FieldToOrderBy__c = fieldToOrderBy.toLowerCase();
+		rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.First.name();
+		rollupSummaryA.AggregateResultField__c = aggregateResultField1.toLowerCase();
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+		rollupSummaryA.CalculationSharingMode__c = sharingMode.toLowerCase();		
+
+		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+		rollupSummaryB.Name = 'Test Rollup B';
+		rollupSummaryB.ParentObject__c = parentObjectName;
+		rollupSummaryB.ChildObject__c = childObjectName;
+		rollupSummaryB.RelationShipField__c = relationshipField;
+		rollupSummaryB.RelationShipCriteria__c = condition;
+		rollupSummaryB.RelationShipCriteriaFields__c = relationshipCriteriaFields;
+		rollupSummaryB.FieldToAggregate__c = aggregateField2;
+		rollupSummaryB.FieldToOrderBy__c = fieldToOrderBy;
+		rollupSummaryB.AggregateOperation__c = RollupSummaries.AggregateOperation.Last.name();
+		rollupSummaryB.AggregateResultField__c = aggregateResultField2;
+		rollupSummaryB.Active__c = true;
+		rollupSummaryB.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+		rollupSummaryB.CalculationSharingMode__c = sharingMode;
+
+		List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
+		insert rollups;
+		
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField1, 'Red');			
+			child1.put(aggregateField2, 42);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField1, 'Yellow');
+			child2.put(aggregateField2, 15);
+			children.add(child2);
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField1, 'Blue');			
+			child3.put(aggregateField2, 10);
+			children.add(child3);
+		}
+
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+
+		insert children;
+
+		// Assert limits
+		// + One query on Rollup object
+		// + One query on LookupChild__c for rollup
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
+		
+		// + Two rows for Rollup object
+		// + Nine rows for LookupChild__c
+		System.assertEquals(beforeRows + 11, Limits.getQueryRows());
+
+		// + Nine rows for LookupChild__c (from the update statement itself)
+		// + Three rows for LookupParent__c (from rollup processing)
+		System.assertEquals(beforeDMLRows + 12, Limits.getDMLRows());		
+
+		// Assert rollups
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateResultField1, aggregateResultField2, parentObjectName })));
+		System.assertEquals('Blue', (String) assertParents.get(parentA.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField2));
+
+		System.assertEquals('Blue', (String) assertParents.get(parentB.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField2));
+
+		System.assertEquals('Blue', (String) assertParents.get(parentC.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField2));
+	}
+
+	/**
+	 *	Test for issue https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/229
+	 *	Two similar rollups differing by:
+	 *		- AggregateFieldResult
+	 *		- Operation (both use Query base rollup First/Last)
+	 *		- AggregateField
+	 *		- Order By
+	 *		- All other properties same differing only by case used for rollups summary field values
+	 *	Should result in Two (2) contexts used, two SOQL for the rollup itself and 3 DML rows (1 for each 
+	 *		parent - DLRS combines updates to identical master record ids)
+	 **/
+	private testmethod static void testLimitsAndContextsUsedMultipleQueryRollupsDifferByOperationFieldCaseOrderBy()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField1 = LookupChild__c.Color__c.getDescribe().getName();
+		String aggregateField2 = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField1 = LookupParent__c.Colours__c.getDescribe().getName();
+		String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe().getName();
+		String condition = 'Amount__c > 1';
+		String relationshipCriteriaFields = 'Amount__c';
+		String sharingMode = LREngine.SharingMode.User.name();
+		String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
+
+		// Configure rollups
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Test Rollup A';
+		rollupSummaryA.ParentObject__c = parentObjectName.toLowerCase();
+		rollupSummaryA.ChildObject__c = childObjectName.toLowerCase();
+		rollupSummaryA.RelationShipField__c = relationshipField.toLowerCase();
+		rollupSummaryA.RelationShipCriteria__c = condition.toLowerCase();		
+		rollupSummaryA.RelationShipCriteriaFields__c = relationshipCriteriaFields.toLowerCase();
+		rollupSummaryA.FieldToAggregate__c = aggregateField1.toLowerCase();
+		rollupSummaryA.FieldToOrderBy__c = fieldToOrderBy.toLowerCase();
+		rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.First.name();
+		rollupSummaryA.AggregateResultField__c = aggregateResultField1.toLowerCase();
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+		rollupSummaryA.CalculationSharingMode__c = sharingMode.toLowerCase();		
+
+		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+		rollupSummaryB.Name = 'Test Rollup B';
+		rollupSummaryB.ParentObject__c = parentObjectName;
+		rollupSummaryB.ChildObject__c = childObjectName;
+		rollupSummaryB.RelationShipField__c = relationshipField;
+		rollupSummaryB.RelationShipCriteria__c = condition;
+		rollupSummaryB.RelationShipCriteriaFields__c = relationshipCriteriaFields;
+		rollupSummaryB.FieldToAggregate__c = aggregateField2;
+		rollupSummaryB.FieldToOrderBy__c = null;
+		rollupSummaryB.AggregateOperation__c = RollupSummaries.AggregateOperation.Last.name();
+		rollupSummaryB.AggregateResultField__c = aggregateResultField2;
+		rollupSummaryB.Active__c = true;
+		rollupSummaryB.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+		rollupSummaryB.CalculationSharingMode__c = sharingMode;
+
+		List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
+		insert rollups;
+		
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField1, 'Red');			
+			child1.put(aggregateField2, 42);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField1, 'Yellow');
+			child2.put(aggregateField2, 15);
+			children.add(child2);
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField1, 'Blue');			
+			child3.put(aggregateField2, 10);
+			children.add(child3);
+		}
+
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+
+		insert children;
+
+		// Assert limits
+		// + One query on Rollup object
+		// + One query on LookupChild__c for rollup A
+		// + One query on LookupChild__c for rollup B
+		System.assertEquals(beforeQueries + 3, Limits.getQueries());	
+		
+		// + Two rows for Rollup object
+		// + Nine rows for LookupChild__c for rollup A
+		// + Nine rows for LookupChild__c for rollup B
+		System.assertEquals(beforeRows + 20, Limits.getQueryRows());
+
+		// + Nine rows for LookupChild__c (from the update statement itself)
+		// + Three rows for LookupParent__c for rollup A & B (DLRS combined updates to identical master ids)
+		System.assertEquals(beforeDMLRows + 12, Limits.getDMLRows());		
+
+		// Assert rollups
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateResultField1, aggregateResultField2, parentObjectName })));
+		System.assertEquals('Blue', (String) assertParents.get(parentA.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField2));
+
+		System.assertEquals('Blue', (String) assertParents.get(parentB.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField2));
+
+		System.assertEquals('Blue', (String) assertParents.get(parentC.id).get(aggregateResultField1));
+		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField2));
+	}		
 }

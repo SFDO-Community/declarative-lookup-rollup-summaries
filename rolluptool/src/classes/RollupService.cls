@@ -696,7 +696,7 @@ global with sharing class RollupService
 			// Determine if an LREngine Context has been created for this parent child relationship, filter combination or underlying query type and sharing mode?
 			String rsfType = rsf.isAggregateBasedRollup() ? 'aggregate' : 'query';
 			String orderBy = String.isBlank(Lookup.FieldToOrderBy__c) ? '' : Lookup.FieldToOrderBy__c;
-			String contextKey = lookup.ParentObject__c + '#' + lookup.RelationshipField__c + '#' + lookup.RelationShipCriteria__c + '#' + rsfType + '#' + sharingMode + '#' + orderBy;
+			String contextKey = (lookup.ParentObject__c + '#' + lookup.RelationshipField__c + '#' + lookup.RelationShipCriteria__c + '#' + rsfType + '#' + sharingMode + '#' + orderBy).toLowerCase();
 
 			LREngine.Context lreContext = engineCtxByParentRelationship.get(contextKey);
 			if(lreContext==null)
