@@ -528,6 +528,539 @@ private with sharing class RollupServiceTest3
 	}
 
 	/**
+	 * Test simulation of isInsert
+	 */
+	private testmethod static void testDeveloperTriggerLikeAPI_SingleSumInserted()
+	{	
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Total__c.getDescribe().getName();
+
+		// Create rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Developer.name();
+		insert rollupSummary;
+
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 20);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 20);
+			children.add(child2);
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField, 2);
+			children.add(child3);
+		}
+		insert children;
+
+		// Assert nothing has changed on db
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// Call developer 'trigger like' API
+		RollupService.rollup(null, new Map<Id, SObject>(children), childType);
+
+		// Assert parents are updated
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(3, assertParents.size());
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+	}
+
+	/**
+	 * Test simulation of isUpdate with no field changes
+	 */
+	private testmethod static void testDeveloperTriggerLikeAPI_SingleSumUpdatedFieldDoesNotChange()
+	{	
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Total__c.getDescribe().getName();
+
+		// Create rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Developer.name();
+		insert rollupSummary;
+
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 20);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 20);
+			children.add(child2);
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField, 2);
+			children.add(child3);
+		}
+		insert children;
+
+		// Assert nothing has changed on db
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeQueryRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+		
+		// Call developer 'trigger like' API
+		// No changes to the field being aggregted, thus no rollup processing should occur
+		RollupService.rollup(new Map<Id, SObject>(children), new Map<Id, SObject>(children), childType);
+
+		// Assert no further limits have been used since the field to aggregate on the detail has not changed
+		System.assertEquals(beforeQueries + 1, Limits.getQueries()); // Only tolerate a query for the Lookup definition
+		System.assertEquals(beforeQueryRows + 1, Limits.getQueryRows()); // Only tolerate a row for the Lookup definition
+		System.assertEquals(beforeDMLRows, Limits.getDMLRows()); // No changes so not record should be operated against
+
+		// Assert parents are updated
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(3, assertParents.size());
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+	}	
+
+	/**
+	 * Test simulation of isUpdate with field changes
+	 */
+	private testmethod static void testDeveloperTriggerLikeAPI_SingleSumUpdatedFieldDoesChange()
+	{	
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Total__c.getDescribe().getName();
+
+		// Create rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Developer.name();
+		insert rollupSummary;
+
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 0);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 0);
+			children.add(child2);
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField, 0);
+			children.add(child3);
+		}
+		insert children;
+
+		// Assert nothing has changed on db
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// update the children
+		List<SObject> modifiedChildren = Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateField, relationshipField, childObjectName }));
+		System.assertEquals(9, modifiedChildren.size());
+		for (SObject child :modifiedChildren)
+		{
+			child.put(aggregateField, 14);
+		}
+		update modifiedChildren;
+
+		// Call developer 'trigger like' API simulating an update
+		RollupService.rollup(new Map<Id, SObject>(children), new Map<Id, SObject>(modifiedChildren), childType);
+
+		// Assert parents are updated
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(3, assertParents.size());
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+	}
+
+	/**
+	 * Test simulation of combination of isInsert and isUpdate
+	 */
+	private testmethod static void testDeveloperTriggerLikeAPI_SingleSumInsertedWithExistingThatDoNotChange()
+	{	
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Total__c.getDescribe().getName();
+
+		// Create rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Developer.name();
+		insert rollupSummary;
+
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 20);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 20);
+			children.add(child2);
+		}
+		insert children;
+
+		// Assert nothing has changed on db
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// insert a new child
+		List<SObject> newChildren = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField, 2);
+			newChildren.add(child3);
+		}
+		insert newChildren;
+
+		// Assert nothing has changed on db
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// combine the new and old
+		List<SObject> newAndOldChildren = children.clone();
+		newAndOldChildren.addAll(newChildren);
+
+		// Call developer 'trigger like' API simulating an update
+		RollupService.rollup(new Map<Id, SObject>(children), new Map<Id, SObject>(newAndOldChildren), childType);
+
+		// Assert parents are updated
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(3, assertParents.size());
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+	}
+
+	/**
+	 * Test simulation of isDelete
+	 */
+	private testmethod static void testDeveloperTriggerLikeAPI_SingleSumDeleted()
+	{	
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Total__c.getDescribe().getName();
+		Integer child1Amount = 42;
+		Integer child2Amount = 1;
+
+		// Create rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Developer.name();
+		insert rollupSummary;
+
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, child1Amount);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, child2Amount);
+			children.add(child2);
+		}
+		insert children;
+
+		// Assert nothing has changed on db
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// delete existing child that have specified aggregateField value leaving a total to rollup of expected
+		List<SObject> deletedChildren = Database.query(String.format('select id, {0}, {1} from {2} WHERE {0} = {3}', new List<String>{ aggregateField, relationshipField, childObjectName, String.valueOf(child2Amount) }));
+		System.assertEquals(3, deletedChildren.size());
+		delete deletedChildren;
+
+		// Assert nothing has changed on db
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// Call developer 'trigger like' API simulating a delete
+		RollupService.rollup(new Map<Id, SObject>(deletedChildren), null, childType);
+
+		// Assert parents are updated
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(3, assertParents.size());
+		System.assertEquals(child1Amount, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(child1Amount, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(child1Amount, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+	}
+
+	/**
+	 * Test simulation of isUndelete
+	 */
+	private testmethod static void testDeveloperTriggerLikeAPI_SingleSumUndeleted()
+	{	
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Total__c.getDescribe().getName();
+		Integer child1Amount = 40;
+		Integer child2Amount = 2;
+		Integer expectedAmount = 42;
+
+		// Create rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Developer.name();
+		insert rollupSummary;
+
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, child1Amount);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, child2Amount);
+			children.add(child2);
+		}
+		insert children;
+
+		// Assert nothing has changed on db
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// delete existing children that have specified aggregateField value
+		List<SObject> childrenToDelete = Database.query(String.format('select id, {0}, {1} from {2} WHERE {0} = {3}', new List<String>{ aggregateField, relationshipField, childObjectName, String.valueOf(child2Amount) }));
+		System.assertEquals(3, childrenToDelete.size());
+		delete childrenToDelete;
+
+		// Assert nothing has changed on db
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// assert remaining children
+		List<SObject> remainingChildren = Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateField, relationshipField, childObjectName }));
+		System.assertEquals(3, remainingChildren.size());
+
+		// retrieve children to undelete
+		List<SObject> childrenToUndelete = Database.query(String.format('select id, {0}, {1} from {2} WHERE IsDeleted = true ALL ROWS', new List<String>{ aggregateField, relationshipField, childObjectName }));	
+		System.assertEquals(3, childrenToUndelete.size());
+		undelete childrenToUndelete;
+
+		// Assert nothing has changed on db
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(null, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// Call developer 'trigger like' API simulating a undelete
+		RollupService.rollup(null, new Map<Id, SObject>(childrenToUndelete), childType);
+
+		// Assert parents are updated
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(3, assertParents.size());
+		System.assertEquals(expectedAmount, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(expectedAmount, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(expectedAmount, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+	}
+
+	/**
 	 * Create test user
 	 **/
 	private static User createUser()
