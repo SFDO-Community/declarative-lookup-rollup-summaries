@@ -542,7 +542,6 @@ global with sharing class RollupService
 			for(LookupRollupSummary__c lookup : lookups)
 			{
 				fieldsToSearchForChanges.add(lookup.FieldToAggregate__c);
-				fieldsToSearchForChanges.add(lookup.RelationShipField__c);
 				if(lookup.RelationshipCriteriaFields__c!=null)
 					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n'))
 						fieldsToSearchForChanges.add(criteriaField);
@@ -557,6 +556,11 @@ global with sharing class RollupService
 			Set<String> fieldsChanged = new Set<String>();  
 			for(Id recordId : mergedRecordIds)
 			{
+				// keep track of whether or not this child has changed in any of the fields involved in
+				// lookups that are NOT relationship fields themselves.  We'll check relationship fields
+				// separately to avoid unnecessary rollups firing on master records that don't require updating				
+				Boolean nonRelationshipFieldsChanged = false;
+							
 				// Determine if any of the fields referenced on our selected rollups have changed on this record
 				for(String fieldToSearch : fieldsToSearchForChanges)
 				{
@@ -564,23 +568,53 @@ global with sharing class RollupService
 					SObject oldRecord = existingRecords.get(recordId);
 					Object oldValue = oldRecord == null ? null : oldRecord.get(fieldToSearch);
 					SObject newRecord = newRecords.get(recordId);
-					Object newValue = newRecord == null ? null : newRecord.get(fieldToSearch);					
+					Object newValue = newRecord == null ? null : newRecord.get(fieldToSearch);
 
 					// Register this field as having changed?
 					// if in old but not in new then its a delete and rollup should be processed
 					// if in new but not in old then its an insert and rollup should be processed
-					// if in both then its an update and field change detection should occur
+					// if in both then its an update and field change detection should occur and rollup should be processed if different
 					if((oldRecord == null) || (newRecord == null) || (newValue != oldValue)) {
 						fieldsChanged.add(fieldToSearch);
+						// mark record as having a non-relationship field changed
+						nonRelationshipFieldsChanged = true;
+					}
+				}
+				
+				// iterate relationship fields looking and track old/new master id
+				// if there were changes to the relationship field itself or any 
+				// other fields involved in a lookup
+				for(String relationshipField : relationshipFields)
+				{
+					// should we add associated master to list?
+					// default to whether or not a non-relationship field on record has changed
+					Boolean addMasterIds = nonRelationshipFieldsChanged;
+
+					// retrieve old and new records and values if they exist
+					SObject oldRecord = existingRecords.get(recordId);
+					Object oldValue = oldRecord == null ? null : oldRecord.get(relationshipField);
+					SObject newRecord = newRecords.get(recordId);
+					Object newValue = newRecord == null ? null : newRecord.get(relationshipField);
+
+					// Register this field as having changed?
+					// if in old but not in new then its a delete and rollup should be processed and master ids included
+					// if in new but not in old then its an insert and rollup should be processed and master ids included
+					// if in both then its an update and field change detection should occur and rollup should be processed and master ids included if different
+					if((oldRecord == null) || (newRecord == null) || (newValue != oldValue)) {
+						fieldsChanged.add(relationshipField);
+						// master field itself changed so we force old/new master ids to be added for processing
+						addMasterIds = true;
 					}
 
-					// Add both old and new value to master record Id list for relationship fields to ensure old and new parent master records are updated (re-parenting)
-					if(relationshipFields.contains(fieldToSearch))
+					// if relationship field itself changed or if change in another non-relationship field
+					// Add both old and new value to master record Id list for relationship fields 
+					// to ensure old and new parent master records are updated (re-parenting)
+					if (addMasterIds)
 					{
 						if(newValue!=null)
 							masterRecordIds.add((Id) newValue);
 						if(oldValue!=null)
-							masterRecordIds.add((Id) oldValue);		
+							masterRecordIds.add((Id) oldValue);
 					}
 				}
 			}

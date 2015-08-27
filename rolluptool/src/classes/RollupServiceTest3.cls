@@ -571,7 +571,6 @@ private with sharing class RollupServiceTest3
 		List<SObject> children = new List<SObject>();
 		for(SObject parent : parents)
 		{
-			String name = (String) parent.get('Name');
 			SObject child1 = childType.newSObject();
 			child1.put(relationshipField, parent.Id);
 			child1.put(aggregateField, 20);
@@ -593,8 +592,23 @@ private with sharing class RollupServiceTest3
 		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
 		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
 
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeQueryRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+
 		// Call developer 'trigger like' API
 		RollupService.rollup(null, new Map<Id, SObject>(children), childType);
+
+		// Assert no further limits have been used since the field to aggregate on the detail has not changed
+		// + One query on Rollup object
+		// + One query on LookupChild__c for rollup
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());
+		// + One row for Rollup object
+		// + Nine rows for LookupChild__c for rollup
+		System.assertEquals(beforeQueryRows + 10, Limits.getQueryRows());
+		// + Three rows for LookupParent__c for rollup target
+		System.assertEquals(beforeDMLRows + 3, Limits.getDMLRows());
 
 		// Assert parents are updated
 		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
@@ -648,7 +662,6 @@ private with sharing class RollupServiceTest3
 		List<SObject> children = new List<SObject>();
 		for(SObject parent : parents)
 		{
-			String name = (String) parent.get('Name');
 			SObject child1 = childType.newSObject();
 			child1.put(relationshipField, parent.Id);
 			child1.put(aggregateField, 20);
@@ -682,7 +695,7 @@ private with sharing class RollupServiceTest3
 		// Assert no further limits have been used since the field to aggregate on the detail has not changed
 		System.assertEquals(beforeQueries + 1, Limits.getQueries()); // Only tolerate a query for the Lookup definition
 		System.assertEquals(beforeQueryRows + 1, Limits.getQueryRows()); // Only tolerate a row for the Lookup definition
-		System.assertEquals(beforeDMLRows, Limits.getDMLRows()); // No changes so not record should be operated against
+		System.assertEquals(beforeDMLRows, Limits.getDMLRows()); // No changes so no record should be operated against
 
 		// Assert parents are updated
 		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
@@ -736,7 +749,6 @@ private with sharing class RollupServiceTest3
 		List<SObject> children = new List<SObject>();
 		for(SObject parent : parents)
 		{
-			String name = (String) parent.get('Name');
 			SObject child1 = childType.newSObject();
 			child1.put(relationshipField, parent.Id);
 			child1.put(aggregateField, 0);
@@ -763,23 +775,44 @@ private with sharing class RollupServiceTest3
 		System.assertEquals(9, modifiedChildren.size());
 		for (SObject child :modifiedChildren)
 		{
-			child.put(aggregateField, 14);
+			// do not update ParentC children so we can simulate
+			// only updated records being processed, non-changed records being ignored
+			// and assert governor limits to confirm			
+			if (child.get(relationshipField) != parentC.Id)
+			{
+				child.put(aggregateField, 14);
+			}
 		}
 		update modifiedChildren;
 
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeQueryRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+
 		// Call developer 'trigger like' API simulating an update
 		RollupService.rollup(new Map<Id, SObject>(children), new Map<Id, SObject>(modifiedChildren), childType);
+
+		// Assert no further limits have been used since the field to aggregate on the detail has not changed
+		// + One query on Rollup object
+		// + One query on LookupChild__c for rollup
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());
+		// + One row for Rollup object
+		// + Six rows for LookupChild__c for rollup for Parent A & Parent B
+		System.assertEquals(beforeQueryRows + 7, Limits.getQueryRows());
+		// + Two rows for LookupParent__c for rollup target for Parent A & Parent B
+		System.assertEquals(beforeDMLRows + 2, Limits.getDMLRows());
 
 		// Assert parents are updated
 		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
 		System.assertEquals(3, assertParents.size());
 		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
 		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
-		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
 	}
 
 	/**
-	 * Test simulation of combination of isInsert and isUpdate
+	 * Test simulation of combination of isInsert and isUpdate but updates do not effect rollups
 	 */
 	private testmethod static void testDeveloperTriggerLikeAPI_SingleSumInsertedWithExistingThatDoNotChange()
 	{	
@@ -822,7 +855,6 @@ private with sharing class RollupServiceTest3
 		List<SObject> children = new List<SObject>();
 		for(SObject parent : parents)
 		{
-			String name = (String) parent.get('Name');
 			SObject child1 = childType.newSObject();
 			child1.put(relationshipField, parent.Id);
 			child1.put(aggregateField, 20);
@@ -844,10 +876,17 @@ private with sharing class RollupServiceTest3
 		List<SObject> newChildren = new List<SObject>();
 		for(SObject parent : parents)
 		{
-			SObject child3 = childType.newSObject();
-			child3.put(relationshipField, parent.Id);
-			child3.put(aggregateField, 2);
-			newChildren.add(child3);
+			// do not create new child for ParentC so we can simulate
+			// only inserted records being processed, non-changed records being ignored
+			// and assert governor limits to confirm
+			String name = (String) parent.get('Name');			
+			if(!name.equals('ParentC'))
+			{			
+				SObject child3 = childType.newSObject();
+				child3.put(relationshipField, parent.Id);
+				child3.put(aggregateField, 2);
+				newChildren.add(child3);
+			}
 		}
 		insert newChildren;
 
@@ -861,15 +900,30 @@ private with sharing class RollupServiceTest3
 		List<SObject> newAndOldChildren = children.clone();
 		newAndOldChildren.addAll(newChildren);
 
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeQueryRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+
 		// Call developer 'trigger like' API simulating an update
 		RollupService.rollup(new Map<Id, SObject>(children), new Map<Id, SObject>(newAndOldChildren), childType);
+
+		// Assert no further limits have been used since the field to aggregate on the detail has not changed
+		// + One query on Rollup object
+		// + One query on LookupChild__c for rollup
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());
+		// + One row for Rollup object
+		// + Six rows for LookupChild__c for rollup for Parent A & Parent B
+		System.assertEquals(beforeQueryRows + 7, Limits.getQueryRows());
+		// + Two rows for LookupParent__c for rollup target for Parent A & Parent B
+		System.assertEquals(beforeDMLRows + 2, Limits.getDMLRows());
 
 		// Assert parents are updated
 		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
 		System.assertEquals(3, assertParents.size());
 		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
 		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
-		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
 	}
 
 	/**
@@ -947,8 +1001,23 @@ private with sharing class RollupServiceTest3
 		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
 		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
 
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeQueryRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+
 		// Call developer 'trigger like' API simulating a delete
 		RollupService.rollup(new Map<Id, SObject>(deletedChildren), null, childType);
+
+		// Assert no further limits have been used since the field to aggregate on the detail has not changed
+		// + One query on Rollup object
+		// + One query on LookupChild__c for rollup
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());
+		// + One row for Rollup object
+		// + Three rows for LookupChild__c
+		System.assertEquals(beforeQueryRows + 4, Limits.getQueryRows());
+		// + Three rows for LookupParent__c
+		System.assertEquals(beforeDMLRows + 3, Limits.getDMLRows());
 
 		// Assert parents are updated
 		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
@@ -1049,8 +1118,23 @@ private with sharing class RollupServiceTest3
 		System.assertEquals(null, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
 		System.assertEquals(null, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
 
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeQueryRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+
 		// Call developer 'trigger like' API simulating a undelete
 		RollupService.rollup(null, new Map<Id, SObject>(childrenToUndelete), childType);
+
+		// Assert no further limits have been used since the field to aggregate on the detail has not changed
+		// + One query on Rollup object
+		// + One query on LookupChild__c for rollup
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());
+		// + One row for Rollup object
+		// + Six rows for LookupChild__c
+		System.assertEquals(beforeQueryRows + 7, Limits.getQueryRows());
+		// + Three rows for LookupParent__c
+		System.assertEquals(beforeDMLRows + 3, Limits.getDMLRows());
 
 		// Assert parents are updated
 		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
