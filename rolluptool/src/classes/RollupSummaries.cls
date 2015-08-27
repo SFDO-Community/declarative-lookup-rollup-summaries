@@ -82,6 +82,97 @@ public class RollupSummaries extends fflib_SObjectDomain
 	{
 		super(records);
 	}
+
+	/**
+	 * Before Insert processing
+	 **/
+	public override void onBeforeInsert()
+	{
+		updateDescribableFieldNames();
+	}
+
+	/**
+	 * Before Update processing
+	 **/
+	public override void onBeforeUpdate(Map<Id,SObject> existingRecords)
+	{
+		updateDescribableFieldNames();
+	}
+
+	/**
+	 * update field names using describe info
+	 **/
+	private void updateDescribableFieldNames()
+	{
+		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
+		Map<SObjectType, Map<String, Schema.SObjectField>> gdFields = new Map<SObjectType, Map<String, Schema.SObjectField>>(); 	
+		for(LookupRollupSummary__c lookupRollupSummary : (List<LookupRollupSummary__c>) Records)
+		{
+			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject__c);
+			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject__c);
+			if(parentObjectType!=null && !gdFields.containsKey(parentObjectType))
+				gdFields.put(parentObjectType, parentObjectType.getDescribe().fields.getMap());
+			if(childObjectType!=null && !gdFields.containsKey(childObjectType))
+				gdFields.put(childObjectType, childObjectType.getDescribe().fields.getMap());
+		}
+
+		for(LookupRollupSummary__c lookupRollupSummary : (List<LookupRollupSummary__c>) Records)
+		{
+			// Parent Object
+			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject__c);
+			if(parentObjectType!=null)
+				lookupRollupSummary.ParentObject__c = parentObjectType.getDescribe().getName();
+
+			// Child Object
+			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject__c);
+			if(childObjectType!=null)
+				lookupRollupSummary.ChildObject__c = childObjectType.getDescribe().getName();
+
+			// Child Object fields
+			SObjectField relationshipField = null;
+			SObjectField fieldToAggregate = null;
+			SObjectField fieldToOrderBy = null;
+			Map<String, Schema.SObjectField> childObjectFields = gdFields.get(childObjectType);
+			if(childObjectFields!=null)
+			{
+				// Relationship field
+				relationshipField = childObjectFields.get(lookupRollupSummary.RelationshipField__c);
+				if(relationshipField!=null)
+					lookupRollupSummary.RelationshipField__c = relationshipField.getDescribe().getName();
+				// Field to Aggregate
+				fieldToAggregate = childObjectFields.get(lookupRollupSummary.FieldToAggregate__c);
+				if(fieldToAggregate!=null)
+					lookupRollupSummary.FieldToAggregate__c = fieldToAggregate.getDescribe().getName();
+				// Field to Order By
+				if(lookupRollupSummary.FieldToOrderBy__c!=null) {
+					fieldToOrderBy = childObjectFields.get(lookupRollupSummary.FieldToOrderBy__c);
+					if(fieldToOrderBy!=null)
+						lookupRollupSummary.FieldToOrderBy__c = fieldToOrderBy.getDescribe().getName();
+				}
+			}
+			// Parent Object fields
+			SObjectField aggregateResultField = null;
+			Map<String, Schema.SObjectField> parentObjectFields = gdFields.get(parentObjectType);
+			if(parentObjectFields!=null)
+			{
+				// Aggregate Result field
+				aggregateResultField = parentObjectFields.get(lookupRollupSummary.AggregateResultField__c);
+				if(aggregateResultField!=null)
+					lookupRollupSummary.AggregateResultField__c = aggregateResultField.getDescribe().getName();
+			}						
+			// Check the list of fields expressed in the relationship critiera fields
+			if(childObjectFields!=null && lookupRollupSummary.RelationshipCriteriaFields__c!=null)
+			{
+				List<String> relationshipCriteriaFields = new List<String>();
+				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields__c.split('\r\n');
+				for(String field : fieldList) {
+					SObjectField relationshipCriteriaField = childObjectFields.get(field);
+					relationshipCriteriaFields.add(relationshipCriteriaField !=null ? relationshipCriteriaField.getDescribe().getName() : field);
+				}
+				lookupRollupSummary.RelationshipCriteriaFields__c = String.join(relationshipCriteriaFields, '\r\n');
+			}
+		}
+	}
 	
 	/**
 	 * Validations for inserts and updates of records

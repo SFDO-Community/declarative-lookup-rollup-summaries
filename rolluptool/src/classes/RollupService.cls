@@ -765,7 +765,12 @@ global with sharing class RollupService
 			// Determine if an LREngine Context has been created for this parent child relationship, filter combination or underlying query type and sharing mode?
 			String rsfType = rsf.isAggregateBasedRollup() ? 'aggregate' : 'query';
 			String orderBy = String.isBlank(Lookup.FieldToOrderBy__c) ? '' : Lookup.FieldToOrderBy__c;
-			String contextKey = lookup.ParentObject__c + '#' + lookup.RelationshipField__c + '#' + lookup.RelationShipCriteria__c + '#' + rsfType + '#' + sharingMode + '#' + orderBy;
+			// Lowering case on Describable fields is only required for Legacy purposes since LookupRollupSummary__c records
+			// will be updated with describe names on insert/update moving forward.
+			// Ideally this would not be needed to save CPU cycles but including to ensure context is properly re-used when possible for
+			// rollups that have not been updated/inserted after the insert/update enhancement is applied
+			// Unable to lower RelationShipCriteria__c because of field value case-(in)sensitivity configuration
+			String contextKey = lookup.ParentObject__c.toLowerCase() + '#' + lookup.RelationshipField__c.toLowerCase() + '#' + lookup.RelationShipCriteria__c + '#' + rsfType + '#' + sharingMode + '#' + orderBy.toLowerCase();
 
 			LREngine.Context lreContext = engineCtxByParentRelationship.get(contextKey);
 			if(lreContext==null)
