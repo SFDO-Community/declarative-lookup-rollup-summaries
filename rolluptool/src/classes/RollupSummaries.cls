@@ -131,7 +131,6 @@ public class RollupSummaries extends fflib_SObjectDomain
 			// Child Object fields
 			SObjectField relationshipField = null;
 			SObjectField fieldToAggregate = null;
-			SObjectField fieldToOrderBy = null;
 			Map<String, Schema.SObjectField> childObjectFields = gdFields.get(childObjectType);
 			if(childObjectFields!=null)
 			{
@@ -145,9 +144,23 @@ public class RollupSummaries extends fflib_SObjectDomain
 					lookupRollupSummary.FieldToAggregate__c = fieldToAggregate.getDescribe().getName();
 				// Field to Order By
 				if(lookupRollupSummary.FieldToOrderBy__c!=null) {
-					fieldToOrderBy = childObjectFields.get(lookupRollupSummary.FieldToOrderBy__c);
-					if(fieldToOrderBy!=null)
-						lookupRollupSummary.FieldToOrderBy__c = fieldToOrderBy.getDescribe().getName();
+					try {
+						List<LREngine.Ordering> fieldsToOrderBy = Utilities.parseOrderByClause(lookupRollupSummary.FieldToOrderBy__c, childObjectFields);
+						if (fieldsToOrderBy != null && !fieldsToOrderBy.isEmpty()) {
+							String orderByClause = '';
+			                for (LREngine.Ordering orderByField :fieldsToOrderBy) {
+			                	// using toAsSpecifiedString so that we update the field name to proper describe info
+			                	// but leave the rest of what was input unchanged.  If we called toString() we would 
+			                	// add fully qualified Order By Clause and we don't want to add in portions of the clause
+			                	// that the user didn't provide in the first place.
+			                	orderByClause += (String.isBlank(orderByClause) ? '' : ',') + orderByField.toAsSpecifiedString();
+			                }
+			                lookupRollupSummary.FieldToOrderBy__c = orderByClause;
+			            }
+					} catch(Utilities.OrderByInvalidException e) {
+						// there is a problem with order by so we ignore it intentionally here since we're just trying 
+						// to update field names with describe info.  The error will be caught during validation phase.
+					}
 				}
 			}
 			// Parent Object fields
@@ -212,7 +225,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 			// Child Object fields valid?
 			SObjectField relationshipField = null;
 			SObjectField fieldToAggregate = null;
-			SObjectField fieldToOrderBy = null;
+			List<LREngine.Ordering> fieldsToOrderBy = null;
 			Map<String, Schema.SObjectField> childObjectFields = gdFields.get(childObjectType);
 			if(childObjectFields!=null)
 			{
@@ -226,9 +239,11 @@ public class RollupSummaries extends fflib_SObjectDomain
 					lookupRollupSummary.FieldToAggregate__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.FieldToAggregate__c));
 				// Field to Order By valid?
 				if(lookupRollupSummary.FieldToOrderBy__c!=null) {
-					fieldToOrderBy = childObjectFields.get(lookupRollupSummary.FieldToOrderBy__c);
-					if(fieldToOrderBy==null)
-						lookupRollupSummary.FieldToOrderBy__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.FieldToOrderBy__c));					
+					try {
+						fieldsToOrderBy = Utilities.parseOrderByClause(lookupRollupSummary.FieldToOrderBy__c, childObjectFields);
+					} catch(Utilities.OrderByInvalidException e) {
+						lookupRollupSummary.FieldToOrderBy__c.addError(error(e.getMessage(), lookupRollupSummary, LookupRollupSummary__c.FieldToOrderBy__c));						
+					}
 				}
 				// TODO: Validate relationship field is a lookup to the parent
 				// ...
@@ -285,7 +300,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 			            new LREngine.RollupSummaryField(
 							aggregateResultField.getDescribe(),
 							fieldToAggregate.getDescribe(),
-							fieldToOrderBy!=null ? fieldToOrderBy.getDescribe() : null, // optional field to order by
+							fieldsToOrderBy, // optional field to order by
 							OPERATION_PICKLIST_TO_ENUMS.get(lookupRollupSummary.AggregateOperation__c),
 							lookupRollupSummary.ConcatenateDelimiter__c));
 					// Validate the SOQL

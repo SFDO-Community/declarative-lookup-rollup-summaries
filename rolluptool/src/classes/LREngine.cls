@@ -128,7 +128,7 @@ public class LREngine {
         // #0 token : SOQL projection
         String soqlProjection = ctx.lookupField.getName();
         List<String> orderByFields = new List<String>();
-        orderByFields.add(ctx.lookupField.getName()); // ensure details records are ordered by parent record
+        orderByFields.add(new Ordering(ctx.lookupField).toString()); // ensure details records are ordered by parent record
 
         // k: detail field name, v: master field name
         Integer exprIdx = 0;
@@ -163,11 +163,12 @@ public class LREngine {
                 }
                 // create order by projections
                 // i.e. Amount ASC NULLS FIRST
-                String orderByField = 
-                    rsf.detailOrderBy!=null ? rsf.detailOrderBy.getName() : rsf.detail.getName();
-                if(!orderByFieldsSet.contains(orderByField)) {
-                    orderByFields.add(orderByField);
-                    orderByFieldsSet.add(orderByField);
+                for (Ordering orderByField :(rsf.detailOrderBy == null || rsf.detailOrderBy.isEmpty()) ? new List<Ordering> { new Ordering(rsf.detail) } : rsf.detailOrderBy) {
+                    String fieldName = orderByField.getField().getName();
+                    if(!orderByFieldsSet.contains(fieldName)) {
+                        orderByFields.add(orderByField.toString());
+                        orderByFieldsSet.add(fieldName);
+                    }
                 }
             }
         }
@@ -344,7 +345,68 @@ public class LREngine {
             return String.join(listOfString, delimiter == null ? '' : delimiter);
         }
     }
-        
+
+    /**
+        Sort Order
+    */
+    public enum SortOrder {ASCENDING, DESCENDING}
+
+    /**
+        Represents a single portion of the Order By clause for SOQL statement
+    */
+    public class Ordering{
+        private SortOrder direction;
+        private Boolean nullsLast;
+        private Schema.DescribeFieldResult field;
+        private Boolean directionSpecified; // if direction was specified during construction
+        private Boolean nullsLastSpecified; // if nullsLast was specified during construction
+
+        /**
+         * Construct a new ordering instance
+        **/
+        public Ordering(Schema.DescribeFieldResult field) {
+            this(field, null);
+        }        
+        public Ordering(Schema.DescribeFieldResult field, SortOrder direction) {
+            this(field, direction, null);
+        }
+        public Ordering(Schema.DescribeFieldResult field, SortOrder direction, Boolean nullsLast) {
+            // field must be specified
+            if (field == null) {
+                throw new BadOrderingStateException('field cannot be null.');
+            }
+
+            this.field = field;
+            this.directionSpecified = direction != null;
+            this.nullsLastSpecified = nullsLast != null;
+            this.direction = this.directionSpecified ? direction : SortOrder.ASCENDING; //SOQL docs ASC is default behavior
+            this.nullsLast = this.nullsLastSpecified ? nullsLast : false; //SOQL docs state NULLS FIRST is default behavior
+        }
+        public Schema.DescribeFieldResult getField(){
+            return field;
+        }
+        public SortOrder getDirection() {
+            return direction;
+        }
+        public Boolean getNullsLast() {
+            return nullsLast;
+        }
+        public override String toString() {
+            return field.getName() + ' ' + (direction == SortOrder.ASCENDING ? 'ASC' : 'DESC') + ' ' + (nullsLast ? 'NULLS LAST' : 'NULLS FIRST');
+        }
+        public String toAsSpecifiedString() {
+            // emit order by using describe info with the direction and nullsLast
+            // that was provided during construction.  This allows to regurgitate
+            // the proper SOQL order by using exactly what was passed in
+            return field.getName() + (directionSpecified ? (direction == SortOrder.ASCENDING ? ' ASC' : ' DESC') : '') + (nullsLastSpecified ? (nullsLast ? ' NULLS LAST' : ' NULLS FIRST') : '');
+        }
+    }    
+
+    /**
+        Exception thrown if Ordering is in bad state
+    */
+    public class BadOrderingStateException extends Exception {}
+
     /**
         Exception throwed if Rollup Summary field is in bad state
     */
@@ -367,7 +429,7 @@ public class LREngine {
     public class RollupSummaryField {
         public Schema.Describefieldresult master;
         public Schema.Describefieldresult detail;
-        public Schema.Describefieldresult detailOrderBy;
+        public List<Ordering> detailOrderBy;
         public RollupOperation operation;
         public String concatenateDelimiter;
         
@@ -383,7 +445,7 @@ public class LREngine {
 
         public RollupSummaryField(Schema.Describefieldresult m, 
                                          Schema.Describefieldresult d, RollupOperation op) {
-            this(m, d, null, op, null);
+            this(m, d, (Schema.Describefieldresult)null, op, null);
         }
 
         public RollupSummaryField(Schema.Describefieldresult m, 
@@ -391,6 +453,13 @@ public class LREngine {
                                          Schema.Describefieldresult detailOrderBy,
                                          RollupOperation op,
                                          String concatenateDelimiter) {
+            this(m, d, (detailOrderBy == null ? null : new List<Ordering> { new Ordering(detailOrderBy) }), op, concatenateDelimiter);            
+        }
+        public RollupSummaryField(Schema.Describefieldresult m, 
+                                         Schema.Describefieldresult d, 
+                                         List<Ordering> detailOrderBy,
+                                         RollupOperation op,
+                                         String concatenateDelimiter) {            
             this.master = m;
             this.detail = d;
             this.detailOrderBy = detailOrderBy;
@@ -442,6 +511,11 @@ public class LREngine {
             if (isMasterTypeDateOrTime && (RollupOperation.Sum == operation || RollupOperation.Avg == operation)) {
                 throw new BadRollUpSummaryStateException('Sum/Avg doesnt looks like valid for dates ! Still want, then implement the IRollerCoaster yourself and change this class as required.');
             }
+
+            // If we had the SObjectType of Detail field here we could
+            // iterate the detailOrderBy SObjectFields and ensure they belong to the 
+            // detail SObject but there is no way to determine SObjectType from DescribeFieldResult
+            // therefore we cannot validate the order by in any way
         }
 
         boolean isText (Schema.Displaytype dt) {

@@ -63,4 +63,58 @@ public class Utilities {
 		String namespace = namespace();
 		return String.isEmpty(namespace) ? '' : (namespace + '__');
 	}
+
+	public static List<LREngine.Ordering> parseOrderByClause(String orderByClause, Map<String, Schema.SObjectField> fields)
+	{
+		if (String.isBlank(orderByClause)) {
+			return null;
+		}
+
+		List<LREngine.Ordering> orderByFields = new List<LREngine.Ordering>();
+		List<String> orderByClauseFields = orderByClause.split(',');
+		for(String field :orderByClauseFields) {
+			orderByFields.add(parseOrderByField(field, fields));
+		}
+
+		return orderByFields;
+	}
+
+	// Regular expression for Order By Clause
+	// Case-Insensitive pattern
+	// Group 1 - Field Name (required)
+	// Group 2 - ASC/DESC (optional)
+	// Group 3 - NULLS FIRST (optional)
+	// Group 4 - NULLS (required if Group 3 != null)
+	// Group 5 - FIRST (required if Group 3 != null)
+	private static Pattern orderByPattern = Pattern.compile('^(?i)[\\s]*([\\w]*)[\\s]*(ASC|DESC)?[\\s]*((NULLS)[\\s]*(FIRST|LAST))?[\\s]*$');
+	private static LREngine.Ordering parseOrderByField(String orderByField, Map<String, Schema.SObjectField> fields)
+	{
+		Matcher matcher = orderByPattern.matcher(orderByField);
+		if (!matcher.matches() || matcher.groupCount() != 5) {
+			throw new OrderByInvalidException('Invalid order by clause.');
+		}
+
+		// need to validate the field against Describe Information
+		String fieldName = matcher.group(1);
+		if (String.isBlank(fieldName) || !fields.containsKey(fieldName)) {
+			// this error message should likely be something more like 'Invalid field in order by clause'
+			// since we support one or more fields.  However, to ensure backwards compat and avoid breaking
+			// tests that might exist out in the wild, making this error message the same as what it
+			// would have been when only a single field was supported.
+			throw new OrderByInvalidException('Field does not exist.');
+		}
+		SObjectField sobjField = fields.get(fieldName);
+
+		// regex enforces that ordering be null, ASC or DESC
+		String ordering = matcher.group(2);
+		LREngine.SortOrder sortOrder = (ordering == null) ? null : (ordering == 'DESC' ? LREngine.SortOrder.DESCENDING : LREngine.SortOrder.ASCENDING);
+
+		// regex enforces that firstLast be null, FIRST or LAST
+		String firstLast = matcher.group(5);		
+		Boolean nullsLast = (firstLast == null) ? null : (firstLast == 'LAST');
+
+		return new LREngine.Ordering(sobjField.getDescribe(), sortOrder, nullsLast);
+	}	
+
+	public class OrderByInvalidException extends Exception {}
 }
