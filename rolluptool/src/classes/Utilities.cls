@@ -106,10 +106,12 @@ public class Utilities {
 		SObjectField sobjField = fields.get(fieldName);
 
 		// regex enforces that ordering be null, ASC or DESC
+		// == operator is case-insensitive
 		String ordering = matcher.group(2);
 		LREngine.SortOrder sortOrder = (ordering == null) ? null : (ordering == 'DESC' ? LREngine.SortOrder.DESCENDING : LREngine.SortOrder.ASCENDING);
 
 		// regex enforces that firstLast be null, FIRST or LAST
+		// == operator is case-insensitive		
 		String firstLast = matcher.group(5);		
 		Boolean nullsLast = (firstLast == null) ? null : (firstLast == 'LAST');
 

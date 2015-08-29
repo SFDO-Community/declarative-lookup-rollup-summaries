@@ -258,6 +258,16 @@ private class RollupServiceTest5 {
 	}	
 
 	@IsTest
+	private static void testParseOrderByFieldAndASCDirectionLowered() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c asc', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
 	private static void testParseOrderByFieldAndDESCDirection() {
 		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c DESC', LookupChild__c.sObjectType.getDescribe().fields.getMap());
 		assertOrdering(	order, 
@@ -268,8 +278,28 @@ private class RollupServiceTest5 {
 	}
 
 	@IsTest
+	private static void testParseOrderByFieldAndDESCDirectionLowered() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c desc', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.DESCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
 	private static void testParseOrderByFieldAndNullsFirst() {
 		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c NULLS FIRST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndNullsFirstLowered() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c nulls first', LookupChild__c.sObjectType.getDescribe().fields.getMap());
 		assertOrdering(	order, 
 						1, 
 						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
@@ -286,6 +316,16 @@ private class RollupServiceTest5 {
 						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
 						new List<Boolean> { true });
 	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndNullsLastLowered() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c nulls last', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { true });
+	}		
 
 	@IsTest
 	private static void testParseOrderByFieldAndASCDirectionAndNullsFirst() {
