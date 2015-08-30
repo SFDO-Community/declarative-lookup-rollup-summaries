@@ -459,25 +459,33 @@ public class LREngine {
         }
 
         public boolean isAggregateBasedRollup() {
-            return operation == RollupOperation.Sum ||
-                operation == RollupOperation.Min ||
-                operation == RollupOperation.Max ||
-                operation == RollupOperation.Avg ||
-                operation == RollupOperation.Count ||
-                operation == RollupOperation.Count_Distinct;
+            return isAggregateBasedRollup(operation);
         }
 
         public boolean isQueryBasedRollup() {
-            return operation == RollupOperation.Concatenate ||
-                operation == RollupOperation.Concatenate_Distinct ||
-                operation == RollupOperation.First ||
-                operation == RollupOperation.Last;
+            return isQueryBasedRollup(operation);
         }
     }
     
     public enum SharingMode {
         User,
         System_x
+    }
+
+    public static boolean isAggregateBasedRollup(RollupOperation operation) {
+        return operation == RollupOperation.Sum ||
+            operation == RollupOperation.Min ||
+            operation == RollupOperation.Max ||
+            operation == RollupOperation.Avg ||
+            operation == RollupOperation.Count ||
+            operation == RollupOperation.Count_Distinct;
+    }
+
+    public static boolean isQueryBasedRollup(RollupOperation operation) {
+        return operation == RollupOperation.Concatenate ||
+            operation == RollupOperation.Concatenate_Distinct ||
+            operation == RollupOperation.First ||
+            operation == RollupOperation.Last;        
     }
 
     /**
