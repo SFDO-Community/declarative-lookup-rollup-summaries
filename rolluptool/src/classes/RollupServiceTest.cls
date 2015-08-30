@@ -1103,27 +1103,17 @@ private with sharing class RollupServiceTest
 	}
 
 	/**
-	 * Current default behavior of LREngine  is to order by relationship field, then by each 
-	 * rollup summary detail field (FieldToAggregate__c) in the order specified (e.g. AccountId, StageName, Name)
-	 * within the context (RollupSummaryField order).  If no order by is specified on a rollupsummaryfield
-	 * the detail field is used for the order by following the Then By approach based on order
-	 * in the context.
+	 * Current default behavior of LREngine is to order by relationship field then by the orderby
+	 * clause specified in the Context.  If no order by is specified in the context, the only field
+	 * that will be specified in the order by projection is the RelationshipField__c field.
 	 *
 	 * Current default behavior of DLRS is to build the context with all rollupsummaries
 	 * retrieving them ordered by ParentObject__c (Account) and then by RelationshipField__c (e.g. AccountId)
-	 * which results in non-deterministic result so a test cannot reliabily be written against
-	 * multiple rollups on same parent/child relationship when no order by is specified.
+	 * which results in non-deterministic result when no orderby is specified so a test cannot reliabily be written against
+	 * multiple rollups on same parent/child relationship when no orderby is specified.
 	 */
-	private static Id setupMultiRollupDifferentTypes(RollupSummaries.AggregateOperation operationA, Schema.DescribeFieldResult orderByFieldA, RollupSummaries.AggregateOperation operationB, Schema.DescribeFieldResult orderByFieldB)
+	private static Id setupMultiRollupDifferentTypes(Map<String, String> opportunityData, RollupSummaries.AggregateOperation operationA, String orderByFieldA, RollupSummaries.AggregateOperation operationB, String orderByFieldB)
 	{
-		// Test data
-		// OpportunityName => Amount;CloseDateAddMonthsToToday;StageName
-		Map<String, String> opportunityData = new Map<String, String> {
-			'Joe' => '250;0;Open',
-			'Steve' => '50;1;Prospecting',
-			'Kim' => '100;-2;Closed Won',
-			'Charlie' => '225;-1;Needs Analysis'};
-
 		// Configure rollup A
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'First Opportunity Name into Sic on Account';
@@ -1132,7 +1122,7 @@ private with sharing class RollupServiceTest
 		rollupSummaryA.RelationShipField__c = 'AccountId';
 		rollupSummaryA.RelationShipCriteria__c = null;
 		rollupSummaryA.FieldToAggregate__c = 'StageName';
-		rollupSummaryA.FieldToOrderBy__c = orderByFieldA != null ? orderByFieldA.getName() : null;
+		rollupSummaryA.FieldToOrderBy__c = orderByFieldA;
 		rollupSummaryA.AggregateOperation__c = operationA.name();
 		rollupSummaryA.AggregateResultField__c = 'Sic';
 		rollupSummaryA.Active__c = true;
@@ -1146,7 +1136,7 @@ private with sharing class RollupServiceTest
 		rollupSummaryB.RelationShipField__c = 'AccountId';
 		rollupSummaryB.RelationShipCriteria__c = null;
 		rollupSummaryB.FieldToAggregate__c = 'Name';
-		rollupSummaryB.FieldToOrderBy__c = orderByFieldB != null ? orderByFieldB.getName() : null;
+		rollupSummaryB.FieldToOrderBy__c = orderByFieldB;
 		rollupSummaryB.AggregateOperation__c = operationB.name();
 		rollupSummaryB.AggregateResultField__c = 'Description';
 		rollupSummaryB.ConcatenateDelimiter__c = ',';
@@ -1189,24 +1179,69 @@ private with sharing class RollupServiceTest
 		if(!TestContext.isSupported())
 			return;
 
+		// Test data
+		// OpportunityName => Amount;CloseDateAddMonthsToToday;StageName
+		Map<String, String> opportunityData = new Map<String, String> {
+			'Joe' => '250;0;Open',
+			'Steve' => '50;1;Prospecting',
+			'Kim' => '100;-2;Closed Won',
+			'Charlie' => '225;-1;Needs Analysis'};
+
 		// Test data for rollup A
 		String expectedResultA = 'Closed Won';
 		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.First;
-		Schema.DescribeFieldResult orderByFieldA = Schema.SObjectType.Opportunity.fields.CloseDate;
+		String orderByClauseA = Schema.SObjectType.Opportunity.fields.CloseDate.getName();
 
 		// Test data for rollup B
 		String expectedResultB = 'Steve,Kim,Charlie,Joe';
 		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate; 
-		Schema.DescribeFieldResult orderByFieldB = Schema.SObjectType.Opportunity.fields.Amount;
+		String orderByClauseB = Schema.SObjectType.Opportunity.fields.Amount.getName();
 
 		// generate rollups and data
-		Id accountId = setupMultiRollupDifferentTypes(operationA, orderByFieldA, operationB, orderByFieldB);
+		Id accountId = setupMultiRollupDifferentTypes(opportunityData, operationA, orderByClauseA, operationB, orderByClauseB);
 
 		// Assert rollup
 		Account accountResult = Database.query('select Sic, Description from Account where Id = :accountId');
 		System.assertEquals(expectedResultA, accountResult.Sic);			
 		System.assertEquals(expectedResultB, accountResult.Description);			
 	}
+
+	/**
+	 * Test default behavior with different order by containing multiple fields on each rollup
+	 * for Issue https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/216
+	 */	 
+	private testmethod static void testMultiRollupOfDifferentTypesDifferentMultipleFieldsOrderBy()
+	{		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		// Test data
+		// OpportunityName => Amount;CloseDateAddMonthsToToday;StageName
+		Map<String, String> opportunityData = new Map<String, String> {
+			'Joe' => '100;0;Open',
+			'Steve' => '100;-2;Prospecting',
+			'Kim' => '100;1;Closed Won',
+			'Charlie' => '100;-1;Needs Analysis'};
+
+		// Test data for rollup A
+		String expectedResultA = 'Prospecting';
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.First;
+		String orderByClauseA = 'Amount ASC NULLS FIRST, CloseDate ASC NULLS FIRST, Name';
+
+		// Test data for rollup B
+		String expectedResultB = 'Kim,Joe,Charlie,Steve';
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate; 
+		String orderByClauseB = 'Amount ASC NULLS FIRST, CloseDate DESC NULLS FIRST, Name';
+
+		// generate rollups and data
+		Id accountId = setupMultiRollupDifferentTypes(opportunityData, operationA, orderByClauseA, operationB, orderByClauseB);
+
+		// Assert rollup
+		Account accountResult = Database.query('select Sic, Description from Account where Id = :accountId');
+		System.assertEquals(expectedResultA, accountResult.Sic);			
+		System.assertEquals(expectedResultB, accountResult.Description);			
+	}	
 
 	private testmethod static void testPicklistRollup()
 	{		
@@ -1495,4 +1530,92 @@ private with sharing class RollupServiceTest
 		System.assertEquals(null, (String) assertParents.get(parentC.id).get(aggregateResultField1));
 		System.assertEquals(20, (Decimal) assertParents.get(parentC.id).get(aggregateResultField2));
 	}	
+
+    private static void assertOrdering(Utilities.Ordering o, String orderBy, Boolean useAsSpecifiedString, String field, Utilities.SortOrder direction, Boolean nullsLast)
+    {
+        System.assertEquals(orderBy, useAsSpecifiedString ? o.toAsSpecifiedString() : o.toString());
+        System.assertEquals(field, o.getField());
+        System.assertEquals(direction, o.getDirection());
+        System.assertEquals(nullsLast, o.getNullsLast());
+    }
+
+    static testMethod void testOrderingStringification()
+    {
+        Utilities.Ordering o = new Utilities.Ordering('CloseDate');
+        assertOrdering(o, 'CloseDate ASC NULLS FIRST', false, 'CloseDate', Utilities.SortOrder.ASCENDING, false);
+
+        o = new Utilities.Ordering('closedate');
+        assertOrdering(o, 'closedate ASC NULLS FIRST', false, 'closedate', Utilities.SortOrder.ASCENDING, false);
+
+		o = new Utilities.Ordering('cLoSeDaTe');
+        assertOrdering(o, 'cLoSeDaTe ASC NULLS FIRST', false, 'cLoSeDaTe', Utilities.SortOrder.ASCENDING, false);
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.ASCENDING);
+        assertOrdering(o, 'CloseDate ASC NULLS FIRST', false, 'CloseDate', Utilities.SortOrder.ASCENDING, false);
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.DESCENDING);
+        assertOrdering(o, 'CloseDate DESC NULLS FIRST', false, 'CloseDate', Utilities.SortOrder.DESCENDING, false);
+
+        o = new Utilities.Ordering('CloseDate', null, false);
+        assertOrdering(o, 'CloseDate ASC NULLS FIRST', false, 'CloseDate', Utilities.SortOrder.ASCENDING, false);
+
+        o = new Utilities.Ordering('CloseDate', null, true);
+        assertOrdering(o, 'CloseDate ASC NULLS LAST', false,'CloseDate', Utilities.SortOrder.ASCENDING, true);
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.ASCENDING, false);
+        assertOrdering(o, 'CloseDate ASC NULLS FIRST', false, 'CloseDate', Utilities.SortOrder.ASCENDING, false);        
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.ASCENDING, true);
+        assertOrdering(o, 'CloseDate ASC NULLS LAST', false, 'CloseDate', Utilities.SortOrder.ASCENDING, true);        
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.DESCENDING, false);
+        assertOrdering(o, 'CloseDate DESC NULLS FIRST', false, 'CloseDate', Utilities.SortOrder.DESCENDING, false);        
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.DESCENDING, true);
+        assertOrdering(o, 'CloseDate DESC NULLS LAST', false, 'CloseDate', Utilities.SortOrder.DESCENDING, true);        
+
+         try {
+            o = new Utilities.Ordering(null);
+            System.assert(false, 'Expecting an exception');
+         }
+         catch (Utilities.BadOrderingStateException e) {
+            System.assertEquals('field cannot be blank.', e.getMessage());
+         }        
+    }
+
+    static testMethod void testOrderingAsSpecifiedStringification()
+    {
+        Utilities.Ordering o = new Utilities.Ordering('CloseDate');
+        assertOrdering(o, 'CloseDate', true, 'CloseDate', Utilities.SortOrder.ASCENDING, false);
+
+        o = new Utilities.Ordering('closedate');
+        assertOrdering(o, 'closedate', true, 'closedate', Utilities.SortOrder.ASCENDING, false);
+
+		o = new Utilities.Ordering('cLoSeDaTe');
+        assertOrdering(o, 'cLoSeDaTe', true, 'cLoSeDaTe', Utilities.SortOrder.ASCENDING, false);
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.ASCENDING);
+        assertOrdering(o, 'CloseDate ASC', true, 'CloseDate', Utilities.SortOrder.ASCENDING, false);
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.DESCENDING);
+        assertOrdering(o, 'CloseDate DESC', true, 'CloseDate', Utilities.SortOrder.DESCENDING, false);
+
+        o = new Utilities.Ordering('CloseDate', null, false);
+        assertOrdering(o, 'CloseDate NULLS FIRST', true, 'CloseDate', Utilities.SortOrder.ASCENDING, false);
+
+        o = new Utilities.Ordering('CloseDate', null, true);
+        assertOrdering(o, 'CloseDate NULLS LAST', true, 'CloseDate', Utilities.SortOrder.ASCENDING, true);
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.ASCENDING, false);
+        assertOrdering(o, 'CloseDate ASC NULLS FIRST', true, 'CloseDate', Utilities.SortOrder.ASCENDING, false);        
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.ASCENDING, true);
+        assertOrdering(o, 'CloseDate ASC NULLS LAST', true, 'CloseDate', Utilities.SortOrder.ASCENDING, true);        
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.DESCENDING, false);
+        assertOrdering(o, 'CloseDate DESC NULLS FIRST', true, 'CloseDate', Utilities.SortOrder.DESCENDING, false);        
+
+        o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.DESCENDING, true);
+        assertOrdering(o, 'CloseDate DESC NULLS LAST', true, 'CloseDate', Utilities.SortOrder.DESCENDING, true);      
+    }  	
 }

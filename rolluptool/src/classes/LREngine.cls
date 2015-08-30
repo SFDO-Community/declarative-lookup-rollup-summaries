@@ -127,15 +127,12 @@ public class LREngine {
         
         // #0 token : SOQL projection
         String soqlProjection = ctx.lookupField.getName();
-        List<String> orderByFields = new List<String>();
-        orderByFields.add(ctx.lookupField.getName()); // ensure details records are ordered by parent record
 
         // k: detail field name, v: master field name
         Integer exprIdx = 0;
         Boolean needsCurrency = false;
         Boolean builtAggregateQuery = false;
         Set<String> selectedFields = new Set<String>();
-        Set<String> orderByFieldsSet = new Set<String>();
         Map<String, RollupSummaryField> rsfByAlais = new Map<String, RollupSummaryField>();
         for (RollupSummaryField rsf : ctx.fieldsToRoll) {
             if(rsf.operation == RollupOperation.Sum ||
@@ -161,14 +158,6 @@ public class LREngine {
                     soqlProjection += ', ' + selectField;
                     selectedFields.add(selectField);                    
                 }
-                // create order by projections
-                // i.e. Amount ASC NULLS FIRST
-                String orderByField = 
-                    rsf.detailOrderBy!=null ? rsf.detailOrderBy.getName() : rsf.detail.getName();
-                if(!orderByFieldsSet.contains(orderByField)) {
-                    orderByFields.add(orderByField);
-                    orderByFieldsSet.add(orderByField);
-                }
             }
         }
         
@@ -191,6 +180,10 @@ public class LREngine {
         // #3 Group by field
         String grpByFld = ctx.lookupField.getName();
 
+        // #4 Order by clause fields
+        // i.e. Amount ASC NULLS FIRST, Name DESC NULL LAST
+        String orderByClause = ctx.lookupField.getName() + (String.isBlank(ctx.detailOrderByClause) ? '' : (',' + ctx.detailOrderByClause));
+
         // build approprite soql for this rollup context
         String soql =
             builtAggregateQuery ? 
@@ -206,7 +199,7 @@ public class LREngine {
                         detailTblName, 
                         ctx.lookupField.getName(), 
                         whereClause, 
-                        String.join(orderByFields, ',')});
+                        orderByClause});
         System.debug('SOQL is ' + soql);
 
         // validate only?
@@ -367,7 +360,6 @@ public class LREngine {
     public class RollupSummaryField {
         public Schema.Describefieldresult master;
         public Schema.Describefieldresult detail;
-        public Schema.Describefieldresult detailOrderBy;
         public RollupOperation operation;
         public String concatenateDelimiter;
         
@@ -383,17 +375,15 @@ public class LREngine {
 
         public RollupSummaryField(Schema.Describefieldresult m, 
                                          Schema.Describefieldresult d, RollupOperation op) {
-            this(m, d, null, op, null);
+            this(m, d, op, null);
         }
 
         public RollupSummaryField(Schema.Describefieldresult m, 
-                                         Schema.Describefieldresult d, 
-                                         Schema.Describefieldresult detailOrderBy,
+                                         Schema.Describefieldresult d,
                                          RollupOperation op,
                                          String concatenateDelimiter) {
             this.master = m;
             this.detail = d;
-            this.detailOrderBy = detailOrderBy;
             this.operation = op;
             this.concatenateDelimiter = concatenateDelimiter;
             // caching these derived attrbutes for once
@@ -511,7 +501,10 @@ public class LREngine {
         
         // Where clause or filters to apply while aggregating detail records
         public String detailWhereClause;            
-        
+
+        // Order By clause to apply while aggregating detail records
+        public String detailOrderByClause;
+
         public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
                            Schema.Describefieldresult lf) {
             this(m, d, lf, '');                             
@@ -519,15 +512,26 @@ public class LREngine {
         
         public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
                            Schema.Describefieldresult lf, String detailWhereClause) {
-            this(m, d, lf, detailWhereClause, null);                             
+            this(m, d, lf, detailWhereClause, (SharingMode)null);                             
         }
 
         public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
                            Schema.Describefieldresult lf, String detailWhereClause, SharingMode sharingMode) {
+            this(m, d, lf, detailWhereClause, sharingMode, null);
+        }
+
+        public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
+                           Schema.Describefieldresult lf, String detailWhereClause, String detailOrderByClause) {
+            this(m, d, lf, detailWhereClause, null, detailOrderByClause);
+        }
+
+        public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
+                           Schema.Describefieldresult lf, String detailWhereClause, SharingMode sharingMode, String detailOrderByClause) {        
             this.master = m;
             this.detail = d;
             this.lookupField = lf;
             this.detailWhereClause = detailWhereClause;
+            this.detailOrderByClause = detailOrderByClause;
             this.fieldsToRoll = new List<RollupSummaryField>();
             this.sharingMode = sharingMode;
         }
