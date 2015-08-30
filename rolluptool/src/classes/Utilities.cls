@@ -64,6 +64,20 @@ public class Utilities {
 		return String.isEmpty(namespace) ? '' : (namespace + '__');
 	}
 
+	/**
+	 * Parse a string that follows the SOQL Order By standard
+	 * 
+	 * @param orderByClause - order by clause (not including ORDER BY keywords) following standard at https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_select_orderby.htm
+	 * @param fields - Describe Fields obtained from getDescribe().fields.getMap()
+	 *
+	 * @return list containing one LREngine.Ordering element for each field in the order by clause
+	 *
+	 * @remark In order to ensure proper case-insensitive identification of fields in the clause, the fields passed
+	 *         in MUST be generated from Describe information.  If the map is generated elsewhere or even using describe keySet()
+	 *         field identification will be case sensitive and could result in unexpected failure to parse clause
+	 *
+	 * @throw  OrderByInvalidException when order by is not in proper format or field is not found in fields
+	 **/
 	public static List<LREngine.Ordering> parseOrderByClause(String orderByClause, Map<String, Schema.SObjectField> fields)
 	{
 		if (String.isBlank(orderByClause)) {

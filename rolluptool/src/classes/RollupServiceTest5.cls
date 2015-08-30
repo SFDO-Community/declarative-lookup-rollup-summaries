@@ -248,6 +248,26 @@ private class RollupServiceTest5 {
 	}
 
 	@IsTest
+	private static void testParseOrderByFieldOnlyLowered() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('amount__c', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldOnlyMixedCase() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('aMoUnT__c', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
 	private static void testParseOrderByFieldAndASCDirection() {
 		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC', LookupChild__c.sObjectType.getDescribe().fields.getMap());
 		assertOrdering(	order, 
