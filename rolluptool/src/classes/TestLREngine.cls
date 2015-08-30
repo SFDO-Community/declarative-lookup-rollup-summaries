@@ -1170,6 +1170,28 @@ private class TestLREngine {
         System.assertEquals('Won', reloadedAcc2.get(rollupField2.master.getName()));                
     }
 
+    static testMethod void testIsAggregateOrQueryBasedRollup()
+    {
+        // map of operations with flag indicating if it is an aggregate operation
+        Map<LREngine.RollupOperation, Boolean> operations = new Map<LREngine.RollupOperation, Boolean> {
+                                                        LREngine.RollupOperation.Sum => true,
+                                                        LREngine.RollupOperation.Min => true,
+                                                        LREngine.RollupOperation.Max => true,
+                                                        LREngine.RollupOperation.Avg => true,
+                                                        LREngine.RollupOperation.Count => true,
+                                                        LREngine.RollupOperation.Count_Distinct => true,
+                                                        LREngine.RollupOperation.Concatenate => false,
+                                                        LREngine.RollupOperation.Concatenate_Distinct => false,
+                                                        LREngine.RollupOperation.First => false,
+                                                        LREngine.RollupOperation.Last => false
+                                                };
+        for (LREngine.RollupOperation op :operations.keySet()) {
+            Boolean isAggregate = operations.get(op);
+            System.assertEquals(isAggregate, LREngine.isAggregateBasedRollup(op));
+            System.assertEquals(!isAggregate, LREngine.isQueryBasedRollup(op));
+        }
+    }
+
     static private void testRollup(LREngine.RollupSummaryField rollupField, String expected1, String expected2) {
 
         prepareData();
