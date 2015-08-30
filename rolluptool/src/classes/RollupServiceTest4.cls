@@ -1034,8 +1034,8 @@ private class RollupServiceTest4 {
 		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
 		String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
 		String aggregateResultField = LookupParent__c.Colours__c.getDescribe().getName();
-		String condition = 'Amount__c > 1';
-		List<String> relationshipCriteriaFields = new List<String> { 'Amount__c', 'Name', 'Id', 'IsDeleted' };
+		String condition = LookupChild__c.Amount__c.getDescribe().getName() + ' > 1';
+		List<String> relationshipCriteriaFields = new List<String> { LookupChild__c.Amount__c.getDescribe().getName(), 'Name', 'Id', 'IsDeleted' };
 		String sharingMode = LREngine.SharingMode.User.name();
 		String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
 
