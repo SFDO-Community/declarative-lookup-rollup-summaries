@@ -1461,8 +1461,7 @@ private class RollupServiceTest4 {
 	 *		- Different AggregateResultField__c
 	 *		- Different Order By two that have no order by specified
 	 *		- Effective values for all other fields same differing only by case used
-	 *	Should result in Two (2) contexts used, two SOQL for the rollup itself and 3 DML rows (1 for each 
-	 *		parent - DLRS combines updates to identical master record ids)
+	 *	Should result in a single context used, a single SOQL for all rollups and 3 DML rows (1 for each parent)	 
 	 **/	 
 	private testmethod static void testLimitsAndContextsUsedMultipleQueryRollupsNoOrderByShareSingleContext()
 	{
