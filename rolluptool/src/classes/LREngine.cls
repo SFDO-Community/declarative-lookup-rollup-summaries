@@ -182,9 +182,7 @@ public class LREngine {
 
         // #4 Order by clause fields
         // i.e. Amount ASC NULLS FIRST, Name DESC NULL LAST
-        // in order to maintain backwards compat, if there is no orderby specified and if the context contains only one rollupsummaryfield
-        // add the detail field to the orderby.  See https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/239#issuecomment-136122959.
-        String orderByClause = ctx.lookupField.getName() + (String.isBlank(ctx.detailOrderByClause) ? (ctx.fieldsToRoll.size() == 1 ? (',' + ctx.fieldsToRoll[0].detail.getName()) : '') : (',' + ctx.detailOrderByClause));
+        String orderByClause = ctx.lookupField.getName() + (String.isBlank(ctx.detailOrderByClause) ? '' : (',' + ctx.detailOrderByClause));
 
         // build approprite soql for this rollup context
         String soql =

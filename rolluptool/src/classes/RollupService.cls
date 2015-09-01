@@ -133,7 +133,7 @@ global with sharing class RollupService
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
-		for(LREngine.Context ctx : createLREngineContexts(lookups).values())
+		for(LREngine.Context ctx : createLREngineContexts(lookups))
 		{
 			// Produce a set of master Id's applicable to this context (parent only)			
 			Set<Id> ctxMasterIds = new Set<Id>();
@@ -214,7 +214,7 @@ global with sharing class RollupService
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
-		for(LREngine.Context ctx : createLREngineContexts(lookups).values())
+		for(LREngine.Context ctx : createLREngineContexts(lookups))
 		{
 			// Produce a set of master Id's applicable to this context (parent only)			
 			Set<Id> ctxMasterIds = new Set<Id>();
@@ -341,11 +341,11 @@ global with sharing class RollupService
 		}
 			
 		// Group lookups by parent and relationship into LREngine ctx's
-		Map<String, LREngine.Context> engineCtxByParentRelationship = createLREngineContexts(lookups.values());
+		List<LREngine.Context> engineCtxByParentRelationship = createLREngineContexts(lookups.values());
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
-		for(LREngine.Context ctx : engineCtxByParentRelationship.values())
+		for(LREngine.Context ctx : engineCtxByParentRelationship)
 		{
 			Set<Id> masterIds = parentIdsByParentType.get(ctx.master.getDescribe().getName());
 			// This maybe null if the reconcilation check above to match master ID to lookup parent failed
@@ -433,7 +433,7 @@ global with sharing class RollupService
 		// Process rollup
 		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(lookupIds);
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
-		for(LREngine.Context ctx : createLREngineContexts(lookups).values())
+		for(LREngine.Context ctx : createLREngineContexts(lookups))
 		{
 			// Produce a set of master Id's applicable to this context (parent only)			
 			Set<Id> ctxMasterIds = new Set<Id>();
@@ -730,7 +730,7 @@ global with sharing class RollupService
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
-		for(LREngine.Context ctx : createLREngineContexts(runnowLookups).values())
+		for(LREngine.Context ctx : createLREngineContexts(runnowLookups))
 		{
 			// Produce a set of master Id's applicable to this context (parent only)			
 			Set<Id> ctxMasterIds = new Set<Id>();
@@ -778,76 +778,192 @@ global with sharing class RollupService
 	/**
 	 * Method takes a list of Lookups and creates the most optimum list of LREngine.Context's to execute
 	 **/
-	private static Map<String, LREngine.Context> createLREngineContexts(List<LookupRollupSummary__c> lookups)
+	private static List<LREngine.Context> createLREngineContexts(List<LookupRollupSummary__c> lookups)
 	{ 
-		// Group lookups by parent and relationship into LREngine ctx's
-		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
-		Map<SObjectType, Map<String, Schema.SObjectField>> gdFields = new Map<SObjectType, Map<String, Schema.SObjectField>>(); 	
-		Map<String, LREngine.Context> engineCtxByParentRelationship = 
-			new Map<String, LREngine.Context>();
+		// list of contexts generated
+		List<LREngine.Context> engineContexts = new List<LREngine.Context>();
+		// map of context criteria (except for order by) to a map of orderby with context		
+		Map<String, Map<String, LREngine.Context>> engineCtxByParentRelationship = 
+			new Map<String, Map<String, LREngine.Context>>();
+		// list of rollupsummaryfields that do not have a specific orderby
+		List<LookupRollupSummaryWrapper> noOrderByLookupWrappers = new List<LookupRollupSummaryWrapper>();
 		Map<Id, LookupRollupSummaryScheduleItems__c> scheduledItems = 
 			new Map<Id, LookupRollupSummaryScheduleItems__c>(); 
 		for(LookupRollupSummary__c lookup : lookups)
 		{
-			// Resolve (and cache) SObjectType's and fields for Parent and Child objects
-			SObjectType parentObjectType = gd.get(lookup.ParentObject__c);
-			if(parentObjectType==null)
-				throw RollupServiceException.invalidRollup(lookup);
-			Map<String, Schema.SObjectField> parentFields = gdFields.get(parentObjectType);
-			if(parentFields==null)
-				gdFields.put(parentObjectType, ((parentFields = parentObjectType.getDescribe().fields.getMap())));
-			SObjectType childObjectType = gd.get(lookup.ChildObject__c);
-			if(childObjectType==null)
-				throw RollupServiceException.invalidRollup(lookup);
-			Map<String, Schema.SObjectField> childFields = gdFields.get(childObjectType);
-			if(childFields==null)
-				gdFields.put(childObjectType, ((childFields = childObjectType.getDescribe().fields.getMap())));
-			SObjectField fieldToAggregate = childFields.get(lookup.FieldToAggregate__c);
-			SObjectField relationshipField = childFields.get(lookup.RelationshipField__c);
-			SObjectField aggregateResultField = parentFields.get(lookup.AggregateResultField__c);
-			if(fieldToAggregate==null || relationshipField==null || aggregateResultField==null)
-				throw RollupServiceException.invalidRollup(lookup);
-			
-			// Summary field definition used by LREngine
-			LREngine.RollupSummaryField rsf = 
-	            new LREngine.RollupSummaryField(
-					aggregateResultField.getDescribe(),
-					fieldToAggregate.getDescribe(),
-					RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c),
-	            	lookup.ConcatenateDelimiter__c);
+			// if no order is specified, we'll defer context identification until after we build contexts for
+			// all the lookups that contain a specific order by
+			LookupRollupSummaryWrapper lookupWrapper = createLSFWrapper(lookup);
+			if (!lookupWrapper.OrderByRequired) {
+				// add to the list of lookups that do not have an order by specified
+				noOrderByLookupWrappers.add(lookupWrapper);
+			} else {
+				// Note that context key here will not include the order by
+				String contextKey = getContextKey(lookupWrapper);
+				// obtain the map of orderby to context based on contextKey
+				Map<String, LREngine.Context> lreContextByOrderBy = engineCtxByParentRelationship.get(contextKey);
+				// if we don't have a map yet, create it
+				if (lreContextByOrderBy == null) {
+					lreContextByOrderBy = new Map<String, LREngine.Context>();
+					engineCtxByParentRelationship.put(contextKey, lreContextByOrderBy);
+				}
+				String orderBy = lookupWrapper.OrderByClause; // this will be the FieldToOrderBy__c from the LookupRollupSummary__c
+				// Lowering case on Describable fields is only required for Legacy purposes since LookupRollupSummary__c records
+				// will be updated with describe names on insert/update moving forward.				
+				String orderByKey = orderBy.toLowerCase();
+				// obtain the context for this orderby key
+				LREngine.Context lreContext = lreContextByOrderBy.get(orderByKey);
+				// if not context yet, create one
+				if(lreContext==null)
+				{								
+					// Construct LREngine.Context
+					lreContext = createContext(lookupWrapper);
+					lreContextByOrderBy.put(orderByKey, lreContext);
+					engineContexts.add(lreContext);
+				}				
+				// Add the rollup summary field to the context
+				lreContext.add(lookupWrapper.RollupSummaryField);
+			}
+		}
 
-	        // Apply sharing rules when calculating the rollup?
-			LREngine.SharingMode sharingMode = 
-				lookup.CalculationSharingMode__c == null || lookup.CalculationSharingMode__c == 'User' ?
-					LREngine.SharingMode.User : LREngine.SharingMode.System_x;
+		// now that we have contexts built for all lookups that have a specific order by
+		// we iterate those that do not and pick the first one that matches all other criteria
+		// if there is not one that matches other criteria, we create a new context
+		if (!noOrderByLookupWrappers.isEmpty())
+		{
+			// loop through our list of lookups that do not have an orderby specified
+			for (LookupRollupSummaryWrapper lookupWrapper :noOrderByLookupWrappers)
+			{
+				// Note that context key here will not include the order by
+				String contextKey = getContextKey(lookupWrapper);			
+				// obtain the map of orderby to context based on contextKey
+				Map<String, LREngine.Context> lreContextByOrderBy = engineCtxByParentRelationship.get(contextKey);
+				// if we don't have a map yet, create it
+				if (lreContextByOrderBy == null) {
+					lreContextByOrderBy = new Map<String, LREngine.Context>();
+					engineCtxByParentRelationship.put(contextKey, lreContextByOrderBy);
+				}
 
-			// Determine if an LREngine Context has been created for this parent child relationship, filter combination or underlying query type and sharing mode?
-			String rsfType = rsf.isAggregateBasedRollup() ? 'aggregate' : 'query';
-			String orderBy = String.isBlank(Lookup.FieldToOrderBy__c) ? '' : Lookup.FieldToOrderBy__c;
-			// Lowering case on Describable fields is only required for Legacy purposes since LookupRollupSummary__c records
-			// will be updated with describe names on insert/update moving forward.
-			// Ideally this would not be needed to save CPU cycles but including to ensure context is properly re-used when possible for
-			// rollups that have not been updated/inserted after the insert/update enhancement is applied
-			// Unable to lower RelationShipCriteria__c because of field value case-(in)sensitivity configuration
-			String contextKey = lookup.ParentObject__c.toLowerCase() + '#' + lookup.RelationshipField__c.toLowerCase() + '#' + lookup.RelationShipCriteria__c + '#' + rsfType + '#' + sharingMode + '#' + orderBy.toLowerCase();
+				LREngine.Context lreContext = null;
+				if (lreContextByOrderBy.isEmpty()) 
+				{
+					// if we do not have any contexts yet then create one					
+					// when created, the OrderBy on the context will be set null since no order by was specified
+					// Construct LREngine.Context
+					lreContext = createContext(lookupWrapper);
+					// ensure key is lowered
+					lreContextByOrderBy.put('####NOORDERBY####', lreContext);
+					engineContexts.add(lreContext);
+				} 
+				else 
+				{
+					// since no orderby was specified we can execute in a non-deterministic manner
+					// so for that reason we'll just grab the first one
+					// Note - In an effort to support some backwards compat here, we could try to find a context
+					//        whos first orderby field (ASC NULLS FIRST) matches this lookups FieldToAggregate__c
+					//        however for performance reasons, we'll forgo that and just pick the first
+					lreContext = lreContextByOrderBy.values()[0];
+				}
 
-			LREngine.Context lreContext = engineCtxByParentRelationship.get(contextKey);
-			if(lreContext==null)
-			{								
-				// Construct LREngine.Context
-				lreContext = new LREngine.Context(
-					parentObjectType, // parent object
-                    childObjectType,  // child object                    
-                    relationshipField.getDescribe(), // relationship field name
-                    lookup.RelationShipCriteria__c,
-                    sharingMode,
-                    lookup.FieldToOrderBy__c); 
-				engineCtxByParentRelationship.put(contextKey, lreContext);
-			}				
-			// Add the lookup
-			lreContext.add(rsf);
-		}		
-		return engineCtxByParentRelationship;
+				// Add the rollup summary field to the context
+				lreContext.add(lookupWrapper.RollupSummaryField);				
+			}
+		}
+
+		return engineContexts;
+	}
+
+	private static LREngine.Context createContext(LookupRollupSummaryWrapper lookupWrapper)
+	{
+		return new LREngine.Context(
+						lookupWrapper.ParentObjectType, // parent object
+	                    lookupWrapper.ChildObjectType,  // child object                    
+	                    lookupWrapper.RelationshipField.getDescribe(), // relationship field name
+	                    lookupWrapper.Lookup.RelationShipCriteria__c,
+	                    lookupWrapper.SharingMode,
+	                    lookupWrapper.OrderByClause);		
+	}
+
+	private static SObjectType getSObjectType(String sObjectName)
+	{
+		fflib_SObjectDescribe describe = fflib_SObjectDescribe.getDescribe(sObjectName);
+		return (describe == null) ? null : describe.getSObjectType();
+
+	}
+
+	private static Map<String, Schema.SObjectField> getSObjectTypeFields(SObjectType sObjectType)
+	{
+		return fflib_SObjectDescribe.getDescribe(sObjectType).getFieldsMap();
+	}
+
+	private class LookupRollupSummaryWrapper
+	{
+		public LookupRollupSummary__c Lookup;		
+		public Schema.SObjectType ParentObjectType;
+		public Schema.SObjectType ChildObjectType;
+		public Schema.SObjectField FieldToAggregate;		
+		public Schema.SObjectField RelationshipField;
+		public Schema.SObjectField AggregateResultField;
+		public LREngine.SharingMode SharingMode;
+		public Boolean OrderByRequired; // true if FieldToOrderBy__c is not blank
+		public String OrderByClause; // FieldToOrderBy__c if OrderByRequired is true; null otherwise
+		public LREngine.RollupSummaryField RollupSummaryField;
+	}
+
+	private static LookupRollupSummaryWrapper createLSFWrapper(LookupRollupSummary__c lookup)
+	{
+		// Resolve (and cache) SObjectType's and fields for Parent and Child objects
+		SObjectType parentObjectType = getSObjectType(lookup.ParentObject__c);
+		if(parentObjectType==null)
+			throw RollupServiceException.invalidRollup(lookup);
+		Map<String, Schema.SObjectField> parentFields = getSObjectTypeFields(parentObjectType);
+		SObjectType childObjectType = getSObjectType(lookup.ChildObject__c);
+		if(childObjectType==null)
+			throw RollupServiceException.invalidRollup(lookup);
+		Map<String, Schema.SObjectField> childFields = getSObjectTypeFields(childObjectType);
+		SObjectField fieldToAggregate = childFields.get(lookup.FieldToAggregate__c);
+		SObjectField relationshipField = childFields.get(lookup.RelationshipField__c);
+		SObjectField aggregateResultField = parentFields.get(lookup.AggregateResultField__c);
+		if(fieldToAggregate==null || relationshipField==null || aggregateResultField==null)
+			throw RollupServiceException.invalidRollup(lookup);
+
+		// Summary field definition used by LREngine
+		LREngine.RollupSummaryField rsf = 
+            new LREngine.RollupSummaryField(
+				aggregateResultField.getDescribe(),
+				fieldToAggregate.getDescribe(),
+				RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c),
+            	lookup.ConcatenateDelimiter__c);
+
+		LookupRollupSummaryWrapper wrapper = new LookupRollupSummaryWrapper();
+		wrapper.Lookup = lookup;
+		wrapper.ParentObjectType = parentObjectType;
+		wrapper.ChildObjectType = childObjectType;
+		wrapper.FieldToAggregate = fieldToAggregate;
+		wrapper.RelationshipField = relationshipField;
+		wrapper.AggregateResultField = aggregateResultField;
+		wrapper.SharingMode =
+			lookup.CalculationSharingMode__c == null || lookup.CalculationSharingMode__c == 'User' ?
+				LREngine.SharingMode.User : LREngine.SharingMode.System_x;
+		// if order by is not specified, orderby will be null else it will be FieldToOrderBy__c
+		wrapper.OrderByRequired = !String.isBlank(lookup.FieldToOrderBy__c);
+		wrapper.OrderByClause =  wrapper.OrderByRequired ? lookup.FieldToOrderBy__c : null;
+		wrapper.RollupSummaryField = rsf;
+
+		return wrapper;
+	}
+
+	private static String getContextKey(LookupRollupSummaryWrapper lookupWrapper)
+	{
+		// Context Key Based On: ParentObject__c, RelationshipField__c, RelationShipCriteria__c, rsfType, SharingMode
+		// Note we do not include OrderBy here because orderby map is contained within the map of contextKeys
+		String rsfType = lookupWrapper.RollupSummaryField.isAggregateBasedRollup() ? 'aggregate' : 'query';
+		// Lowering case on Describable fields is only required for Legacy purposes since LookupRollupSummary__c records
+		// will be updated with describe names on insert/update moving forward.
+		// Ideally this would not be needed to save CPU cycles but including to ensure context is properly re-used when possible for
+		// rollups that have not been updated/inserted after the insert/update enhancement is applied
+		// Unable to lower RelationShipCriteria__c because of field value case-(in)sensitivity configuration
+		return  (lookupWrapper.Lookup.ParentObject__c.toLowerCase() + '#' + lookupWrapper.Lookup.RelationshipField__c.toLowerCase() + '#' + lookupWrapper.Lookup.RelationShipCriteria__c + '#' + rsfType + '#' + lookupWrapper.SharingMode);
 	}
 	
 	/**

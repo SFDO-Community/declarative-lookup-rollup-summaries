@@ -1028,8 +1028,11 @@ private class RollupServiceTest4 {
 	 *		- Different FieldToAggregate__c
 	 *		- Different Order By one that has no order by specified
 	 *		- Effective values for all other fields same differing only by case used
-	 *	Should result in Two (2) contexts used, two SOQL for the rollup itself and 3 DML rows (1 for each 
+	 *	Should result in One (1) context used, one SOQL for the rollup itself and 3 DML rows (1 for each 
 	 *		parent - DLRS combines updates to identical master record ids)
+	 *
+	 * The Context will be shared because the rollup that doesn't have an orderby (Rollup B) matches all other criteria
+	 * on the other rollup (Rollup A) and therefore its added to Context for that rollup
 	 **/	 
 	private testmethod static void testLimitsAndContextsUsedMultipleQueryRollupsDifferByOperationAggResultFieldAggFieldCaseOrderByOneOrderByIsNull()
 	{
@@ -1126,23 +1129,21 @@ private class RollupServiceTest4 {
 
 		// Assert limits
 		// + One query on Rollup object
-		// + One query on LookupChild__c for rollup A
-		// + One query on LookupChild__c for rollup B
-		System.assertEquals(beforeQueries + 3, Limits.getQueries());	
+		// + One query on LookupChild__c for rollup A & B (single query because orderby matches even though one is not specified)
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
 		
 		// + Two rows for Rollup object
 		// + Nine rows for LookupChild__c for rollup A
-		// + Nine rows for LookupChild__c for rollup B
-		System.assertEquals(beforeRows + 20, Limits.getQueryRows());
+		System.assertEquals(beforeRows + 11, Limits.getQueryRows());
 
 		// + Nine rows for LookupChild__c (from the insert statement itself)
 		// + Three rows for LookupParent__c for rollup A & B (DLRS combined updates to identical master ids)
 		System.assertEquals(beforeDMLRows + 12, Limits.getDMLRows());		
 
 		// Assert rollups
-		// Note that we are able to reliably assert rollup B because even though it does not
-		// have orderby specified because it will receive a default orderby of FieldToAggregate__c since it is the only
-		// rollup in the "no order by specified" context
+		// Note that we are able to reliably assert rollup B even though it does not
+		// have orderby specified because it will end up using the same context as Rollup A because Rollup B's FieldToAggregate__c
+		// matches the first field in the orderby of Rollup A
 		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateResultField1, aggregateResultField2, parentObjectName })));
 		System.assertEquals('Blue', (String) assertParents.get(parentA.id).get(aggregateResultField1));
 		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField2));
@@ -1162,8 +1163,11 @@ private class RollupServiceTest4 {
 	 *		- Different FieldToAggregate__c	 
 	 *		- Different Order By two that have no order by specified
 	 *		- Effective values for all other fields same differing only by case used
-	 *	Should result in Two (2) contexts used, two SOQL for the rollup itself and 3 DML rows (1 for each 
+	 *	Should result in One (1) context used, one SOQL for the rollup itself and 3 DML rows (1 for each 
 	 *		parent - DLRS combines updates to identical master record ids)
+	 *
+	 * The Context will be shared because the two rollups that do not have an orderby (Rollup B and C) matches all other criteria
+	 * on the other rollup (Rollup A) and therefore are added to Context for that rollup
 	 **/	 
 	private testmethod static void testLimitsAndContextsUsedMultipleQueryRollupsDifferByOperationAggResultFieldAggFieldCaseOrderByTwoOrderByIsNullSameFieldToAggregate()
 	{
@@ -1283,27 +1287,32 @@ private class RollupServiceTest4 {
 
 		// Assert limits
 		// + One query on Rollup object
-		// + One query on LookupChild__c for rollup A
-		// + One query on LookupChild__c for rollup B and for rollup C
-		System.assertEquals(beforeQueries + 3, Limits.getQueries());	
+		// + One query on LookupChild__c for rollup A, B & C
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
 		
 		// + Three rows for Rollup object
-		// + Nine rows for LookupChild__c for rollup A
-		// + Nine rows for LookupChild__c for rollup B and for rollup C
-		System.assertEquals(beforeRows + 21, Limits.getQueryRows());
+		// + Nine rows for LookupChild__c for rollup A, B & C
+		System.assertEquals(beforeRows + 12, Limits.getQueryRows());
 
 		// + Nine rows for LookupChild__c (from the insert statement itself)
 		// + Three rows for LookupParent__c for rollup A & B & C (DLRS combined updates to identical master ids)
 		System.assertEquals(beforeDMLRows + 12, Limits.getDMLRows());		
 
 		// Assert rollups
-		// Note that we are not able to reliably assert rollups B & C because they do not have orderby specified
-		// and will share a context.  Since more than one field will be involved in context no orderby will be applied beyond
-		// the RelationshipField__c
-		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateResultField1, aggregateResultField2, parentObjectName })));
+		// Note that we are able to reliably assert rollups B & C even though they do not have an order by specified
+		// because they same the same criteria as A and therefore will be added to the same context that was created for A
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1}, {2} from {3}', new List<String>{ aggregateResultField1, aggregateResultField2, aggregateResultField3, parentObjectName })));
 		System.assertEquals('Yellow', (String) assertParents.get(parentA.id).get(aggregateResultField1));
+		System.assertEquals('lemon', (String) assertParents.get(parentA.id).get(aggregateResultField2));
+		System.assertEquals('pear', (String) assertParents.get(parentA.id).get(aggregateResultField3));
+
 		System.assertEquals('Yellow', (String) assertParents.get(parentB.id).get(aggregateResultField1));
+		System.assertEquals('lemon', (String) assertParents.get(parentB.id).get(aggregateResultField2));
+		System.assertEquals('pear', (String) assertParents.get(parentB.id).get(aggregateResultField3));
+
 		System.assertEquals('Yellow', (String) assertParents.get(parentC.id).get(aggregateResultField1));
+		System.assertEquals('lemon', (String) assertParents.get(parentC.id).get(aggregateResultField2));
+		System.assertEquals('pear', (String) assertParents.get(parentC.id).get(aggregateResultField3));		
 	}
 
 	/**
@@ -1313,8 +1322,11 @@ private class RollupServiceTest4 {
 	 *		- Different AggregateResultField__c
 	 *		- Different Order By two that have no order by specified
 	 *		- Effective values for all other fields same differing only by case used
-	 *	Should result in Two (2) contexts used, two SOQL for the rollup itself and 3 DML rows (1 for each 
+	 *	Should result in One (1) context used, one SOQL for the rollup itself and 3 DML rows (1 for each 
 	 *		parent - DLRS combines updates to identical master record ids)
+	 *
+	 * The Context will be shared because the two rollups that do not have an orderby (Rollup B and C) matches all other criteria
+	 * on the other rollup (Rollup A) and therefore are added to Context for that rollup
 	 **/	 
 	private testmethod static void testLimitsAndContextsUsedMultipleQueryRollupsDifferByOperationFieldCaseOrderByTwoOrderByIsNullDifferentFieldToAggregate()
 	{
@@ -1431,27 +1443,32 @@ private class RollupServiceTest4 {
 
 		// Assert limits
 		// + One query on Rollup object
-		// + One query on LookupChild__c for rollup A
-		// + One query on LookupChild__c for rollup B and for rollup C
-		System.assertEquals(beforeQueries + 3, Limits.getQueries());	
+		// + One query on LookupChild__c for rollup A, B & C
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
 		
 		// + Three rows for Rollup object
-		// + Nine rows for LookupChild__c for rollup A
-		// + Nine rows for LookupChild__c for rollup B and for rollup C
-		System.assertEquals(beforeRows + 21, Limits.getQueryRows());
+		// + Nine rows for LookupChild__c for rollup A, B & C
+		System.assertEquals(beforeRows + 12, Limits.getQueryRows());
 
 		// + Nine rows for LookupChild__c (from the insert statement itself)
 		// + Three rows for LookupParent__c for rollup A & B & C (DLRS combined updates to identical master ids)
 		System.assertEquals(beforeDMLRows + 12, Limits.getDMLRows());		
 
 		// Assert rollups
-		// Note that we are not able to reliably assert rollups B & C because they do not have orderby specified
-		// and will share a context.  Since more than one field will be involved in context no orderby will be applied beyond
-		// the RelationshipField__c
-		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateResultField1, aggregateResultField2, parentObjectName })));
+		// Note that we are able to reliably assert rollups B & C even though they do not have an order by specified
+		// because they same the same criteria as A and therefore will be added to the same context that was created for A
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1}, {2} from {3}', new List<String>{ aggregateResultField1, aggregateResultField2, aggregateResultField3, parentObjectName })));
 		System.assertEquals('apple', (String) assertParents.get(parentA.id).get(aggregateResultField1));
+		System.assertEquals('pear', (String) assertParents.get(parentA.id).get(aggregateResultField2));
+		System.assertEquals('Blue', (String) assertParents.get(parentA.id).get(aggregateResultField3));
+
 		System.assertEquals('apple', (String) assertParents.get(parentB.id).get(aggregateResultField1));
+		System.assertEquals('pear', (String) assertParents.get(parentB.id).get(aggregateResultField2));
+		System.assertEquals('Blue', (String) assertParents.get(parentB.id).get(aggregateResultField3));
+
 		System.assertEquals('apple', (String) assertParents.get(parentC.id).get(aggregateResultField1));
+		System.assertEquals('pear', (String) assertParents.get(parentC.id).get(aggregateResultField2));
+		System.assertEquals('Blue', (String) assertParents.get(parentC.id).get(aggregateResultField3));
 	}
 
 	/**
@@ -1631,8 +1648,8 @@ private class RollupServiceTest4 {
 
 		// Assert rollups
 		// Note that we are not able to reliably assert rollups A, B, C, D & E because they do not have orderby specified
-		// and will share a context.  Since more than one field will be involved in context no orderby will be applied beyond
-		// the RelationshipField__c
+		// and will share a context.  Contexts generated for "no orderby specified" do not have an orderby
+		// and therefore we cannot assert values since order is non-deterministic
 		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateResultField1, aggregateResultField2, parentObjectName })));
 		System.assertEquals(parents.size(), assertParents.size());
 	}	
