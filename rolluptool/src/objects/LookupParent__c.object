@@ -83,6 +83,26 @@
         <visibleLines>4</visibleLines>
     </fields>
     <fields>
+        <fullName>Descriptions2__c</fullName>
+        <externalId>false</externalId>
+        <label>Descriptions 2</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Descriptions__c</fullName>
+        <externalId>false</externalId>
+        <label>Descriptions</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>Total2__c</fullName>
         <externalId>false</externalId>
         <label>Total 2</label>
