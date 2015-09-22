@@ -27,7 +27,7 @@
 /**
  * Handles the Manage Trigger and Calculate Custom Buttons
  **/
-public with sharing class RollupController 
+public with sharing class RollupController
 {
 	public String ZipData { get; set; }	
 	
@@ -123,10 +123,7 @@ public with sharing class RollupController
 		else
 		{
 			// Namespace?
-			Schema.DescribeSObjectResult describe = LookupRollupSummary__c.sObjectType.getDescribe();
-			String name = describe.getName();
-			String localName = describe.getLocalName();
-			String namespace = name.removeEnd(localName).removeEnd('__');					
+			String namespace = Utilities.namespace();
 			// Deploy generated code
 			return
 			 	'/**\n' +
@@ -135,10 +132,15 @@ public with sharing class RollupController
 				'@IsTest\n' +	 
 			    'private class ' + RollupTriggerTestName + '\n' +  
 				'{\n' + 
-				'    private static testmethod void testTrigger()\n' +
+					 (RollupSummary.TestCodeSeeAllData__c == true ? '    @IsTest(SeeAllData=true)\n' : '    @IsTest\n') +
+				'    private static void testTrigger()\n' +
 				'    {\n' + 
-				'        // Force the ' + RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-				'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ChildObject__c + '());\n'+
+					((RollupSummary.TestCode__c!=null && RollupSummary.TestCode__c.length()>0) ? 
+						RollupSummary.TestCode__c + '\n' : 
+						(
+							'        // Force the ' + RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
+							'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ChildObject__c + '());\n')
+						) +
 				'    }\n' +
 				'}';			
 		}
@@ -164,10 +166,7 @@ public with sharing class RollupController
 		else
 		{
 			// Namespace?
-			Schema.DescribeSObjectResult describe = LookupRollupSummary__c.sObjectType.getDescribe();
-			String name = describe.getName();
-			String localName = describe.getLocalName();
-			String namespace = name.removeEnd(localName).removeEnd('__');					
+			String namespace = Utilities.namespace();
 			// Deploy generated code		
 			return 
 				'/**\n' +
@@ -188,6 +187,8 @@ public with sharing class RollupController
 		// Deploy zip file posted back from the page action function				
 		MetadataService.MetadataPort service = createService();
 		MetadataService.DeployOptions deployOptions = new MetadataService.DeployOptions();
+		deployOptions.testLevel = 'RunSpecifiedTests';
+        deployOptions.runTests = new List<String> { RollupTriggerTestName };
         deployOptions.allowMissingFiles = false;
         deployOptions.autoUpdatePackage = false;
         deployOptions.checkOnly = false;
@@ -195,8 +196,6 @@ public with sharing class RollupController
         deployOptions.performRetrieve = false;
         deployOptions.purgeOnDelete = false;
         deployOptions.rollbackOnError = true;
-        deployOptions.runAllTests = false;
-        deployOptions.runTests = null;
         deployOptions.singlePackage = true;		
 		AsyncResult = service.deploy(ZipData, DeployOptions);		
 		return null;
@@ -206,61 +205,52 @@ public with sharing class RollupController
 	{	
 		// Check the status of the retrieve request
 		MetadataService.MetadataPort service = createService();
-		MetadataService.AsyncResult[] aysncResults = service.checkStatus(new String[] { AsyncResult.Id });
-		if(aysncResults[0].done)
+		MetadataService.DeployResult deployResult = service.checkDeployStatus(AsyncResult.Id, true);
+		if(deployResult.done)
 		{
-			// Errors?
-			if(aysncResults[0].state == 'Error')
-			{
-			 	ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, aysncResults[0].message));
-				AsyncResult = null;				
-			}
-			else
-			{
-				ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, Deployed ? 'Remove complete.' : 'Deployment complete.'));
+			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, Deployed ? 'Remove complete.' : 'Deployment complete.'));
 
-				// Deployment errors?
-				MetadataService.DeployResult deployResult = service.checkDeployStatus(AsyncResult.Id);
-				for(MetadataService.DeployMessage deployMessage : deployResult.messages)
+			// Deployment errors?
+			if(deployResult.details!=null && deployResult.details.componentFailures!=null)
+				for(MetadataService.DeployMessage deployMessage : deployResult.details.componentFailures)
 					if(deployMessage.problem!=null)
 						ApexPages.addMessage(
 							new ApexPages.Message(ApexPages.Severity.Error, 
 								deployMessage.fileName + 
 									' (Line: ' + deployMessage.lineNumber + ': Column:' + deployMessage.columnNumber + ') : ' + 
 										deployMessage.problem));
-				// Test errors?
-				MetadataService.RunTestsResult runTestResult = deployResult.runTestResult;
-				if(runTestResult.numFailures > 0)
-					for(MetadataService.RunTestFailure testFailure : runTestResult.failures)
-						ApexPages.addMessage(
-							new ApexPages.Message(ApexPages.Severity.Error, 
-								testFailure.name + '.' + testFailure.methodName + ' ' + testFailure.message + ' ' + testFailure.stackTrace));
-				// Code coverage warnings?
-				if(runTestResult.codeCoverageWarnings!=null)
-					for(MetadataService.CodeCoverageWarning codeCoverageWarning : runTestResult.codeCoverageWarnings)
-						ApexPages.addMessage(
-							new ApexPages.Message(ApexPages.Severity.Warning, 
-								(codeCoverageWarning.namespace!=null ? codeCoverageWarning.namespace+'.' : '') +
-								codeCoverageWarning.name + ':' +
-								codeCoverageWarning.message));
-				
-				AsyncResult = null;
-				
-				// If this was an undeploy and was successful?
-				if(Deployed && !ApexPages.hasMessages(ApexPages.Severity.Error))
-				{
-					// Determine active rollups for this child and deactivate them
-					List<LookupRollupSummary__c> rollups = 
-						new RollupSummariesSelector().selectActiveByChildObject(
-							RollupSummaries.CalculationMode.Realtime, new Set<String> { RollupSummary.ChildObject__c });
-					for(LookupRollupSummary__c rollup : rollups)
-						rollup.Active__c = false;
-					update rollups;
-				}
-				
-				// Initialise view state to try again
-				init();
+			// Test errors?
+			MetadataService.RunTestsResult runTestResult = deployResult.details.runTestResult;
+			if(runTestResult.numFailures > 0)
+				for(MetadataService.RunTestFailure testFailure : runTestResult.failures)
+					ApexPages.addMessage(
+						new ApexPages.Message(ApexPages.Severity.Error, 
+							testFailure.name + '.' + testFailure.methodName + ' ' + testFailure.message + ' ' + testFailure.stackTrace));
+			// Code coverage warnings?
+			if(runTestResult.codeCoverageWarnings!=null)
+				for(MetadataService.CodeCoverageWarning codeCoverageWarning : runTestResult.codeCoverageWarnings)
+					ApexPages.addMessage(
+						new ApexPages.Message(ApexPages.Severity.Warning, 
+							(codeCoverageWarning.namespace!=null ? codeCoverageWarning.namespace+'.' : '') +
+							codeCoverageWarning.name + ':' +
+							codeCoverageWarning.message));
+			
+			AsyncResult = null;
+			
+			// If this was an undeploy and was successful?
+			if(Deployed && !ApexPages.hasMessages(ApexPages.Severity.Error))
+			{
+				// Determine active rollups for this child and deactivate them
+				List<LookupRollupSummary__c> rollups = 
+					new RollupSummariesSelector().selectActiveByChildObject(
+						RollupSummaries.CalculationMode.Realtime, new Set<String> { RollupSummary.ChildObject__c });
+				for(LookupRollupSummary__c rollup : rollups)
+					rollup.Active__c = false;
+				update rollups;
 			}
+			
+			// Initialise view state to try again
+			init();
 		}
 		else
 		{

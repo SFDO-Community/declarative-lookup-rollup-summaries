@@ -99,6 +99,10 @@
                 <field>CalculationMode__c</field>
             </layoutItems>
             <layoutItems>
+                <behavior>Required</behavior>
+                <field>CalculationSharingMode__c</field>
+            </layoutItems>
+            <layoutItems>
                 <behavior>Readonly</behavior>
                 <field>CalculateJobId__c</field>
             </layoutItems>
@@ -128,6 +132,23 @@
             <layoutItems>
                 <behavior>Edit</behavior>
                 <field>Description__c</field>
+            </layoutItems>
+        </layoutColumns>
+        <style>OneColumn</style>
+    </layoutSections>
+    <layoutSections>
+        <customLabel>true</customLabel>
+        <detailHeading>true</detailHeading>
+        <editHeading>true</editHeading>
+        <label>Advanced</label>
+        <layoutColumns>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>TestCode__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>TestCodeSeeAllData__c</field>
             </layoutItems>
         </layoutColumns>
         <style>OneColumn</style>

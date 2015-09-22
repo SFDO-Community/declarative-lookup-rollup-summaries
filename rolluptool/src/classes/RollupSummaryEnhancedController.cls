@@ -29,7 +29,7 @@
  *
  * https://github.com/afawcett/declarative-lookup-rollup-summaries/pull/15
  **/
-public class RollupSummaryEnhancedController {
+public with sharing class RollupSummaryEnhancedController {
 	private ApexPages.StandardController controller {get; set;}
 	private LookupRollupSummary__c rus;
 	private Set<String> numeric;

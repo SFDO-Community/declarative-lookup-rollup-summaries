@@ -27,6 +27,7 @@
 public with sharing class RollupCalculateController 
 {
 	private ApexPages.StandardController standardController;
+	public String masterObjectWhere { get; set; }
 	
 	public RollupCalculateController(ApexPages.StandardController standardController)
 	{
@@ -42,7 +43,7 @@ public with sharing class RollupCalculateController
 		try
 		{
 			// Kickoff the calculate job for this lookup
-			RollupService.runJobToCalculate(standardController.getId());
+			RollupService.runJobToCalculate(standardController.getId(), this.masterObjectWhere);
 			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Calculate job started for this lookup.'));
 		}
 		catch (Exception e)

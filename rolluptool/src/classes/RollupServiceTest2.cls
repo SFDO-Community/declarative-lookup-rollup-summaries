@@ -207,27 +207,34 @@ private with sharing class RollupServiceTest2
 		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
 		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));			
 	}
-	
+
 	private testmethod static void testScheduleItemsAndLogs()
 	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
-		
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Total__c.getDescribe().getName();
+
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Test Rollup';
-		rollupSummary.ParentObject__c = 'dlrs__LookupParent__c';
-		rollupSummary.ChildObject__c = 'dlrs__LookupChild__c';
-		rollupSummary.RelationShipField__c = 'dlrs__LookupParent__c';
-		rollupSummary.FieldToAggregate__c = 'dlrs__Amount__c';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
 		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
-		rollupSummary.AggregateResultField__c = 'dlrs__Total__c';
+		rollupSummary.AggregateResultField__c = aggregateResultField;
 		rollupSummary.Active__c = true;
-		rollupSummary.CalculationMode__c = 'Scheduled';	
+		rollupSummary.CalculationMode__c = 'Scheduled';
 		insert rollupSummary;
-		
+
 		// Insert parents
-		Schema.SObjectType parentType = Schema.getGlobalDescribe().get('dlrs__LookupParent__c');
 		SObject parentA = parentType.newSObject();
 		parentA.put('Name', 'ParentA');
 		SObject parentB = parentType.newSObject();
@@ -236,37 +243,36 @@ private with sharing class RollupServiceTest2
 		parentC.put('Name', 'ParentC');
 		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
 		insert parents;
-		
+
 		// Insert children
-		Schema.SObjectType childType = Schema.getGlobalDescribe().get('dlrs__LookupChild__c');
 		List<SObject> children = new List<SObject>();
-		for(SObject parent : parents)		
+		for(SObject parent : parents)
 		{
 			String name = (String) parent.get('Name');
 			SObject child1 = childType.newSObject();
-			child1.put('dlrs__LookupParent__c', parent.Id);
-			child1.put('dlrs__Amount__c', 20);
-			children.add(child1);				
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 20);
+			children.add(child1);
 			SObject child2 = childType.newSObject();
-			child2.put('dlrs__LookupParent__c', parent.Id);
-			child2.put('dlrs__Amount__c', 20);
-			children.add(child2);				
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 20);
+			children.add(child2);
 			if(name.equals('ParentA') || name.equals('ParentB'))
 			{
 				SObject child3 = childType.newSObject();
-				child3.put('dlrs__LookupParent__c', parent.Id);
-				child3.put('dlrs__Amount__c', 2);
-				children.add(child3);				
+				child3.put(relationshipField, parent.Id);
+				child3.put(aggregateField, 2);
+				children.add(child3);
 			}
 		}
 		insert children;
-		
+
 		// Assert scheduled items and log records
 		System.assertEquals(3, [select id from LookupRollupSummaryScheduleItems__c].size());
 		System.assertEquals(0, [select id from LookupRollupSummaryLog__c].size());
-		
+
 		// Run rollup job
-		Test.startTest();		
+		Test.startTest();
 		RollupService.runJobToProcessScheduledItems();
 		try {
 			// Assert not able to run more than one scheduled job at a time
@@ -274,40 +280,47 @@ private with sharing class RollupServiceTest2
 			System.assert(false, 'Expected exception');
 		} catch(Exception e) {
 			System.assertEquals('A previous Declarative Rollup Summary scheduled job \'RollupJob\' is still running, this scheduled execution will not occur.', e.getMessage());
-		} 
+		}
 		Test.stopTest();
 		// Assert the selector now reports the job is no longer running
 		System.assertEquals(false, new AsyncApexJobsSelector().jobsExecuting(new Set<String> { 'RollupJob' }));
-		
+
 		// Assert scheduled items and log records
 		List<LookupRollupSummaryLog__c> logs = [select id, ParentId__c, ParentObject__c, ErrorMessage__c from LookupRollupSummaryLog__c];
 		System.assertEquals(parentC.Id, logs[0].ParentId__c);
-		System.assertEquals('dlrs__LookupParent__c', logs[0].ParentObject__c);
+		System.assertEquals(parentObjectName, logs[0].ParentObject__c);
 		System.assertEquals(1, logs.size());
-		System.assertEquals('The answer is not 42! : FIELD_CUSTOM_VALIDATION_EXCEPTION (dlrs__Total__c)', logs[0].ErrorMessage__c);		
+		System.assertEquals('The answer is not 42! : FIELD_CUSTOM_VALIDATION_EXCEPTION (' + aggregateResultField + ')', logs[0].ErrorMessage__c);
 		System.assertEquals(1, [select id from LookupRollupSummaryScheduleItems__c].size());
 	}
-	
+
 	private testmethod static void testScheduleItemsAndLogsCleanup()
 	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Total__c.getDescribe().getName();
 		
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Test Rollup';
-		rollupSummary.ParentObject__c = 'dlrs__LookupParent__c';
-		rollupSummary.ChildObject__c = 'dlrs__LookupChild__c';
-		rollupSummary.RelationShipField__c = 'dlrs__LookupParent__c';
-		rollupSummary.FieldToAggregate__c = 'dlrs__Amount__c';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
 		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
-		rollupSummary.AggregateResultField__c = 'dlrs__Total__c';
+		rollupSummary.AggregateResultField__c = aggregateResultField;
 		rollupSummary.Active__c = true;
 		rollupSummary.CalculationMode__c = 'Scheduled';	
 		insert rollupSummary;
 		
 		// Insert parents
-		Schema.SObjectType parentType = Schema.getGlobalDescribe().get('dlrs__LookupParent__c');
 		SObject parentA = parentType.newSObject();
 		parentA.put('Name', 'ParentA');
 		SObject parentB = parentType.newSObject();
@@ -318,22 +331,21 @@ private with sharing class RollupServiceTest2
 		insert parents;
 		
 		// Insert children
-		Schema.SObjectType childType = Schema.getGlobalDescribe().get('dlrs__LookupChild__c');
 		List<SObject> children = new List<SObject>();
 		for(SObject parent : parents)		
 		{
 			String name = (String) parent.get('Name');
 			SObject child1 = childType.newSObject();
-			child1.put('dlrs__LookupParent__c', parent.Id);
-			child1.put('dlrs__Amount__c', 20);
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 20);
 			children.add(child1);				
 			SObject child2 = childType.newSObject();
-			child2.put('dlrs__LookupParent__c', parent.Id);
-			child2.put('dlrs__Amount__c', 20);
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 20);
 			children.add(child2);				
 			SObject child3 = childType.newSObject();
-			child3.put('dlrs__LookupParent__c', parent.Id);
-			child3.put('dlrs__Amount__c', 2);
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField, 2);
 			children.add(child3);				
 		}
 		insert children;
@@ -345,8 +357,8 @@ private with sharing class RollupServiceTest2
 		// Insert dummy log record for Parent C (emulate position left from above test)
 		insert new LookupRollupSummaryLog__c(
 				ParentId__c = parentC.id,
-				ParentObject__c = 'dlrs__LookupParent__c',
-				ErrorMessage__c = 'The answer is not 42! : FIELD_CUSTOM_VALIDATION_EXCEPTION (dlrs__Total__c)'
+				ParentObject__c = parentObjectName,
+				ErrorMessage__c = 'The answer is not 42! : FIELD_CUSTOM_VALIDATION_EXCEPTION (' + aggregateResultField + ')'
 			);
 		
 		// Run rollup job
@@ -358,7 +370,7 @@ private with sharing class RollupServiceTest2
 		System.assertEquals(0, [select id, ParentId__c, ErrorMessage__c from LookupRollupSummaryLog__c].size());		
 		System.assertEquals(0, [select id from LookupRollupSummaryScheduleItems__c].size());
 	}
-	
+
 	/**
 	 * Test to reproduce issue raised here, https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/11 
 	 **/

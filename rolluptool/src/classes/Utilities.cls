@@ -1,5 +1,5 @@
 /**
- * Copyright (c), Andrew Fawcett,
+ * Copyright (c) 2013, Andrew Fawcett
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, 
@@ -24,78 +24,43 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-public virtual with sharing class StringBuilder
-{
-	protected String m_stringValue;
-	
-	public StringBuilder() {}
-	
-	public StringBuilder(List<String> values)
+public class Utilities {
+	/**
+	 * Get the namespace of this package
+	 **/
+	public static String namespace()
 	{
-		add(values);
-	}
-	
-	public virtual void add(List<String> values)
-	{
-		for(String value : values)
-			add(value);
+		Schema.DescribeSObjectResult describe = LookupRollupSummary__c.sObjectType.getDescribe();
+		String name = describe.getName();
+		String localName = describe.getLocalName();
+		String namespace = name.removeEnd(localName).removeEnd('__');
+		return namespace;
 	}
 
-	public virtual void add(String value)
+	/**
+	 * Get the component prefix based on the current namespace
+	 **/
+	public static String componentPrefix()
 	{
-		m_stringValue = ( m_stringValue==null ? value : m_stringValue + value );
+		String namespace = namespace();
+		return String.isEmpty(namespace) ? '' : (namespace + '_');
 	}
 
-	public virtual String getStringValue()
+	/**
+	 * Get the class prefix based on the current namespace
+	 **/
+	public static String classPrefix()
 	{
-		return m_stringValue;
+		String namespace = namespace();
+		return String.isEmpty(namespace) ? '' : (namespace + '.');
 	}
 
-
-	/** Subclasses **/
-
-	public virtual with sharing class CSVBuilder extends StringBuilder
+	/**
+	 * Get the object prefix based on the current namespace
+	 **/
+	public static String objectPrefix()
 	{
-		public CSVBuilder() {}
-
-		public CSVBuilder(List<String> values)
-		{
-			super(values);
-		}
-		
-		public virtual override void add(String value)
-		{
-			m_stringValue = ( m_stringValue==null ? '{0}' + value : m_stringValue + ',{0}' + value );
-		}
-		
-		public override String getStringValue()
-		{
-			return getStringValue('');
-		}
-		
-		public String getStringValue(String itemPrefix)
-		{
-			return m_stringValue==null ? null : String.format(m_stringValue,new List<String>{itemPrefix});
-		}
-	}
-
-	public virtual with sharing class FieldListBuilder extends CSVBuilder
-	{
-		public FieldListBuilder(List<Schema.SObjectField> values)
-		{
-			for(Schema.SObjectField value : values)
-				add(value.getDescribe().getName());
-		}
-	}
-	
-	public with sharing class MultiCurrencyFieldListBuilder extends FieldListBuilder
-	{
-		public MultiCurrencyFieldListBuilder(List<Schema.SObjectField> values)
-		{
-			super(values);
-			
-			if(Userinfo.isMultiCurrencyOrganization())
-				add('CurrencyIsoCode');
-		}
+		String namespace = namespace();
+		return String.isEmpty(namespace) ? '' : (namespace + '__');
 	}
 }

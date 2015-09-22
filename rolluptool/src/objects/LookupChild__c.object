@@ -94,6 +94,19 @@
         <type>Picklist</type>
     </fields>
     <fields>
+        <fullName>LookupParent2__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <deprecated>false</deprecated>        
+        <externalId>false</externalId>
+        <label>Lookup Parent 2</label>
+        <referenceTo>LookupParent__c</referenceTo>
+        <relationshipLabel>Lookup Children (Lookup Parent 2)</relationshipLabel>
+        <relationshipName>LookupChildren2</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
         <fullName>LookupParent__c</fullName>
         <deleteConstraint>SetNull</deleteConstraint>
         <deprecated>false</deprecated>
@@ -113,5 +126,5 @@
     </nameField>
     <pluralLabel>Lookup Children</pluralLabel>
     <searchLayouts/>
-    <sharingModel>ReadWrite</sharingModel>
+    <sharingModel>Private</sharingModel>
 </CustomObject>

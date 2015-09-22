@@ -27,5 +27,5 @@
 trigger RollupSummariesTrigger on LookupRollupSummary__c 
 	(after delete, after insert, after update, before delete, before insert, before update) 
 {
-	SObjectDomain.triggerHandler(RollupSummaries.class);
+	fflib_SObjectDomain.triggerHandler(RollupSummaries.class);
 }

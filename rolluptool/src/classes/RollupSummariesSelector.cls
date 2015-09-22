@@ -27,8 +27,16 @@
 /**
  * Various queries for the Lookup Rollup Summary custom object
  **/
-public with sharing class RollupSummariesSelector extends SObjectSelector
+public class RollupSummariesSelector extends fflib_SObjectSelector
 {
+	public RollupSummariesSelector() { 
+		super();
+	}
+
+	public RollupSummariesSelector(boolean enforceSecurity) {
+		super(false, enforceSecurity, enforceSecurity);
+	}
+
 	public List<Schema.SObjectField> getSObjectFieldList()
 	{
 		return new List<Schema.SObjectField> {
@@ -46,7 +54,10 @@ public with sharing class RollupSummariesSelector extends SObjectSelector
 			LookupRollupSummary__c.RelationshipCriteriaFields__c,
 			LookupRollupSummary__c.RelationshipField__c,
 			LookupRollupSummary__c.CalculateJobId__c,
-			LookupRollupSummary__c.UniqueName__c
+			LookupRollupSummary__c.UniqueName__c,
+			LookupRollupSummary__c.CalculationSharingMode__c,
+			LookupRollupSummary__c.TestCode__c,
+			LookupRollupSummary__c.TestCodeSeeAllData__c
 		};
 	}
 
@@ -72,15 +83,15 @@ public with sharing class RollupSummariesSelector extends SObjectSelector
 	 **/
 	public List<LookupRollupSummary__c> selectActiveByChildObject(List<RollupSummaries.CalculationMode> calculationModes, Set<String> childObjectNames)
 	{
-		assertIsAccessible();
 		List<String> calculationModeNames = new List<String>();
 		for(RollupSummaries.CalculationMode calculationMode : calculationModes)
 			calculationModeNames.add(calculationMode.name());
-		return Database.query(String.format(
-			'select {0} from {1} where CalculationMode__c in :calculationModeNames and ChildObject__c in :childObjectNames and Active__c = true order by ParentObject__c, RelationshipField__c', 
-				new List<String>{getFieldListString(),
-					getSObjectName(),
-					getOrderBy()}));		
+		return Database.query(
+				newQueryFactory().
+					setCondition('CalculationMode__c in :calculationModeNames and ChildObject__c in :childObjectNames and Active__c = true').
+				 	addOrdering(LookupRollupSummary__c.ParentObject__c, fflib_QueryFactory.SortOrder.ASCENDING).
+				 	addOrdering(LookupRollupSummary__c.RelationshipField__c, fflib_QueryFactory.SortOrder.ASCENDING).
+				 	toSOQL());
 	}
 
 	/**
@@ -88,12 +99,11 @@ public with sharing class RollupSummariesSelector extends SObjectSelector
 	 **/
 	public List<LookupRollupSummary__c> selectActiveByUniqueName(Set<String> uniqueNames)
 	{
-		assertIsAccessible();
-		return Database.query(String.format(
-			'select {0} from {1} where UniqueName__c in :uniqueNames and Active__c = true order by ParentObject__c, RelationshipField__c', 
-				new List<String>{getFieldListString(),
-					getSObjectName(),
-					getOrderBy()}));		
-
+		return Database.query(
+				newQueryFactory().
+					setCondition('UniqueName__c in :uniqueNames and Active__c = true').
+				 	addOrdering(LookupRollupSummary__c.ParentObject__c, fflib_QueryFactory.SortOrder.ASCENDING).
+				 	addOrdering(LookupRollupSummary__c.RelationshipField__c, fflib_QueryFactory.SortOrder.ASCENDING).
+				 	toSOQL());
 	}
 }

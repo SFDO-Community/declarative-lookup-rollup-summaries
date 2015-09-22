@@ -27,7 +27,7 @@
 /**
  * Performs various queries on the ApexTrigger object
  **/
-public with sharing class ApexTriggersSelector extends SObjectSelector
+public class ApexTriggersSelector extends fflib_SObjectSelector
 {
 	public List<Schema.SObjectField> getSObjectFieldList()
 	{
@@ -68,12 +68,11 @@ public with sharing class ApexTriggersSelector extends SObjectSelector
 	 **/
 	public Map<String, ApexTrigger> selectByName(Set<String> names)
 	{
-		assertIsAccessible();
-		List<ApexTrigger> apexTriggers = Database.query(String.format(
-			'select {0} from {1} where Name in :names order by {2}', 
-				new List<String>{getFieldListString(),
-					getSObjectName(),
-					getOrderBy()}));
+		List<ApexTrigger> apexTriggers = 
+			Database.query(
+				newQueryFactory().
+					setCondition('Name in :names').
+					toSOQL());
 		Map<String, ApexTrigger> mapByName = new Map<String, ApexTrigger>();
 		for(ApexTrigger apexTrigger : apexTriggers)
 			mapByName.put(apexTrigger.Name, apexTrigger);

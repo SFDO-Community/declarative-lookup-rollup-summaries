@@ -27,7 +27,7 @@
 /**
  * Performs various queries on the ApexClass object
  **/
-public with sharing class ApexClassesSelector extends SObjectSelector
+public class ApexClassesSelector extends fflib_SObjectSelector
 {
 	public List<Schema.SObjectField> getSObjectFieldList()
 	{
@@ -59,12 +59,11 @@ public with sharing class ApexClassesSelector extends SObjectSelector
 	 **/	
 	public Map<String, ApexClass> selectByName(Set<String> names)
 	{
-		assertIsAccessible();
-		List<ApexClass> apexClasses = Database.query(String.format(
-			'select {0} from {1} where Name in :names order by {2}', 
-				new List<String>{getFieldListString(),
-					getSObjectName(),
-					getOrderBy()}));
+		List<ApexClass> apexClasses = 
+			Database.query(
+				newQueryFactory().
+					setCondition('Name in :names').
+					toSOQL());
 		Map<String, ApexClass> mapByName = new Map<String, ApexClass>();
 		for(ApexClass apexClass : apexClasses)
 			mapByName.put(apexClass.Name, apexClass);

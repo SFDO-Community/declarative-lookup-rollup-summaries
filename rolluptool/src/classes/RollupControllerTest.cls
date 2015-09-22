@@ -25,7 +25,7 @@
 **/
 
 @IsTest
-private with sharing class RollupControllerTest 
+private class RollupControllerTest
 {
 	private testmethod static void testDeployedStatus()
 	{
@@ -155,8 +155,8 @@ private with sharing class RollupControllerTest
 		// Assert initial state of controller when the trigger for the child object is deployed
 		RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummary ));
 		System.assertEquals(false, controller.Deployed);
-		System.assertEquals('dlrs_ContactTrigger', controller.RollupTriggerName);
-		System.assertEquals('dlrs_ContactTest', controller.RollupTriggerTestName);
+		System.assertEquals(Utilities.componentPrefix() + 'ContactTrigger', controller.RollupTriggerName);
+		System.assertEquals(Utilities.componentPrefix() + 'ContactTest', controller.RollupTriggerTestName);
 		System.assertEquals(null, controller.RollupTrigger);
 		System.assertEquals(null, controller.RollupTriggerTest);
 		System.assertEquals(
@@ -166,7 +166,7 @@ private with sharing class RollupControllerTest
 				'trigger ' + controller.RollupTriggerName + ' on ' + rollupSummary.ChildObject__c + '\n' + 
 				'    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n'+ 
 				'{\n'+
-				'    dlrs.RollupService.triggerHandler();\n'+
+				'    ' + Utilities.classPrefix() + 'RollupService.triggerHandler();\n'+
 				'}\n', controller.getTriggerCode());
 		System.assertEquals(
 			 	'/**\n' +
@@ -175,10 +175,11 @@ private with sharing class RollupControllerTest
 				'@IsTest\n' +	 
 			    'private class ' + controller.RollupTriggerTestName + '\n' +  
 				'{\n' + 
-				'    private static testmethod void testTrigger()\n' +
+				'    @IsTest\n' +
+				'    private static void testTrigger()\n' +
 				'    {\n' + 
 				'        // Force the ' + controller.RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-				'        dlrs.RollupService.testHandler(new ' + rollupSummary.ChildObject__c + '());\n' +
+				'        ' + Utilities.classPrefix() + 'RollupService.testHandler(new ' + rollupSummary.ChildObject__c + '());\n' +
 				'    }\n' +
 				'}', controller.getTriggerTestCode());
 		System.assertEquals(
@@ -212,6 +213,51 @@ private with sharing class RollupControllerTest
 											
 		Test.stopTest();
 	}
+
+	private testmethod static void testWithCustomTestCode()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+    	// Metadata API web Service mock implementation for tests
+        Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+		
+		// Test data
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Contact';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
+		rollupSummary.AggregateOperation__c = 'Count';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.Active__c = false;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		rollupSummary.TestCode__c = 'System.assertEquals(1,1);';
+		rollupSummary.TestCodeSeeAllData__c = true;
+		insert rollupSummary;
+
+		// Open test context, permits callouts following DML
+		Test.startTest();
+
+		// Assert initial state of controller when the trigger for the child object is deployed
+		RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummary ));
+		System.assertEquals(
+			 	'/**\n' +
+				' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+				' **/\n' +	
+				'@IsTest\n' +	 
+			    'private class ' + controller.RollupTriggerTestName + '\n' +  
+				'{\n' + 
+				'    @IsTest(SeeAllData=true)\n' +
+				'    private static void testTrigger()\n' +
+				'    {\n' + 
+				'System.assertEquals(1,1);\n' +
+				'    }\n' +
+				'}', controller.getTriggerTestCode());
+	}	
 	
     /**
      * Metadata API web service mock class for tests above
@@ -232,14 +278,15 @@ private with sharing class RollupControllerTest
 				response_x.result.state = 'Complete';
 				response.put('response_x', response_x);
 			}			
-			else if(request instanceof MetadataService.checkStatus_element)
+			else if(request instanceof MetadataService.checkDeployStatus_element)
 			{
-				System.assertEquals('someid', ((MetadataService.checkStatus_element) request).asyncProcessId[0]);
-				MetadataService.checkStatusResponse_element response_x = new MetadataService.checkStatusResponse_element();
-				response_x.result = new List<MetadataService.AsyncResult>();
-				response_x.result.add(new MetadataService.AsyncResult());
-				response_x.result[0].done = true;
-				response_x.result[0].state = 'Complete';
+				System.assertEquals('someid', ((MetadataService.checkDeployStatus_element) request).asyncProcessId);
+				MetadataService.checkDeployStatusResponse_element response_x = new MetadataService.checkDeployStatusResponse_element();
+				response_x.result = new MetadataService.DeployResult();
+				response_x.result.details = new MetadataService.DeployDetails();
+				response_x.result.details.runTestResult = new MetadataService.RunTestsResult();
+				response_x.result.details.runTestResult.numFailures = 0;
+				response_x.result.details.componentFailures = new List<MetadataService.DeployMessage>();
 				response.put('response_x', response_x);
 			}
 			else if(request instanceof MetadataService.checkDeployStatus_element)
@@ -247,9 +294,10 @@ private with sharing class RollupControllerTest
 				System.assertEquals('someid', ((MetadataService.checkDeployStatus_element) request).asyncProcessId);
 				MetadataService.checkDeployStatusResponse_element response_x = new MetadataService.checkDeployStatusResponse_element();
 				response_x.result = new MetadataService.DeployResult(); 
-				response_x.result.runTestResult = new MetadataService.RunTestsResult();
-				response_x.result.runTestResult.numFailures = 0;
-				response_x.result.messages = new List<MetadataService.DeployMessage>();
+				response_x.result.details = new MetadataService.DeployDetails();
+				response_x.result.details.runTestResult = new MetadataService.RunTestsResult();
+				response_x.result.details.runTestResult.numFailures = 0;
+				response_x.result.details.componentFailures = new List<MetadataService.DeployMessage>();
 				response.put('response_x', response_x);
 			}
 			else if(request instanceof MetadataService.listMetadata_element)
