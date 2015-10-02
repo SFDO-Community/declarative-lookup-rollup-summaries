@@ -2,6 +2,7 @@
 <Layout xmlns="http://soap.sforce.com/2006/04/metadata">
     <customButtons>EnhancedEdit</customButtons>
     <customButtons>Calculate</customButtons>
+    <customButtons>Schedule_Calculate</customButtons>
     <customButtons>ManageChildTrigger</customButtons>
     <excludeButtons>Submit</excludeButtons>
     <layoutSections>

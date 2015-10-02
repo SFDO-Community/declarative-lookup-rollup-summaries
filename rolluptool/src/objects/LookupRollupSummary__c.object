@@ -384,4 +384,15 @@
         <page>managetrigger</page>
         <protected>false</protected>
     </webLinks>
+    <webLinks>
+        <fullName>Schedule_Calculate</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <height>600</height>
+        <linkType>page</linkType>
+        <masterLabel>Schedule Calculate</masterLabel>
+        <openType>sidebar</openType>
+        <page>rollupscheduledcalculate</page>
+        <protected>false</protected>
+    </webLinks>
 </CustomObject>

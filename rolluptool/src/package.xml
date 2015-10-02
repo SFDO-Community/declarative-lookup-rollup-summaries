@@ -36,7 +36,9 @@
         <members>MetadataService</members>
         <members>MetadataServiceTest</members>
         <members>RollupCalculateController</members>
+        <members>RollupScheduledCalculateController</members>
         <members>RollupCalculateJob</members>
+        <members>RollupCalculateJobSchedulable</members>
         <members>RollupController</members>
         <members>RollupControllerTest</members>
         <members>RollupJob</members>
@@ -73,6 +75,7 @@
         <members>rollupcalculate</members>
         <members>rollupsummaryenhanced</members>
         <members>rollupsummaryenhancednew</members>
+        <members>rollupscheduledcalculate</members>
         <members>welcome</members>
         <name>ApexPage</name>
     </types>
