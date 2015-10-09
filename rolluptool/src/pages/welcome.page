@@ -54,7 +54,7 @@ function createRemoteSite()
 		<img src="http://andrewfawcett.files.wordpress.com/2013/07/blog_chart1.jpg" width="200" height="200" align="left"/>
 		<apex:outputPanel rendered="{!MetadataConnectionWarning}">
 			<h1>Important Post Install Step:</h1> 
-			<p>In order to utlise the features of this tool you need to permit the tool access to the Salesforce Metadata API by adding a <a target="_new" href="http://na1.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL <b>https://{!Host}</b></p>
+			<p>In order to utilize the features of this tool you need to permit it to access the Salesforce Metadata API of your organization by adding a <a target="_new" href="http://na1.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL <b>https://{!Host}</b></p>
 			<p> Click the <b>Create Remote Site Setting</b> button to have the tool perform this step for you.</p>
 			<input id="createremotesitebtn" type="button" onclick="createRemoteSite();" value="Create Remote Site Setting"/>
 		</apex:outputPanel>
