@@ -219,4 +219,333 @@ private class RollupServiceTest5 {
 		System.assertEquals(1, [select AnnualRevenue from Account where id = :accountParent.Id][0].AnnualRevenue);
 		System.assertEquals(null, [select TotalOpportunityQuantity from Opportunity where id = :oppParent.Id][0].TotalOpportunityQuantity);		
 	}	
+
+	private static void assertOrdering(List<LREngine.Ordering> order, Integer numFields, List<Schema.DescribeFieldResult> fields, List<LREngine.SortOrder> directions, List<Boolean> nullsLast)
+	{
+		System.assertNotEquals(null, order);
+		System.assertEquals(numFields, order.size());
+		for (Integer i = 0; i < numFields; i++)
+		{
+			assertOrdering(order[i], fields[i], directions[i], nullsLast[i]);
+		}
+	}
+
+    private static void assertOrdering(LREngine.Ordering o, Schema.DescribeFieldResult field, LREngine.SortOrder direction, Boolean nullsLast)
+    {
+        System.assertEquals(field, o.getField());
+        System.assertEquals(direction, o.getDirection());
+        System.assertEquals(nullsLast, o.getNullsLast());
+    }
+
+	@IsTest
+	private static void testParseOrderByFieldOnly() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}
+
+	@IsTest
+	private static void testParseOrderByFieldOnlyLowered() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('amount__c', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldOnlyMixedCase() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('aMoUnT__c', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndASCDirection() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndASCDirectionLowered() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c asc', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndDESCDirection() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c DESC', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.DESCENDING },
+						new List<Boolean> { false });
+	}
+
+	@IsTest
+	private static void testParseOrderByFieldAndDESCDirectionLowered() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c desc', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.DESCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndNullsFirst() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c NULLS FIRST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndNullsFirstLowered() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c nulls first', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndNullsLast() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c NULLS LAST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { true });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndNullsLastLowered() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c nulls last', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { true });
+	}		
+
+	@IsTest
+	private static void testParseOrderByFieldAndASCDirectionAndNullsFirst() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS FIRST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndASCDirectionAndNullsLast() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS LAST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { true });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndDESCDirectionAndNullsFirst() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c DESC NULLS FIRST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.DESCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndDESCDirectionAndNullsLast() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c DESC NULLS LAST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						1, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.DESCENDING },
+						new List<Boolean> { true });
+	}		
+
+	@IsTest
+	private static void testParseOrderByMultipleFieldOnly() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c, Color__c, Name', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						3, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe(), LookupChild__c.Color__c.getDescribe(), LookupChild__c.Name.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING, LREngine.SortOrder.ASCENDING, LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false, false, false });
+	}
+
+	@IsTest
+	private static void testParseOrderByMultipleFieldAndMixedDirection() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC, Color__c DESC, Name ASC', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						3, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe(), LookupChild__c.Color__c.getDescribe(), LookupChild__c.Name.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING, LREngine.SortOrder.DESCENDING, LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { false, false, false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByMultipleFieldAndMixedDirectionAndNulls() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS LAST, Color__c DESC NULLS FIRST, Name ASC NULLS LAST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						3, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe(), LookupChild__c.Color__c.getDescribe(), LookupChild__c.Name.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING, LREngine.SortOrder.DESCENDING, LREngine.SortOrder.ASCENDING },
+						new List<Boolean> { true, false, true });
+	}
+
+	@IsTest
+	private static void testParseOrderByBadField() {
+		try {
+			List<LREngine.Ordering> order = Utilities.parseOrderByClause('BadField__c', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Field does not exist.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByBadDirection() {
+		try {
+			List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c BAD', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByBadNulls() {
+		try {
+			List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC BAD', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByMissingNulls() {
+		try {
+			List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC LAST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}	
+
+	@IsTest
+	private static void testParseOrderByBadNullsType() {
+		try {
+			List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS BAD', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByMissingNullsType() {
+		try {
+			List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}	
+
+	@IsTest
+	private static void testParseOrderByInvalidStart() {
+		try {
+			List<LREngine.Ordering> order = Utilities.parseOrderByClause('BAD Amount__c ASC NULLS FIRST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByInvalidMiddle() {
+		try {
+			List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC BAD NULLS FIRST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}	
+
+	@IsTest
+	private static void testParseOrderByInvalidEnd() {
+		try {
+			List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS FIRST BAD', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByMultipleSecondFieldInvalid() {
+		try {
+			List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS FIRST, Color__c ASC NULLS BAD, Name ASC NULLS FIRST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByMultipleThirdFieldInvalid() {
+		try {
+			List<LREngine.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS FIRST, Color__c ASC NULLS LAST, Name ASC FIRST', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}	
+
+	@IsTest
+	private static void testParseOrderByMultipleFieldWhitespaceEverywhere() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause('  	           Amount__c      		ASC        	 NULLS       	 LAST      ,   	Color__c	  DESC    NULLS      FIRST        	', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		assertOrdering(	order, 
+						2, 
+						new List<Schema.DescribeFieldResult> { LookupChild__c.Amount__c.getDescribe(), LookupChild__c.Color__c.getDescribe() },
+						new List<LREngine.SortOrder> { LREngine.SortOrder.ASCENDING, LREngine.SortOrder.DESCENDING },
+						new List<Boolean> { true, false});
+	}
+
+	@IsTest
+	private static void testParseOrderByBlankClause() {
+		List<LREngine.Ordering> order = Utilities.parseOrderByClause(null, LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		System.assertEquals(null, order);
+
+		order = Utilities.parseOrderByClause('', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		System.assertEquals(null, order);	
+
+		order = Utilities.parseOrderByClause('		 	   ', LookupChild__c.sObjectType.getDescribe().fields.getMap());
+		System.assertEquals(null, order);
+	}					
 }

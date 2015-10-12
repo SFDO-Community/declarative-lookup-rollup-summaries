@@ -1114,16 +1114,8 @@ private with sharing class RollupServiceTest
 	 * which results in non-deterministic result so a test cannot reliabily be written against
 	 * multiple rollups on same parent/child relationship when no order by is specified.
 	 */
-	private static Id setupMultiRollupDifferentTypes(RollupSummaries.AggregateOperation operationA, Schema.DescribeFieldResult orderByFieldA, RollupSummaries.AggregateOperation operationB, Schema.DescribeFieldResult orderByFieldB)
+	private static Id setupMultiRollupDifferentTypes(Map<String, String> opportunityData, RollupSummaries.AggregateOperation operationA, String orderByFieldA, RollupSummaries.AggregateOperation operationB, String orderByFieldB)
 	{
-		// Test data
-		// OpportunityName => Amount;CloseDateAddMonthsToToday;StageName
-		Map<String, String> opportunityData = new Map<String, String> {
-			'Joe' => '250;0;Open',
-			'Steve' => '50;1;Prospecting',
-			'Kim' => '100;-2;Closed Won',
-			'Charlie' => '225;-1;Needs Analysis'};
-
 		// Configure rollup A
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'First Opportunity Name into Sic on Account';
@@ -1132,7 +1124,7 @@ private with sharing class RollupServiceTest
 		rollupSummaryA.RelationShipField__c = 'AccountId';
 		rollupSummaryA.RelationShipCriteria__c = null;
 		rollupSummaryA.FieldToAggregate__c = 'StageName';
-		rollupSummaryA.FieldToOrderBy__c = orderByFieldA != null ? orderByFieldA.getName() : null;
+		rollupSummaryA.FieldToOrderBy__c = orderByFieldA;
 		rollupSummaryA.AggregateOperation__c = operationA.name();
 		rollupSummaryA.AggregateResultField__c = 'Sic';
 		rollupSummaryA.Active__c = true;
@@ -1146,7 +1138,7 @@ private with sharing class RollupServiceTest
 		rollupSummaryB.RelationShipField__c = 'AccountId';
 		rollupSummaryB.RelationShipCriteria__c = null;
 		rollupSummaryB.FieldToAggregate__c = 'Name';
-		rollupSummaryB.FieldToOrderBy__c = orderByFieldB != null ? orderByFieldB.getName() : null;
+		rollupSummaryB.FieldToOrderBy__c = orderByFieldB;
 		rollupSummaryB.AggregateOperation__c = operationB.name();
 		rollupSummaryB.AggregateResultField__c = 'Description';
 		rollupSummaryB.ConcatenateDelimiter__c = ',';
@@ -1189,24 +1181,68 @@ private with sharing class RollupServiceTest
 		if(!TestContext.isSupported())
 			return;
 
+		// Test data
+		// OpportunityName => Amount;CloseDateAddMonthsToToday;StageName
+		Map<String, String> opportunityData = new Map<String, String> {
+			'Joe' => '250;0;Open',
+			'Steve' => '50;1;Prospecting',
+			'Kim' => '100;-2;Closed Won',
+			'Charlie' => '225;-1;Needs Analysis'};
+
 		// Test data for rollup A
 		String expectedResultA = 'Closed Won';
 		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.First;
-		Schema.DescribeFieldResult orderByFieldA = Schema.SObjectType.Opportunity.fields.CloseDate;
+		String orderByClauseA = Schema.SObjectType.Opportunity.fields.CloseDate.getName();
 
 		// Test data for rollup B
 		String expectedResultB = 'Steve,Kim,Charlie,Joe';
 		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate; 
-		Schema.DescribeFieldResult orderByFieldB = Schema.SObjectType.Opportunity.fields.Amount;
+		String orderByClauseB = Schema.SObjectType.Opportunity.fields.Amount.getName();
 
 		// generate rollups and data
-		Id accountId = setupMultiRollupDifferentTypes(operationA, orderByFieldA, operationB, orderByFieldB);
+		Id accountId = setupMultiRollupDifferentTypes(opportunityData, operationA, orderByClauseA, operationB, orderByClauseB);
 
 		// Assert rollup
 		Account accountResult = Database.query('select Sic, Description from Account where Id = :accountId');
 		System.assertEquals(expectedResultA, accountResult.Sic);			
 		System.assertEquals(expectedResultB, accountResult.Description);			
 	}
+
+	/**
+	 * Test default behavior with different order by containing multiple fields on each rollup
+	 */	 
+	private testmethod static void testMultiRollupOfDifferentTypesDifferentMultipleFieldsOrderBy()
+	{		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		// Test data
+		// OpportunityName => Amount;CloseDateAddMonthsToToday;StageName
+		Map<String, String> opportunityData = new Map<String, String> {
+			'Joe' => '100;0;Open',
+			'Steve' => '100;-2;Prospecting',
+			'Kim' => '100;1;Closed Won',
+			'Charlie' => '100;-1;Needs Analysis'};
+
+		// Test data for rollup A
+		String expectedResultA = 'Prospecting';
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.First;
+		String orderByClauseA = 'Amount ASC NULLS FIRST, CloseDate ASC NULLS FIRST, Name';
+
+		// Test data for rollup B
+		String expectedResultB = 'Kim,Joe,Charlie,Steve';
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate; 
+		String orderByClauseB = 'Amount ASC NULLS FIRST, CloseDate DESC NULLS FIRST, Name';
+
+		// generate rollups and data
+		Id accountId = setupMultiRollupDifferentTypes(opportunityData, operationA, orderByClauseA, operationB, orderByClauseB);
+
+		// Assert rollup
+		Account accountResult = Database.query('select Sic, Description from Account where Id = :accountId');
+		System.assertEquals(expectedResultA, accountResult.Sic);			
+		System.assertEquals(expectedResultB, accountResult.Description);			
+	}	
 
 	private testmethod static void testPicklistRollup()
 	{		
@@ -1495,4 +1531,226 @@ private with sharing class RollupServiceTest
 		System.assertEquals(null, (String) assertParents.get(parentC.id).get(aggregateResultField1));
 		System.assertEquals(20, (Decimal) assertParents.get(parentC.id).get(aggregateResultField2));
 	}	
+
+	private testmethod static void testSingleQueryBasedRollupUpdateOrderByFieldChanged()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Colours__c.getDescribe().getName();
+		String orderByField = LookupChild__c.Amount__c.getDescribe().getName();
+
+		// Configure rollups
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.FieldToOrderBy__c = orderByField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.First.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.ConcatenateDelimiter__c = ';';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();	
+
+		List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c> { rollupSummary };
+		insert rollups;
+		
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 'Red');
+			child1.put(orderByField, 10);
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 'Yellow');
+			child2.put(orderByField, 20);
+			children.add(child2);
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField, 'Blue');
+			child3.put(orderByField, 30);
+			children.add(child3);
+		}
+		insert children;		
+
+		// Assert rollups
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals('Red', (String) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals('Red', (String) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals('Red', (String) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// change Amount__c to effect order by result of rollup
+		// this change will result in rollup being processed because it is a query based rollup
+		// and order by influences rolled up value	
+		List<SObject> childrenToUpdate = new List<SObject>();
+		for (SObject child :children)
+		{
+			Decimal orderByFieldValue = (Decimal)child.get(orderByField);
+			if (orderByFieldValue == 10) {
+				child.put(orderByField, 40);
+				childrenToUpdate.add(child);
+			}
+		}
+
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+
+		// update children
+		update childrenToUpdate;
+
+		// Assert limits
+		// + One query on Rollup object
+		// + One query on LookupChild__c for rollup	
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
+		
+		// + One row for Rollup object
+		// + Nine rows for LookupChild__c for rollup
+		System.assertEquals(beforeRows + 10, Limits.getQueryRows());
+
+		// + Three rows for LookupChild__c (from the update statement itself)
+		// + Three rows for LookupParent__c for the rollup
+		System.assertEquals(beforeDMLRows + 6, Limits.getDMLRows());		
+
+		// Assert rollups
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals('Yellow', (String) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals('Yellow', (String) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals('Yellow', (String) assertParents.get(parentC.id).get(aggregateResultField));
+	}
+
+	private testmethod static void testSingleAggregateBasedRollupUpdateOrderByFieldChanged()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Total__c.getDescribe().getName();
+		String orderByField = LookupChild__c.Color__c.getDescribe().getName();
+
+		// Configure rollups
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.FieldToOrderBy__c = orderByField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.ConcatenateDelimiter__c = ';';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();	
+
+		List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c> { rollupSummary };
+		insert rollups;
+		
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 10);
+			child1.put(orderByField, 'Red');
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 20);
+			child2.put(orderByField, 'Yellow');
+			children.add(child2);
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField, 12);
+			child3.put(orderByField, 'Blue');
+			children.add(child3);
+		}
+		insert children;		
+
+		// Assert rollups
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+
+		// change Color__c to effect order by result of rollup
+		// this change will NOT result in rollup being processed because it is a aggregate based rollup
+		// and order by does NOT influence rolled up result
+		List<SObject> childrenToUpdate = new List<SObject>();
+		for (SObject child :children)
+		{
+			String orderByFieldValue = (String)child.get(orderByField);
+			if (orderByFieldValue == 'Red') {
+				child.put(orderByField, 'Green');
+				childrenToUpdate.add(child);
+			}
+		}
+
+		// Sample various limits prior to an update
+		Integer beforeQueries = Limits.getQueries();
+		Integer beforeRows = Limits.getQueryRows();
+		Integer beforeDMLRows = Limits.getDMLRows();
+
+		// update children
+		update childrenToUpdate;
+
+		// Assert limits
+		// + One query on Rollup object
+		// No query on LookupChild__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
+		System.assertEquals(beforeQueries + 1, Limits.getQueries());	
+		
+		// + One row for Rollup object
+		// No rows on LookupChild__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed		
+		System.assertEquals(beforeRows + 1, Limits.getQueryRows());
+
+		// + Three rows for LookupChild__c (from the update statement itself)
+		// No query on LookupParent__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed		
+		System.assertEquals(beforeDMLRows + 3, Limits.getDMLRows());		
+
+		// Assert rollups
+		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+	}		
 }

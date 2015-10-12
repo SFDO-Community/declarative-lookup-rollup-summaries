@@ -539,12 +539,41 @@ global with sharing class RollupService
 			// Set of field names from the child used in the rollup to search for changes on
 			Set<String> fieldsToSearchForChanges = new Set<String>(); 
 			Set<String> relationshipFields = new Set<String>(); 
+			// keep track of fields that should trigger a rollup to be processed
+			// this avoids having to re-parse RelationshipCriteria & OrderBy fields during field change detection
+			Map<Id, Set<String>> fieldsInvolvedInLookup = new Map<Id, Set<String>>();
 			for(LookupRollupSummary__c lookup : lookups)
 			{
-				fieldsToSearchForChanges.add(lookup.FieldToAggregate__c);
-				if(lookup.RelationshipCriteriaFields__c!=null)
-					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n'))
-						fieldsToSearchForChanges.add(criteriaField);
+				Set<String> lookupFields = new Set<String>();				
+				lookupFields.add(lookup.FieldToAggregate__c);
+				if(!String.isBlank(lookup.RelationshipCriteriaFields__c)) {
+					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n')) {
+						lookupFields.add(criteriaField);
+					}
+				}
+				// only include order by fields when query based rollup (concat, first, last, etc.) since changes to them
+				// will not impact the outcome of an aggregate based rollup (sum, count, etc.)
+				if(LREngine.isQueryBasedRollup(RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c)) && !String.isBlank(lookup.FieldToOrderBy__c)) {
+					List<LREngine.Ordering> orderByFields = Utilities.parseOrderByClause(lookup.FieldToOrderBy__c, sObjectType.getDescribe().fields.getMap());
+					if (orderByFields != null && !orderByFields.isEmpty()) {
+						for (LREngine.Ordering orderByField :orderByFields) {
+							lookupFields.add(orderByField.getField().getName());
+						}
+					}
+				}
+
+				// add all lookup fields to our master list of fields to search for
+				fieldsToSearchForChanges.addAll(lookupFields);
+
+				// add relationshipfield to fields for this lookup
+				// this comes after adding to fieldsToSearchForChanges because we handle
+				// change detection separately for non-relationship fields and relationship fields
+				lookupFields.add(lookup.RelationShipField__c);
+
+				// add to map for later use
+				fieldsInvolvedInLookup.put(lookup.Id, lookupFields);
+
+				// add relationship field to master list of relationship fields
 				relationshipFields.add(lookup.RelationShipField__c);
 			}
 			
@@ -624,16 +653,14 @@ global with sharing class RollupService
 			for(LookupRollupSummary__c lookup : lookups)
 			{
 				// Are any of the changed fields used by this lookup?
-				Boolean processLookup = false; 
-				if(fieldsChanged.contains(lookup.FieldToAggregate__c) ||
-				   fieldsChanged.contains(lookup.RelationShipField__c))
-				   	processLookup = true;
-				if(lookup.RelationshipCriteriaFields__c!=null)
-					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n'))
-						if(fieldsChanged.contains(criteriaField))
-							processLookup = true;
-				if(processLookup)
-					lookupsToProcess.add(lookup);
+				Set<String> lookupFields = fieldsInvolvedInLookup.get(lookup.Id);
+				for (String lookupField :lookupFields) {
+					if (fieldsChanged.contains(lookupField)) {
+						// add lookup to be processed and exit for loop since we have our answer
+						lookupsToProcess.add(lookup);
+						break;
+					}
+				}
 			}
 			lookups = lookupsToProcess;
 			
@@ -776,7 +803,7 @@ global with sharing class RollupService
 			if(childFields==null)
 				gdFields.put(childObjectType, ((childFields = childObjectType.getDescribe().fields.getMap())));
 			SObjectField fieldToAggregate = childFields.get(lookup.FieldToAggregate__c);
-			SObjectField fieldToOrderBy = lookup.FieldToOrderBy__c!=null ? childFields.get(lookup.FieldToOrderBy__c) : null;
+			List<LREngine.Ordering> fieldsToOrderBy = Utilities.parseOrderByClause(lookup.FieldToOrderBy__c, childFields);			
 			SObjectField relationshipField = childFields.get(lookup.RelationshipField__c);
 			SObjectField aggregateResultField = parentFields.get(lookup.AggregateResultField__c);
 			if(fieldToAggregate==null || relationshipField==null || aggregateResultField==null)
@@ -787,7 +814,7 @@ global with sharing class RollupService
 	            new LREngine.RollupSummaryField(
 					aggregateResultField.getDescribe(),
 					fieldToAggregate.getDescribe(),
-					fieldToOrderBy !=null ? fieldToOrderBy.getDescribe() : null, // field to order by on child
+					fieldsToOrderBy, // field to order by on child
 					RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c),
 	            	lookup.ConcatenateDelimiter__c);
 
