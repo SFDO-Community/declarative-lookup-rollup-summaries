@@ -72,7 +72,7 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 - Bug fix [Concatenation Rollups order maybe none Deterministic - Consider moving order by from LREngine.RollupSummaryField to LREngine.Context](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/239)
 - Enhancement [Enhance Order by to allow multiple fields and specify ASC/DESC](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/216)
 
-**IMPORTANT NOTE:** This release improves the query optimisation within the tool when there are multiple rollups. There is also a small change in behaviour from previous releases, relating to default ordering. If you have been using contact, first or last operations and have not specified explicit order by on the rollup, you must do from now on. In prior releases the behaviour of this operation may or may not have been working depending on the existance of one or more rollups.
+**IMPORTANT NOTE:** This release improves the query optimisation within the tool when there are multiple rollups. There is also a small change in behaviour from previous releases, relating to default ordering. If you have been using concat, first or last operations and have not specified explicit order by on the rollup, you must do from now on, it no longer defaults to the field to rollup. In prior releases the behaviour of this operation may or may not have been consistantly working as expected, depending on the existance of one or more rollups.
 
 **Version 1.23**
 ________________
