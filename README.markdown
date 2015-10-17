@@ -63,8 +63,8 @@ You can install a packaged version of the tool into your production org (sandbox
 
 
 
-** Latest Version 1.24 **
-_________________________
+**Latest Version 1.24**
+_______________________
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QgPw), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QgPw)
 
@@ -73,8 +73,8 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 
 **IMPORTANT NOTE:** This release improves the query optimisation within the tool when there are multiple rollups. There is also a small change in behaviour from previous releases, relating to default ordering. If you have been using contact, first or last operations and have not specified explicit order by on the rollup, you must do from now on. In prior releases the behaviour of this operation may or may not have been working depending on the existance of one or more rollups.
 
-Latest Version 1.23
-___________________
+**Version 1.23**
+________________
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QgAc), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000QgAc)
 
