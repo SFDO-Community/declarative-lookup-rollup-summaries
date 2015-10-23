@@ -219,4 +219,334 @@ private class RollupServiceTest5 {
 		System.assertEquals(1, [select AnnualRevenue from Account where id = :accountParent.Id][0].AnnualRevenue);
 		System.assertEquals(null, [select TotalOpportunityQuantity from Opportunity where id = :oppParent.Id][0].TotalOpportunityQuantity);		
 	}	
+
+	private static void assertOrdering(List<Utilities.Ordering> order, Integer numFields, List<String> fields, List<Utilities.SortOrder> directions, List<Boolean> nullsLast)
+	{
+		System.assertNotEquals(null, order);
+		System.assertEquals(numFields, order.size());
+		for (Integer i = 0; i < numFields; i++)
+		{
+			assertOrdering(order[i], fields[i], directions[i], nullsLast[i]);
+		}
+	}
+
+    private static void assertOrdering(Utilities.Ordering o, String field, Utilities.SortOrder direction, Boolean nullsLast)
+    {
+        System.assertEquals(field, o.getField());
+        System.assertEquals(direction, o.getDirection());
+        System.assertEquals(nullsLast, o.getNullsLast());
+    }
+
+	@IsTest
+	private static void testParseOrderByFieldOnly() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}
+
+	@IsTest
+	private static void testParseOrderByFieldOnlyLowered() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('amount__c');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldOnlyMixedCase() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('aMoUnT__c');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'aMoUnT__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndASCDirection() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndASCDirectionLowered() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c asc');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndDESCDirection() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c DESC');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.DESCENDING },
+						new List<Boolean> { false });
+	}
+
+	@IsTest
+	private static void testParseOrderByFieldAndDESCDirectionLowered() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c desc');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.DESCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndNullsFirst() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c NULLS FIRST');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndNullsFirstLowered() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c nulls first');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndNullsLast() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c NULLS LAST');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { true });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndNullsLastLowered() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c nulls last');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { true });
+	}		
+
+	@IsTest
+	private static void testParseOrderByFieldAndASCDirectionAndNullsFirst() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS FIRST');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndASCDirectionAndNullsLast() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS LAST');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { true });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndDESCDirectionAndNullsFirst() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c DESC NULLS FIRST');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.DESCENDING },
+						new List<Boolean> { false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByFieldAndDESCDirectionAndNullsLast() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c DESC NULLS LAST');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'Amount__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.DESCENDING },
+						new List<Boolean> { true });
+	}		
+
+	@IsTest
+	private static void testParseOrderByMultipleFieldOnly() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c, Color__c, Name');
+		assertOrdering(	order, 
+						3, 
+						new List<String> { 'Amount__c', 'Color__c', 'Name' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING, Utilities.SortOrder.ASCENDING, Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { false, false, false });
+	}
+
+	@IsTest
+	private static void testParseOrderByMultipleFieldAndMixedDirection() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC, Color__c DESC, Name ASC');
+		assertOrdering(	order, 
+						3, 
+						new List<String> { 'Amount__c', 'Color__c', 'Name' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING, Utilities.SortOrder.DESCENDING, Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { false, false, false });
+	}	
+
+	@IsTest
+	private static void testParseOrderByMultipleFieldAndMixedDirectionAndNulls() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS LAST, Color__c DESC NULLS FIRST, Name ASC NULLS LAST');
+		assertOrdering(	order, 
+						3, 
+						new List<String> { 'Amount__c', 'Color__c', 'Name' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING, Utilities.SortOrder.DESCENDING, Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { true, false, true });
+	}
+
+	@IsTest
+	private static void testParseOrderByBadField() {
+		// parsing will succeed - validation of field name is done in RollupSummaries
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('BadField__c');
+		assertOrdering(	order, 
+						1, 
+						new List<String> { 'BadField__c' },
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING },
+						new List<Boolean> { false });
+	}
+
+	@IsTest
+	private static void testParseOrderByBadDirection() {
+		try {
+			List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c BAD');
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByBadNulls() {
+		try {
+			List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC BAD');
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByMissingNulls() {
+		try {
+			List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC LAST');
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}	
+
+	@IsTest
+	private static void testParseOrderByBadNullsType() {
+		try {
+			List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS BAD');
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByMissingNullsType() {
+		try {
+			List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS');
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}	
+
+	@IsTest
+	private static void testParseOrderByInvalidStart() {
+		try {
+			List<Utilities.Ordering> order = Utilities.parseOrderByClause('BAD Amount__c ASC NULLS FIRST');
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByInvalidMiddle() {
+		try {
+			List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC BAD NULLS FIRST');
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}	
+
+	@IsTest
+	private static void testParseOrderByInvalidEnd() {
+		try {
+			List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS FIRST BAD');
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByMultipleSecondFieldInvalid() {
+		try {
+			List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS FIRST, Color__c ASC NULLS BAD, Name ASC NULLS FIRST');
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}
+
+	@IsTest
+	private static void testParseOrderByMultipleThirdFieldInvalid() {
+		try {
+			List<Utilities.Ordering> order = Utilities.parseOrderByClause('Amount__c ASC NULLS FIRST, Color__c ASC NULLS LAST, Name ASC FIRST');
+			System.assert(false, 'Expected exception');
+		} catch(Utilities.OrderByInvalidException e) {
+			System.assertEquals('Invalid order by clause.', e.getMessage());
+		}
+	}	
+
+	@IsTest
+	private static void testParseOrderByMultipleFieldWhitespaceEverywhere() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause('  	           Amount__c      		ASC        	 NULLS       	 LAST      ,   	Color__c	  DESC    NULLS      FIRST        	');
+		assertOrdering(	order, 
+						2, 
+						new List<String> { 'Amount__c', 'Color__c'},
+						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING, Utilities.SortOrder.DESCENDING },
+						new List<Boolean> { true, false});
+	}
+
+	@IsTest
+	private static void testParseOrderByBlankClause() {
+		List<Utilities.Ordering> order = Utilities.parseOrderByClause(null);
+		System.assertEquals(null, order);
+
+		order = Utilities.parseOrderByClause('');
+		System.assertEquals(null, order);	
+
+		order = Utilities.parseOrderByClause('		 	   ');
+		System.assertEquals(null, order);
+	}					
 }
