@@ -39,7 +39,7 @@ public with sharing class RollupScheduledCalculateController
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Once the job completes any failed rollups will be shown in the Rollup Summary Logs tab.'));
     }
     
-    public PageReference runCalculateJob()
+    public PageReference scheduleCalculateJob()
     {
         try
         {
