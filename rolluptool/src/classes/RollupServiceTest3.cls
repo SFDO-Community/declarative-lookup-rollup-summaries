@@ -348,7 +348,18 @@ private with sharing class RollupServiceTest3
 		
 		Test.startTest();
 		controller.scheduleCalculateJob();
+		//attempt to schedule a second job
+		Boolean exceptionCaught = false;
 		String jobName = 'rollup_' + String.valueOf(rollupSummary.Id).substring(0,15);
+		try{
+			System.schedule('rollup_'+standardController.getId(), '0 0 2 * * ?', new RollupCalculateJobSchedulable(standardController.getId(), controller.masterObjectWhere));
+		} catch (AsyncException ex) {
+			exceptionCaught = true;
+			System.assertEquals(ex.getMessage(), 'The Apex job named "'+jobName+'" is already scheduled for execution.');
+		}
+		
+		System.assert(exceptionCaught);
+
 		CronTrigger ct = [SELECT Id, CronExpression, TimesTriggered, NextFireTime, CronJobDetail.Name FROM CronTrigger WHERE CronJobDetail.Name = :jobName];
 		//assert our job is scheduled for 2am
 		System.assertEquals('0 0 2 * * ?', ct.CronExpression);
