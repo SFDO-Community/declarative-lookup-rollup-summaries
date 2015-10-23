@@ -31,7 +31,7 @@
     <apex:form >
         <p>Filter master object using WHERE clause (OPTIONAL):</p>
         <apex:inputTextarea html-placeholder="Name LIKE 'Fred%' AND Custom__c > 0" cols="80" value="{!masterObjectWhere}" /><p/>
-        <apex:commandButton action="{!runCalculateJob}" value="Schedule Recurring Calculate Job"/>
+        <apex:commandButton action="{!scheduleCalculateJob}" value="Schedule Recurring Calculate Job"/>
         <apex:commandButton action="{!cancel}" value="Cancel"/>
     </apex:form>
 </apex:page>

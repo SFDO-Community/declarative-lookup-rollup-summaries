@@ -44,8 +44,8 @@ public with sharing class RollupScheduledCalculateController
         try
         {
             // Kickoff the calculate job for this lookup
-            System.schedule('schedule_'+standardController.getId(), '0 0 2 * * ?', new RollupCalculateJobSchedulable(standardController.getId()));
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Calculate job started for this lookup.'));
+            System.schedule('rollup_'+standardController.getId(), '0 0 2 * * ?', new RollupCalculateJobSchedulable(standardController.getId(), masterObjectWhere));
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Calculate job scheduled for this lookup.'));
         }
         catch (Exception e)
         {
