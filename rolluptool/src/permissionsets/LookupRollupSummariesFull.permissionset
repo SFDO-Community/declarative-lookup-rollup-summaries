@@ -160,6 +160,10 @@
         <enabled>true</enabled>
     </pageAccesses>
     <pageAccesses>
+        <apexPage>rollupscheduledcalculate</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+    <pageAccesses>
         <apexPage>rollupsummaryenhanced</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
