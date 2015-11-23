@@ -372,6 +372,8 @@ public class LREngine {
         public boolean isMasterTypeCurrency;
         public boolean isMasterTypeText;
         public boolean isDetailTypeText;
+        public boolean isMasterTypeId;
+        public boolean isDetailTypeId;
 
         public RollupSummaryField(Schema.Describefieldresult m, 
                                          Schema.Describefieldresult d, RollupOperation op) {
@@ -396,6 +398,8 @@ public class LREngine {
             this.isMasterTypeCurrency = isCurrency(master.getType());
             this.isMasterTypeText = isText(master.getType());
             this.isDetailTypeText = isText(detail.getType());
+			this.isMasterTypeId = isIdOrReference(master.getType());
+            this.isDetailTypeId = isIdOrReference(detail.getType());
             // validate if field is good to work on later 
             validate();
         }   
@@ -414,8 +418,9 @@ public class LREngine {
             if (operation == RollupOperation.First ||
                 operation == RollupOperation.Last) {
                 if ( (this.master.getType() != this.detail.getType()) &&
-                     (!isDetailTypeText && !isMasterTypeText) ) {
-                    throw new BadRollUpSummaryStateException('Master and detail fields must be the same field type (or text based) for First or Last operations');
+                     ((!isDetailTypeText && !isDetailTypeId) || 
+                     (!isMasterTypeText && !isMasterTypeId))) {
+                    throw new BadRollUpSummaryStateException('Master and detail fields must be the same field type (or text/Id based) for First or Last operations');
                 }
             }
 
@@ -439,6 +444,11 @@ public class LREngine {
                 dt == Schema.Displaytype.String ||
                 dt == Schema.Displaytype.Picklist ||
                 dt == Schema.Displaytype.MultiPicklist;
+        }
+        
+        boolean isIdOrReference (Schema.Displaytype dt) {
+            return dt == Schema.DisplayType.ID ||
+                   dt == Schema.DisplayType.REFERENCE;
         }
 
         boolean isNumber (Schema.Displaytype dt) {
