@@ -711,7 +711,7 @@ private class TestLREngine {
                 LREngine.RollupOperation.Last));                 
             System.assert(false, 'Expecting an exception');            
         } catch (Exception e) {
-            System.assertEquals('Master and detail fields must be the same field type (or text based) for First or Last operations', e.getMessage());
+            System.assertEquals('Master and detail fields must be the same field type (or text/Id based) for First or Last operations', e.getMessage());
         }
         try {
             LREngine.Context ctx = 
@@ -724,7 +724,7 @@ private class TestLREngine {
                 LREngine.RollupOperation.First));                 
             System.assert(false, 'Expecting an exception');            
         } catch (Exception e) {
-            System.assertEquals('Master and detail fields must be the same field type (or text based) for First or Last operations', e.getMessage());
+            System.assertEquals('Master and detail fields must be the same field type (or text/Id based) for First or Last operations', e.getMessage());
         }
         // Master and detail field type match
         try {
