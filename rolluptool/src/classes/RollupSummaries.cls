@@ -88,7 +88,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 		super(records);
 
 		// Wrap the records from the Custom Object or Custom Metadata 
-		this.Records = dlrs.RollupSummary.toList(records);
+		this.Records = RollupSummary.toList(records);
 	}
 
 	/**
