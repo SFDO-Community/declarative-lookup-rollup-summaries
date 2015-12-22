@@ -56,8 +56,8 @@ public with sharing class RollupController
 			new RollupSummariesSelector().selectById(new Set<String> { (String) standardController.getId() })[0].Record;
 		
 		// Generate names for test and triggers to deploy / undeploy
-		RollupTriggerName = RollupSummaries.makeTriggerName(RollupSummary);
-		RollupTriggerTestName = RollupSummaries.makeTriggerTestName(RollupSummary);
+		RollupTriggerName = RollupSummaries.makeTriggerName(new RollupSummary(this.RollupSummary));
+		RollupTriggerTestName = RollupSummaries.makeTriggerTestName(new RollupSummary(this.RollupSummary));
 				
 		// Initialise view state
 		init();

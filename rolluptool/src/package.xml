@@ -4,7 +4,10 @@
 		<members>ApexClassesSelector</members>
 		<members>ApexTriggersSelector</members>
 		<members>AsyncApexJobsSelector</members>
+		<members>CustomMetadataService</members>
+		<members>CustomMetadataServiceTest</members>
 		<members>LREngine</members>
+		<members>ManageLookupRollupSummariesController</members>
 		<members>MetadataService</members>
 		<members>MetadataServiceTest</members>
 		<members>RollupActionCalculate</members>
@@ -72,11 +75,12 @@
 		<name>ApexComponent</name>
 	</types>
 	<types>
+		<members>managelookuprollupsummaries</members>
 		<members>managetrigger</members>
 		<members>rollupcalculate</members>
+		<members>rollupscheduledcalculate</members>
 		<members>rollupsummaryenhanced</members>
 		<members>rollupsummaryenhancednew</members>
-		<members>rollupscheduledcalculate</members>
 		<members>welcome</members>
 		<name>ApexPage</name>
 	</types>

@@ -79,7 +79,7 @@ public class RollupSummariesSelector
 	/**
 	 * Queries Custom Object store for rollups
 	 **/
-	private class CustomObjectSelector extends fflib_SObjectSelector {
+	public class CustomObjectSelector extends fflib_SObjectSelector {
 
 		public CustomObjectSelector() { 
 			super();
@@ -168,7 +168,7 @@ public class RollupSummariesSelector
 	/**
 	 * Queries Custom Metadata store for rollups
 	 **/
-	private class CustomMetadataSelector extends fflib_SObjectSelector {
+	public class CustomMetadataSelector extends fflib_SObjectSelector {
 
 		public CustomMetadataSelector() { 
 			super();
@@ -181,6 +181,8 @@ public class RollupSummariesSelector
 		public List<Schema.SObjectField> getSObjectFieldList()
 		{
 			return new List<Schema.SObjectField> {
+				LookupRollupSummary2__mdt.Id,
+				LookupRollupSummary2__mdt.Label,
 				LookupRollupSummary2__mdt.DeveloperName,
 				LookupRollupSummary2__mdt.Active__c,
 				LookupRollupSummary2__mdt.AggregateOperation__c,
@@ -196,7 +198,8 @@ public class RollupSummariesSelector
 				LookupRollupSummary2__mdt.RelationshipField__c,
 				LookupRollupSummary2__mdt.CalculationSharingMode__c,
 				LookupRollupSummary2__mdt.TestCodeDocument__c,
-				LookupRollupSummary2__mdt.TestCodeSeeAllData__c
+				LookupRollupSummary2__mdt.TestCodeSeeAllData__c,
+				LookupRollupSummary2__mdt.Description__c
 			};
 		}
 
@@ -207,8 +210,10 @@ public class RollupSummariesSelector
 
 		public List<RollupSummary> selectById(Set<String> idSet)
 		{
-			// This will need to be custom, base class selectSObjectsById uses Id
-			return null;
+			Set<Id> recordIds = new Set<Id>();
+			for(String idAsString : idSet)
+				recordIds.add((Id)idAsString);
+			return RollupSummary.toList(selectSObjectsById(recordIds));
 		}
 
 		/**
@@ -247,6 +252,18 @@ public class RollupSummariesSelector
 						setCondition('UniqueName__c in :uniqueNames and Active__c = true').
 					 	addOrdering(LookupRollupSummary2__mdt.ParentObject__c, fflib_QueryFactory.SortOrder.ASCENDING).
 					 	addOrdering(LookupRollupSummary2__mdt.RelationshipField__c, fflib_QueryFactory.SortOrder.ASCENDING).
+					 	toSOQL()));
+		}
+
+		/**
+		 * Select all
+		 **/
+		public List<RollupSummary> selectAll()
+		{
+			return RollupSummary.toList(
+				Database.query(
+					newQueryFactory().
+					 	addOrdering(LookupRollupSummary2__mdt.Label, fflib_QueryFactory.SortOrder.ASCENDING).
 					 	toSOQL()));
 		}
 	}	

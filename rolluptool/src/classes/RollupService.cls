@@ -514,6 +514,86 @@ global with sharing class RollupService
 	}
 
 	/**
+	 * Insert the given rollup summaries (only supports Custom Metadata backed records)
+	 **/
+	public static List<Id> create(List<SObject> rollupSummaryRecords) {
+		// Valid records?
+		List<SObject> validRecords = validateRollups(rollupSummaryRecords);
+		// Create
+		CustomMetadataService.createMetadata(validRecords);
+		return null;
+	}
+
+	/**
+	 * Update the given rollup summaries (only supports Custom Metadata backed records)
+	 **/
+	public static List<Id> update_x(List<SObject> rollupSummaryRecords) {
+		// Valid records?
+		List<SObject> validRecords = validateRollups(rollupSummaryRecords);
+		// Create
+		CustomMetadataService.updateMetadata(validRecords);
+		return null;
+	}
+
+	/**
+	 * Delete the given rollup summaries (only supports Custom Metadata backed records)
+	 **/
+	public static void delete_x(List<String> rollupSummaryIds) {
+		// Currently assumes the Id's are Custom Metadata record DeveloperName's
+		CustomMetadataService.deleteMetadata(LookupRollupSummary2__mdt.getSObjectType(), rollupSummaryIds);
+	}
+
+	/**
+	 * Validates records (currenyly only Custom Metadata based ones)
+	 **/
+	private static List<SObject> validateRollups(List<SObject> rollupSummaryRecords) {
+
+		// Process only Custom Metadata records here
+		List<LookupRollupSummary2__mdt> mdtRecords = new List<LookupRollupSummary2__mdt>();
+		for(SObject rollupSummaryRecord : rollupSummaryRecords) {
+			if(rollupSummaryRecord instanceof LookupRollupSummary2__mdt) {
+				mdtRecords.add((LookupRollupSummary2__mdt) rollupSummaryRecord);
+			}
+		}
+		if(mdtRecords.size()==0)
+			return mdtRecords;
+
+		// Validate via Domain class and throw appropirte exception
+		RollupSummaries rollupSummaries = new RollupSummaries(mdtRecords);
+		rollupSummaries.onValidate();
+		RollupValidationException validationException = new RollupValidationException();
+		for(RollupSummary rollupSummaryRecord : rollupSummaries.Records) {
+			if(rollupSummaryRecord.Error!=null || 
+			   rollupSummaryRecord.Fields.Errors.size() >0) {
+				RollupRecordValidationError recordError = new RollupRecordValidationError();
+				recordError.Error = rollupSummaryRecord.Error;
+				recordError.FieldErrors = rollupSummaryRecord.Fields.Errors;
+				validationException.RecordErrors.add(recordError);
+			}
+		}
+		if(validationException.RecordErrors.size()>0) 
+			throw validationException;
+
+		return (List<SObject>) mdtRecords;
+	}
+
+	/**
+	 * Represents a rollup validation exception, contains a list of record errors
+	 **/
+	public class RollupValidationException extends Exception {
+		public final List<RollupRecordValidationError> RecordErrors = new List<RollupRecordValidationError>();
+	}
+
+	/**
+	 * Represents record level error and/or field level errors
+	 **/
+	public class RollupRecordValidationError {
+		public Id Id {get; private set;}
+		public String Error {get; private set;}
+		public List<String> FieldErrors {get; private set;}
+	}
+
+	/**
 	 * Process rollups for specified modes 
 	 *
 	 * @param childRecords List of childRecords to process rollups against

@@ -171,7 +171,7 @@ private class RollupSummariesTest
 		fflib_SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
 		fflib_SObjectDomain.triggerHandler(RollupSummaries.class);		
 		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());	
-		System.assertEquals('Apex Trigger ' + RollupSummaries.makeTriggerName(rollupSummary) + ' has not been deployed. Click Manage Child Trigger and try again.', fflib_SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals('Apex Trigger ' + RollupSummaries.makeTriggerName(new RollupSummary(rollupSummary)) + ' has not been deployed. Click Manage Child Trigger and try again.', fflib_SObjectDomain.Errors.getAll()[0].message);
 		System.assertEquals(LookupRollupSummary__c.Active__c, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field);
 	}
 	
@@ -401,12 +401,12 @@ private class RollupSummariesTest
 		
 		String componentPrefix = Utilities.componentPrefix();
 		String objectPrefix = Utilities.objectPrefix();
-		System.assertEquals(componentPrefix + 'ContactTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'Contact')));
-		System.assertEquals(componentPrefix + 'ContactTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'Contact')));
-		System.assertEquals(componentPrefix + 'pse_AssignmentTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c')));
-		System.assertEquals(componentPrefix + 'pse_AssignmentTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c')));
-		System.assertEquals(componentPrefix + 'MyCustomObjectTrigger', RollupSummaries.makeTriggerName(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c')));
-		System.assertEquals(componentPrefix + 'MyCustomObjectTest', RollupSummaries.makeTriggerTestName(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c')));
+		System.assertEquals(componentPrefix + 'ContactTrigger', RollupSummaries.makeTriggerName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'Contact'))));
+		System.assertEquals(componentPrefix + 'ContactTest', RollupSummaries.makeTriggerTestName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'Contact'))));
+		System.assertEquals(componentPrefix + 'pse_AssignmentTrigger', RollupSummaries.makeTriggerName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c'))));
+		System.assertEquals(componentPrefix + 'pse_AssignmentTest', RollupSummaries.makeTriggerTestName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c'))));
+		System.assertEquals(componentPrefix + 'MyCustomObjectTrigger', RollupSummaries.makeTriggerName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c'))));
+		System.assertEquals(componentPrefix + 'MyCustomObjectTest', RollupSummaries.makeTriggerTestName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c'))));
 
 		String dlrsKeyPrefix = DeclarativeLookupRollupSummaries__c.sObjectType.getDescribe().getKeyPrefix();
 		// Test RollupSummaries.calculateComponentName directly so we can override the maxComponentNameLength

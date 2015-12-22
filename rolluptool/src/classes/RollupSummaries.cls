@@ -25,7 +25,7 @@
 **/
 
 /**
- * Validation and other behaviour for the Lookup Rollup Summary custom object
+ * Validation and other behaviour for the Lookup Rollup Summary custom object or custom metadata records
  **/
 public class RollupSummaries extends fflib_SObjectDomain
 {		
@@ -78,9 +78,17 @@ public class RollupSummaries extends fflib_SObjectDomain
         Last
     }
 		
-	public RollupSummaries(List<LookupRollupSummary__c> records)
+	/**
+	 * Intentially shadow the Records base class property with a list of wrapped records
+	 **/
+	public List<RollupSummary> Records;
+
+	public RollupSummaries(List<SObject> records)
 	{
 		super(records);
+
+		// Wrap the records from the Custom Object or Custom Metadata 
+		this.Records = dlrs.RollupSummary.toList(records);
 	}
 
 	/**
@@ -106,27 +114,27 @@ public class RollupSummaries extends fflib_SObjectDomain
 	{
 		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
 		Map<SObjectType, Map<String, Schema.SObjectField>> gdFields = new Map<SObjectType, Map<String, Schema.SObjectField>>(); 	
-		for(LookupRollupSummary__c lookupRollupSummary : (List<LookupRollupSummary__c>) Records)
+		for(RollupSummary lookupRollupSummary : (List<RollupSummary>) Records)
 		{
-			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject__c);
-			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject__c);
+			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);
+			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject);
 			if(parentObjectType!=null && !gdFields.containsKey(parentObjectType))
 				gdFields.put(parentObjectType, parentObjectType.getDescribe().fields.getMap());
 			if(childObjectType!=null && !gdFields.containsKey(childObjectType))
 				gdFields.put(childObjectType, childObjectType.getDescribe().fields.getMap());
 		}
 
-		for(LookupRollupSummary__c lookupRollupSummary : (List<LookupRollupSummary__c>) Records)
+		for(RollupSummary lookupRollupSummary : (List<RollupSummary>) Records)
 		{
 			// Parent Object
-			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject__c);
+			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);
 			if(parentObjectType!=null)
-				lookupRollupSummary.ParentObject__c = parentObjectType.getDescribe().getName();
+				lookupRollupSummary.ParentObject = parentObjectType.getDescribe().getName();
 
 			// Child Object
-			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject__c);
+			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject);
 			if(childObjectType!=null)
-				lookupRollupSummary.ChildObject__c = childObjectType.getDescribe().getName();
+				lookupRollupSummary.ChildObject = childObjectType.getDescribe().getName();
 
 			// Child Object fields
 			SObjectField relationshipField = null;
@@ -135,17 +143,17 @@ public class RollupSummaries extends fflib_SObjectDomain
 			if(childObjectFields!=null)
 			{
 				// Relationship field
-				relationshipField = childObjectFields.get(lookupRollupSummary.RelationshipField__c);
+				relationshipField = childObjectFields.get(lookupRollupSummary.RelationshipField);
 				if(relationshipField!=null)
-					lookupRollupSummary.RelationshipField__c = relationshipField.getDescribe().getName();
+					lookupRollupSummary.RelationshipField = relationshipField.getDescribe().getName();
 				// Field to Aggregate
-				fieldToAggregate = childObjectFields.get(lookupRollupSummary.FieldToAggregate__c);
+				fieldToAggregate = childObjectFields.get(lookupRollupSummary.FieldToAggregate);
 				if(fieldToAggregate!=null)
-					lookupRollupSummary.FieldToAggregate__c = fieldToAggregate.getDescribe().getName();
+					lookupRollupSummary.FieldToAggregate = fieldToAggregate.getDescribe().getName();
 				// Field to Order By
-				if(lookupRollupSummary.FieldToOrderBy__c!=null) {
+				if(lookupRollupSummary.FieldToOrderBy!=null) {
 					try {
-		                lookupRollupSummary.FieldToOrderBy__c = parseOrderByClause(lookupRollupSummary.FieldToOrderBy__c, childObjectFields);
+		                lookupRollupSummary.FieldToOrderBy = parseOrderByClause(lookupRollupSummary.FieldToOrderBy, childObjectFields);
 					} catch(Utilities.OrderByInvalidException e) {
 						// there is a problem with order by so we ignore it intentionally here since we're just trying 
 						// to update field names with describe info.  The error will be caught during validation phase.
@@ -158,20 +166,20 @@ public class RollupSummaries extends fflib_SObjectDomain
 			if(parentObjectFields!=null)
 			{
 				// Aggregate Result field
-				aggregateResultField = parentObjectFields.get(lookupRollupSummary.AggregateResultField__c);
+				aggregateResultField = parentObjectFields.get(lookupRollupSummary.AggregateResultField);
 				if(aggregateResultField!=null)
-					lookupRollupSummary.AggregateResultField__c = aggregateResultField.getDescribe().getName();
+					lookupRollupSummary.AggregateResultField = aggregateResultField.getDescribe().getName();
 			}						
 			// Check the list of fields expressed in the relationship critiera fields
-			if(childObjectFields!=null && lookupRollupSummary.RelationshipCriteriaFields__c!=null)
+			if(childObjectFields!=null && lookupRollupSummary.RelationshipCriteriaFields!=null)
 			{
 				List<String> relationshipCriteriaFields = new List<String>();
-				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields__c.split('\r\n');
+				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields.split('\r\n');
 				for(String field : fieldList) {
 					SObjectField relationshipCriteriaField = childObjectFields.get(field);
 					relationshipCriteriaFields.add(relationshipCriteriaField !=null ? relationshipCriteriaField.getDescribe().getName() : field);
 				}
-				lookupRollupSummary.RelationshipCriteriaFields__c = String.join(relationshipCriteriaFields, '\r\n');
+				lookupRollupSummary.RelationshipCriteriaFields = String.join(relationshipCriteriaFields, '\r\n');
 			}
 		}
 	}
@@ -185,10 +193,10 @@ public class RollupSummaries extends fflib_SObjectDomain
 		Set<String> rollupTriggerNames = new Set<String>();
 		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
 		Map<SObjectType, Map<String, Schema.SObjectField>> gdFields = new Map<SObjectType, Map<String, Schema.SObjectField>>(); 	
-		for(LookupRollupSummary__c lookupRollupSummary : (List<LookupRollupSummary__c>) Records)
+		for(RollupSummary lookupRollupSummary : (List<RollupSummary>) Records)
 		{
-			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject__c);
-			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject__c);
+			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);
+			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject);
 			if(parentObjectType!=null && !gdFields.containsKey(parentObjectType))
 				gdFields.put(parentObjectType, parentObjectType.getDescribe().fields.getMap());
 			if(childObjectType!=null && !gdFields.containsKey(childObjectType))
@@ -201,16 +209,16 @@ public class RollupSummaries extends fflib_SObjectDomain
 		// Query for any related Apex triggers
 		Map<String, ApexTrigger> apexTriggers = new ApexTriggersSelector().selectByName(rollupTriggerNames);
 		
-		for(LookupRollupSummary__c lookupRollupSummary : (List<LookupRollupSummary__c>) Records)
+		for(RollupSummary lookupRollupSummary : (List<RollupSummary>) Records)
 		{
 			// Parent Object valid?
-			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject__c);
+			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);
 			if(parentObjectType==null)
-				lookupRollupSummary.ParentObject__c.addError(error('Object does not exist.', lookupRollupSummary, LookupRollupSummary__c.ParentObject__c));				
+				lookupRollupSummary.Fields.ParentObject.addError(error('Object does not exist.', lookupRollupSummary.Record, LookupRollupSummary__c.ParentObject__c));
 			// Child Object valid?
-			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject__c);
+			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject);
 			if(childObjectType==null)
-				lookupRollupSummary.ChildObject__c.addError(error('Object does not exist.', lookupRollupSummary, LookupRollupSummary__c.ChildObject__c));
+				lookupRollupSummary.Fields.ChildObject.addError(error('Object does not exist.', lookupRollupSummary.Record, LookupRollupSummary__c.ChildObject__c));
 			// Child Object fields valid?
 			SObjectField relationshipField = null;
 			SObjectField fieldToAggregate = null;
@@ -219,20 +227,20 @@ public class RollupSummaries extends fflib_SObjectDomain
 			if(childObjectFields!=null)
 			{
 				// Relationship field valid?
-				relationshipField = childObjectFields.get(lookupRollupSummary.RelationshipField__c);
+				relationshipField = childObjectFields.get(lookupRollupSummary.RelationshipField);
 				if(relationshipField==null)
-					lookupRollupSummary.RelationshipField__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.RelationshipField__c));
+					lookupRollupSummary.Fields.RelationshipField.addError(error('Field does not exist.', lookupRollupSummary.Record, LookupRollupSummary__c.RelationshipField__c));
 				// Field to Aggregate valid?
-				fieldToAggregate = childObjectFields.get(lookupRollupSummary.FieldToAggregate__c);
+				fieldToAggregate = childObjectFields.get(lookupRollupSummary.FieldToAggregate);
 				if(fieldToAggregate==null)
-					lookupRollupSummary.FieldToAggregate__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.FieldToAggregate__c));
+					lookupRollupSummary.Fields.FieldToAggregate.addError(error('Field does not exist.', lookupRollupSummary.Record, LookupRollupSummary__c.FieldToAggregate__c));
 				// Field to Order By valid?
-				if(!String.isBlank(lookupRollupSummary.FieldToOrderBy__c)) {
+				if(!String.isBlank(lookupRollupSummary.FieldToOrderBy)) {
 					try {
-						String orderByClause = parseOrderByClause(lookupRollupSummary.FieldToOrderBy__c, childObjectFields);
+						String orderByClause = parseOrderByClause(lookupRollupSummary.FieldToOrderBy, childObjectFields);
 					} catch(Utilities.OrderByInvalidException e) {
 						orderByIsValid = false;
-						lookupRollupSummary.FieldToOrderBy__c.addError(error(e.getMessage(), lookupRollupSummary, LookupRollupSummary__c.FieldToOrderBy__c));
+						lookupRollupSummary.Fields.FieldToOrderBy.addError(error(e.getMessage(), lookupRollupSummary.Record, LookupRollupSummary__c.FieldToOrderBy__c));
 					}
 				}
 				// TODO: Validate relationship field is a lookup to the parent
@@ -244,32 +252,33 @@ public class RollupSummaries extends fflib_SObjectDomain
 			if(parentObjectFields!=null)
 			{
 				// Aggregate Result field valid?
-				aggregateResultField = parentObjectFields.get(lookupRollupSummary.AggregateResultField__c);
+				aggregateResultField = parentObjectFields.get(lookupRollupSummary.AggregateResultField);
 				if(aggregateResultField==null)
-					lookupRollupSummary.AggregateResultField__c.addError(error('Field does not exist.', lookupRollupSummary, LookupRollupSummary__c.AggregateResultField__c));
+					lookupRollupSummary.Fields.AggregateResultField.addError(error('Field does not exist.', lookupRollupSummary.Record, LookupRollupSummary__c.AggregateResultField__c));
 			}						
 			// Cannot activate Realtime or Scheduled rollup without the required trigger deployed
 			if(childObjectType!=null) 
 			{
 				String triggerName = makeTriggerName(lookupRollupSummary); 
-				if(lookupRollupSummary.Active__c &&
-				   (lookupRollupSummary.CalculationMode__c == CalculationMode.Realtime.name() ||
-				    lookupRollupSummary.CalculationMode__c == CalculationMode.Scheduled.name()) && 
+				if(lookupRollupSummary.Active &&
+				   (lookupRollupSummary.CalculationMode == CalculationMode.Realtime.name() ||
+				    lookupRollupSummary.CalculationMode == CalculationMode.Scheduled.name()) && 
 				   !apexTriggers.containsKey(triggerName))
-					lookupRollupSummary.Active__c.addError(error('Apex Trigger ' + triggerName + ' has not been deployed. Click Manage Child Trigger and try again.', lookupRollupSummary, LookupRollupSummary__c.Active__c));				
+					lookupRollupSummary.Fields.Active.addError(error('Apex Trigger ' + triggerName + ' has not been deployed. Click Manage Child Trigger and try again.', lookupRollupSummary.Record, LookupRollupSummary__c.Active__c));				
 			}
 			// Check the list of fields expressed in the relationship critiera fields
-			if(childObjectFields!=null && lookupRollupSummary.RelationshipCriteriaFields__c!=null)
+			if(childObjectFields!=null && lookupRollupSummary.RelationshipCriteriaFields!=null)
 			{
-				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields__c.split('\r\n');
+				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields.split('\r\n');
 				String[] fieldsInError = new List<String>();
 				for(String field : fieldList)
-					if(childObjectFields.get(field)==null)
-						fieldsInError.add(field);
+					if(field.length()>0)
+						if(childObjectFields.get(field)==null)
+							fieldsInError.add(field);
 				if(fieldsInError.size()==1)
-					lookupRollupSummary.RelationshipCriteriaFields__c.addError(error('Field ' + fieldsInError[0] + ' does not exist on the child object.', lookupRollupSummary, LookupRollupSummary__c.RelationshipCriteriaFields__c));
+					lookupRollupSummary.Fields.RelationshipCriteriaFields.addError(error('Field ' + fieldsInError[0] + ' does not exist on the child object.', lookupRollupSummary.Record, LookupRollupSummary__c.RelationshipCriteriaFields__c));
 				else if(fieldsInError.size()>1)
-					lookupRollupSummary.RelationshipCriteriaFields__c.addError(error('Fields ' + String.join(fieldsInError, ',') + ' do not exist on the child object.', lookupRollupSummary, LookupRollupSummary__c.RelationshipCriteriaFields__c));
+					lookupRollupSummary.Fields.RelationshipCriteriaFields.addError(error('Fields ' + String.join(fieldsInError, ',') + ' do not exist on the child object.', lookupRollupSummary.Record, LookupRollupSummary__c.RelationshipCriteriaFields__c));
 			} 	
 			try
 			{
@@ -286,24 +295,24 @@ public class RollupSummaries extends fflib_SObjectDomain
 						parentObjectType, // parent object
 		                childObjectType,  // child object
 		                relationshipField.getDescribe(), // relationship field name
-		                lookupRollupSummary.RelationShipCriteria__c,
-		                lookupRollupSummary.FieldToOrderBy__c); 
+		                lookupRollupSummary.RelationShipCriteria,
+		                lookupRollupSummary.FieldToOrderBy); 
 					lreContext.add(
 			            new LREngine.RollupSummaryField(
 							aggregateResultField.getDescribe(),
 							fieldToAggregate.getDescribe(),
-							OPERATION_PICKLIST_TO_ENUMS.get(lookupRollupSummary.AggregateOperation__c),
-							lookupRollupSummary.ConcatenateDelimiter__c));
+							OPERATION_PICKLIST_TO_ENUMS.get(lookupRollupSummary.AggregateOperation),
+							lookupRollupSummary.ConcatenateDelimiter));
 					// Validate the SOQL
-					if(lookupRollupSummary.RelationShipCriteria__c!=null && 
-					   lookupRollupSummary.RelationShipCriteria__c.length()>0) 
+					if(lookupRollupSummary.RelationShipCriteria!=null && 
+					   lookupRollupSummary.RelationShipCriteria.length()>0) 
 					{
 						try {
 							// Validate only mode ensures no query is actually made should it be valid
 							LREngine.rollUp(lreContext, new Set<Id>(), true);	
 						} catch (QueryException e) {
-							lookupRollupSummary.RelationShipCriteria__c.addError(
-								error(String.format(MSG_INVALID_CRITERIA, new String[] { lookupRollupSummary.RelationShipCriteria__c, e.getMessage() }), lookupRollupSummary, LookupRollupSummary__c.RelationShipCriteria__c));
+							lookupRollupSummary.Fields.RelationShipCriteria.addError(
+								error(String.format(MSG_INVALID_CRITERIA, new String[] { lookupRollupSummary.RelationShipCriteria, e.getMessage() }), lookupRollupSummary.Record, LookupRollupSummary__c.RelationShipCriteria__c));
 						}											
 					}
 				}
@@ -311,7 +320,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 			catch (LREngine.BadRollUpSummaryStateException e)
 			{
 				// Associate exception message with the lookup rollup summary error
-				lookupRollupSummary.addError(error(e.getMessage(), lookupRollupSummary));	
+				lookupRollupSummary.addError(error(e.getMessage(), lookupRollupSummary.Record));	
 			} 											
 		}
 	}
@@ -347,27 +356,27 @@ public class RollupSummaries extends fflib_SObjectDomain
 	/**
 	 * Trigger name for given lookup rollup summary
 	 **/
-	public static String makeTriggerName(LookupRollupSummary__c lookupRollupSummary)
+	public static String makeTriggerName(RollupSummary lookupRollupSummary)
 	{
-		if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Opportunity')
+		if(Test.isRunningTest() && lookupRollupSummary.ChildObject == 'Opportunity')
 			return 'RollupServiceTestTrigger';
-		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == LookupChild__c.sObjectType.getDescribe().getName())
+		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject == LookupChild__c.sObjectType.getDescribe().getName())
 			return 'RollupServiceTest2Trigger';
-		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Account')
+		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject == 'Account')
 			return 'RollupServiceTest3Trigger';
-		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Task')
+		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject == 'Task')
 			return 'RollupServiceTest4Trigger';
-		return calculateComponentName(lookupRollupSummary.ChildObject__c, 'Trigger', APEXTRIGGER_NAME_LENGTH);
+		return calculateComponentName(lookupRollupSummary.ChildObject, 'Trigger', APEXTRIGGER_NAME_LENGTH);
 	}
 
 	/**
 	 * Apex test name for given lookup rollup summary
 	 **/
-	public static String makeTriggerTestName(LookupRollupSummary__c lookupRollupSummary)
+	public static String makeTriggerTestName(RollupSummary lookupRollupSummary)
 	{
-		if(Test.isRunningTest() && lookupRollupSummary.ChildObject__c == 'Opportunity')
+		if(Test.isRunningTest() && lookupRollupSummary.ChildObject == 'Opportunity')
 			return 'RollupSummariesTest';		
-		return calculateComponentName(lookupRollupSummary.ChildObject__c, 'Test', APEXCLASS_NAME_LENGTH);
+		return calculateComponentName(lookupRollupSummary.ChildObject, 'Test', APEXCLASS_NAME_LENGTH);
 	}
 
 	/**
