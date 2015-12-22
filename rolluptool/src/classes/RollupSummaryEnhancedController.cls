@@ -155,7 +155,7 @@ public with sharing class RollupSummaryEnhancedController {
 			Set<String> childTrigger = new Set<String>();
 			childTrigger.add(rus.ChildObject__c);
 			Map<String, ApexTrigger> apexTriggers = new ApexTriggersSelector().selectByName(childTrigger);
-			String triggerName = RollupSummaries.makeTriggerName(rus);
+			String triggerName = RollupSummaries.makeTriggerName(new RollupSummary(rus));
 			foundTrigger = apexTriggers.containsKey(triggerName);
 		}
 		 
