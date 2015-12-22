@@ -197,6 +197,7 @@ private class RollupServiceTest5 {
 		// Inject a valid schedule item record
 		LookupRollupSummaryScheduleItems__c lrssiAccount = new LookupRollupSummaryScheduleItems__c();
 		lrssiAccount.LookupRollupSummary__c = rollupSummaryAccount.Id;
+		lrssiAccount.LookupRollupSummary2__c = rollupSummaryAccount.Id;
 		lrssiAccount.ParentId__c = accountParent.Id;
 		lrssiAccount.QualifiedParentID__c = lrssiAccount.ParentId__c + '#' + LookupRollupSummary__c.Id; 
 		insert lrssiAccount;
@@ -205,6 +206,7 @@ private class RollupServiceTest5 {
 		//   the wrong lookup rule or user changing the lookup after schedule item written woudl cause an error
 		LookupRollupSummaryScheduleItems__c lrssiOpp = new LookupRollupSummaryScheduleItems__c();
 		lrssiOpp.LookupRollupSummary__c = rollupSummaryAccount.Id; // Emulate invalid entry
+		lrssiOpp.LookupRollupSummary2__c = rollupSummaryAccount.Id; // Emulate invalid entry
 		lrssiOpp.ParentId__c = oppParent.Id;
 		lrssiOpp.QualifiedParentID__c = lrssiOpp.ParentId__c + '#' + LookupRollupSummary__c.Id; 
 		insert lrssiOpp;

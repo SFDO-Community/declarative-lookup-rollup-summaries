@@ -103,8 +103,7 @@ private with sharing class RollupServiceTest3
 		// Run rollup calculate job
 		Test.startTest();
 		Id jobId = RollupService.runJobToCalculate(rollupSummary.Id);
-		rollupSummary = [select Id, CalculateJobId__c from LookupRollupSummary__c where Id  = :rollupSummary.Id];
-		System.assertEquals(jobId, rollupSummary.CalculateJobId__c); // Assert job id captured
+		System.assertEquals(1, [select Id from LookupRollupCalculateJob__c].size()); 
 		try {
 			// Assert not possible to start another
 			RollupService.runJobToCalculate(rollupSummary.Id);
@@ -113,9 +112,8 @@ private with sharing class RollupServiceTest3
 			System.assert(e.getMessage().equals('A calculate job for rollup \'Test Rollup\' is already executing. If you suspect it is not aleady running try clearing the Calculate Job Id field and try again.'));
 		}
 		Test.stopTest();
-		// Assert job id cleared
-		rollupSummary = [select Id, CalculateJobId__c from LookupRollupSummary__c where Id  = :rollupSummary.Id];
-		System.assertEquals(null, rollupSummary.CalculateJobId__c); 
+		// Assert job cleared
+		System.assertEquals(0, [select Id from LookupRollupCalculateJob__c].size()); 
 
 		// This should not generate any schedule items
 		System.assertEquals(0, [select id from LookupRollupSummaryScheduleItems__c].size());

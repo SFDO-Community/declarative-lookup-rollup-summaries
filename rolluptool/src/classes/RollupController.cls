@@ -52,7 +52,8 @@ public with sharing class RollupController
 	public RollupController(ApexPages.StandardController standardController)
 	{
 		// Query Lookup Rollup Summary record
-		RollupSummary = new RollupSummariesSelector().selectById(new Set<Id> { standardController.getId() })[0];
+		RollupSummary = (LookupRollupSummary__c) 
+			new RollupSummariesSelector().selectById(new Set<String> { (String) standardController.getId() })[0].Record;
 		
 		// Generate names for test and triggers to deploy / undeploy
 		RollupTriggerName = RollupSummaries.makeTriggerName(RollupSummary);
@@ -241,12 +242,18 @@ public with sharing class RollupController
 			if(Deployed && !ApexPages.hasMessages(ApexPages.Severity.Error))
 			{
 				// Determine active rollups for this child and deactivate them
-				List<LookupRollupSummary__c> rollups = 
+				List<RollupSummary> rollups = 
 					new RollupSummariesSelector().selectActiveByChildObject(
 						RollupSummaries.CalculationMode.Realtime, new Set<String> { RollupSummary.ChildObject__c });
-				for(LookupRollupSummary__c rollup : rollups)
-					rollup.Active__c = false;
-				update rollups;
+				List<LookupRollupSummary__c> recordsToUpdate = new List<LookupRollupSummary__c>();
+				for(RollupSummary rollup : rollups) {
+					// TODO: Can only auto deactivate Custom Object based rollups
+					if(rollup.Record instanceof LookupRollupSummary__c) {
+						rollup.Active = false;
+						recordsToUpdate.add((LookupRollupSummary__c) rollup.Record);						
+					}
+				}
+				update recordsToUpdate;
 			}
 			
 			// Initialise view state to try again

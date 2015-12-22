@@ -25,7 +25,7 @@
 **/
 
 /**
- * Service class implements rollup functionality using LREngine library and based on lookups described in LookupRollupSummary__c
+ * Service class implements rollup functionality using LREngine library and based on lookups described in RollupSummary
  *
  *   TODO: This class could do with using the fflib_Describe util class, it would cut down on describe cahcing logic and make things cleaner
  *
@@ -59,7 +59,7 @@ global with sharing class RollupService
 	 **/
 	global static Id runJobToCalculate(Id lookupId)
 	{
-		return runJobToCalculate(lookupId, null);
+		return runJobToCalculate((String)lookupId, null);
 	}
 
 	/**
@@ -67,23 +67,43 @@ global with sharing class RollupService
 	 **/
 	global static Id runJobToCalculate(Id lookupId, String masterWhereClause)
 	{
+		return runJobToCalculate((String) lookupId, masterWhereClause);
+	}
+
+	/**
+	 * Starts the Job to recalculate the given rollup 
+	 **/
+	global static Id runJobToCalculate(String lookupId)
+	{
+		return runJobToCalculate(lookupId, null);
+	}
+
+	/**
+	 * Starts the Job to recalculate the given rollup filtering the master object records by the WHERE clause
+	 **/
+	global static Id runJobToCalculate(String lookupId, String masterWhereClause)
+	{
 		// Is another calculate job running for this lookup?
-		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });
+		List<RollupSummary> lookups = new RollupSummariesSelector().selectById(new Set<String> { (String) lookupId });
 		if(lookups.size()==0)
 			throw RollupServiceException.rollupNotFound(lookupId);
-		LookupRollupSummary__c lookup = lookups[0];
-		if(lookup.CalculateJobId__c!=null)
+		RollupSummary lookup = lookups[0];
+
+		// Already running?
+		try {
+			// This object has a unique constraint over LookupRollupSummaryId__c
+			insert new LookupRollupCalculateJob__c(LookupRollupSummaryId__c = lookupId);
+		} catch (Exception e) {
 			throw RollupServiceException.jobAlreadyRunning(lookup.Name);
+		}
 
 		// Already active?
-		if(lookup.Active__c==null || lookup.Active__c==false)
+		if(lookup.Active==null || lookup.Active==false)
 			throw new RollupServiceException('The rollup must be Active before you can run a Calculate job.');
 
 		// Start the job and record the Job Id
 		Integer scopeSize = (Integer) DeclarativeLookupRollupSummaries__c.getInstance().CalculateJobScopeSize__c;
 		Id jobId = Database.executeBatch(new RollupCalculateJob(lookupId, masterWhereClause), scopeSize == null ? 100 : scopeSize);
-		lookup.CalculateJobId__c = jobId;
-		update lookup;
 
 		return jobId;
 	}
@@ -126,7 +146,7 @@ global with sharing class RollupService
 			uniqueNames.add(rollupToCalc.rollupSummaryUniqueName);
 			masterIds.add(rollupToCalc.parentId);
 		}
-		List<LookupRollupSummary__c> lookups =
+		List<RollupSummary> lookups =
 			new RollupSummariesSelector().selectActiveByUniqueName(uniqueNames);
 		if(lookups.size()==0)
 			return;
@@ -165,7 +185,7 @@ global with sharing class RollupService
 	/**
 	 * Developer API for the tool, only executes Rollup Summmaries with Calculation Mode set to Developer 
 	 *
-	 * Automatically resolves child records to process via LREngine and lookups described in LookupRollupSummary__c
+	 * Automatically resolves child records to process via LREngine and lookups described in RollupSummary
 	 *    also determines if based on the old records if the rollup processing needs to occur
 	 *
 	 * @param existingRecords Deleted or existing version of Updated records
@@ -198,7 +218,7 @@ global with sharing class RollupService
 		// Describe Developer rollups for these child records
 		SObjectType childObjectType = childRecords[0].Id.getSObjectType();
 		Schema.DescribeSObjectResult childRecordDescribe = childObjectType.getDescribe();		
-		List<LookupRollupSummary__c> lookups =
+		List<RollupSummary> lookups =
 			new RollupSummariesSelector().selectActiveByChildObject(
 				new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Developer }, 
 				new Set<String> { childRecordDescribe.getName() });
@@ -208,9 +228,9 @@ global with sharing class RollupService
 		// Rollup child records and update master records
 		Set<Id> masterRecordIds = new Set<Id>();
 		for(SObject childRecord : childRecords)
-			for(LookupRollupSummary__c lookup : lookups)
-				if(childRecord.get(lookup.RelationShipField__c)!=null)
-					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField__c));
+			for(RollupSummary lookup : lookups)
+				if(childRecord.get(lookup.RelationShipField)!=null)
+					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField));
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
@@ -263,7 +283,7 @@ global with sharing class RollupService
 	private static boolean triggerHandleInvoked = false;
 
 	/**
-	 * Apex Trigger helper, automatically resolves child records to process via LREngine and lookups described in LookupRollupSummary__c
+	 * Apex Trigger helper, automatically resolves child records to process via LREngine and lookups described in RollupSummary
 	 *    also determines if based on the old trigger records if the rollup processing needs to occur
 	 **/
 	global static void triggerHandler()
@@ -290,26 +310,23 @@ global with sharing class RollupService
 
 	public static Database.QueryLocator masterRecordsAsQueryLocator(Id lookupId, String whereClause)
 	{
-		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });
+		List<RollupSummary> lookups = new RollupSummariesSelector().selectById(new Set<String> { (String) lookupId });
 		if(lookups.size()==0)
 			throw RollupServiceException.rollupNotFound(lookupId);
-		LookupRollupSummary__c lookup = lookups[0];
+		RollupSummary lookup = lookups[0];
 		if (String.isBlank(whereClause)) {
-			return Database.getQueryLocator('Select Id From ' + lookup.ParentObject__c);
+			return Database.getQueryLocator('Select Id From ' + lookup.ParentObject);
 		} else {
-			return Database.getQueryLocator(String.format('Select Id From {0} WHERE {1}', new List<String>{lookup.ParentObject__c, whereClause}));
+			return Database.getQueryLocator(String.format('Select Id From {0} WHERE {1}', new List<String>{lookup.ParentObject, whereClause}));
 		}
 	}
 
 	/**
 	 * Clears the Calcualte Job Id's on the given lookups preventng concurrent Calculate jobs
 	 **/ 	
-	public static void clearCalculateJobId(Set<Id> lookupIds)
+	public static void clearCalculateJobId(Set<String> lookupIds)
 	{
-		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(lookupIds);
-		for(LookupRollupSummary__c lookup : lookups)
-			lookup.CalculateJobId__c = null;
-		update lookups;
+		delete [select Id from LookupRollupCalculateJob__c where LookupRollupSummaryId__c in :lookupIds];
 	}
 	
 	/**
@@ -318,11 +335,11 @@ global with sharing class RollupService
 	public static void processScheduleItems(List<LookupRollupSummaryScheduleItems__c> rollupSummaryScheduleItems)
 	{
 		// Load related Lookup summaries for the scheduled items
-		Set<Id> lookupIds = new Set<Id>();
+		Set<String> lookupIds = new Set<String>();
 		for(LookupRollupSummaryScheduleItems__c scheduleItem : rollupSummaryScheduleItems)
-			lookupIds.add(scheduleItem.LookupRollupSummary__c);
-		Map<Id, LookupRollupSummary__c> lookups = 
-			new Map<Id, LookupRollupSummary__c>(new RollupSummariesSelector().selectById(lookupIds));
+			lookupIds.add(scheduleItem.LookupRollupSummary2__c);
+		Map<String, RollupSummary> lookups = 
+			RollupSummary.toMap(new RollupSummariesSelector().selectById(lookupIds));
 			
 		// Group the parent Id's by parent type
 		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
@@ -330,13 +347,13 @@ global with sharing class RollupService
 		for(LookupRollupSummaryScheduleItems__c scheduleItem : rollupSummaryScheduleItems)
 		{
 			Id parentId = scheduleItem.ParentId__c;
-			LookupRollupSummary__c lookup = lookups.get(scheduleItem.LookupRollupSummary__c);
+			RollupSummary lookup = lookups.get(scheduleItem.LookupRollupSummary2__c);
 			// The lookup definition could have been changed or due to a historic bug in correctly associated
-			if(parentId.getSobjectType() != gd.get(lookup.ParentObject__c))
+			if(parentId.getSobjectType() != gd.get(lookup.ParentObject))
 				continue;
-			Set<Id> parentIds = parentIdsByParentType.get(lookup.ParentObject__c);
+			Set<Id> parentIds = parentIdsByParentType.get(lookup.ParentObject);
 			if(parentIds==null)
-				parentIdsByParentType.put(lookup.ParentObject__c, (parentIds = new Set<Id>()));
+				parentIdsByParentType.put(lookup.ParentObject, (parentIds = new Set<Id>()));
 			parentIds.add(parentId);
 		}
 			
@@ -428,10 +445,10 @@ global with sharing class RollupService
 	 * @param lookups Lookup to calculate perform
 	 * @param childRecords Child records being modified
 	 **/ 
-	public static void updateMasterRollups(Set<Id> lookupIds, Set<Id> masterRecordIds)
+	public static void updateMasterRollups(Set<String> lookupIds, Set<Id> masterRecordIds)
 	{		
 		// Process rollup
-		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(lookupIds);
+		List<RollupSummary> lookups = new RollupSummariesSelector().selectById(lookupIds);
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
 		for(LREngine.Context ctx : createLREngineContexts(lookups))
 		{
@@ -524,7 +541,7 @@ global with sharing class RollupService
 			return;
 		}
 	
-		List<LookupRollupSummary__c> lookups = describeRollups(sObjectType, calculationModes);
+		List<RollupSummary> lookups = describeRollups(sObjectType, calculationModes);
 		if(lookups.isEmpty())
 			return; // Nothing to see here! :)
 			
@@ -542,19 +559,19 @@ global with sharing class RollupService
 			// keep track of fields that should trigger a rollup to be processed
 			// this avoids having to re-parse RelationshipCriteria & OrderBy fields during field change detection
 			Map<Id, Set<String>> fieldsInvolvedInLookup = new Map<Id, Set<String>>();
-			for(LookupRollupSummary__c lookup : lookups)
+			for(RollupSummary lookup : lookups)
 			{
 				Set<String> lookupFields = new Set<String>();				
-				lookupFields.add(lookup.FieldToAggregate__c);
-				if(!String.isBlank(lookup.RelationshipCriteriaFields__c)) {
-					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n')) {
+				lookupFields.add(lookup.FieldToAggregate);
+				if(!String.isBlank(lookup.RelationshipCriteriaFields)) {
+					for(String criteriaField : lookup.RelationshipCriteriaFields.split('\r\n')) {
 						lookupFields.add(criteriaField);
 					}
 				}
 				// only include order by fields when query based rollup (concat, first, last, etc.) since changes to them
 				// will not impact the outcome of an aggregate based rollup (sum, count, etc.)
-				if(LREngine.isQueryBasedRollup(RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c)) && !String.isBlank(lookup.FieldToOrderBy__c)) {
-					List<Utilities.Ordering> orderByFields = Utilities.parseOrderByClause(lookup.FieldToOrderBy__c);
+				if(LREngine.isQueryBasedRollup(RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation)) && !String.isBlank(lookup.FieldToOrderBy)) {
+					List<Utilities.Ordering> orderByFields = Utilities.parseOrderByClause(lookup.FieldToOrderBy);
 					if (orderByFields != null && !orderByFields.isEmpty()) {
 						for (Utilities.Ordering orderByField :orderByFields) {
 							lookupFields.add(orderByField.getField());
@@ -568,13 +585,13 @@ global with sharing class RollupService
 				// add relationshipfield to fields for this lookup
 				// this comes after adding to fieldsToSearchForChanges because we handle
 				// change detection separately for non-relationship fields and relationship fields
-				lookupFields.add(lookup.RelationShipField__c);
+				lookupFields.add(lookup.RelationShipField);
 
 				// add to map for later use
 				fieldsInvolvedInLookup.put(lookup.Id, lookupFields);
 
 				// add relationship field to master list of relationship fields
-				relationshipFields.add(lookup.RelationShipField__c);
+				relationshipFields.add(lookup.RelationShipField);
 			}
 			
 			// merge all record Id's
@@ -649,8 +666,8 @@ global with sharing class RollupService
 			}
 			
 			// Build a revised list of lookups to process that includes only where fields used in the rollup have changed
-			List<LookupRollupSummary__c> lookupsToProcess = new List<LookupRollupSummary__c>(); 
-			for(LookupRollupSummary__c lookup : lookups)
+			List<RollupSummary> lookupsToProcess = new List<RollupSummary>(); 
+			for(RollupSummary lookup : lookups)
 			{
 				// Are any of the changed fields used by this lookup?
 				Set<String> lookupFields = fieldsInvolvedInLookup.get(lookup.Id);
@@ -675,39 +692,39 @@ global with sharing class RollupService
 		Set<Id> masterRecordIds = new Set<Id>();
 		Map<Id, SObject> recordsToProcess = existingRecords.isEmpty() ? newRecords : existingRecords;
 		for(SObject childRecord : recordsToProcess.values())
-			for(LookupRollupSummary__c lookup : lookups)
-				if(childRecord.get(lookup.RelationShipField__c)!=null)
-					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField__c));
+			for(RollupSummary lookup : lookups)
+				if(childRecord.get(lookup.RelationShipField)!=null)
+					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField));
 		updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
 	}	
 	
 	/**
-	 * Method wraps the LREngine.rolup method, provides context via the lookups described in LookupRollupSummary__c
+	 * Method wraps the LREngine.rolup method, provides context via the lookups described in RollupSummary
 	 *
 	 * @param lookups Lookup to calculate perform
 	 * @param childRecords Child records being modified
 	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
 	 **/ 
-	private static List<SObject> updateMasterRollupsTrigger(List<LookupRollupSummary__c> lookups, Set<Id> masterRecordIds)
+	private static List<SObject> updateMasterRollupsTrigger(List<RollupSummary> lookups, Set<Id> masterRecordIds)
 	{
 		// Process lookups, 
 		//    Realtime & Developer are added to a list for later LRE context creation and processing, 
 		//    Scheduled result in parent Id's being emitted to scheduled item object for later processing
         Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
-        List<LookupRollupSummary__c> runnowLookups = new List<LookupRollupSummary__c>();      
+        List<RollupSummary> runnowLookups = new List<RollupSummary>();      
         List<LookupRollupSummaryScheduleItems__c> scheduledItems = new List<LookupRollupSummaryScheduleItems__c>(); 
-        for(LookupRollupSummary__c lookup : lookups)
+        for(RollupSummary lookup : lookups)
         {
-            if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Realtime.name() ||
-            	lookup.CalculationMode__c == RollupSummaries.CalculationMode.Developer.name())
+            if(lookup.CalculationMode == RollupSummaries.CalculationMode.Realtime.name() ||
+            	lookup.CalculationMode == RollupSummaries.CalculationMode.Developer.name())
             {
                 // Filter realtime & Developer lookups in order to generate LRE contexts below
                 runnowLookups.add(lookup);
             }
-            else if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Scheduled.name())
+            else if(lookup.CalculationMode == RollupSummaries.CalculationMode.Scheduled.name())
             {       
             	// For polymoprhic relationships the master Id list maybe mixed types, associated with the correct rollup
-                SObjectType parentType = gd.get(lookup.ParentObject__c);
+                SObjectType parentType = gd.get(lookup.ParentObject);
                 if(parentType==null)
                 	continue;
                 // For scheduled rollups queue the parent Id record for processing
@@ -717,6 +734,7 @@ global with sharing class RollupService
 	                    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
 	                    scheduledItem.Name = parentId;
 	                    scheduledItem.LookupRollupSummary__c = lookup.Id;
+	                    scheduledItem.LookupRollupSummary2__c = lookup.Id;
 	                    scheduledItem.ParentId__c = parentId;
 	                    scheduledItem.QualifiedParentID__c = parentId + '#' + lookup.Id; 
 	                    scheduledItems.add(scheduledItem);
@@ -764,11 +782,11 @@ global with sharing class RollupService
 	 *
 	 * @returns List of rollup summary definitions
 	 **/
-	private static List<LookupRollupSummary__c> describeRollups(SObjectType childObjectType, List<RollupSummaries.CalculationMode> calculationModes)
+	private static List<RollupSummary> describeRollups(SObjectType childObjectType, List<RollupSummaries.CalculationMode> calculationModes)
 	{	
 		// Query applicable lookup definitions
 		Schema.DescribeSObjectResult childRecordDescribe = childObjectType.getDescribe();
-		List<LookupRollupSummary__c> lookups =
+		List<RollupSummary> lookups =
 			new RollupSummariesSelector(false).selectActiveByChildObject(
 				calculationModes, 
 				new Set<String> { childRecordDescribe.getName() });
@@ -778,7 +796,7 @@ global with sharing class RollupService
 	/**
 	 * Method takes a list of Lookups and creates the most optimum list of LREngine.Context's to execute
 	 **/
-	private static List<LREngine.Context> createLREngineContexts(List<LookupRollupSummary__c> lookups)
+	private static List<LREngine.Context> createLREngineContexts(List<RollupSummary> lookups)
 	{ 
 		// list of contexts generated
 		List<LREngine.Context> engineContexts = new List<LREngine.Context>();
@@ -789,7 +807,7 @@ global with sharing class RollupService
 		List<LookupRollupSummaryWrapper> noOrderByLookupWrappers = new List<LookupRollupSummaryWrapper>();
 		Map<Id, LookupRollupSummaryScheduleItems__c> scheduledItems = 
 			new Map<Id, LookupRollupSummaryScheduleItems__c>(); 
-		for(LookupRollupSummary__c lookup : lookups)
+		for(RollupSummary lookup : lookups)
 		{
 			// if no order is specified, we'll defer context identification until after we build contexts for
 			// all the lookups that contain a specific order by
@@ -807,8 +825,8 @@ global with sharing class RollupService
 					lreContextByOrderBy = new Map<String, LREngine.Context>();
 					engineCtxByParentRelationship.put(contextKey, lreContextByOrderBy);
 				}
-				String orderBy = lookupWrapper.OrderByClause; // this will be the FieldToOrderBy__c from the LookupRollupSummary__c
-				// Lowering case on Describable fields is only required for Legacy purposes since LookupRollupSummary__c records
+				String orderBy = lookupWrapper.OrderByClause; // this will be the FieldToOrderBy__c from the RollupSummary
+				// Lowering case on Describable fields is only required for Legacy purposes since RollupSummary records
 				// will be updated with describe names on insert/update moving forward.				
 				String orderByKey = orderBy.toLowerCase();
 				// obtain the context for this orderby key
@@ -879,7 +897,7 @@ global with sharing class RollupService
 						lookupWrapper.ParentObjectType, // parent object
 	                    lookupWrapper.ChildObjectType,  // child object                    
 	                    lookupWrapper.RelationshipField.getDescribe(), // relationship field name
-	                    lookupWrapper.Lookup.RelationShipCriteria__c,
+	                    lookupWrapper.Lookup.RelationShipCriteria,
 	                    lookupWrapper.SharingMode,
 	                    lookupWrapper.OrderByClause);		
 	}
@@ -898,7 +916,7 @@ global with sharing class RollupService
 
 	private class LookupRollupSummaryWrapper
 	{
-		public LookupRollupSummary__c Lookup;		
+		public RollupSummary Lookup;		
 		public Schema.SObjectType ParentObjectType;
 		public Schema.SObjectType ChildObjectType;
 		public Schema.SObjectField FieldToAggregate;		
@@ -910,20 +928,20 @@ global with sharing class RollupService
 		public LREngine.RollupSummaryField RollupSummaryField;
 	}
 
-	private static LookupRollupSummaryWrapper createLSFWrapper(LookupRollupSummary__c lookup)
+	private static LookupRollupSummaryWrapper createLSFWrapper(RollupSummary lookup)
 	{
 		// Resolve (and cache) SObjectType's and fields for Parent and Child objects
-		SObjectType parentObjectType = getSObjectType(lookup.ParentObject__c);
+		SObjectType parentObjectType = getSObjectType(lookup.ParentObject);
 		if(parentObjectType==null)
 			throw RollupServiceException.invalidRollup(lookup);
 		Map<String, Schema.SObjectField> parentFields = getSObjectTypeFields(parentObjectType);
-		SObjectType childObjectType = getSObjectType(lookup.ChildObject__c);
+		SObjectType childObjectType = getSObjectType(lookup.ChildObject);
 		if(childObjectType==null)
 			throw RollupServiceException.invalidRollup(lookup);
 		Map<String, Schema.SObjectField> childFields = getSObjectTypeFields(childObjectType);
-		SObjectField fieldToAggregate = childFields.get(lookup.FieldToAggregate__c);
-		SObjectField relationshipField = childFields.get(lookup.RelationshipField__c);
-		SObjectField aggregateResultField = parentFields.get(lookup.AggregateResultField__c);
+		SObjectField fieldToAggregate = childFields.get(lookup.FieldToAggregate);
+		SObjectField relationshipField = childFields.get(lookup.RelationshipField);
+		SObjectField aggregateResultField = parentFields.get(lookup.AggregateResultField);
 		if(fieldToAggregate==null || relationshipField==null || aggregateResultField==null)
 			throw RollupServiceException.invalidRollup(lookup);
 
@@ -932,8 +950,8 @@ global with sharing class RollupService
             new LREngine.RollupSummaryField(
 				aggregateResultField.getDescribe(),
 				fieldToAggregate.getDescribe(),
-				RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c),
-            	lookup.ConcatenateDelimiter__c);
+				RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation),
+            	lookup.ConcatenateDelimiter);
 
 		LookupRollupSummaryWrapper wrapper = new LookupRollupSummaryWrapper();
 		wrapper.Lookup = lookup;
@@ -943,11 +961,11 @@ global with sharing class RollupService
 		wrapper.RelationshipField = relationshipField;
 		wrapper.AggregateResultField = aggregateResultField;
 		wrapper.SharingMode =
-			lookup.CalculationSharingMode__c == null || lookup.CalculationSharingMode__c == 'User' ?
+			lookup.CalculationSharingMode == null || lookup.CalculationSharingMode == 'User' ?
 				LREngine.SharingMode.User : LREngine.SharingMode.System_x;
 		// if order by is not specified, orderby will be null else it will be FieldToOrderBy__c
-		wrapper.OrderByRequired = !String.isBlank(lookup.FieldToOrderBy__c);
-		wrapper.OrderByClause =  wrapper.OrderByRequired ? lookup.FieldToOrderBy__c : null;
+		wrapper.OrderByRequired = !String.isBlank(lookup.FieldToOrderBy);
+		wrapper.OrderByClause =  wrapper.OrderByRequired ? lookup.FieldToOrderBy : null;
 		wrapper.RollupSummaryField = rsf;
 
 		return wrapper;
@@ -958,12 +976,12 @@ global with sharing class RollupService
 		// Context Key Based On: ParentObject__c, RelationshipField__c, RelationShipCriteria__c, rsfType, SharingMode
 		// Note we do not include OrderBy here because orderby map is contained within the map of contextKeys
 		String rsfType = lookupWrapper.RollupSummaryField.isAggregateBasedRollup() ? 'aggregate' : 'query';
-		// Lowering case on Describable fields is only required for Legacy purposes since LookupRollupSummary__c records
+		// Lowering case on Describable fields is only required for Legacy purposes since RollupSummary records
 		// will be updated with describe names on insert/update moving forward.
 		// Ideally this would not be needed to save CPU cycles but including to ensure context is properly re-used when possible for
 		// rollups that have not been updated/inserted after the insert/update enhancement is applied
 		// Unable to lower RelationShipCriteria__c because of field value case-(in)sensitivity configuration
-		return  (lookupWrapper.Lookup.ParentObject__c.toLowerCase() + '#' + lookupWrapper.Lookup.RelationshipField__c.toLowerCase() + '#' + lookupWrapper.Lookup.RelationShipCriteria__c + '#' + rsfType + '#' + lookupWrapper.SharingMode);
+		return  (lookupWrapper.Lookup.ParentObject.toLowerCase() + '#' + lookupWrapper.Lookup.RelationshipField.toLowerCase() + '#' + lookupWrapper.Lookup.RelationShipCriteria + '#' + rsfType + '#' + lookupWrapper.SharingMode);
 	}
 	
 	/**

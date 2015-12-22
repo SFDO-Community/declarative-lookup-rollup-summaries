@@ -30,7 +30,7 @@
 public with sharing class RollupCalculateJob 
 	implements Database.Batchable<sObject>
 {
-	private Id lookupId;
+	private String lookupId;
 	private String masterWhereClause;
 	
 	public RollupCalculateJob(String lookupId)
@@ -53,12 +53,12 @@ public with sharing class RollupCalculateJob
 	public void execute(Database.BatchableContext BC, List<sObject> masterRecords)
 	{
 		// Update the master records as per the lookup definition
-		RollupService.updateMasterRollups(new Set<Id> { lookupId }, new Map<Id, Sobject>(masterRecords).keySet());
+		RollupService.updateMasterRollups(new Set<String> { lookupId }, new Map<Id, Sobject>(masterRecords).keySet());
 	}
 	
 	public void finish(Database.BatchableContext BC) 
 	{
 		// Clear the Job Id which was preventing another calculate job running while this one was running
-		RollupService.clearCalculateJobId(new Set<Id> { lookupId }); 
+		RollupService.clearCalculateJobId(new Set<String> { lookupId }); 
 	}
 }

@@ -31,7 +31,8 @@ public class RollupSummaryScheduleItemsSelector extends fflib_SObjectSelector
 		return new List<Schema.SObjectField> {
 			LookupRollupSummaryScheduleItems__c.Name,
 			LookupRollupSummaryScheduleItems__c.ParentId__c,
-			LookupRollupSummaryScheduleItems__c.LookupRollupSummary__c
+			LookupRollupSummaryScheduleItems__c.LookupRollupSummary__c,
+			LookupRollupSummaryScheduleItems__c.LookupRollupSummary2__c
 		};
 	}
 
