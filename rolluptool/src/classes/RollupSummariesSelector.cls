@@ -176,6 +176,20 @@ public class RollupSummariesSelector
 					 	addOrdering(LookupRollupSummary__c.RelationshipField__c, fflib_QueryFactory.SortOrder.ASCENDING).
 					 	toSOQL()));
 		}
+
+		/**
+		 * Returns lookup rollup summary definitions for the given rollup unique names
+		 **/
+		public List<RollupSummary> selectByUniqueName(Set<String> uniqueNames)
+		{
+			return RollupSummary.toList(
+				Database.query(
+					newQueryFactory().
+						setCondition('UniqueName__c in :uniqueNames').
+					 	addOrdering(LookupRollupSummary__c.ParentObject__c, fflib_QueryFactory.SortOrder.ASCENDING).
+					 	addOrdering(LookupRollupSummary__c.RelationshipField__c, fflib_QueryFactory.SortOrder.ASCENDING).
+					 	toSOQL()));
+		}
 	}
 
 	/**

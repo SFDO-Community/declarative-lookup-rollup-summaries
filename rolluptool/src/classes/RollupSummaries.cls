@@ -211,6 +211,18 @@ public class RollupSummaries extends fflib_SObjectDomain
 		
 		for(RollupSummary lookupRollupSummary : Records)
 		{
+			// Custom Metadata shadow record?
+			if(lookupRollupSummary.UniqueName!=null) {
+				if(lookupRollupSummary.UniqueName.startsWith('mdt:')) {
+					// Prevent this record from being activated
+					if(lookupRollupSummary.Active) {
+						lookupRollupSummary.Fields.Active.addError('This rollup is managed by the system and cannot be activated.');
+						break;
+					}
+					// Skip rest of validation
+					break;
+				}
+			}
 			// Parent Object valid?
 			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);
 			if(parentObjectType==null)

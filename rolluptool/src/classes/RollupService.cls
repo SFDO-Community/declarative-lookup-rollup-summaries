@@ -793,6 +793,7 @@ global with sharing class RollupService
         Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
         List<RollupSummary> runnowLookups = new List<RollupSummary>();      
         List<LookupRollupSummaryScheduleItems__c> scheduledItems = new List<LookupRollupSummaryScheduleItems__c>(); 
+        List<LookupRollupSummaryScheduleItems__c> scheduledItemsForMDTs = new List<LookupRollupSummaryScheduleItems__c>(); 
         for(RollupSummary lookup : lookups)
         {
             if(lookup.CalculationMode == RollupSummaries.CalculationMode.Realtime.name() ||
@@ -813,15 +814,67 @@ global with sharing class RollupService
                 	if(parentId.getSobjectType() == parentType) {
 	                    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
 	                    scheduledItem.Name = parentId;
-	                    scheduledItem.LookupRollupSummary__c = lookup.Id;
+	                    scheduledItem.LookupRollupSummary__c = lookup.Record instanceof LookupRollupSummary2__mdt ? null : lookup.Id;
 	                    scheduledItem.LookupRollupSummary2__c = lookup.Id;
 	                    scheduledItem.ParentId__c = parentId;
 	                    scheduledItem.QualifiedParentID__c = parentId + '#' + lookup.Id; 
 	                    scheduledItems.add(scheduledItem);
+	                    if(lookup.Record instanceof LookupRollupSummary2__mdt) {
+	                 		scheduledItemsForMDTs.add(scheduledItem);   	
+	                    }
 	                }
                 }                   
             }
         }
+
+        // Any parent scheduled calculations that relate to Custom Metadata based rollups?
+    	if(scheduledItemsForMDTs.size()>0) {
+
+    		// Look for existing shadow rollup records
+    		Set<String> uniqueNames = new Set<String>();
+    		for(LookupRollupSummaryScheduleItems__c scheduledItem : scheduledItemsForMDTs)
+    			uniqueNames.add('mdt:' + scheduledItem.LookupRollupSummary2__c);
+    		Map<String, RollupSummary> shadowRollupsByMdtId = new Map<String, RollupSummary>();
+    		for(RollupSummary shadowRollup : new RollupSummariesSelector.CustomObjectSelector().selectByUniqueName(uniqueNames)) {
+    			String uniqueName = shadowRollup.UniqueName;
+    			String mdtRollupId = uniqueName.split(':')[1];
+    			shadowRollupsByMdtId.put(mdtRollupId, shadowRollup);
+			}
+
+    		// Associate the Schedule Items with the correct shadow rollup record
+    		Map<String, RollupSummary> lookupsById = dlrs.RollupSummary.toMap(lookups);
+    		Map<String, LookupRollupSummary__c> shadowRollupsToInsertByRollupId = new Map<String, LookupRollupSummary__c>();
+    		for(LookupRollupSummaryScheduleItems__c scheduledItem : scheduledItemsForMDTs) {
+    			String rollupId = scheduledItem.LookupRollupSummary2__c;
+    			RollupSummary shadowRollup = shadowRollupsByMdtId.get(rollupId);
+    			if(shadowRollup!=null) {
+    				scheduledItem.LookupRollupSummary__c = shadowRollup.Id;
+    			} else if(shadowRollupsToInsertByRollupId.containsKey(rollupId) == false) {
+					shadowRollupsToInsertByRollupId.put(rollupId, 
+						new LookupRollupSummary__c(
+							Name = lookupsById.get(rollupId).Name,
+						    UniqueName__c = 'mdt:' + rollupId,
+							ParentObject__c = 'N/A',
+							ChildObject__c = 'N/A',
+							RelationshipField__c = 'N/A',
+							AggregateResultField__c = 'N/A',
+							FieldToAggregate__c = 'N/A',
+						    CalculationMode__c = null,
+						    CalculationSharingMode__c = null,
+						    AggregateOperation__c = null,
+							Active__c = false,
+							Description__c = 'System managed do not touch.'));
+    			}
+    		}
+			if(shadowRollupsToInsertByRollupId.size()>0) {
+				// Insert new shadow rollups and associate with the correct schedule item
+				insert shadowRollupsToInsertByRollupId.values();
+	    		for(LookupRollupSummaryScheduleItems__c scheduledItem : scheduledItemsForMDTs) {
+	    			String rollupId = scheduledItem.LookupRollupSummary2__c;
+	    			scheduledItem.LookupRollupSummary__c = shadowRollupsToInsertByRollupId.get(rollupId).Id;
+	    		}
+			}
+    	}
 
         // Add parent Id's to schedule items object
         upsert scheduledItems QualifiedParentID__c;

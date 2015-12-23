@@ -114,6 +114,14 @@
         <unique>true</unique>
     </fields>
     <label>Lookup Rollup Summary Schedule Item</label>
+    <listViews>
+        <fullName>All</fullName>
+        <columns>NAME</columns>
+        <columns>LookupRollupSummary__c</columns>
+        <columns>ParentRecord__c</columns>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
     <nameField>
         <label>Lookup Rollup Summary Schedule Item Id</label>
         <type>Text</type>

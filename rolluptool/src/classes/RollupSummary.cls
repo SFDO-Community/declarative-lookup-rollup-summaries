@@ -117,8 +117,8 @@ public class RollupSummary {
 	}
 	
 	public String UniqueName {
-		get { return (String) Record.get('UniqueName__c'); }
-		set { Record.put('UniqueName__c', value); } 
+		get { return (String) Record.get(Record instanceof LookupRollupSummary__c ? 'UniqueName__c' : 'DeveloperName'); }
+		set { Record.put(Record instanceof LookupRollupSummary__c ? 'UniqueName__c' : 'DeveloperName', value); } 
 	}
 	
 	public String ParentObject {

@@ -212,6 +212,10 @@
         <visibility>Available</visibility>
     </tabSettings>
     <tabSettings>
+        <tab>LookupRollupSummaryScheduleItems__c</tab>
+        <visibility>Available</visibility>
+    </tabSettings>
+    <tabSettings>
         <tab>Welcome</tab>
         <visibility>Available</visibility>
     </tabSettings>
