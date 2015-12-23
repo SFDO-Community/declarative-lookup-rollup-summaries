@@ -45,13 +45,14 @@ public class RollupSummariesSelector
 	}
 
 	/**
-	 * Returns all rollups for the given Id set
+	 * Returns all rollups for the given Id set (can contain either Custom Metadata Id' or DeveloperName's)
 	 **/
 	public List<RollupSummary> selectById(Set<String> idSet)
 	{
 		List<RollupSummary> records = new List<RollupSummary>();
 		records = m_customObjectSelector.selectById(idSet);
 		records.addAll(m_customMetadataSelector.selectById(idSet));
+		records.addAll(m_customMetadataSelector.selectByDeveloperName(idSet));		
 		return records;
 	}
 
@@ -209,7 +210,7 @@ public class RollupSummariesSelector
 				LookupRollupSummary2__mdt.RelationshipCriteriaFields__c,
 				LookupRollupSummary2__mdt.RelationshipField__c,
 				LookupRollupSummary2__mdt.CalculationSharingMode__c,
-				LookupRollupSummary2__mdt.TestCodeDocument__c,
+				LookupRollupSummary2__mdt.TestCode__c,
 				LookupRollupSummary2__mdt.TestCodeSeeAllData__c,
 				LookupRollupSummary2__mdt.Description__c
 			};
@@ -222,10 +223,17 @@ public class RollupSummariesSelector
 
 		public List<RollupSummary> selectById(Set<String> idSet)
 		{
-			Set<Id> recordIds = new Set<Id>();
-			for(String idAsString : idSet)
-				recordIds.add((Id)idAsString);
-			return RollupSummary.toList(selectSObjectsById(recordIds));
+			return RollupSummary.toList(
+				Database.query(
+					newQueryFactory().setCondition('id in :idSet').toSOQL()));
+		}
+
+		public List<RollupSummary> selectByDeveloperName(Set<String> idSet)
+		{
+			String developerName = new List<String>(idSet)[0];
+			return RollupSummary.toList(
+				Database.query(
+					newQueryFactory().setCondition('DeveloperName = :developerName').toSOQL()));
 		}
 
 		/**

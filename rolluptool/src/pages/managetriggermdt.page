@@ -25,7 +25,7 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 -->
-<apex:page standardController="LookupRollupSummary2__mdt" extensions="RollupController" sidebar="false">
+<apex:page standardController="LookupRollupSummary2__mdt" tabStyle="ManageLookupRollupSummaries__tab" extensions="RollupController" sidebar="false">
 	<apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip.js')}"/>
 	<apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip-load.js')}"/>
 	<apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip-deflate.js')}"/>

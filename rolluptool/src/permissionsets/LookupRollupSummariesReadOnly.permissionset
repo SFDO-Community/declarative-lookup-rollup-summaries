@@ -202,6 +202,15 @@
         <object>LookupRollupSummary__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
+    <objectPermissions>
+        <allowCreate>false</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>LookupRollupCalculateJob__c</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>    
     <pageAccesses>
         <apexPage>managetrigger</apexPage>
         <enabled>false</enabled>
@@ -222,4 +231,44 @@
         <apexPage>welcome</apexPage>
         <enabled>false</enabled>
     </pageAccesses>
+    <pageAccesses>
+        <apexPage>welcometab</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+    <pageAccesses>
+        <apexPage>managelookuprollupsummaries</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+    <pageAccesses>
+        <apexPage>managetriggermdt</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+    <pageAccesses>
+        <apexPage>rollupcalculatemdt</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+    <pageAccesses>
+        <apexPage>rollupscheduledcalculatemdt</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+    <tabSettings>
+        <tab>LookupRollupSummary__c</tab>
+        <visibility>Available</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>LookupRollupCalculateJob__c</tab>
+        <visibility>Available</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>LookupRollupSummaryLog__c</tab>
+        <visibility>Available</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Welcome</tab>
+        <visibility>Available</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>ManageLookupRollupSummaries</tab>
+        <visibility>Available</visibility>
+    </tabSettings>    
 </PermissionSet>

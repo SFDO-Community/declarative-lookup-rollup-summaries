@@ -51,6 +51,14 @@ public with sharing class RollupCalculateController
 			ApexPages.addMessages(e);
 			return null;
 		}
+
+		// Custom Metadata backed rollup?
+		if(standardController.getRecord() instanceof LookupRollupSummary2__mdt) {
+			PageReference manageRollupsPage = Page.managelookuprollupsummaries;
+			manageRollupsPage.getParameters().put('id', standardController.getId());
+			return manageRollupsPage;
+		}
+
 		return standardController.view();
 	}
 }

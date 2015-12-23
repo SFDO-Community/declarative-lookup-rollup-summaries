@@ -109,7 +109,7 @@ private with sharing class RollupServiceTest3
 			RollupService.runJobToCalculate(rollupSummary.Id);
 			System.assert(false, 'Expected an exception');
 		} catch (Exception e) {
-			System.assert(e.getMessage().equals('A calculate job for rollup \'Test Rollup\' is already executing. If you suspect it is not aleady running try clearing the Calculate Job Id field and try again.'));
+			System.assert(e.getMessage().equals('A calculate job for rollup \'Test Rollup\' is already executing. If you suspect it is not aleady running try clearing the applicable record from the Lookup Rollup Calculate Jobs tab and try again.'));
 		}
 		Test.stopTest();
 		// Assert job cleared

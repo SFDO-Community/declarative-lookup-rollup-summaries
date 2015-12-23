@@ -50,7 +50,7 @@ public class RollupServiceException extends Exception
 	 **/
 	public static RollupServiceException jobAlreadyRunning(String name)
 	{
-		return new RollupServiceException('A calculate job for rollup \'' + name + '\' is already executing. If you suspect it is not aleady running try clearing the Calculate Job Id field and try again.');
+		return new RollupServiceException('A calculate job for rollup \'' + name + '\' is already executing. If you suspect it is not aleady running try clearing the applicable record from the Lookup Rollup Calculate Jobs tab and try again.');
 	}
 	
 	/**

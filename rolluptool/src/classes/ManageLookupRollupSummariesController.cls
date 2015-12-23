@@ -29,6 +29,8 @@ public with sharing class ManageLookupRollupSummariesController {
 	public LookupRollupSummary2__mdt LookupRollupSummary {get;set;}
 
 	public String selectedLookup {get;set;}
+	
+	public Boolean MetadataConnectionError {get;set;}	
 
 	public ManageLookupRollupSummariesController() {
 		LookupRollupSummary = new LookupRollupSummary2__mdt();
@@ -44,12 +46,30 @@ public with sharing class ManageLookupRollupSummariesController {
 	}
 
 	public PageReference init() {
+
+		// Metadata API connection?
+		MetadataConnectionError = !RollupService.checkMetadataAPIConnection();
+		if(MetadataConnectionError)
+		{
+			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'Salesforce Metadata API connection failure, click the link below to configure.'));
+			return null;
+		}
+
 		// URL parameter?
 		selectedLookup = ApexPages.currentPage().getParameters().get('id');		
 		if(selectedLookup!=null) {
 			LookupRollupSummary = (LookupRollupSummary2__mdt) 
 				new RollupSummariesSelector.CustomMetadataSelector().
 					selectById(new Set<String> { selectedLookup })[0].Record;
+		} 
+		else {
+			selectedLookup = ApexPages.currentPage().getParameters().get('developerName');		
+			if(selectedLookup!=null) {
+				LookupRollupSummary = (LookupRollupSummary2__mdt) 
+					new RollupSummariesSelector.CustomMetadataSelector().
+						selectByDeveloperName(new Set<String> { selectedLookup })[0].Record;
+				selectedLookup = LookupRollupSummary.Id;
+			}			
 		}
 		return null;
 	}
@@ -73,7 +93,7 @@ public with sharing class ManageLookupRollupSummariesController {
 			// Reload this page (and thus the rollup list in a new request, metadata changes are not visible until this request ends)
 			PageReference newPage = Page.managelookuprollupsummaries;
 			newPage.setRedirect(true);
-			newPage.getParameters().put('id', LookupRollupSummary.Id);
+			newPage.getParameters().put('developerName', LookupRollupSummary.DeveloperName);
 			return newPage;			
 		} catch (RollupService.RollupValidationException e) {
 			// Extract errors from exception and display on the page
@@ -104,6 +124,13 @@ public with sharing class ManageLookupRollupSummariesController {
 		}
 		return null;
 	}	
+
+	public PageReference hideMessage() {
+		DeclarativeLookupRollupSummaries__c settings = DeclarativeLookupRollupSummaries__c.getOrgDefaults();
+		settings.HideManageLookupRollupSummariesInfo__c = true;
+		upsert settings;
+		return null;
+	}
 
 	public List<SelectOption> getCalculationModes(){
 		List<SelectOption> options = new List<SelectOption>();

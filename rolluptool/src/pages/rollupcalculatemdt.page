@@ -25,7 +25,7 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 -->
-<apex:page standardController="LookupRollupSummary2__mdt" extensions="RollupCalculateController">
+<apex:page standardController="LookupRollupSummary2__mdt" tabStyle="ManageLookupRollupSummaries__tab" extensions="RollupCalculateController">
 	<apex:sectionHeader title="{!LookupRollupSummary2__mdt.Label}" subtitle="Run Calculate Job"/>
 	<apex:pageMessages />
 	<apex:form >

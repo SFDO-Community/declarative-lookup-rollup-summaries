@@ -85,6 +85,7 @@
 		<members>rollupsummaryenhanced</members>
 		<members>rollupsummaryenhancednew</members>
 		<members>welcome</members>
+		<members>welcometab</members>
 		<name>ApexPage</name>
 	</types>
 	<types>
