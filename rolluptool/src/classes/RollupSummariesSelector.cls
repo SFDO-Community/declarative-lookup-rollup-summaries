@@ -49,7 +49,10 @@ public class RollupSummariesSelector
 	 **/
 	public List<RollupSummary> selectById(Set<String> idSet)
 	{
-		return m_customObjectSelector.selectById(idSet);
+		List<RollupSummary> records = new List<RollupSummary>();
+		records = m_customObjectSelector.selectById(idSet);
+		records.addAll(m_customMetadataSelector.selectById(idSet));
+		return records;
 	}
 
 	/**
@@ -57,7 +60,10 @@ public class RollupSummariesSelector
 	 **/
 	public List<RollupSummary> selectActiveByChildObject(RollupSummaries.CalculationMode calculationMode, Set<String> childObjectNames)
 	{
-		return m_customObjectSelector.selectActiveByChildObject(calculationMode, childObjectNames);
+		List<RollupSummary> records = new List<RollupSummary>();
+		records = m_customObjectSelector.selectActiveByChildObject(calculationMode, childObjectNames);
+		records.addAll(m_customMetadataSelector.selectActiveByChildObject(calculationMode, childObjectNames));
+		return records;
 	}
 	
 	/**
@@ -65,7 +71,10 @@ public class RollupSummariesSelector
 	 **/
 	public List<RollupSummary> selectActiveByChildObject(List<RollupSummaries.CalculationMode> calculationModes, Set<String> childObjectNames)
 	{
-		return m_customObjectSelector.selectActiveByChildObject(calculationModes, childObjectNames);
+		List<RollupSummary> records = new List<RollupSummary>();
+		records = m_customObjectSelector.selectActiveByChildObject(calculationModes, childObjectNames);
+		records.addAll(m_customMetadataSelector.selectActiveByChildObject(calculationModes, childObjectNames));
+		return records;
 	}
 
 	/**
@@ -73,7 +82,10 @@ public class RollupSummariesSelector
 	 **/
 	public List<RollupSummary> selectActiveByUniqueName(Set<String> uniqueNames)
 	{
-		return m_customObjectSelector.selectActiveByUniqueName(uniqueNames);
+		List<RollupSummary> records = new List<RollupSummary>();
+		records = m_customObjectSelector.selectActiveByUniqueName(uniqueNames);
+		records.addAll(m_customMetadataSelector.selectActiveByUniqueName(uniqueNames));
+		return records;
 	}
 
 	/**

@@ -33,7 +33,7 @@ public with sharing class RollupController
 	
 	public MetadataService.AsyncResult AsyncResult {get; private set;}
 	
-	public LookupRollupSummary__c RollupSummary  { get; set; }
+	public RollupSummary RollupSummary  { get; set; }
 
 	public String RollupTriggerName { get; set; }
 	
@@ -52,12 +52,11 @@ public with sharing class RollupController
 	public RollupController(ApexPages.StandardController standardController)
 	{
 		// Query Lookup Rollup Summary record
-		RollupSummary = (LookupRollupSummary__c) 
-			new RollupSummariesSelector().selectById(new Set<String> { (String) standardController.getId() })[0].Record;
+		RollupSummary = new RollupSummariesSelector().selectById(new Set<String> { (String) standardController.getId() })[0];
 		
 		// Generate names for test and triggers to deploy / undeploy
-		RollupTriggerName = RollupSummaries.makeTriggerName(new RollupSummary(this.RollupSummary));
-		RollupTriggerTestName = RollupSummaries.makeTriggerTestName(new RollupSummary(this.RollupSummary));
+		RollupTriggerName = RollupSummaries.makeTriggerName(RollupSummary);
+		RollupTriggerTestName = RollupSummaries.makeTriggerTestName(RollupSummary);
 				
 		// Initialise view state
 		init();
@@ -133,14 +132,14 @@ public with sharing class RollupController
 				'@IsTest\n' +	 
 			    'private class ' + RollupTriggerTestName + '\n' +  
 				'{\n' + 
-					 (RollupSummary.TestCodeSeeAllData__c == true ? '    @IsTest(SeeAllData=true)\n' : '    @IsTest\n') +
+					 (RollupSummary.TestCodeSeeAllData == true ? '    @IsTest(SeeAllData=true)\n' : '    @IsTest\n') +
 				'    private static void testTrigger()\n' +
 				'    {\n' + 
-					((RollupSummary.TestCode__c!=null && RollupSummary.TestCode__c.length()>0) ? 
-						RollupSummary.TestCode__c + '\n' : 
+					((RollupSummary.TestCode!=null && RollupSummary.TestCode.length()>0) ? 
+						RollupSummary.TestCode + '\n' : 
 						(
 							'        // Force the ' + RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-							'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ChildObject__c + '());\n')
+							'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ChildObject + '());\n')
 						) +
 				'    }\n' +
 				'}';			
@@ -173,7 +172,7 @@ public with sharing class RollupController
 				'/**\n' +
 				' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
 				' **/\n' +
-				'trigger ' + RollupTriggerName + ' on ' + RollupSummary.ChildObject__c + '\n' + 
+				'trigger ' + RollupTriggerName + ' on ' + RollupSummary.ChildObject + '\n' + 
 				'    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n'+ 
 				'{\n'+
 				'    '+ (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.triggerHandler();\n'+
@@ -244,7 +243,7 @@ public with sharing class RollupController
 				// Determine active rollups for this child and deactivate them
 				List<RollupSummary> rollups = 
 					new RollupSummariesSelector().selectActiveByChildObject(
-						RollupSummaries.CalculationMode.Realtime, new Set<String> { RollupSummary.ChildObject__c });
+						RollupSummaries.CalculationMode.Realtime, new Set<String> { RollupSummary.ChildObject });
 				List<LookupRollupSummary__c> recordsToUpdate = new List<LookupRollupSummary__c>();
 				for(RollupSummary rollup : rollups) {
 					// TODO: Can only auto deactivate Custom Object based rollups

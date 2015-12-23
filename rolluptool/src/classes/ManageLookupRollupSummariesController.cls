@@ -105,17 +105,13 @@ public with sharing class ManageLookupRollupSummariesController {
 		return null;
 	}	
 
-	public PageReference manageChildTrigger() {
-		return null;
-	}
-
-	public PageReference calculate() {
-		return null;
-	}
-
-	public PageReference scheduleCalculate() {
-		return null;
-	}
+	public List<SelectOption> getCalculationModes(){
+		List<SelectOption> options = new List<SelectOption>();
+        for(Schema.Picklistentry picklistEntry : LookupRollupSummary__c.fields.CalculationMode__c.getDescribe().getPickListValues()) {
+        	options.add(new SelectOption(picklistEntry.getValue(), picklistEntry.getLabel()));
+        }
+        return options;
+    }   	
 
 	public List<SelectOption> getAggregateOperations(){
 		List<SelectOption> options = new List<SelectOption>();

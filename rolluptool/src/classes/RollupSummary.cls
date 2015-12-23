@@ -142,8 +142,8 @@ public class RollupSummary {
 	}
 	
 	public String TestCode {
-		get { return (String) Record.get('TestCode__c'); }
-		set { Record.put('TestCode__c', value); } 
+		get { return (String) Record.get(Record instanceof LookupRollupSummary__c ? 'TestCode__c' : 'TestCodeDocument__c'); }
+		set { Record.put(Record instanceof LookupRollupSummary__c ? 'TestCode__c' : 'TestCodeDocument__c', value); } 
 	}
 	
 	public Boolean TestCodeSeeAllData {

@@ -114,7 +114,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 	{
 		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
 		Map<SObjectType, Map<String, Schema.SObjectField>> gdFields = new Map<SObjectType, Map<String, Schema.SObjectField>>(); 	
-		for(RollupSummary lookupRollupSummary : (List<RollupSummary>) Records)
+		for(RollupSummary lookupRollupSummary : Records)
 		{
 			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);
 			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject);
@@ -124,7 +124,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 				gdFields.put(childObjectType, childObjectType.getDescribe().fields.getMap());
 		}
 
-		for(RollupSummary lookupRollupSummary : (List<RollupSummary>) Records)
+		for(RollupSummary lookupRollupSummary : Records)
 		{
 			// Parent Object
 			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);
@@ -193,7 +193,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 		Set<String> rollupTriggerNames = new Set<String>();
 		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
 		Map<SObjectType, Map<String, Schema.SObjectField>> gdFields = new Map<SObjectType, Map<String, Schema.SObjectField>>(); 	
-		for(RollupSummary lookupRollupSummary : (List<RollupSummary>) Records)
+		for(RollupSummary lookupRollupSummary : Records)
 		{
 			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);
 			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject);
@@ -209,7 +209,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 		// Query for any related Apex triggers
 		Map<String, ApexTrigger> apexTriggers = new ApexTriggersSelector().selectByName(rollupTriggerNames);
 		
-		for(RollupSummary lookupRollupSummary : (List<RollupSummary>) Records)
+		for(RollupSummary lookupRollupSummary : Records)
 		{
 			// Parent Object valid?
 			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);

@@ -12,9 +12,9 @@
 			<apex:pageBlockButtons>
 				<apex:commandButton value="Save" action="{!save}"/>
 				<apex:commandButton value="Delete" action="{!deleteX}" rendered="{!LookupRollupSummary.Id!=null}"/>
-				<apex:commandButton value="Manage Child Trigger" action="{!manageChildTrigger}" rendered="{!LookupRollupSummary.Id!=null}"/>
-				<apex:commandButton value="Calculate" action="{!calculate}" rendered="{!LookupRollupSummary.Id!=null}"/>
-				<apex:commandButton value="Schedule Calculate" action="{!scheduleCalculate}" rendered="{!LookupRollupSummary.Id!=null}"/>
+				<apex:commandButton value="Manage Child Trigger" action="{!URLFOR($Page.managetriggermdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
+				<apex:commandButton value="Calculate" action="{!URLFOR($Page.rollupcalculatemdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
+				<apex:commandButton value="Schedule Calculate" action="{!URLFOR($Page.rollupscheduledcalculatemdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
 			</apex:pageBlockButtons>
 			<apex:pageBlockSection title="Information" columns="2">
 				<apex:pageBlockSectionItem>
@@ -22,7 +22,7 @@
 					<apex:outputPanel>
 						<div class="requiredInput">
 							<div class="requiredBlock"/>
-							<apex:inputText value="{!LookupRollupSummary.Label}"/>			
+							<apex:inputText size="32" value="{!LookupRollupSummary.Label}"/>			
 						</div>
 					</apex:outputPanel>
 				</apex:pageBlockSectionItem>
@@ -97,7 +97,9 @@
 					<apex:outputPanel>
 						<div class="requiredInput">
 							<div class="requiredBlock"/>				
-							<apex:inputText value="{!LookupRollupSummary.CalculationMode__c}"/>
+							<apex:selectList value="{!LookupRollupSummary.CalculationMode__c}" size="1">
+								<apex:selectOptions value="{!CalculationModes}"/>
+							</apex:selectList> 							
 						</div>
 					</apex:outputPanel>
 				</apex:pageBlockSectionItem>

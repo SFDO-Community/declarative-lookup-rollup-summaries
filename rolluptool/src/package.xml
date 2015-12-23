@@ -77,8 +77,11 @@
 	<types>
 		<members>managelookuprollupsummaries</members>
 		<members>managetrigger</members>
+		<members>managetriggermdt</members>
 		<members>rollupcalculate</members>
+		<members>rollupcalculatemdt</members>
 		<members>rollupscheduledcalculate</members>
+		<members>rollupscheduledcalculatemdt</members>
 		<members>rollupsummaryenhanced</members>
 		<members>rollupsummaryenhancednew</members>
 		<members>welcome</members>
