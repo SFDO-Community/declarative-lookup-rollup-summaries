@@ -31,7 +31,7 @@
 	<apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip-deflate.js')}"/>
 	<apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip-inflate.js')}"/>
 	<apex:form id="form">
-	    <apex:sectionHeader title="Lookup Rollup Summary" subtitle="Manage Apex Trigger for {!RollupSummary.ChildObject__c}"/>
+	    <apex:sectionHeader title="Lookup Rollup Summary" subtitle="Manage Apex Trigger for {!RollupSummary.ChildObject}"/>
 		<apex:pageMessages escape="false" />
 		<apex:outputPanel rendered="{!MetadataConnectionError==true}">
 			<apex:outputLink value="{!$Page.welcome}?showHeader=1">Return to the Welcome page</apex:outputLink>
