@@ -842,7 +842,7 @@ global with sharing class RollupService
 			}
 
     		// Associate the Schedule Items with the correct shadow rollup record
-    		Map<String, RollupSummary> lookupsById = dlrs.RollupSummary.toMap(lookups);
+    		Map<String, RollupSummary> lookupsById = RollupSummary.toMap(lookups);
     		Map<String, LookupRollupSummary__c> shadowRollupsToInsertByRollupId = new Map<String, LookupRollupSummary__c>();
     		for(LookupRollupSummaryScheduleItems__c scheduledItem : scheduledItemsForMDTs) {
     			String rollupId = scheduledItem.LookupRollupSummary2__c;
