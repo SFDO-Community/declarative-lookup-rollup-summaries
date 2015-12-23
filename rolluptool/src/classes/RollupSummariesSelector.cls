@@ -261,7 +261,7 @@ public class RollupSummariesSelector
 			return RollupSummary.toList(
 				Database.query(
 					newQueryFactory().
-						setCondition('UniqueName__c in :uniqueNames and Active__c = true').
+						setCondition('DeveloperName in :uniqueNames and Active__c = true').
 					 	addOrdering(LookupRollupSummary2__mdt.ParentObject__c, fflib_QueryFactory.SortOrder.ASCENDING).
 					 	addOrdering(LookupRollupSummary2__mdt.RelationshipField__c, fflib_QueryFactory.SortOrder.ASCENDING).
 					 	toSOQL()));
