@@ -12,6 +12,7 @@ Features Summary
 - Supports Realtime, Scheduled and Developer API modes
 - Open source, available in code and managed package form.
 - Managed package has passed Salesforce Security Review and is Aloha enabled (does not consume app, tab limits)
+- ** NEW ** Supports Custom Metadata, rollups can be included in Change Sets and Packages for easier deployment
 
 Please refer to the blog posts below for more detailed information.
 
@@ -61,8 +62,17 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! 
 
-**Latest Version 1.25**
-________________________
+**Latest Release Version 2.0**
+______________________________
+
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000cBgl), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000cBgl)
+
+- Enhancement [Support for Custom Metadata](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/242) (Pilot)
+
+**UPGRADE NOTE:** There is a new **Manage Lookup Rollup Summaries** tab to support Custom Metadata support.
+
+**Version 1.25**
+________________
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000cBPs), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000cBPs)
 
