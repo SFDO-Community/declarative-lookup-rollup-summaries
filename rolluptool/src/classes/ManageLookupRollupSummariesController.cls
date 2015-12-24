@@ -56,7 +56,7 @@ public with sharing class ManageLookupRollupSummariesController {
 		}
 
 		// URL parameter?
-		selectedLookup = ApexPages.currentPage().getParameters().get('id');		
+		selectedLookup = (Id) ApexPages.currentPage().getParameters().get('id');		
 		if(selectedLookup!=null) {
 			LookupRollupSummary = (LookupRollupSummary2__mdt) 
 				new RollupSummariesSelector.CustomMetadataSelector().

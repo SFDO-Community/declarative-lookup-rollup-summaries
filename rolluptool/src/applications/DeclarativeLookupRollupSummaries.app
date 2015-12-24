@@ -4,6 +4,5 @@
     <label>Declarative Lookup Rollup Summaries</label>
     <tab>Welcome</tab>
     <tab>ManageLookupRollupSummaries</tab>
-    <tab>LookupRollupSummary__c</tab>
     <tab>LookupRollupSummaryLog__c</tab>
 </CustomApplication>

@@ -336,8 +336,12 @@ global with sharing class RollupService
 	{
 		// Load related Lookup summaries for the scheduled items
 		Set<String> lookupIds = new Set<String>();
-		for(LookupRollupSummaryScheduleItems__c scheduleItem : rollupSummaryScheduleItems)
-			lookupIds.add(scheduleItem.LookupRollupSummary2__c);
+		for(LookupRollupSummaryScheduleItems__c scheduleItem : rollupSummaryScheduleItems) {			
+			if(scheduleItem.LookupRollupSummary2__c!=null)
+				lookupIds.add(scheduleItem.LookupRollupSummary2__c);
+			else
+				lookupIds.add(scheduleItem.LookupRollupSummary__c);
+		}
 		Map<String, RollupSummary> lookups = 
 			RollupSummary.toMap(new RollupSummariesSelector().selectById(lookupIds));
 			
