@@ -12,7 +12,7 @@ Features Summary
 - Supports Realtime, Scheduled and Developer API modes
 - Open source, available in code and managed package form.
 - Managed package has passed Salesforce Security Review and is Aloha enabled (does not consume app, tab limits)
-- ** NEW ** Supports Custom Metadata, rollups can be included in Change Sets and Packages for easier deployment
+- **NEW** Supports Custom Metadata, rollups can be included in Change Sets and Packages for easier deployment
 
 Please refer to the blog posts below for more detailed information.
 
@@ -26,6 +26,7 @@ Documentation
 
 The tool has been featured in a number of blog entries as it has evolved...
 
+- [Declarative Lookup Rollup Summary Tool and Custom Metadata](http://andyinthecloud.com/2015/12/24/declarative-lookup-rollup-summary-tool-and-custom-metadata/)
 - [Declarative Lookup Rollup Summaries – Spring’15 Release](http://andyinthecloud.com/2015/02/16/declarative-lookup-rollup-summaries-tool-dlrs-spring15-release/)
 - [A Declarative Rollup Summary Tool for Force.com Lookup Relationships](https://developer.salesforce.com/page/Declarative_Rollup_Summary_Tool_for_Force.com_Lookup_Relationships)
 - [Account Hierarchy Rollups #ClicksNotCode](http://andyinthecloud.com/2014/05/08/account-hierarchy-rollups-clicksnotcode/)
@@ -67,9 +68,16 @@ ______________________________
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000cBgl), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000cBgl)
 
-- Enhancement [Support for Custom Metadata](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/242) (Pilot)
+- Enhancement [Support for Custom Metadata](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/242) (Pilot). See [Declarative Lookup Rollup Summary Tool and Custom Metadata](http://andyinthecloud.com/2015/12/24/declarative-lookup-rollup-summary-tool-and-custom-metadata/) for more information.
 
 **UPGRADE NOTE:** There is a new **Manage Lookup Rollup Summaries** tab to support Custom Metadata support.
+
+**Known Current Limitiations of Custom Metadata Support**
+- Ability to override the generated Apex Test code is not supported (due to platform restriction)
+- When you Undeploy via Manage Child Triggers button, Active Custom Metadata based rollups are not automatically deactivated 
+- Advanced Rollup UI is not currently available, this will be integrated at a later date
+- Description field is limited to only 255 characters (due to platform restriction)
+- List View support is available under Setup, Custom Metadata Types, Manage Records but does not invoke the new UI for editing
 
 **Version 1.25**
 ________________
