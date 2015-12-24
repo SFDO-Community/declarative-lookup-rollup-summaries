@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <customSettingsType>Hierarchy</customSettingsType>
-    <customSettingsVisibility>Public</customSettingsVisibility>
     <enableFeeds>false</enableFeeds>
     <fields>
         <fullName>CalculateJobScopeSize__c</fullName>
@@ -19,6 +18,7 @@
     <fields>
         <fullName>HideManageLookupRollupSummariesInfo__c</fullName>
         <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Hide Manage Lookup Rollup Summaries Info</label>
         <trackTrending>false</trackTrending>
@@ -38,4 +38,5 @@
         <unique>false</unique>
     </fields>
     <label>Declarative Lookup Rollup Summaries</label>
+    <visibility>Public</visibility>
 </CustomObject>
