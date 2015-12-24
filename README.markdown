@@ -74,6 +74,7 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 
 **Known Current Limitiations of Custom Metadata Support**
 - Ability to override the generated Apex Test code is not supported (due to platform restriction)
+- Ashetic case adjustmnet for object field API names will not be performed, e.g. account would not change to Account
 - When you Undeploy via Manage Child Triggers button, Active Custom Metadata based rollups are not automatically deactivated 
 - Advanced Rollup UI is not currently available, this will be integrated at a later date
 - Description field is limited to only 255 characters (due to platform restriction)
