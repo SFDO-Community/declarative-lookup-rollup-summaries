@@ -70,8 +70,8 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 
 - Bug [Manage Lookup Rollup Summaries produces error CurrencyIsoCode not valid](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/273)
 
-* Release Version 2.0**
-______________________________
+**Version 2.0**
+________________________
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000cBgl), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000cBgl)
 
