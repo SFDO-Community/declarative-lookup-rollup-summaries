@@ -307,8 +307,7 @@ public abstract with sharing class fflib_SObjectSelector
 		for(SObjectField field : getSObjectFieldList())		
         	queryFactory.selectField(relationshipFieldPath + '.' + field.getDescribe().getName());
         // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-        if(Userinfo.isMultiCurrencyOrganization() &&
-           !STANDARD_WITHOUT_CURRENCYISO.contains(getSObjectType().getDescribe().getName()))
+        if(addCurrencyIsoCode())
             queryFactory.selectField(relationshipFieldPath+'.CurrencyIsoCode');		
 	}
     
@@ -372,8 +371,7 @@ public abstract with sharing class fflib_SObjectSelector
 	                queryFactory.selectFieldSet(fieldSet);
 	
 	        // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
-	        if(Userinfo.isMultiCurrencyOrganization() &&
-	           !STANDARD_WITHOUT_CURRENCYISO.contains(getSObjectType().getDescribe().getName()))
+	        if(addCurrencyIsoCode())
 	            queryFactory.selectField('CurrencyIsoCode');
         }
         
@@ -395,5 +393,17 @@ public abstract with sharing class fflib_SObjectSelector
         }           
                 
         return queryFactory;    
+    }
+
+    /**
+     * Determines if CurrencyIsoCode should be automatically added.
+     **/
+    public virtual Boolean addCurrencyIsoCode() {
+        // Custom Metadata objects don't have CurrencyIsoCode fields
+        if(getSObjectType().getDescribe().getName().endsWith('__mdt'))
+            return false;
+        // Ohter object types are fine so long as its not in the list
+        return Userinfo.isMultiCurrencyOrganization() &&
+               !STANDARD_WITHOUT_CURRENCYISO.contains(getSObjectType().getDescribe().getName());
     }    
 }
