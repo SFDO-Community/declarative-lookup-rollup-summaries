@@ -773,7 +773,117 @@ private class TestLREngine {
                     LREngine.RollupOperation.Concatenate, 'BR()'),
                 'test\ntest\ntest',
                 'Lost\nWon\nWon');
-    } 
+    }
+
+    static testMethod void testRollupConcatenateMultipleBR() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'BR()BR()BR()'),
+                'test\n\n\ntest\n\n\ntest',
+                'Lost\n\n\nWon\n\n\nWon');
+    }
+
+    static testMethod void testRollupConcatenateCommaBR() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ',BR()'),
+                'test,\ntest,\ntest',
+                'Lost,\nWon,\nWon');
+    }    
+
+    static testMethod void testRollupConcatenateSP() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'SP()'),
+                'test test test',
+                'Lost Won Won');
+    }
+
+    static testMethod void testRollupConcatenateMultipleSP() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'SP()SP()SP()'),
+                'test   test   test',
+                'Lost   Won   Won');
+    }
+
+    static testMethod void testRollupConcatenateCommaSP() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ',SP()'),
+                'test, test, test',
+                'Lost, Won, Won');
+    }    
+
+    static testMethod void testRollupConcatenateTB() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'TB()'),
+                'test\ttest\ttest',
+                'Lost\tWon\tWon');
+    }
+
+    static testMethod void testRollupConcatenateMultipleTB() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'TB()TB()TB()'),
+                'test\t\t\ttest\t\t\ttest',
+                'Lost\t\t\tWon\t\t\tWon');
+    }   
+
+    static testMethod void testRollupConcatenateCommaTB() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ',TB()'),
+                'test,\ttest,\ttest',
+                'Lost,\tWon,\tWon');
+    }      
+
+    static testMethod void testRollupConcatenateAllTokens() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'TB()BR()SP()'),
+                'test\t\n test\t\n test',
+                'Lost\t\n Won\t\n Won');
+    }   
+
+    static testMethod void testRollupConcatenateCommaAllTokens() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ',TB()BR()SP()'),
+                'test,\t\n test,\t\n test',
+                'Lost,\t\n Won,\t\n Won');
+    }       
 
     static testMethod void testRollupConcatenateOrderBy() {
         testRollup(

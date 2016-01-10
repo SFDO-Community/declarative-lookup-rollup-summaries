@@ -307,6 +307,12 @@ public class LREngine {
         return masterRecordsMap.values();   
     }
 
+    private final static Map<Pattern, String> delimiterTokens = new Map<Pattern, String> {
+        Pattern.compile('BR\\(\\)') => '\n'
+        , Pattern.compile('SP\\(\\)') => ' '
+        , Pattern.compile('TB\\(\\)') => '\t'
+    };
+
     /**
      * Concatenates strings (removes duplicates)
      **/
@@ -319,8 +325,12 @@ public class LREngine {
 
         public Concatenator(Boolean distinct, String delimiter) {
             this.distinct = distinct;
-            if(delimiter!=null)
-                this.delimiter = delimiter.equals('BR()') ? '\n' : delimiter;
+            if(delimiter!=null) {
+                for (Pattern p : delimiterTokens.keySet()) {
+                    delimiter = p.matcher(delimiter).replaceAll((String)delimiterTokens.get(p));
+                }
+                this.delimiter = delimiter;
+            }
             setOfStrings = new Set<String>();
             listOfString = new List<String>();
         }
