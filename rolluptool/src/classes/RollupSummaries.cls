@@ -277,11 +277,11 @@ public class RollupSummaries extends fflib_SObjectDomain
 				    lookupRollupSummary.CalculationMode == CalculationMode.Scheduled.name()) && 
 				   !apexTriggers.containsKey(triggerName))
 					lookupRollupSummary.Fields.Active.addError(error('Apex Trigger ' + triggerName + ' has not been deployed. Click Manage Child Trigger and try again.', lookupRollupSummary.Record, LookupRollupSummary__c.Active__c));				
-			}
+			}	
 			// Check the list of fields expressed in the relationship critiera fields
 			if(childObjectFields!=null && lookupRollupSummary.RelationshipCriteriaFields!=null)
 			{
-				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields.split('\r\n');
+				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields.split('[\r\n]+');
 				String[] fieldsInError = new List<String>();
 				for(String field : fieldList)
 					if(field.length()>0)

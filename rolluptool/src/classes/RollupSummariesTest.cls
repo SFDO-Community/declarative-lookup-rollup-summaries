@@ -468,6 +468,33 @@ private class RollupSummariesTest
 		System.assertEquals(LookupRollupSummary__c.RelationShipCriteria__c, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[1]).field);		
 	}	
 
+	private testmethod static void testRelationshipCriteriaFieldsValidationMultiViaMDT()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = 'Stage = \'Won\'';
+		rollupSummary.RelationShipCriteriaFields__c = 'Stage\nAnother';
+		rollupSummary.FieldToAggregate__c = 'Amount';
+		rollupSummary.AggregateOperation__c = 'Sum';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		fflib_SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		fflib_SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(2, fflib_SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Fields Stage,Another do not exist on the child object.', fflib_SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(LookupRollupSummary__c.RelationShipCriteriaFields__c, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field);
+		System.assertEquals('Relationship Criteria \'Stage = \'Won\'\' is not valid, see SOQL documentation http://www.salesforce.com/us/developer/docs/soql_sosl/Content/sforce_api_calls_soql_select_conditionexpression.htm, error is \'No such column \'Stage\' on entity \'Opportunity\'. If you are attempting to use a custom field, be sure to append the \'__c\' after the custom field name. Please reference your WSDL or the describe call for the appropriate names.\'', fflib_SObjectDomain.Errors.getAll()[1].message);
+		System.assertEquals(LookupRollupSummary__c.RelationShipCriteria__c, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[1]).field);		
+	}	
+
 	private testmethod static void testInsertCountByCloseDateNoErrors()
 	{
 		// Test supported?

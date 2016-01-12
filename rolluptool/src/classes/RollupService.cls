@@ -648,7 +648,7 @@ global with sharing class RollupService
 				Set<String> lookupFields = new Set<String>();				
 				lookupFields.add(lookup.FieldToAggregate);
 				if(!String.isBlank(lookup.RelationshipCriteriaFields)) {
-					for(String criteriaField : lookup.RelationshipCriteriaFields.split('\r\n')) {
+					for(String criteriaField : lookup.RelationshipCriteriaFields.split('[\r\n]+')) {
 						lookupFields.add(criteriaField);
 					}
 				}
