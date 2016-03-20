@@ -351,7 +351,7 @@ global with sharing class RollupService
 		for(LookupRollupSummaryScheduleItems__c scheduleItem : rollupSummaryScheduleItems)
 		{
 			Id parentId = scheduleItem.ParentId__c;
-			RollupSummary lookup = lookups.get(scheduleItem.LookupRollupSummary2__c);
+			RollupSummary lookup = lookups.get(scheduleItem.LookupRollupSummary2__c!=null ? scheduleItem.LookupRollupSummary2__c : scheduleItem.LookupRollupSummary__c);
 			// The lookup definition could have been changed or due to a historic bug in correctly associated
 			if(parentId.getSobjectType() != gd.get(lookup.ParentObject))
 				continue;
@@ -773,12 +773,21 @@ global with sharing class RollupService
 			
 		// Rollup whichever side has records and update master records
 		// only one map should have records at this point
+		Boolean isDeleting = newRecords.isEmpty();
 		Set<Id> masterRecordIds = new Set<Id>();
 		Map<Id, SObject> recordsToProcess = existingRecords.isEmpty() ? newRecords : existingRecords;
-		for(SObject childRecord : recordsToProcess.values())
-			for(RollupSummary lookup : lookups)
-				if(childRecord.get(lookup.RelationShipField)!=null)
-					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField));
+		for(SObject childRecord : recordsToProcess.values()) {
+			for(RollupSummary lookup : lookups) {
+				if(childRecord.get(lookup.RelationShipField)!=null) {
+					// Check for self referencing rollups, https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/39
+					Id masterRecordId = (Id)childRecord.get(lookup.RelationShipField);
+					if(isDeleting && masterRecordId == childRecord.Id) {
+						continue;
+					}
+					masterRecordIds.add(masterRecordId);
+				}
+			}
+		}
 		updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
 	}	
 	
