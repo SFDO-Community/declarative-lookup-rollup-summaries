@@ -105,6 +105,13 @@ global with sharing class RollupService
 		Integer scopeSize = (Integer) DeclarativeLookupRollupSummaries__c.getInstance().CalculateJobScopeSize__c;
 		Id jobId = Database.executeBatch(new RollupCalculateJob(lookupId, masterWhereClause), scopeSize == null ? 100 : scopeSize);
 
+		// Update CalculateJobId__c for Custom Object based rollups?
+		if(lookup.Record instanceof LookupRollupSummary__c) {
+			LookupRollupSummary__c rollupSummary = (LookupRollupSummary__c) lookup.Record;
+			rollupSummary.CalculateJobId__c = jobId;
+			update lookup.Record;
+		}
+
 		return jobId;
 	}
 

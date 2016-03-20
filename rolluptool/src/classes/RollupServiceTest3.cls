@@ -112,6 +112,9 @@ private with sharing class RollupServiceTest3
 			System.assert(e.getMessage().equals('A calculate job for rollup \'Test Rollup\' is already executing. If you suspect it is not aleady running try clearing the applicable record from the Lookup Rollup Calculate Jobs tab and try again.'));
 		}
 		Test.stopTest();
+		// Assert job id cleared
+ 		rollupSummary = [select Id, CalculateJobId__c from LookupRollupSummary__c where Id  = :rollupSummary.Id];
+ 		System.assertEquals(jobId, rollupSummary.CalculateJobId__c); 		
 		// Assert job cleared
 		System.assertEquals(0, [select Id from LookupRollupCalculateJob__c].size()); 
 
