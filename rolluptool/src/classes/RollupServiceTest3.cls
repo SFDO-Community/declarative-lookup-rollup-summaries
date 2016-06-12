@@ -601,6 +601,13 @@ private with sharing class RollupServiceTest3
 			testUser = createUser();
 		}
 
+		// Grant access to the child record since it is using private sharing model
+		LookupChild__Share childSharing = new LookupChild__Share();
+		childSharing.AccessLevel = 'Edit';
+		childSharing.ParentId = child1.Id;
+		childSharing.UserOrGroupId = testUser.Id;
+		insert childSharing;
+
 		// Test data insert children as new user (who cannot see the parent)
 		System.runAs(testUser)
 		{

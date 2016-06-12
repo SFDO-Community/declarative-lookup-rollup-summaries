@@ -20,6 +20,7 @@
 		<members>RollupJob</members>
 		<members>RollupJobTest</members>
 		<members>RollupScheduledCalculateController</members>
+		<members>RollupScheduledCalculateControllerTest</members>
 		<members>RollupService</members>
 		<members>RollupServiceException</members>
 		<members>RollupServiceTest</members>
