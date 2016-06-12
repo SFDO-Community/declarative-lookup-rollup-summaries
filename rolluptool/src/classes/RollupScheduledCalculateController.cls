@@ -28,6 +28,12 @@ public with sharing class RollupScheduledCalculateController
 {
     private ApexPages.StandardController standardController;
     public String masterObjectWhere { get; set; }
+    public String minute { get; set; }
+    public List<SelectOption> minutes { get; set; }
+    public List<String> hour { get; set; }
+    public List<String> day { get; set; }
+    public List<String> month { get; set; }
+    public List<String> weekday { get; set; }
     
     public RollupScheduledCalculateController (ApexPages.StandardController standardController)
     {
@@ -35,16 +41,41 @@ public with sharing class RollupScheduledCalculateController
         
         // Page load messages
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Clicking the Schedule Calculate Job will schedule a recurring background rebuild for this rollup only.'));
-        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'The Calculate job will run at 2am every day.'));
+        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'The default shown below will run the Calculate job at 2am every day.'));
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Once the job completes any failed rollups will be shown in the Rollup Summary Logs tab.'));
+
+        // Minutes
+        minutes = new List<SelectOption>();
+        for(Integer minute=0; minute<60; minute++) {
+            minutes.add(new SelectOption(minute+'', minute+''));
+        }
+
+        // Default is 2am everyday
+        minute = '0';
+        hour = new List<String> { '2' };
+        day = new List<String> { '*' } ;
+        month = new List<String> { '*' };
+        weekday = new List<String> { '?' };
     }
     
     public PageReference scheduleCalculateJob()
     {
         try
         {
+            // Build the CRON string
+            String cronString = 
+                String.join(
+                    new List<String> {
+                        '0',
+                        minute,
+                        String.join(hour, ','),
+                        String.join(day, ','),
+                        String.join(month, ','),
+                        String.join(weekday, ',') }, 
+                    ' ');
+
             // Kickoff the calculate job for this lookup
-            System.schedule('rollup_'+standardController.getId(), '0 0 2 * * ?', new RollupCalculateJobSchedulable(standardController.getId(), masterObjectWhere));
+            System.schedule('rollup_'+standardController.getId(), cronString, new RollupCalculateJobSchedulable(standardController.getId(), masterObjectWhere));
             ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Calculate job scheduled for this lookup.'));
         }
         catch (Exception e)

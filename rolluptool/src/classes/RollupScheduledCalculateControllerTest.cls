@@ -26,4 +26,101 @@
 
 @IsTest
 private class RollupScheduledCalculateControllerTest {
+
+	@IsTest
+	private static void testCronHelperDefault() {
+
+		// Between Task and Account
+		LookupRollupSummary__c rollupSummaryAccount = new LookupRollupSummary__c();
+		rollupSummaryAccount.Name = 'Test Rollup';
+		rollupSummaryAccount.ParentObject__c = 'Account';
+		rollupSummaryAccount.ChildObject__c = 'Task';
+		rollupSummaryAccount.RelationShipField__c = 'WhatId';
+		rollupSummaryAccount.FieldToAggregate__c = 'Id';
+		rollupSummaryAccount.AggregateOperation__c = RollupSummaries.AggregateOperation.Count.name();
+		rollupSummaryAccount.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryAccount.Active__c = true;
+		rollupSummaryAccount.CalculationMode__c = 'Scheduled';
+		insert rollupSummaryAccount;
+
+		// Test default behaviour
+		Test.startTest();
+		ApexPages.StandardController standardController = 
+			new ApexPages.StandardController(rollupSummaryAccount);
+		RollupScheduledCalculateController controller = 
+			new RollupScheduledCalculateController(standardController);
+		controller.scheduleCalculateJob();
+		Test.stopTest();
+
+		// Assert correct Cron job has been inserted
+		CronTrigger cronTrigger = [select Id, CronJobDetail.Name, CronExpression from CronTrigger Limit 1][0];
+		System.assertEquals('0 0 2 * * ?', cronTrigger.CronExpression);
+		System.assertEquals('rollup_'+standardController.getId(), cronTrigger.CronJobDetail.Name);
+	}
+
+	@IsTest
+	private static void testCronHelperError() {
+
+		// Between Task and Account
+		LookupRollupSummary__c rollupSummaryAccount = new LookupRollupSummary__c();
+		rollupSummaryAccount.Name = 'Test Rollup';
+		rollupSummaryAccount.ParentObject__c = 'Account';
+		rollupSummaryAccount.ChildObject__c = 'Task';
+		rollupSummaryAccount.RelationShipField__c = 'WhatId';
+		rollupSummaryAccount.FieldToAggregate__c = 'Id';
+		rollupSummaryAccount.AggregateOperation__c = RollupSummaries.AggregateOperation.Count.name();
+		rollupSummaryAccount.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryAccount.Active__c = true;
+		rollupSummaryAccount.CalculationMode__c = 'Scheduled';
+		insert rollupSummaryAccount;
+
+		// Test default behaviour
+		Test.startTest();
+		ApexPages.StandardController standardController = 
+			new ApexPages.StandardController(rollupSummaryAccount);
+		RollupScheduledCalculateController controller = 
+			new RollupScheduledCalculateController(standardController);
+		controller.day = new List<String> { '?' };
+		controller.scheduleCalculateJob();
+		Test.stopTest();
+
+		// Assert nothing has been scheduled and we got an error
+		System.assertEquals(0, [select Id, CronJobDetail.Name, CronExpression from CronTrigger].size());
+		System.assert(ApexPages.hasMessages(ApexPages.Severity.Error));
+		System.assertEquals('\'?\' can only be specified for Day-of-Month -OR- Day-of-Week.', ApexPages.getMessages()[3].getDetail());
+	}	
+
+
+	@IsTest
+	private static void testCronHelperCustomised() {
+
+		// Between Task and Account
+		LookupRollupSummary__c rollupSummaryAccount = new LookupRollupSummary__c();
+		rollupSummaryAccount.Name = 'Test Rollup';
+		rollupSummaryAccount.ParentObject__c = 'Account';
+		rollupSummaryAccount.ChildObject__c = 'Task';
+		rollupSummaryAccount.RelationShipField__c = 'WhatId';
+		rollupSummaryAccount.FieldToAggregate__c = 'Id';
+		rollupSummaryAccount.AggregateOperation__c = RollupSummaries.AggregateOperation.Count.name();
+		rollupSummaryAccount.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryAccount.Active__c = true;
+		rollupSummaryAccount.CalculationMode__c = 'Scheduled';
+		insert rollupSummaryAccount;
+
+		// Test default behaviour
+		Test.startTest();
+		ApexPages.StandardController standardController = 
+			new ApexPages.StandardController(rollupSummaryAccount);
+		RollupScheduledCalculateController controller = 
+			new RollupScheduledCalculateController(standardController);
+		controller.hour = new List<String> { '4' };			
+		controller.day = new List<String> { '2' };
+		controller.scheduleCalculateJob();
+		Test.stopTest();
+
+		// Assert correct Cron job has been inserted
+		CronTrigger cronTrigger = [select Id, CronJobDetail.Name, CronExpression from CronTrigger Limit 1][0];
+		System.assertEquals('0 0 4 2 * ?', cronTrigger.CronExpression);
+		System.assertEquals('rollup_'+standardController.getId(), cronTrigger.CronJobDetail.Name);
+	}		
 }
