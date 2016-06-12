@@ -209,7 +209,7 @@
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
         <object>LookupRollupCalculateJob__c</object>
-        <viewAllRecords>true</viewAllRecords>
+        <viewAllRecords>false</viewAllRecords>
     </objectPermissions>    
     <pageAccesses>
         <apexPage>managetrigger</apexPage>
