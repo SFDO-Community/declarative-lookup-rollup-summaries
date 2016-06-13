@@ -478,6 +478,43 @@ private class TestLREngine {
         System.assertEquals(0, ((Account)mastersById.get(acc1.id)).AnnualRevenue);
         System.assertEquals(0, ((Account)mastersById.get(acc2.id)).AnnualRevenue);
     }
+
+
+    /**
+     * Test enhancement where AllRows is used, which includes deleted rows
+     **/
+    static testMethod void testDeletingChildRecordsWithAllRowsSet()
+    {
+        // create seed data 
+        prepareData();
+
+        LREngine.Context ctx = new LREngine.Context(
+            Account.SobjectType, 
+            Opportunity.SobjectType, 
+            Schema.SObjectType.Opportunity.fields.AccountId,
+            'Amount > 200', // filter out any opps with amount less than 200
+            null, null, true); // Include child rows including deleted
+        ctx.add(
+            new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.AnnualRevenue,
+                Schema.SObjectType.Opportunity.fields.Amount,
+                LREngine.RollupOperation.Avg)); 
+
+        Sobject[] masters = LREngine.rollUp(ctx, detailRecords);
+        Map<Id, Sobject> mastersById = new Map<Id, Sobject>(masters);
+        System.assertEquals(2, masters.size());         
+        System.assertEquals(300, ((Account)mastersById.get(acc1.id)).AnnualRevenue);
+        System.assertEquals(350.00, ((Account)mastersById.get(acc2.id)).AnnualRevenue);
+
+        // Delete all children
+        delete [select Id from Opportunity];
+
+        // Recacluate rollups again
+        masters = LREngine.rollUp(ctx, detailRecords);  
+        mastersById = new Map<Id, Sobject>(masters);               
+        System.assertEquals(300, ((Account)mastersById.get(acc1.id)).AnnualRevenue);
+        System.assertEquals(350.00, ((Account)mastersById.get(acc2.id)).AnnualRevenue);
+    }
     
     /**
      * Test enhancement to ensure the SOQL Aggregate only applies to child records 
@@ -763,6 +800,17 @@ private class TestLREngine {
                 'Lost,Won,Won');
     } 
 
+    static testMethod void testRollupConcatenateDeletedChildRows() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ','),
+                'test,test,test',
+                'Lost,Won,Won',
+                true);
+    } 
 
     static testMethod void testRollupConcatenateBR() {
         testRollup(
@@ -1064,14 +1112,23 @@ private class TestLREngine {
     }
 
     static private void testRollup(String detailOrderByClause, LREngine.RollupSummaryField rollupField, String expected1, String expected2) {
+        testRollup(detailOrderByClause, rollupField, expected1, expected2, false);
+    }
+
+    static private void testRollup(String detailOrderByClause, LREngine.RollupSummaryField rollupField, String expected1, String expected2, boolean allRows) {
         prepareData();
+
+        if(allRows)
+            delete detailRecordsAcc1;
 
         LREngine.Context ctx = new LREngine.Context(
             Account.SobjectType, 
             Opportunity.SobjectType, 
             Schema.SObjectType.Opportunity.fields.AccountId,
             null, // detailWhereClause
-            detailOrderByClause);
+            null, 
+            detailOrderByClause,
+            allRows);
 
         ctx.add(rollupField);
 

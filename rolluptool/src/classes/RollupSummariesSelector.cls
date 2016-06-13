@@ -121,7 +121,8 @@ public class RollupSummariesSelector
 				LookupRollupSummary__c.UniqueName__c,
 				LookupRollupSummary__c.CalculationSharingMode__c,
 				LookupRollupSummary__c.TestCode__c,
-				LookupRollupSummary__c.TestCodeSeeAllData__c
+				LookupRollupSummary__c.TestCodeSeeAllData__c,
+				LookupRollupSummarY__c.AggregateAllRows__c
 			};
 		}
 
@@ -226,7 +227,8 @@ public class RollupSummariesSelector
 				LookupRollupSummary2__mdt.CalculationSharingMode__c,
 				LookupRollupSummary2__mdt.TestCode__c,
 				LookupRollupSummary2__mdt.TestCodeSeeAllData__c,
-				LookupRollupSummary2__mdt.Description__c
+				LookupRollupSummary2__mdt.Description__c,
+				LookupRollupSummary2__mdt.AggregateAllRows__c
 			};
 		}
 

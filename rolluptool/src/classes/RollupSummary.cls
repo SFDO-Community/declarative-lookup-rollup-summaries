@@ -151,6 +151,11 @@ public class RollupSummary {
 		set { Record.put('TestCodeSeeAllData__c', value); } 
 	}
 
+	public Boolean AggregateAllRows {
+		get { return (Boolean) Record.get('AggregateAllRows__c'); }
+		set { Record.put('AggregateAllRows__c', value); }
+	}
+
 	public void addError(String errorMessage) {
 
 		// Store the error message
@@ -202,6 +207,7 @@ public class RollupSummary {
 		public final FieldData RelationshipField = new FieldData(this);
 		public final FieldData TestCode = new FieldData(this);
 		public final FieldData TestCodeSeeAllData = new FieldData(this);
+		public final FieldData AggregateAllRows = new FieldData(this);
 	}
 
 	/**
@@ -253,6 +259,8 @@ public class RollupSummary {
 				fieldLabelInError = LookupRollupSummary__c.TestCode__c.getDescribe().getLabel();
 			} else if(this === RecordMetadata.TestCodeSeeAllData) {
 				fieldLabelInError = LookupRollupSummary__c.TestCodeSeeAllData__c.getDescribe().getLabel();
+			} else if(this === RecordMetadata.AggregateAllRows) {
+				fieldLabelInError = LookupRollupSummary__c.AggregateAllRows__c.getDescribe().getLabel();
 			}				
 
 			// Store error
@@ -298,6 +306,8 @@ public class RollupSummary {
 					customObjectRecord.TestCode__c.addError(errorMessage);
 				} else if(this === RecordMetadata.TestCodeSeeAllData) {
 					customObjectRecord.TestCodeSeeAllData__c.addError(errorMessage);
+				} else if(this === RecordMetadata.AggregateAllRows) {
+					customObjectRecord.AggregateAllRows__c.addError(errorMessage);
 				}				
 			}
 		}

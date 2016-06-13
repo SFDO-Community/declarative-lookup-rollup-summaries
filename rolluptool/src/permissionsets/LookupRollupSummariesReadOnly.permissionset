@@ -161,6 +161,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>LookupRollupSummary__c.AggregateAllRows__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>LookupRollupSummary__c.CalculationMode__c</field>
         <readable>true</readable>
     </fieldPermissions>

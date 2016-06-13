@@ -139,6 +139,11 @@
 							</div>
 						</apex:outputPanel>
 					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem/>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateAllRows__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateAllRows__c.Label}"/>			
+						<apex:inputCheckbox value="{!LookupRollupSummary.AggregateAllRows__c}"/>
+					</apex:pageBlockSectionItem>
 				</apex:pageBlockSection>		
 				<apex:pageBlockSection title="Text Lookups" columns="2">
 					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.ConcatenateDelimiter__c.inlineHelpText}">

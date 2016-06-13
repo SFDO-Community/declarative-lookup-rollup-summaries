@@ -1052,7 +1052,8 @@ global with sharing class RollupService
 	                    lookupWrapper.RelationshipField.getDescribe(), // relationship field name
 	                    lookupWrapper.Lookup.RelationShipCriteria,
 	                    lookupWrapper.SharingMode,
-	                    lookupWrapper.OrderByClause);		
+	                    lookupWrapper.OrderByClause,
+	                    lookupWrapper.AggregateAllRows);		
 	}
 
 	private static SObjectType getSObjectType(String sObjectName)
@@ -1075,6 +1076,7 @@ global with sharing class RollupService
 		public Schema.SObjectField FieldToAggregate;		
 		public Schema.SObjectField RelationshipField;
 		public Schema.SObjectField AggregateResultField;
+		public Boolean AggregateAllRows;
 		public LREngine.SharingMode SharingMode;
 		public Boolean OrderByRequired; // true if FieldToOrderBy__c is not blank
 		public String OrderByClause; // FieldToOrderBy__c if OrderByRequired is true; null otherwise
@@ -1113,6 +1115,7 @@ global with sharing class RollupService
 		wrapper.FieldToAggregate = fieldToAggregate;
 		wrapper.RelationshipField = relationshipField;
 		wrapper.AggregateResultField = aggregateResultField;
+		wrapper.AggregateAllRows = lookup.AggregateAllRows;
 		wrapper.SharingMode =
 			lookup.CalculationSharingMode == null || lookup.CalculationSharingMode == 'User' ?
 				LREngine.SharingMode.User : LREngine.SharingMode.System_x;
@@ -1126,7 +1129,7 @@ global with sharing class RollupService
 
 	private static String getContextKey(LookupRollupSummaryWrapper lookupWrapper)
 	{
-		// Context Key Based On: ParentObject__c, RelationshipField__c, RelationShipCriteria__c, rsfType, SharingMode
+		// Context Key Based On: ParentObject__c, RelationshipField__c, RelationShipCriteria__c, rsfType, SharingMode, AggergateAllRows
 		// Note we do not include OrderBy here because orderby map is contained within the map of contextKeys
 		String rsfType = lookupWrapper.RollupSummaryField.isAggregateBasedRollup() ? 'aggregate' : 'query';
 		// Lowering case on Describable fields is only required for Legacy purposes since RollupSummary records
@@ -1134,7 +1137,12 @@ global with sharing class RollupService
 		// Ideally this would not be needed to save CPU cycles but including to ensure context is properly re-used when possible for
 		// rollups that have not been updated/inserted after the insert/update enhancement is applied
 		// Unable to lower RelationShipCriteria__c because of field value case-(in)sensitivity configuration
-		return  (lookupWrapper.Lookup.ParentObject.toLowerCase() + '#' + lookupWrapper.Lookup.RelationshipField.toLowerCase() + '#' + lookupWrapper.Lookup.RelationShipCriteria + '#' + rsfType + '#' + lookupWrapper.SharingMode);
+		return  (lookupWrapper.Lookup.ParentObject.toLowerCase() + '#' + 
+			     lookupWrapper.Lookup.RelationshipField.toLowerCase() + '#' + 
+			     lookupWrapper.Lookup.RelationShipCriteria + '#' + 
+			     rsfType + '#' + 
+			     lookupWrapper.SharingMode + '#' +
+			     lookupWrapper.AggregateAllRows);
 	}
 	
 	/**

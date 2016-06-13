@@ -65,6 +65,15 @@
         <type>Checkbox</type>
     </fields>
     <fields>
+        <fullName>AggregateAllRows__c</fullName>
+        <defaultValue>false</defaultValue>
+        <externalId>false</externalId>
+        <inlineHelpText>Includes child records that have been archived by the system and/or placed in the recycle bin.</inlineHelpText>
+        <label>Aggregate All Rows</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
         <fullName>AggregateOperation__c</fullName>
         <deprecated>false</deprecated>
         <externalId>false</externalId>
@@ -299,6 +308,7 @@
     <fields>
         <fullName>TestCodeSeeAllData__c</fullName>
         <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>Only use this option as a last resort to get the generated test or custom test code working. It is generally considered bad practice to make your test dependent on org data. Always try to create test data in the test code if possible.</inlineHelpText>
         <label>Test Code See All Data</label>

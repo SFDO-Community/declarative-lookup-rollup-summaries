@@ -36,17 +36,20 @@ public class LREngine {
             1 : Object to query
             2 : Optional WHERE clause filter to add
             3 : Group By field name
+            4 : ALL ROWS or empty string
     */
-    static String SOQL_AGGREGATE_TEMPLATE = 'SELECT {0} FROM {1} WHERE {3} in :masterIds {2} GROUP BY {3}';
+    static String SOQL_AGGREGATE_TEMPLATE = 'SELECT {0} FROM {1} WHERE {3} in :masterIds {2} GROUP BY {3} {4}';
 
     /*
         Tempalte tokens
             0 : Fields to project
             1 : Object to query
-            2 : Optional WHERE clause filter to add
-            3 : Order by clause
+            2 : Parent lookup field
+            3 : Optional WHERE clause filter to add
+            4 : Order by clause
+            5 : ALL ROWS or empty string
     */
-    static String SOQL_QUERY_TEMPLATE = 'SELECT {0} FROM {1} WHERE {2} in :masterIds {3} ORDER BY {4}';
+    static String SOQL_QUERY_TEMPLATE = 'SELECT {0} FROM {1} WHERE {2} in :masterIds {3} ORDER BY {4} {5}';
     
     /*
     Support for multi-currency orgs
@@ -184,6 +187,9 @@ public class LREngine {
         // i.e. Amount ASC NULLS FIRST, Name DESC NULL LAST
         String orderByClause = ctx.lookupField.getName() + (String.isBlank(ctx.detailOrderByClause) ? '' : (',' + ctx.detailOrderByClause));
 
+        // #5 ALL ROWS
+        String allRows = ctx.AllRows ? 'ALL ROWS' : '';
+
         // build approprite soql for this rollup context
         String soql =
             builtAggregateQuery ? 
@@ -192,14 +198,16 @@ public class LREngine {
                         soqlProjection, 
                         detailTblName, 
                         whereClause, 
-                        grpByFld}) : 
+                        grpByFld,
+                        allRows}) : 
                 String.format(SOQL_QUERY_TEMPLATE, 
                     new String[]{
                         soqlProjection, 
                         detailTblName, 
                         ctx.lookupField.getName(), 
                         whereClause, 
-                        orderByClause});
+                        orderByClause,
+                        allRows});
         System.debug('SOQL is ' + soql);
 
         // validate only?
@@ -523,6 +531,8 @@ public class LREngine {
         public Schema.Describefieldresult lookupField;
         // various fields to rollup on
         public List<RollupSummaryField> fieldsToRoll;
+        // include all rows
+        public Boolean allRows;
         // what type of rollups does this context contain
         private Boolean isAggregateBased = null;
         private Boolean isQueryBased = null;
@@ -555,6 +565,11 @@ public class LREngine {
 
         public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
                            Schema.Describefieldresult lf, String detailWhereClause, SharingMode sharingMode, String detailOrderByClause) {        
+            this(m, d, lf, detailWhereClause, null, detailOrderByClause, false);            
+        }
+
+        public Context(Schema.Sobjecttype m, Schema.Sobjecttype d, 
+                           Schema.Describefieldresult lf, String detailWhereClause, SharingMode sharingMode, String detailOrderByClause, Boolean allRows) {        
             this.master = m;
             this.detail = d;
             this.lookupField = lf;
@@ -562,6 +577,7 @@ public class LREngine {
             this.detailOrderByClause = detailOrderByClause;
             this.fieldsToRoll = new List<RollupSummaryField>();
             this.sharingMode = sharingMode;
+            this.allRows = allRows;
         }
         
         /**
