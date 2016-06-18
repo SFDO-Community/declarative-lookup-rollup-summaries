@@ -371,6 +371,79 @@ private with sharing class RollupServiceTest2
 		System.assertEquals(0, [select id from LookupRollupSummaryScheduleItems__c].size());
 	}
 
+	private testmethod static void testScheduleItemsAndLogsCleanupDeletedParent()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Total__c.getDescribe().getName();
+		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Scheduled';	
+		insert rollupSummary;
+		
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+		
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)		
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 20);
+			children.add(child1);				
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 20);
+			children.add(child2);				
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField, 2);
+			children.add(child3);				
+		}
+		insert children;
+		
+		// Assert scheduled items and log records
+		System.assertEquals(3, [select id from LookupRollupSummaryScheduleItems__c].size());
+		System.assertEquals(0, [select id from LookupRollupSummaryLog__c].size());
+
+		// Delete a parent record (leaving log entries still to be processed)
+		delete parentA;
+		
+		// Run rollup job (schedule item row should be cleaned up for deleted parent record)
+		Test.startTest();		
+		RollupService.runJobToProcessScheduledItems(); 
+		Test.stopTest();
+		
+		// Assert scheduled items and log records are all gone!
+		System.assertEquals(0, [select id, ParentId__c, ErrorMessage__c from LookupRollupSummaryLog__c].size());		
+		System.assertEquals(0, [select id from LookupRollupSummaryScheduleItems__c].size());
+	}	
+
 	/**
 	 * Test to reproduce issue raised here, https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/11 
 	 **/

@@ -422,17 +422,27 @@ global with sharing class RollupService
 			// Errors?
 			if(!saveResult.isSuccess())
 			{
+				// Was this failure due to the parent record no longer existing?
+				Boolean masterRecordDeletionError = false;
 				// Log the failure updating the master record for review
 				LookupRollupSummaryLog__c logEntry = new LookupRollupSummaryLog__c();
 				logEntry.ErrorMessage__c = '';
 				logEntry.ParentId__c = masterRecordList[masterRecordIdx].Id;
 				logEntry.ParentObject__c = masterRecordList[masterRecordIdx].Id.getSObjectType().getDescribe().getName();
 				List<Database.Error> databaseErrors = saveResult.getErrors();
-				for(Database.Error databaseError : databaseErrors)
+				for(Database.Error databaseError : databaseErrors) {
 					logEntry.ErrorMessage__c+= databaseError.getMessage() + ' : ' + databaseError.getStatusCode() + ' ' + databaseError.getFields() + '\n';
-				rollupSummaryLogs.add(logEntry);
-				// Remove from scheduled items to be deleted to allow a retry
-				rollupSummaryScheduleItemsByParentId.remove(masterRecordList[masterRecordIdx].Id);
+					if(databaseError.getStatusCode() == StatusCode.ENTITY_IS_DELETED) {
+						masterRecordDeletionError = true;
+						break;
+					}
+				}
+				// Was this error a result of the parent record being deleted?
+				if(!masterRecordDeletionError) {
+					rollupSummaryLogs.add(logEntry);
+					// Remove from scheduled items to be deleted to allow a retry
+					rollupSummaryScheduleItemsByParentId.remove(masterRecordList[masterRecordIdx].Id);					
+				}
 			}
 			masterRecordIdx++;
 		}
