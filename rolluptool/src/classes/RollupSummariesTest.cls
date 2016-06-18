@@ -158,14 +158,14 @@ private class RollupSummariesTest
 			return;
 		
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
-		rollupSummary.Name = 'Max Birthday for Contacts related to an Account';
+		rollupSummary.Name = 'Last Lead raised for this Account';
 		rollupSummary.ParentObject__c = 'Account';
-		rollupSummary.ChildObject__c = 'Contact';
-		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.ChildObject__c = 'Lead';
+		rollupSummary.RelationShipField__c = 'OwnerId';
 		rollupSummary.RelationShipCriteria__c = null;
-		rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
-		rollupSummary.AggregateOperation__c = 'Count';
-		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.FieldToAggregate__c = 'Name';
+		rollupSummary.AggregateOperation__c = 'Last';
+		rollupSummary.AggregateResultField__c = 'Description';
 		rollupSummary.Active__c = true;
 		rollupSummary.CalculationMode__c = 'Realtime';
 		fflib_SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
@@ -401,8 +401,8 @@ private class RollupSummariesTest
 		
 		String componentPrefix = Utilities.componentPrefix();
 		String objectPrefix = Utilities.objectPrefix();
-		System.assertEquals(componentPrefix + 'ContactTrigger', RollupSummaries.makeTriggerName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'Contact'))));
-		System.assertEquals(componentPrefix + 'ContactTest', RollupSummaries.makeTriggerTestName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'Contact'))));
+		System.assertEquals(componentPrefix + 'LeadTrigger', RollupSummaries.makeTriggerName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'Lead'))));
+		System.assertEquals(componentPrefix + 'LeadTest', RollupSummaries.makeTriggerTestName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'Lead'))));
 		System.assertEquals(componentPrefix + 'pse_AssignmentTrigger', RollupSummaries.makeTriggerName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c'))));
 		System.assertEquals(componentPrefix + 'pse_AssignmentTest', RollupSummaries.makeTriggerTestName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'pse__Assignment__c'))));
 		System.assertEquals(componentPrefix + 'MyCustomObjectTrigger', RollupSummaries.makeTriggerName(new RollupSummary(new LookupRollupSummary__c(ChildObject__c = 'MyCustomObject__c'))));

@@ -631,8 +631,36 @@ global with sharing class RollupService
 		if (existingRecords.isEmpty() && newRecords.isEmpty()) {
 			return;
 		}
+
+		// Its possible for the user to deploy a trigger on parent objects, to monitor for merge operations...
+		DescribeSObjectResult sObjectDescribe = sObjectType.getDescribe();
+		Set<Id> masterRecordIdsFromMerge = new Set<Id>();
+		if(sObjectDescribe.isMergeable()) {
+			for(SObject existingRecord : existingRecords.values()) {
+				Id masterRecordId = (Id) existingRecord.get('MasterRecordId');
+				if(masterRecordId!=null) {
+					masterRecordIdsFromMerge.add(masterRecordId);					
+				}
+			}			
+		}
 	
-		List<RollupSummary> lookups = describeRollups(sObjectType, calculationModes);
+		// If this is a parent record merge operation, determine child object rollups to recalculate...
+		Boolean scheduleAllRollups = false;
+		Set<SObjectType> childObjects = new Set<SObjectType>();
+		childObjects.add(sObjectType);
+		if(masterRecordIdsFromMerge.size()>0) {
+			// If a parent record is being merged, include a recalc of any related child rollups
+			List<Schema.ChildRelationship> childRelationships = sObjectDescribe.getChildRelationships();
+			for(Schema.ChildRelationship childRelationship : childRelationships) {
+				childObjects.add(childRelationship.getChildSObject());
+			}
+			// Any rollups associated with these child objects will need to done in async, 
+			//   as parent records cannot be updated realtime since the platform is also updating them
+			scheduleAllRollups = true;
+		}
+
+		// Are there any rollups to process?
+		List<RollupSummary> lookups = describeRollups(childObjects, calculationModes);
 		if(lookups.isEmpty())
 			return; // Nothing to see here! :)
 			
@@ -774,28 +802,34 @@ global with sharing class RollupService
 			
 			// Rollup child records and update master records 
 			if(lookupsToProcess.size()>0)
-				updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
+				updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds, false), false, true);
 			return;
 		}
 			
 		// Rollup whichever side has records and update master records
 		// only one map should have records at this point
 		Boolean isDeleting = newRecords.isEmpty();
-		Set<Id> masterRecordIds = new Set<Id>();
+		Set<Id> masterRecordIds = new Set<Id>(masterRecordIdsFromMerge);
 		Map<Id, SObject> recordsToProcess = existingRecords.isEmpty() ? newRecords : existingRecords;
 		for(SObject childRecord : recordsToProcess.values()) {
 			for(RollupSummary lookup : lookups) {
-				if(childRecord.get(lookup.RelationShipField)!=null) {
-					// Check for self referencing rollups, https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/39
-					Id masterRecordId = (Id)childRecord.get(lookup.RelationShipField);
-					if(isDeleting && masterRecordId == childRecord.Id) {
-						continue;
-					}
-					masterRecordIds.add(masterRecordId);
+				// Does this rollup apply to this child record?
+				if(lookup.ChildObject.equalsIgnoreCase(sObjectDescribe.getName())) {
+					if(childRecord.get(lookup.RelationShipField)!=null) {
+						// Check for self referencing rollups, https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/39
+						Id masterRecordId = (Id)childRecord.get(lookup.RelationShipField);
+						if(isDeleting && masterRecordId == childRecord.Id) {
+							continue;
+						}
+						masterRecordIds.add(masterRecordId);
+					}					
 				}
 			}
 		}
-		updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
+
+		// Process the rollups and update the master records
+		updateRecords(
+			updateMasterRollupsTrigger(lookups, masterRecordIds, scheduleAllRollups), false, true);
 	}	
 	
 	/**
@@ -805,7 +839,7 @@ global with sharing class RollupService
 	 * @param childRecords Child records being modified
 	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
 	 **/ 
-	private static List<SObject> updateMasterRollupsTrigger(List<RollupSummary> lookups, Set<Id> masterRecordIds)
+	private static List<SObject> updateMasterRollupsTrigger(List<RollupSummary> lookups, Set<Id> masterRecordIds, Boolean scheduleAllRollups)
 	{
 		// Process lookups, 
 		//    Realtime & Developer are added to a list for later LRE context creation and processing, 
@@ -816,13 +850,7 @@ global with sharing class RollupService
         List<LookupRollupSummaryScheduleItems__c> scheduledItemsForMDTs = new List<LookupRollupSummaryScheduleItems__c>(); 
         for(RollupSummary lookup : lookups)
         {
-            if(lookup.CalculationMode == RollupSummaries.CalculationMode.Realtime.name() ||
-            	lookup.CalculationMode == RollupSummaries.CalculationMode.Developer.name())
-            {
-                // Filter realtime & Developer lookups in order to generate LRE contexts below
-                runnowLookups.add(lookup);
-            }
-            else if(lookup.CalculationMode == RollupSummaries.CalculationMode.Scheduled.name())
+            if(lookup.CalculationMode == RollupSummaries.CalculationMode.Scheduled.name() || scheduleAllRollups)
             {       
             	// For polymoprhic relationships the master Id list maybe mixed types, associated with the correct rollup
                 SObjectType parentType = gd.get(lookup.ParentObject);
@@ -844,6 +872,12 @@ global with sharing class RollupService
 	                    }
 	                }
                 }                   
+            }
+            else if(lookup.CalculationMode == RollupSummaries.CalculationMode.Realtime.name() ||
+            	lookup.CalculationMode == RollupSummaries.CalculationMode.Developer.name())
+            {
+                // Filter realtime & Developer lookups in order to generate LRE contexts below
+                runnowLookups.add(lookup);
             }
         }
 
@@ -935,14 +969,17 @@ global with sharing class RollupService
 	 *
 	 * @returns List of rollup summary definitions
 	 **/
-	private static List<RollupSummary> describeRollups(SObjectType childObjectType, List<RollupSummaries.CalculationMode> calculationModes)
+	private static List<RollupSummary> describeRollups(Set<SObjectType> childObjectTypes, List<RollupSummaries.CalculationMode> calculationModes)
 	{	
 		// Query applicable lookup definitions
-		Schema.DescribeSObjectResult childRecordDescribe = childObjectType.getDescribe();
+		Set<String> childNames = new Set<String>();
+		for(SObjectType sobjectType : childObjectTypes) {
+			childNames.add( sobjectType.getDescribe().getName());
+		}
 		List<RollupSummary> lookups =
 			new RollupSummariesSelector(false).selectActiveByChildObject(
 				calculationModes, 
-				new Set<String> { childRecordDescribe.getName() });
+				childNames);
 		return lookups;		
 	}
 		

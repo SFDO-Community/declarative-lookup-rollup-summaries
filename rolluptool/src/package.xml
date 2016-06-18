@@ -94,6 +94,7 @@
 		<members>RollupServiceTest4Trigger</members>
 		<members>RollupServiceTest2Trigger</members>
 		<members>RollupServiceTest3Trigger</members>
+		<members>RollupServiceTest5Trigger</members>
 		<members>RollupServiceTestTrigger</members>
 		<members>RollupSummariesTrigger</members>
 		<name>ApexTrigger</name>

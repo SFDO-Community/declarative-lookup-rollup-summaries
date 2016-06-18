@@ -250,7 +250,6 @@ private class RollupServiceTest6 {
 	/** 
 	 * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/303
 	 **/
-	/*
 	@IsTest
 	private static void testAccountMergeAsParent() {
 
@@ -285,29 +284,99 @@ private class RollupServiceTest6 {
 		task2.WhatId = accountParentB.Id;
 		insert task2;
 
+		// Real time working?
+		System.assertEquals(1, [select AnnualRevenue from Account where id = :accountParentA.Id][0].AnnualRevenue);
+		System.assertEquals(1, [select AnnualRevenue from Account where id = :accountParentB.Id][0].AnnualRevenue);
+
+		// Enable the Account (Parent) Trigger
+		TestContext.AccountTestTriggerEnabled = true;
+
+		// Merge?
 		Database.merge(accountParentA, accountParentB.Id);
 
-		System.assertEquals(2, [select AnnualRevenue from Account where id = :accountParentA.Id][0].AnnualRevenue);
+		// Assert Schedule items are added
+		System.assertEquals(accountParentA.Id, [select Id, ParentId__c from LookupRollupSummaryScheduleItems__c][0].ParentId__c); 
 
+		// Run rollup job
+		Test.startTest();		
+		RollupService.runJobToProcessScheduledItems(); 
+		Test.stopTest();		
+
+		// Schedule items triggered refresh of rollups?
+		System.assertEquals(2, [select AnnualRevenue from Account where id = :accountParentA.Id][0].AnnualRevenue);
 	}
-	*/
 
 	/** 
 	 * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/303
 	 **/
-	/*
 	@IsTest
-	private static void testAccountMergeAsChild() {
+	private static void testAccountMergeAsParentWithoutParentTriggerDeployed() {
+
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Test Rollup';
+		rollupSummaryA.ParentObject__c = 'Account';
+		rollupSummaryA.ChildObject__c = 'Task';
+		rollupSummaryA.RelationShipField__c = 'WhatId';
+		rollupSummaryA.FieldToAggregate__c = 'Id';
+		rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.Count.name();
+		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = 'Realtime';
+		insert rollupSummaryA;
+
+		// Setup parent test records
+		Account accountParentA = new Account(Name = 'Test Account A');
+		insert accountParentA;
+		// Setup parent test records
+		Account accountParentB = new Account(Name = 'Test Account B');
+		insert accountParentB;
+
+		// Insert a Task for Account and assert
+		Task task1 = new Task();
+		task1.Subject = 'Task A';
+		task1.WhatId = accountParentA.Id;
+		insert task1;
+
+		// Insert a Task for Account and assert
+		Task task2 = new Task();
+		task2.Subject = 'Task B';
+		task2.WhatId = accountParentB.Id;
+		insert task2;
+
+		// Real time working?
+		System.assertEquals(1, [select AnnualRevenue from Account where id = :accountParentA.Id][0].AnnualRevenue);
+		System.assertEquals(1, [select AnnualRevenue from Account where id = :accountParentB.Id][0].AnnualRevenue);
+
+		// Disable the Account (Parent) Trigger, this prevents the rollups from being recalculated
+		TestContext.AccountTestTriggerEnabled = false;
+
+		// Merge?
+		Database.merge(accountParentA, accountParentB.Id);
+
+		// Assert no Schedule items are added
+		System.assertEquals(0, [select Id, ParentId__c from LookupRollupSummaryScheduleItems__c].size()); 
+
+		// Schedule items triggered refresh of rollups? No
+		System.assertEquals(1, [select AnnualRevenue from Account where id = :accountParentA.Id][0].AnnualRevenue);
+
+	}
+
+	/** 
+	 * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/303
+	 **/
+	@IsTest
+	private static void testContactMergeAsChild() {
 
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
 		rollupSummaryA.ParentObject__c = 'Account';
-		rollupSummaryA.ChildObject__c = 'Opportunity';
+		rollupSummaryA.ChildObject__c = 'Contact';
 		rollupSummaryA.RelationShipField__c = 'AccountId';
 		rollupSummaryA.RelationShipCriteria__c = null;
-		rollupSummaryA.FieldToAggregate__c = 'Amount';
-		rollupSummaryA.AggregateOperation__c = 'Sum';
-		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryA.FieldToAggregate__c = 'FirstName';
+		rollupSummaryA.ConcatenateDelimiter__c = ',';
+		rollupSummaryA.AggregateOperation__c = 'Concatenate';
+		rollupSummaryA.AggregateResultField__c = 'Description';
 		rollupSummaryA.Active__c = true;
 		rollupSummaryA.CalculationMode__c = 'Realtime';
 		insert rollupSummaryA;
@@ -317,30 +386,34 @@ private class RollupServiceTest6 {
 		accountA.Name = 'Test Account';
 		accountA.AnnualRevenue = 0;
 		insert accountA;
-		Opportunity oppA = new Opportunity();
-		oppA.Name = 'Test Opportunity';
-		oppA.StageName = 'Open';
-		oppA.CloseDate = System.today();
-		oppA.AccountId = accountA.Id;
-		oppA.Amount = 100;
-		insert oppA;
-		Account accountB = new Account();
-		accountB.Name = 'Test Account';
-		accountB.AnnualRevenue = 0;
-		insert accountB;
-		Opportunity oppB = new Opportunity();
-		oppB.Name = 'Test Opportunity';
-		oppB.StageName = 'Open';
-		oppB.CloseDate = System.today();
-		oppB.AccountId = accountB.Id;
-		oppB.Amount = 100;
-		insert oppB;
+		Contact contactA = new Contact();
+		contactA.FirstName = 'Fred';
+		contactA.LastName = 'Smith';
+		contactA.AccountId = accountA.Id;
+		insert contactA;
+		Contact contactB = new Contact();
+		contactB.FirstName = 'Bob';
+		contactB.LastName = 'Smith';
+		contactB.AccountId = accountA.Id;
+		insert contactB;
 
-		System.assertEquals(100, [select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountA.Id][0].AnnualRevenue);
+		// Assert realtime rollup
+		System.assertEquals('Fred,Bob', [select Description from Account where Id = :accountA.Id][0].Description);
 
-		Database.merge(accountA, accountB.Id);
+		// Disable the Account (Parent) Trigger (just to prove we don't need it as its a child merge)
+		TestContext.AccountTestTriggerEnabled = false;
 
-		System.assertEquals(200, [select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountA.Id][0].AnnualRevenue);
+		// Merge contacts
+		Database.merge(contactA, contactB.Id);
+
+		// Assert Schedule items are added
+		System.assertEquals(accountA.Id, [select Id, ParentId__c from LookupRollupSummaryScheduleItems__c][0].ParentId__c); 
+
+		// Run rollup job
+		Test.startTest();		
+		RollupService.runJobToProcessScheduledItems(); 
+		Test.stopTest();		
+
+		System.assertEquals('Fred', [select Description from Account where Id = :accountA.Id][0].Description);
 	}	
-	*/
 }

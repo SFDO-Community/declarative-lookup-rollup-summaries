@@ -155,8 +155,6 @@ private class RollupControllerTest
 		// Assert initial state of controller when the trigger for the child object is deployed
 		RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummary ));
 		System.assertEquals(false, controller.Deployed);
-		System.assertEquals(Utilities.componentPrefix() + 'ContactTrigger', controller.RollupTriggerName);
-		System.assertEquals(Utilities.componentPrefix() + 'ContactTest', controller.RollupTriggerTestName);
 		System.assertEquals(null, controller.RollupTrigger);
 		System.assertEquals(null, controller.RollupTriggerTest);
 		System.assertEquals(
@@ -191,6 +189,14 @@ private class RollupControllerTest
 	    			'</types>' + 
 	    			'<types>' + 
 	        			'<members>'+controller.RollupTriggerTestName+'</members>' +
+	        			'<name>ApexClass</name>' + 
+	    			'</types>' + 
+	    			'<types>' + 
+	        			'<members>'+controller.RollupParentTriggerName+'</members>' +
+	        			'<name>ApexTrigger</name>' + 
+	    			'</types>' + 
+	    			'<types>' + 
+	        			'<members>'+controller.RollupParentTriggerTestName+'</members>' +
 	        			'<name>ApexClass</name>' + 
 	    			'</types>' + 
 	    			'<version>28.0</version>' + 

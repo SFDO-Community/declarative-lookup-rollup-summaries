@@ -295,7 +295,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 			// Row limit is only supported for certain operations
 			LREngine.RollupOperation operation = 
 				OPERATION_PICKLIST_TO_ENUMS.get(lookupRollupSummary.AggregateOperation);
-			if(operation!=null && lookupRollupSummary.RowLimit!=null) {
+			if(operation!=null && lookupRollupSummary.RowLimit!=null && lookupRollupSummary.RowLimit>0) {
 				Set<LREngine.RollupOperation> operationsSupportingRowLimit 
 					= new Set<LREngine.RollupOperation>{ 
 						LREngine.RollupOperation.Last,
@@ -391,6 +391,8 @@ public class RollupSummaries extends fflib_SObjectDomain
 			return 'RollupServiceTest3Trigger';
 		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject == 'Task')
 			return 'RollupServiceTest4Trigger';
+		else if(Test.isRunningTest() && lookupRollupSummary.ChildObject == 'Contact')
+			return 'RollupServiceTest5Trigger';
 		return calculateComponentName(lookupRollupSummary.ChildObject, 'Trigger', APEXTRIGGER_NAME_LENGTH);
 	}
 
@@ -402,6 +404,34 @@ public class RollupSummaries extends fflib_SObjectDomain
 		if(Test.isRunningTest() && lookupRollupSummary.ChildObject == 'Opportunity')
 			return 'RollupSummariesTest';		
 		return calculateComponentName(lookupRollupSummary.ChildObject, 'Test', APEXCLASS_NAME_LENGTH);
+	}
+	
+	/**
+	 * Trigger name for Parent object for given lookup rollup summary
+	 **/
+	public static String makeParentTriggerName(RollupSummary lookupRollupSummary)
+	{
+		if(Test.isRunningTest() && lookupRollupSummary.ParentObject == 'Opportunity')
+			return 'RollupServiceTestTrigger';
+		else if(Test.isRunningTest() && lookupRollupSummary.ParentObject == LookupParent__c.sObjectType.getDescribe().getName())
+			return 'RollupServiceTest2Trigger';
+		else if(Test.isRunningTest() && lookupRollupSummary.ParentObject == 'Account')
+			return 'RollupServiceTest3Trigger';
+		else if(Test.isRunningTest() && lookupRollupSummary.ParentObject == 'Task')
+			return 'RollupServiceTest4Trigger';
+		else if(Test.isRunningTest() && lookupRollupSummary.ParentObject == 'Contact')
+			return 'RollupServiceTest5Trigger';
+		return calculateComponentName(lookupRollupSummary.ParentObject, 'Trigger', APEXTRIGGER_NAME_LENGTH);
+	}
+
+	/**
+	 * Apex test name for Parent object for given lookup rollup summary
+	 **/
+	public static String makeParentTriggerTestName(RollupSummary lookupRollupSummary)
+	{
+		if(Test.isRunningTest() && lookupRollupSummary.ParentObject == 'Opportunity')
+			return 'RollupSummariesTest';		
+		return calculateComponentName(lookupRollupSummary.ParentObject, 'Test', APEXCLASS_NAME_LENGTH);
 	}
 
 	/**
