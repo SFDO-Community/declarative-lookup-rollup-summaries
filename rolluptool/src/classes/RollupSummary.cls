@@ -156,6 +156,11 @@ public class RollupSummary {
 		set { Record.put('AggregateAllRows__c', value); }
 	}
 
+	public Decimal RowLimit {
+		get { return (Decimal) Record.get('RowLimit__c'); }
+		set { Record.put('RowLimit__c', value); }
+	}
+
 	public void addError(String errorMessage) {
 
 		// Store the error message
@@ -208,6 +213,7 @@ public class RollupSummary {
 		public final FieldData TestCode = new FieldData(this);
 		public final FieldData TestCodeSeeAllData = new FieldData(this);
 		public final FieldData AggregateAllRows = new FieldData(this);
+		public final FieldData RowLimit = new FieldData(this);
 	}
 
 	/**
@@ -261,6 +267,8 @@ public class RollupSummary {
 				fieldLabelInError = LookupRollupSummary__c.TestCodeSeeAllData__c.getDescribe().getLabel();
 			} else if(this === RecordMetadata.AggregateAllRows) {
 				fieldLabelInError = LookupRollupSummary__c.AggregateAllRows__c.getDescribe().getLabel();
+			} else if(this === RecordMetadata.RowLimit) {
+				fieldLabelInError = LookupRollupSummary__c.RowLimit__c.getDescribe().getLabel();
 			}				
 
 			// Store error
@@ -308,6 +316,8 @@ public class RollupSummary {
 					customObjectRecord.TestCodeSeeAllData__c.addError(errorMessage);
 				} else if(this === RecordMetadata.AggregateAllRows) {
 					customObjectRecord.AggregateAllRows__c.addError(errorMessage);
+				} else if(this === RecordMetadata.RowLimit) {
+					customObjectRecord.RowLimit__c.addError(errorMessage);
 				}				
 			}
 		}

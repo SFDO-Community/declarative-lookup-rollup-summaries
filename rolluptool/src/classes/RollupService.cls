@@ -1106,7 +1106,8 @@ global with sharing class RollupService
 				aggregateResultField.getDescribe(),
 				fieldToAggregate.getDescribe(),
 				RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation),
-            	lookup.ConcatenateDelimiter);
+            	lookup.ConcatenateDelimiter,
+            	Integer.valueOf(lookup.RowLimit));
 
 		LookupRollupSummaryWrapper wrapper = new LookupRollupSummaryWrapper();
 		wrapper.Lookup = lookup;

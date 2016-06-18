@@ -89,11 +89,20 @@ public class CustomMetadataService {
 			if(!dsr.isCustom())
 				continue;
 			Object fieldValue = customMetadataRecord.get(sObjectField);
-			if(fieldValue == null)
-				continue;
 			MetadataService.CustomMetadataValue cmdv = new MetadataService.CustomMetadataValue();
 			cmdv.field = dsr.getName();
-			cmdv.value = fieldValue+''; // TODO: More work here, type conversion
+			if(dsr.getType() == Schema.DisplayType.Double) {
+				if(fieldValue!=null) {
+					Decimal fieldValueNumber = (Decimal) fieldValue;
+					// TODO: Bit of a hack, MDT Number fields seem to be populated with zeros when the VF bound field is emptied by the user?!?
+					if(fieldValueNumber != 0) {
+						fieldValueNumber = fieldValueNumber.setScale(dsr.getScale());
+						cmdv.value = fieldValueNumber.format();											
+					}
+				}
+			} else {
+				cmdv.value = fieldValue + ''; // TODO: More work here, type conversion				
+			}
 			cm.values.add(cmdv);
 		}
 		return cm;

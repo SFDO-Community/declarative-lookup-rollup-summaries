@@ -13,7 +13,7 @@
         <fullName>AggregateAllRows__c</fullName>
         <defaultValue>false</defaultValue>
         <externalId>false</externalId>
-        <inlineHelpText>Includes child records that have been archived by the system and/or placed in the recycle bin.</inlineHelpText>        
+        <inlineHelpText>Includes child records that have been archived by the system and/or placed in the recycle bin.</inlineHelpText>
         <label>Aggregate All Rows</label>
         <type>Checkbox</type>
     </fields>
@@ -157,6 +157,17 @@
         <length>80</length>
         <required>true</required>
         <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>RowLimit__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Limits the number of rows used in the rollup. Applies only to the Last and Concatenate operators.</inlineHelpText>
+        <label>Row Limit</label>
+        <precision>5</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <type>Number</type>
         <unique>false</unique>
     </fields>
     <fields>

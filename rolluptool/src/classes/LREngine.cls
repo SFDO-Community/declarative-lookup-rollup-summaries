@@ -278,7 +278,9 @@ public class LREngine {
                        rsf.operation == RollupOperation.Concatenate_Distinct) {                    
                         Concatenator concatenator =
                             new Concatenator(rsf.operation == RollupOperation.Concatenate_Distinct, rsf.concatenateDelimiter);
+                        Integer rowIdx = 0;
                         for(SObject childDetailRecord : childDetailRecords) {
+                            rowIdx++;
                             String childFieldValue = String.valueOf(childDetailRecord.get(rsf.detail.getName()));
                             if (childFieldValue != null) {
                             if (rsf.detail.getType() == Schema.DisplayType.MultiPicklist) {
@@ -289,6 +291,9 @@ public class LREngine {
                                     concatenator.add(childFieldValue);
                                 }
                             }
+                            if(rsf.RowLimit!=null && rsf.RowLimit>0 && rowIdx == rsf.RowLimit) {
+                                break;
+                            }
                         }
                         String concatenatedValues = concatenator.toString();
                         concatenatedValues = concatenatedValues.abbreviate(rsf.master.getLength());
@@ -297,8 +302,13 @@ public class LREngine {
                         masterRecordsMap.get(masterId).put(
                             rsf.master.getName(), childDetailRecords[0].get(rsf.detail.getName()));
                     } else if(rsf.operation == RollupOperation.Last) {
+                        Integer recordSetSize = childDetailRecords.size();
+                        Integer index = 
+                            rsf.RowLimit!=null && rsf.RowLimit>0 ? 
+                                (rsf.RowLimit < recordSetSize ? rsf.RowLimit-1  : recordSetSize - 1) : recordSetSize - 1;
                         masterRecordsMap.get(masterId).put(
-                            rsf.master.getName(), childDetailRecords[childDetailRecords.size()-1].get(rsf.detail.getName()));                        
+                            rsf.master.getName(), 
+                            childDetailRecords[index].get(rsf.detail.getName()));
                     }
                     // Remove master Id record as its been processed    
                     masterIds.remove(masterId);                          
@@ -380,6 +390,7 @@ public class LREngine {
         public Schema.Describefieldresult detail;
         public RollupOperation operation;
         public String concatenateDelimiter;
+        public Integer rowLimit;
         
         // derived fields, kept like this to save script lines later, by saving the same
         // computations over and over again
@@ -402,10 +413,21 @@ public class LREngine {
                                          Schema.Describefieldresult d,
                                          RollupOperation op,
                                          String concatenateDelimiter) {
+            this(m, d, op, concatenateDelimiter, null);
+        }
+
+
+        public RollupSummaryField(Schema.Describefieldresult m, 
+                                         Schema.Describefieldresult d,
+                                         RollupOperation op,
+                                         String concatenateDelimiter,
+                                         Integer rowLimit) {
+
             this.master = m;
             this.detail = d;
             this.operation = op;
             this.concatenateDelimiter = concatenateDelimiter;
+            this.rowLimit = rowLimit;
             // caching these derived attrbutes for once
             // as their is no view state involved here
             // and this caching will lead to saving in script lines later on

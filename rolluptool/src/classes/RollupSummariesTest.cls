@@ -517,4 +517,29 @@ private class RollupSummariesTest
 		System.assertEquals(0, fflib_SObjectDomain.Errors.getAll().size());	
 	}	
 
+	
+	private testmethod static void testUseOfRowLimitOnSum()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = null;
+		rollupSummary.FieldToAggregate__c = 'Amount';
+		rollupSummary.AggregateOperation__c = 'Sum';
+		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummary.RowLimit__c = 10;
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		fflib_SObjectDomain.Test.Database.onInsert(new LookupRollupSummary__c[] { rollupSummary } );		
+		fflib_SObjectDomain.triggerHandler(RollupSummaries.class);		
+		System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());	
+		System.assertEquals('Row Limit is only supported on Last and Concatentate operators.', fflib_SObjectDomain.Errors.getAll()[0].message);
+		System.assertEquals(LookupRollupSummary__c.RowLimit__c, ((fflib_SObjectDomain.FieldError)fflib_SObjectDomain.Errors.getAll()[0]).field);
+	}	
 }

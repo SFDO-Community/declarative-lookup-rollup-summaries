@@ -291,7 +291,20 @@ public class RollupSummaries extends fflib_SObjectDomain
 					lookupRollupSummary.Fields.RelationshipCriteriaFields.addError(error('Field ' + fieldsInError[0] + ' does not exist on the child object.', lookupRollupSummary.Record, LookupRollupSummary__c.RelationshipCriteriaFields__c));
 				else if(fieldsInError.size()>1)
 					lookupRollupSummary.Fields.RelationshipCriteriaFields.addError(error('Fields ' + String.join(fieldsInError, ',') + ' do not exist on the child object.', lookupRollupSummary.Record, LookupRollupSummary__c.RelationshipCriteriaFields__c));
-			} 	
+			} 
+			// Row limit is only supported for certain operations
+			LREngine.RollupOperation operation = 
+				OPERATION_PICKLIST_TO_ENUMS.get(lookupRollupSummary.AggregateOperation);
+			if(operation!=null && lookupRollupSummary.RowLimit!=null) {
+				Set<LREngine.RollupOperation> operationsSupportingRowLimit 
+					= new Set<LREngine.RollupOperation>{ 
+						LREngine.RollupOperation.Last,
+						LREngine.RollupOperation.Concatenate,
+						LREngine.RollupOperation.Concatenate_Distinct };
+				if(!operationsSupportingRowLimit.contains(operation)) {
+					lookupRollupSummary.Fields.RowLimit.addError(error('Row Limit is only supported on Last and Concatentate operators.', lookupRollupSummary.Record, LookupRollupSummary__c.RowLimit__c ));
+				}
+			}
 			try
 			{
 				// If all objects and fields valid...
@@ -313,7 +326,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 			            new LREngine.RollupSummaryField(
 							aggregateResultField.getDescribe(),
 							fieldToAggregate.getDescribe(),
-							OPERATION_PICKLIST_TO_ENUMS.get(lookupRollupSummary.AggregateOperation),
+							operation,
 							lookupRollupSummary.ConcatenateDelimiter));
 					// Validate the SOQL
 					if(lookupRollupSummary.RelationShipCriteria!=null && 

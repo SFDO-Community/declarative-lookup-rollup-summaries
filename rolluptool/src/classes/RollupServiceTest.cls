@@ -1314,6 +1314,133 @@ private with sharing class RollupServiceTest
 		System.assertEquals('Red;Yellow', (String) assertParents.get(parentC.id).get(aggregateResultField));
 	}
 
+
+	private testmethod static void testPicklistRollupWithLimits()
+	{		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Colours__c.getDescribe().getName();
+
+		// Create a picklist rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Concatenate.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.ConcatenateDelimiter__c = ';';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		rollupSummary.RowLimit__c = 2;
+		rollupSummary.AggregateAllRows__c = true;
+		insert rollupSummary;
+
+		// Insert parents
+		SObject parentA = parentType.newSObject();
+		parentA.put('Name', 'ParentA');
+		SObject parentB = parentType.newSObject();
+		parentB.put('Name', 'ParentB');
+		SObject parentC = parentType.newSObject();
+		parentC.put('Name', 'ParentC');
+		List<SObject> parents = new List<SObject> { parentA, parentB, parentC };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		for(SObject parent : parents)
+		{
+			String name = (String) parent.get('Name');
+			SObject child1 = childType.newSObject();
+			child1.put(relationshipField, parent.Id);
+			child1.put(aggregateField, 'Red');
+			children.add(child1);
+			SObject child2 = childType.newSObject();
+			child2.put(relationshipField, parent.Id);
+			child2.put(aggregateField, 'Yellow');
+			children.add(child2);
+			SObject child3 = childType.newSObject();
+			child3.put(relationshipField, parent.Id);
+			child3.put(aggregateField, 'Blue');
+			children.add(child3);
+		}
+		insert children;
+
+		// Assert rollups
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals('Red;Yellow', (String) assertParents.get(parentA.id).get(aggregateResultField));
+		System.assertEquals('Red;Yellow', (String) assertParents.get(parentB.id).get(aggregateResultField));
+		System.assertEquals('Red;Yellow', (String) assertParents.get(parentC.id).get(aggregateResultField));
+	}
+
+
+	private testmethod static void testLastRollupWithLimits()
+	{		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		Schema.SObjectType parentType = LookupParent__c.sObjectType;
+		Schema.SObjectType childType = LookupChild__c.sObjectType;
+		String parentObjectName = parentType.getDescribe().getName();
+		String childObjectName = childType.getDescribe().getName();
+		String relationshipField = LookupChild__c.LookupParent__c.getDescribe().getName();
+		String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
+		String aggregateResultField = LookupParent__c.Colours__c.getDescribe().getName();
+
+		// Create a picklist rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Test Rollup';
+		rollupSummary.ParentObject__c = parentObjectName;
+		rollupSummary.ChildObject__c = childObjectName;
+		rollupSummary.RelationShipField__c = relationshipField;
+		rollupSummary.FieldToAggregate__c = aggregateField;
+		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Last.name();
+		rollupSummary.AggregateResultField__c = aggregateResultField;
+		rollupSummary.FieldToOrderBy__c	= aggregateField + ' DESC';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		rollupSummary.RowLimit__c = 2;
+		rollupSummary.AggregateAllRows__c = true;
+		insert rollupSummary;
+
+		// Insert parents
+		SObject parent = parentType.newSObject();
+		parent.put('Name', 'ParentA');
+		List<SObject> parents = new List<SObject> { parent };
+		insert parents;
+
+		// Insert children
+		List<SObject> children = new List<SObject>();
+		String name = (String) parent.get('Name');
+		SObject child1 = childType.newSObject();
+		child1.put(relationshipField, parent.Id);
+		child1.put(aggregateField, '1');
+		children.add(child1);
+		SObject child2 = childType.newSObject();
+		child2.put(relationshipField, parent.Id);
+		child2.put(aggregateField, '2');
+		children.add(child2);
+		SObject child3 = childType.newSObject();
+		child3.put(relationshipField, parent.Id);
+		child3.put(aggregateField, '3');
+		children.add(child3);
+		insert children;
+
+		// Assert rollups
+		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
+		System.assertEquals('2', (String) assertParents.get(parent.id).get(aggregateResultField));
+	}
+
 	private testmethod static void testLimitsConsumedWithSingleChildChanged()
 	{
 		// Test supported?

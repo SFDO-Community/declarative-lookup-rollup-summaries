@@ -57,6 +57,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>LookupRollupSummary__c.RowLimit__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>LookupRollupSummary__c.CalculationMode__c</field>
         <readable>true</readable>
     </fieldPermissions>

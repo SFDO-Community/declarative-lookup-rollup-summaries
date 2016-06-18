@@ -306,6 +306,18 @@
         <unique>false</unique>
     </fields>
     <fields>
+        <fullName>RowLimit__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Limits the number of rows used in the rollup. Applies only to the Last and Concatenate operators.</inlineHelpText>
+        <label>Row Limit</label>
+        <precision>5</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>TestCodeSeeAllData__c</fullName>
         <defaultValue>false</defaultValue>
         <deprecated>false</deprecated>

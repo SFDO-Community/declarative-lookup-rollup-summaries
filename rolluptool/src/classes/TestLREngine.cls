@@ -800,6 +800,17 @@ private class TestLREngine {
                 'Lost,Won,Won');
     } 
 
+    static testMethod void testRollupConcatenateLimited() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ',', 2),
+                'test,test',
+                'Lost,Won');
+    } 
+
     static testMethod void testRollupConcatenateDeletedChildRows() {
         testRollup(
             Schema.SObjectType.Opportunity.fields.StageName.getName(),
@@ -1054,6 +1065,17 @@ private class TestLREngine {
                 'Lost');
     } 
 
+    static testMethod void testRollupLastLimit() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.Amount.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Last, null, 2),
+                'test',
+                'Won');
+    } 
+
     static testMethod void testMultipleRollupsSameResultField() {
         prepareData();
 
@@ -1116,6 +1138,7 @@ private class TestLREngine {
     }
 
     static private void testRollup(String detailOrderByClause, LREngine.RollupSummaryField rollupField, String expected1, String expected2, boolean allRows) {
+
         prepareData();
 
         if(allRows)
