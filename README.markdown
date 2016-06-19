@@ -26,6 +26,7 @@ Documentation
 
 The tool has been featured in a number of blog entries as it has evolved...
 
+- [Declarative Rollup Tool Summer (2016) Release](https://andyinthecloud.com/2016/06/19/declarative-rollup-tool-summer-release/)
 - [Rollups and Cross Object Formula Fields](http://andyinthecloud.com/2016/02/13/rollups-and-cross-object-formula-fields/)
 - [Packaging and Installing Rollups](https://github.com/afawcett/declarative-lookup-rollup-summaries)
 - [Declarative Lookup Rollup Summary Tool and Custom Metadata](http://andyinthecloud.com/2015/12/24/declarative-lookup-rollup-summary-tool-and-custom-metadata/)
@@ -70,6 +71,8 @@ You can install a packaged version of the tool into your production org (sandbox
 ________________________________
 
 Package [Product URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000ka90), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000ka90)
+
+**Documentation:** See [Declarative Rollup Tool Summer (2016) Release](https://andyinthecloud.com/2016/06/19/declarative-rollup-tool-summer-release/)
 
 - Bug [Installation Issue - The user license doesn't allow the permission: Read All dlrs__LookupRollupCalculateJob__c](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/331)
 - Enhancement [Roll Up just for few number of records](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/315)
