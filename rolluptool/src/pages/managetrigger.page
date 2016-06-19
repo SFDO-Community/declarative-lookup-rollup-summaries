@@ -81,7 +81,7 @@
 			</c:zip>
 			<apex:outputPanel rendered="{!ISNULL(AsyncResult)}">
 				<input type="button" onclick="generateZip();" value="{!IF(Deployed, 'Remove', 'Deploy')}" class="btn"/>
-				<apex:commandButton value="Cancel" action="{!URLFOR($Page.managelookuprollupsummaries, null, ['id'=Id])}"/>
+				<apex:commandButton value="Cancel" action="{!cancel}"/>
 			</apex:outputPanel>
 		</apex:outputPanel>
  	</apex:form>
