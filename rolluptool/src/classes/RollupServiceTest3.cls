@@ -559,6 +559,11 @@ private with sharing class RollupServiceTest3
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
+            
+        // Abort if the sharing model does not support this test (some older orgs who have upgraded won't have this)
+        SObjectType sharingType = Schema.getGlobalDescribe().get(Utilities.objectPrefix()+'LookupChild__Share');
+        if(sharingType==null)
+            return;
 
 		Schema.SObjectType parentType = LookupParent__c.sObjectType;
 		Schema.SObjectType childType = LookupChild__c.sObjectType;
@@ -601,12 +606,12 @@ private with sharing class RollupServiceTest3
 			testUser = createUser();
 		}
 
-		// Grant access to the child record since it is using private sharing model
-		LookupChild__Share childSharing = new LookupChild__Share();
-		childSharing.AccessLevel = 'Edit';
-		childSharing.ParentId = child1.Id;
-		childSharing.UserOrGroupId = testUser.Id;
-		insert childSharing;
+        // Grant access to the child record since it is using private sharing model
+        SObject childSharing = sharingType.newSObject();
+        childSharing.put('AccessLevel', 'Edit');
+        childSharing.put('ParentId', child1.Id);
+        childSharing.put('UserOrGroupId', testUser.Id);
+        insert childSharing;
 
 		// Test data insert children as new user (who cannot see the parent)
 		System.runAs(testUser)
