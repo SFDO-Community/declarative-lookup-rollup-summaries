@@ -70,7 +70,7 @@ You can install a packaged version of the tool into your production org (sandbox
 **Latest Release Version 2.4.2**
 ________________________________
 
-Package [Product URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000ka9e), [Sandbox URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000ka9e)
+Package [Product URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000ka9e), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000ka9e)
 
 - Bug [Install failed 2.4 update - New dependency on LookupChild's Sharing mode in Apex Unit Test](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/344)
 
