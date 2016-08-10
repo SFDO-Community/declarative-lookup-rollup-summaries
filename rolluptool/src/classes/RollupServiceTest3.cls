@@ -271,7 +271,7 @@ private with sharing class RollupServiceTest3
 		rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
 		rollupSummary.AggregateResultField__c = aggregateResultField;
 		rollupSummary.Active__c = false;
-		rollupSummary.CalculationMode__c = 'Scheduled';
+		rollupSummary.CalculationMode__c = 'Realtime';
 		insert rollupSummary;
 
 		// Run rollup calculate job

@@ -98,7 +98,7 @@ global with sharing class RollupService
 		}
 
 		// Already active?
-		if(lookup.Active==null || lookup.Active==false)
+		if((lookup.Active==null || lookup.Active==false) && lookup.CalculationMode=='Realtime' )
 			throw new RollupServiceException('The rollup must be Active before you can run a Calculate job.');
 
 		// Start the job and record the Job Id
