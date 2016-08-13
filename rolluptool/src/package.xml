@@ -28,6 +28,7 @@
         <members>LookupRollupSummary__c</members>
         <members>LookupRollupSummaryLog__c</members>
         <members>LookupRollupSummaryScheduleItems__c</members>
+        <members>LookupRollupSummary2__mdt</members>
         <name>CustomObject</name>
     </types>
     <types>
