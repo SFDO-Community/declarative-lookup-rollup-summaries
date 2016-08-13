@@ -32,13 +32,13 @@ private with sharing class RollupServiceTest3
 {		
 	static Schema.SObjectField ACCOUNT_SLA_EXPIRATION_DATE;
 	static Schema.SObjectField ACCOUNT_NUMBER_OF_LOCATIONS;		
-	static
-	{
-		// Dynamically resolve these fields, if they are not present when the test runs, the test will return as passed to avoid failures in subscriber org when packaged
-		Map<String, Schema.SObjectField> accountFields = Schema.SObjectType.Account.fields.getMap();
-		ACCOUNT_SLA_EXPIRATION_DATE = accountFields.get('SLAExpirationDate__c');
-		ACCOUNT_NUMBER_OF_LOCATIONS = accountFields.get('NumberOfLocations__c');
-	}
+    static
+    {
+        // Dynamically resolve these fields, if they are not present when the test runs, the test will return as passed to avoid failures in subscriber org when packaged
+        fflib_SObjectDescribe describe = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
+        ACCOUNT_SLA_EXPIRATION_DATE = describe.getField('SLAExpirationDate__c');
+        ACCOUNT_NUMBER_OF_LOCATIONS = describe.getField('NumberOfLocations__c');
+    }
 	
 	private testmethod static void testCalculateJob()
 	{		

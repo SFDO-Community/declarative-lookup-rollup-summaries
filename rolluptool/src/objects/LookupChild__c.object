@@ -44,6 +44,7 @@
         <actionName>View</actionName>
         <type>Default</type>
     </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
     <deprecated>false</deprecated>
@@ -52,6 +53,7 @@
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>false</enableReports>
+    <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
@@ -95,6 +97,7 @@
     </fields>
     <fields>
         <fullName>Description2__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Description 2</label>
         <length>255</length>
@@ -105,6 +108,7 @@
     </fields>
     <fields>
         <fullName>Description__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Description</label>
         <length>255</length>
@@ -116,7 +120,7 @@
     <fields>
         <fullName>LookupParent2__c</fullName>
         <deleteConstraint>SetNull</deleteConstraint>
-        <deprecated>false</deprecated>        
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Lookup Parent 2</label>
         <referenceTo>LookupParent__c</referenceTo>

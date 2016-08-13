@@ -44,6 +44,7 @@
         <actionName>View</actionName>
         <type>Default</type>
     </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
     <deprecated>false</deprecated>
@@ -52,10 +53,12 @@
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>false</enableReports>
+    <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
         <fullName>LookupRollupSummary2__c</fullName>
+        <deprecated>false</deprecated>
         <description>Either the Id (Custom Object) or Name (Custom Metadata) of the rollup summary definition that generated this schedule item.</description>
         <externalId>false</externalId>
         <label>Lookup Rollup Summary 2</label>

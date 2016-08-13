@@ -33,7 +33,7 @@
         <apex:inputTextarea html-placeholder="Name LIKE 'Fred%' AND Custom__c > 0" cols="80" value="{!masterObjectWhere}" /><p/>
         <apex:pageBlock title="Schedule">
 	        <apex:pageBlockSection columns="3">
-	        	<apex:pageBlockSectionItem>
+	        	<apex:pageBlockSectionItem >
 		        	<apex:outputLabel value="Minute"/>
 			        <apex:selectList value="{!minute}" size="8" multiselect="false" style="width:100px">
 						<apex:selectOptions value="{!minutes}"/>

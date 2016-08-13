@@ -127,33 +127,32 @@ public class RollupSummaries extends fflib_SObjectDomain
 		for(RollupSummary lookupRollupSummary : Records)
 		{
 			// Parent Object
-			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);
-			if(parentObjectType!=null)
-				lookupRollupSummary.ParentObject = parentObjectType.getDescribe().getName();
+			fflib_SObjectDescribe parentObject = fflib_SObjectDescribe.getDescribe(lookupRollupSummary.ParentObject);
+			if(parentObject!=null)
+				lookupRollupSummary.ParentObject = parentObject.getDescribe().getName();
 
 			// Child Object
-			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject);
-			if(childObjectType!=null)
-				lookupRollupSummary.ChildObject = childObjectType.getDescribe().getName();
+			fflib_SObjectDescribe childObject = fflib_SObjectDescribe.getDescribe(lookupRollupSummary.ChildObject);
+			if(childObject!=null)
+				lookupRollupSummary.ChildObject = childObject.getDescribe().getName();
 
 			// Child Object fields
 			SObjectField relationshipField = null;
 			SObjectField fieldToAggregate = null;
-			Map<String, Schema.SObjectField> childObjectFields = gdFields.get(childObjectType);
-			if(childObjectFields!=null)
+			if(childObject!=null)
 			{
 				// Relationship field
-				relationshipField = childObjectFields.get(lookupRollupSummary.RelationshipField);
+				relationshipField = childObject.getField(lookupRollupSummary.RelationshipField);
 				if(relationshipField!=null)
 					lookupRollupSummary.RelationshipField = relationshipField.getDescribe().getName();
 				// Field to Aggregate
-				fieldToAggregate = childObjectFields.get(lookupRollupSummary.FieldToAggregate);
+				fieldToAggregate = childObject.getField(lookupRollupSummary.FieldToAggregate);
 				if(fieldToAggregate!=null)
 					lookupRollupSummary.FieldToAggregate = fieldToAggregate.getDescribe().getName();
 				// Field to Order By
 				if(lookupRollupSummary.FieldToOrderBy!=null) {
 					try {
-		                lookupRollupSummary.FieldToOrderBy = parseOrderByClause(lookupRollupSummary.FieldToOrderBy, childObjectFields);
+		                lookupRollupSummary.FieldToOrderBy = parseOrderByClause(lookupRollupSummary.FieldToOrderBy, childObject);
 					} catch(Utilities.OrderByInvalidException e) {
 						// there is a problem with order by so we ignore it intentionally here since we're just trying 
 						// to update field names with describe info.  The error will be caught during validation phase.
@@ -162,21 +161,20 @@ public class RollupSummaries extends fflib_SObjectDomain
 			}
 			// Parent Object fields
 			SObjectField aggregateResultField = null;
-			Map<String, Schema.SObjectField> parentObjectFields = gdFields.get(parentObjectType);
-			if(parentObjectFields!=null)
+			if(parentObject!=null)
 			{
 				// Aggregate Result field
-				aggregateResultField = parentObjectFields.get(lookupRollupSummary.AggregateResultField);
+				aggregateResultField = parentObject.getField(lookupRollupSummary.AggregateResultField);
 				if(aggregateResultField!=null)
 					lookupRollupSummary.AggregateResultField = aggregateResultField.getDescribe().getName();
 			}						
 			// Check the list of fields expressed in the relationship critiera fields
-			if(childObjectFields!=null && lookupRollupSummary.RelationshipCriteriaFields!=null)
+			if(childObject!=null && lookupRollupSummary.RelationshipCriteriaFields!=null)
 			{
 				List<String> relationshipCriteriaFields = new List<String>();
 				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields.split('\r\n');
 				for(String field : fieldList) {
-					SObjectField relationshipCriteriaField = childObjectFields.get(field);
+					SObjectField relationshipCriteriaField = childObject.getField(field);
 					relationshipCriteriaFields.add(relationshipCriteriaField !=null ? relationshipCriteriaField.getDescribe().getName() : field);
 				}
 				lookupRollupSummary.RelationshipCriteriaFields = String.join(relationshipCriteriaFields, '\r\n');
@@ -189,20 +187,13 @@ public class RollupSummaries extends fflib_SObjectDomain
 	 **/ 	
 	private void validateCommon()
 	{
-		// Cache Apex Describes and calculate child object tigger names
+		// Calculate child object tigger names
 		Set<String> rollupTriggerNames = new Set<String>();
-		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
-		Map<SObjectType, Map<String, Schema.SObjectField>> gdFields = new Map<SObjectType, Map<String, Schema.SObjectField>>(); 	
 		for(RollupSummary lookupRollupSummary : Records)
 		{
-			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);
-			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject);
-			if(parentObjectType!=null && !gdFields.containsKey(parentObjectType))
-				gdFields.put(parentObjectType, parentObjectType.getDescribe().fields.getMap());
-			if(childObjectType!=null && !gdFields.containsKey(childObjectType))
-				gdFields.put(childObjectType, childObjectType.getDescribe().fields.getMap());
 			// Calculate trigger name child object reqquires in order to check existance
-			if(childObjectType!=null)
+            fflib_SObjectDescribe childObject = fflib_SObjectDescribe.getDescribe(lookupRollupSummary.ChildObject);
+			if(childObject!=null)
 				rollupTriggerNames.add(makeTriggerName(lookupRollupSummary));				
 		}
 
@@ -224,32 +215,31 @@ public class RollupSummaries extends fflib_SObjectDomain
 				}
 			}
 			// Parent Object valid?
-			SObjectType parentObjectType = gd.get(lookupRollupSummary.ParentObject);
-			if(parentObjectType==null)
+			fflib_SObjectDescribe parentObject = fflib_SObjectDescribe.getDescribe(lookupRollupSummary.ParentObject);
+			if(parentObject==null)
 				lookupRollupSummary.Fields.ParentObject.addError(error('Object does not exist.', lookupRollupSummary.Record, LookupRollupSummary__c.ParentObject__c));
 			// Child Object valid?
-			SObjectType childObjectType = gd.get(lookupRollupSummary.ChildObject);
-			if(childObjectType==null)
+			fflib_SObjectDescribe childObject = fflib_SObjectDescribe.getDescribe(lookupRollupSummary.ChildObject);
+			if(childObject==null)
 				lookupRollupSummary.Fields.ChildObject.addError(error('Object does not exist.', lookupRollupSummary.Record, LookupRollupSummary__c.ChildObject__c));
 			// Child Object fields valid?
 			SObjectField relationshipField = null;
 			SObjectField fieldToAggregate = null;
 			Boolean orderByIsValid = true;
-			Map<String, Schema.SObjectField> childObjectFields = gdFields.get(childObjectType);
-			if(childObjectFields!=null)
+			if(childObject!=null)
 			{
 				// Relationship field valid?
-				relationshipField = childObjectFields.get(lookupRollupSummary.RelationshipField);
+				relationshipField = childObject.getField(lookupRollupSummary.RelationshipField);
 				if(relationshipField==null)
 					lookupRollupSummary.Fields.RelationshipField.addError(error('Field does not exist.', lookupRollupSummary.Record, LookupRollupSummary__c.RelationshipField__c));
 				// Field to Aggregate valid?
-				fieldToAggregate = childObjectFields.get(lookupRollupSummary.FieldToAggregate);
+				fieldToAggregate = childObject.getField(lookupRollupSummary.FieldToAggregate);
 				if(fieldToAggregate==null)
 					lookupRollupSummary.Fields.FieldToAggregate.addError(error('Field does not exist.', lookupRollupSummary.Record, LookupRollupSummary__c.FieldToAggregate__c));
 				// Field to Order By valid?
 				if(!String.isBlank(lookupRollupSummary.FieldToOrderBy)) {
 					try {
-						String orderByClause = parseOrderByClause(lookupRollupSummary.FieldToOrderBy, childObjectFields);
+						String orderByClause = parseOrderByClause(lookupRollupSummary.FieldToOrderBy, childObject);
 					} catch(Utilities.OrderByInvalidException e) {
 						orderByIsValid = false;
 						lookupRollupSummary.Fields.FieldToOrderBy.addError(error(e.getMessage(), lookupRollupSummary.Record, LookupRollupSummary__c.FieldToOrderBy__c));
@@ -260,16 +250,15 @@ public class RollupSummaries extends fflib_SObjectDomain
 			}
 			// Parent Object fields valid?
 			SObjectField aggregateResultField = null;
-			Map<String, Schema.SObjectField> parentObjectFields = gdFields.get(parentObjectType);
-			if(parentObjectFields!=null)
+			if(parentObject!=null)
 			{
 				// Aggregate Result field valid?
-				aggregateResultField = parentObjectFields.get(lookupRollupSummary.AggregateResultField);
+				aggregateResultField = parentObject.getField(lookupRollupSummary.AggregateResultField);
 				if(aggregateResultField==null)
 					lookupRollupSummary.Fields.AggregateResultField.addError(error('Field does not exist.', lookupRollupSummary.Record, LookupRollupSummary__c.AggregateResultField__c));
 			}						
 			// Cannot activate Realtime or Scheduled rollup without the required trigger deployed
-			if(childObjectType!=null) 
+			if(childObject!=null) 
 			{
 				String triggerName = makeTriggerName(lookupRollupSummary); 
 				if(lookupRollupSummary.Active &&
@@ -279,13 +268,13 @@ public class RollupSummaries extends fflib_SObjectDomain
 					lookupRollupSummary.Fields.Active.addError(error('Apex Trigger ' + triggerName + ' has not been deployed. Click Manage Child Trigger and try again.', lookupRollupSummary.Record, LookupRollupSummary__c.Active__c));				
 			}	
 			// Check the list of fields expressed in the relationship critiera fields
-			if(childObjectFields!=null && lookupRollupSummary.RelationshipCriteriaFields!=null)
+			if(childObject!=null && lookupRollupSummary.RelationshipCriteriaFields!=null)
 			{
 				String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields.split('[\r\n]+');
 				String[] fieldsInError = new List<String>();
 				for(String field : fieldList)
 					if(field.length()>0)
-						if(childObjectFields.get(field)==null)
+						if(childObject.getField(field)==null)
 							fieldsInError.add(field);
 				if(fieldsInError.size()==1)
 					lookupRollupSummary.Fields.RelationshipCriteriaFields.addError(error('Field ' + fieldsInError[0] + ' does not exist on the child object.', lookupRollupSummary.Record, LookupRollupSummary__c.RelationshipCriteriaFields__c));
@@ -308,8 +297,8 @@ public class RollupSummaries extends fflib_SObjectDomain
 			try
 			{
 				// If all objects and fields valid...
-				if(parentObjectType!=null &&
-				   childObjectType!=null &&
+				if(parentObject!=null &&
+				   childObject!=null &&
 				   relationshipField!=null &&
 				   aggregateResultField!=null &&
 				   fieldToAggregate!=null &&
@@ -317,8 +306,8 @@ public class RollupSummaries extends fflib_SObjectDomain
 				{
 					// Validate via LREngine context
 					LREngine.Context lreContext = new LREngine.Context(
-						parentObjectType, // parent object
-		                childObjectType,  // child object
+						parentObject.getSObjectType(), // parent object
+		                childObject.getSObjectType(),  // child object
 		                relationshipField.getDescribe(), // relationship field name
 		                lookupRollupSummary.RelationShipCriteria,
 		                lookupRollupSummary.FieldToOrderBy); 
@@ -458,7 +447,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 		return componentName;
 	}
 
-	private static String parseOrderByClause(String orderByClause, Map<String, SObjectField> fields)
+	private static String parseOrderByClause(String orderByClause, fflib_SObjectDescribe fields)
 	{
 		List<Utilities.Ordering> fieldsToOrderBy = Utilities.parseOrderByClause(orderByClause);
 		if (fieldsToOrderBy == null || fieldsToOrderBy.isEmpty()) {
@@ -467,7 +456,7 @@ public class RollupSummaries extends fflib_SObjectDomain
 
 		String parsedOrderByClause = '';
         for (Utilities.Ordering orderByField :fieldsToOrderBy) {
-        	SObjectField sObjectField = fields.get(orderByField.getField());
+        	SObjectField sObjectField = fields.getField(orderByField.getField());
         	if (sObjectField == null) {
         		throw new Utilities.OrderByInvalidException('Field does not exist.');
         	}

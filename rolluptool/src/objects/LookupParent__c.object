@@ -44,6 +44,7 @@
         <actionName>View</actionName>
         <type>Default</type>
     </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
     <deprecated>false</deprecated>
@@ -52,6 +53,7 @@
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>false</enableReports>
+    <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
@@ -84,6 +86,7 @@
     </fields>
     <fields>
         <fullName>Descriptions2__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Descriptions 2</label>
         <length>255</length>
@@ -94,6 +97,7 @@
     </fields>
     <fields>
         <fullName>Descriptions__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Descriptions</label>
         <length>255</length>
@@ -104,6 +108,7 @@
     </fields>
     <fields>
         <fullName>Total2__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Total 2</label>
         <precision>18</precision>

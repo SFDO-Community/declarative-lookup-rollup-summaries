@@ -44,6 +44,7 @@
         <actionName>View</actionName>
         <type>Default</type>
     </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
     <deprecated>false</deprecated>
@@ -52,6 +53,7 @@
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>false</enableReports>
+    <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
@@ -67,6 +69,7 @@
     <fields>
         <fullName>AggregateAllRows__c</fullName>
         <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>Includes child records that have been archived by the system and/or placed in the recycle bin.</inlineHelpText>
         <label>Aggregate All Rows</label>
@@ -307,6 +310,7 @@
     </fields>
     <fields>
         <fullName>RowLimit__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <inlineHelpText>Limits the number of rows used in the rollup. Applies only to the Last and Concatenate operators.</inlineHelpText>
         <label>Row Limit</label>

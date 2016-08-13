@@ -37,15 +37,15 @@
 			<apex:outputLink value="{!$Page.welcome}?showHeader=1">Return to the Welcome page</apex:outputLink>
 		</apex:outputPanel>
 		<apex:outputPanel id="code" rendered="{!MetadataConnectionError==false}">		
-			<apex:pageBlock>
+			<apex:pageBlock >
 				<apex:pageBlockSection rendered="{!ParentMergeable && NOT(Deployed) && ISNULL(AsyncResult)}">
-					<apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem >
 						<apex:outputLabel value="Deploy code to support record merging?"/>
 						<apex:inputCheckbox value="{!ParentTriggerRequired}">
 							<apex:actionSupport event="onclick" reRender="code"/>
 						</apex:inputCheckbox>
 					</apex:pageBlockSectionItem>
-					<apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem >
 					</apex:pageBlockSectionItem>
 				</apex:pageBlockSection>
 				<apex:pageBlockSection rendered="{!ParentTriggerRequired}" >

@@ -44,18 +44,22 @@
         <actionName>View</actionName>
         <type>Default</type>
     </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
+    <deprecated>false</deprecated>
     <enableActivities>false</enableActivities>
     <enableBulkApi>false</enableBulkApi>
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>false</enableReports>
+    <enableSearch>true</enableSearch>
     <enableSharing>false</enableSharing>
     <enableStreamingApi>false</enableStreamingApi>
     <fields>
         <fullName>LookupRollupSummaryId__c</fullName>
         <caseSensitive>false</caseSensitive>
+        <deprecated>false</deprecated>
         <description>This can either be the Custom Object record ID, or the Custom Metadata Developer Name for a currently being executed Calculate Job.</description>
         <externalId>false</externalId>
         <label>Lookup Rollup Summary Id</label>
@@ -66,6 +70,11 @@
         <unique>true</unique>
     </fields>
     <label>Lookup Rollup Calculate Job</label>
+    <listViews>
+        <fullName>All</fullName>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
     <nameField>
         <displayFormat>LRCJ-{00000000}</displayFormat>
         <label>Lookup Rollup Calculate Job Name</label>
