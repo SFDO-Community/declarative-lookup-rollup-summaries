@@ -935,7 +935,9 @@ global with sharing class RollupService
 				insert shadowRollupsToInsertByRollupId.values();
 	    		for(LookupRollupSummaryScheduleItems__c scheduledItem : scheduledItemsForMDTs) {
 	    			String rollupId = scheduledItem.LookupRollupSummary2__c;
-	    			scheduledItem.LookupRollupSummary__c = shadowRollupsToInsertByRollupId.get(rollupId).Id;
+	    			if(scheduledItem.LookupRollupSummary__c == null) {
+	    				scheduledItem.LookupRollupSummary__c = shadowRollupsToInsertByRollupId.get(rollupId).Id;	    				
+	    			}
 	    		}
 			}
     	}
