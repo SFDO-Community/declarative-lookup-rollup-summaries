@@ -130,13 +130,13 @@
 			        <apex:selectList value="{!weekday}" size="8" multiselect="true" style="width:100px">
 						<apex:selectOption itemValue="?" itemLabel="None (?)"/>
 						<apex:selectOption itemValue="*" itemLabel="Every Weekday (*)"/>
-						<apex:selectOption itemValue="1" itemLabel="Monday"/>
-						<apex:selectOption itemValue="2" itemLabel="Tuesday"/>
-						<apex:selectOption itemValue="3" itemLabel="Wednesday"/>
-						<apex:selectOption itemValue="4" itemLabel="Thursday"/>
-						<apex:selectOption itemValue="5" itemLabel="Friday"/>
-						<apex:selectOption itemValue="6" itemLabel="Saturday"/>
-						<apex:selectOption itemValue="7" itemLabel="Sunday"/>
+                        <apex:selectOption itemValue="1" itemLabel="Sunday"/>                        
+						<apex:selectOption itemValue="2" itemLabel="Monday"/>
+						<apex:selectOption itemValue="3" itemLabel="Tuesday"/>
+						<apex:selectOption itemValue="4" itemLabel="Wednesday"/>
+						<apex:selectOption itemValue="5" itemLabel="Thursday"/>
+						<apex:selectOption itemValue="6" itemLabel="Friday"/>
+						<apex:selectOption itemValue="7" itemLabel="Saturday"/>
 					</apex:selectList>        	
 	        	</apex:pageBlockSectionItem>
 	        </apex:pageBlockSection>        	
