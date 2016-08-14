@@ -171,19 +171,27 @@ public with sharing class RollupSummaryEnhancedController {
 			if(triggerWasDeployedSuccessfully)
 			{
 				//rus.Active__c = true; //Uncomment once the trigger deploying works.
-				if(rus.Id!=null)
-					sr = Database.update(rus, false);
-				else
-					sr = Database.insert(rus, false);
+				if(rus.Id!=null) {
+				    fflib_SecurityUtils.checkObjectIsUpdateable(LookupRollupSummary__c.SObjectType);
+                    sr = Database.update(rus, false);				    
+				}
+				else {
+                    fflib_SecurityUtils.checkObjectIsInsertable(LookupRollupSummary__c.SObjectType);
+                    sr = Database.insert(rus, false);				    
+				}
 			}
 		}
 		else
 		{
 			//rus.Active__c = true; //Uncomment once the trigger deploying works.
-			if(rus.Id!=null)
-				sr = Database.update(rus, false);
-			else
-				sr = Database.insert(rus, false);
+			if(rus.Id!=null) {
+                fflib_SecurityUtils.checkObjectIsUpdateable(LookupRollupSummary__c.SObjectType);
+                sr = Database.update(rus, false);			    
+			}
+			else {
+                fflib_SecurityUtils.checkObjectIsInsertable(LookupRollupSummary__c.SObjectType);			    
+                sr = Database.insert(rus, false);			    
+			}
 		}
 		PageReference pageRef;
 		if(sr.isSuccess())

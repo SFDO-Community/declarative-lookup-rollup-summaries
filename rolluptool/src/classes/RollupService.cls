@@ -899,7 +899,7 @@ global with sharing class RollupService
     		for(LookupRollupSummaryScheduleItems__c scheduledItem : scheduledItemsForMDTs)
     			uniqueNames.add('mdt:' + scheduledItem.LookupRollupSummary2__c);
     		Map<String, RollupSummary> shadowRollupsByMdtId = new Map<String, RollupSummary>();
-    		for(RollupSummary shadowRollup : new RollupSummariesSelector.CustomObjectSelector().selectByUniqueName(uniqueNames)) {
+    		for(RollupSummary shadowRollup : new RollupSummariesSelector.CustomObjectSelector(false).selectByUniqueName(uniqueNames)) {
     			String uniqueName = shadowRollup.UniqueName;
     			String mdtRollupId = uniqueName.split(':')[1];
     			shadowRollupsByMdtId.put(mdtRollupId, shadowRollup);

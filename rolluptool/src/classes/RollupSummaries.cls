@@ -87,6 +87,9 @@ public class RollupSummaries extends fflib_SObjectDomain
 	{
 		super(records);
 
+        // Disable CRUD security enforced in Trigger context
+		this.Configuration.disableTriggerCRUDSecurity();
+        
 		// Wrap the records from the Custom Object or Custom Metadata 
 		this.Records = RollupSummary.toList(records);
 	}
