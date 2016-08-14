@@ -67,8 +67,6 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! 
 
-https://login.salesforce.com/packaging/installPackage.apexp?p0=04tb0000000MXVO
-
 **Latest Release Version 2.5**
 ________________________________
 
