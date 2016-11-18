@@ -1,0 +1,147 @@
+<!--
+/**
+ * Copyright (c) 2013, Andrew Fawcett
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, 
+ *   are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, 
+ *      this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice, 
+ *      this list of conditions and the following disclaimer in the documentation 
+ *      and/or other materials provided with the distribution.
+ * - Neither the name of the Andrew Fawcett, nor the names of its contributors 
+ *      may be used to endorse or promote products derived from this software without 
+ *      specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
+ *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**/
+-->
+<apex:page standardController="LookupRollupSummary2__mdt" tabStyle="ManageLookupRollupSummaries__tab" extensions="RollupScheduledCalculateController">
+    <apex:sectionHeader title="{!LookupRollupSummary2__mdt.Label}" subtitle="Schedule Recurring Calculate Job"/>
+    <apex:pageMessages />
+    <apex:form >
+        <p>Filter master object using WHERE clause (OPTIONAL):</p>
+        <apex:inputTextarea html-placeholder="Name LIKE 'Fred%' AND Custom__c > 0" cols="80" value="{!masterObjectWhere}" /><p/>
+        <apex:pageBlock title="Schedule">
+	        <apex:pageBlockSection columns="3">
+	        	<apex:pageBlockSectionItem >
+		        	<apex:outputLabel value="Minute"/>
+			        <apex:selectList value="{!minute}" size="8" multiselect="false" style="width:100px">
+						<apex:selectOptions value="{!minutes}"/>
+					</apex:selectList>        		
+	        	</apex:pageBlockSectionItem>
+	        	<apex:pageBlockSectionItem helpText="Select Every Hour or one or more hours">
+		        	<apex:outputLabel value="Hour"/>
+			        <apex:selectList value="{!hour}" size="8" multiselect="true" style="width:100px">
+						<apex:selectOption itemValue="*" itemLabel="Every Hour (*)"/>
+						<apex:selectOption itemValue="0" itemLabel="0"/>
+						<apex:selectOption itemValue="1" itemLabel="1"/>
+						<apex:selectOption itemValue="2" itemLabel="2"/>
+						<apex:selectOption itemValue="3" itemLabel="3"/>
+						<apex:selectOption itemValue="4" itemLabel="4"/>
+						<apex:selectOption itemValue="5" itemLabel="5"/>
+						<apex:selectOption itemValue="6" itemLabel="6"/>
+						<apex:selectOption itemValue="7" itemLabel="7"/>
+						<apex:selectOption itemValue="8" itemLabel="8"/>
+						<apex:selectOption itemValue="9" itemLabel="9"/>
+						<apex:selectOption itemValue="10" itemLabel="10"/>
+						<apex:selectOption itemValue="11" itemLabel="11"/>
+						<apex:selectOption itemValue="12" itemLabel="12"/>
+						<apex:selectOption itemValue="13" itemLabel="13"/>
+						<apex:selectOption itemValue="14" itemLabel="14"/>
+						<apex:selectOption itemValue="15" itemLabel="15"/>
+						<apex:selectOption itemValue="16" itemLabel="16"/>
+						<apex:selectOption itemValue="17" itemLabel="17"/>
+						<apex:selectOption itemValue="18" itemLabel="18"/>
+						<apex:selectOption itemValue="19" itemLabel="19"/>
+						<apex:selectOption itemValue="20" itemLabel="20"/>
+						<apex:selectOption itemValue="21" itemLabel="21"/>
+						<apex:selectOption itemValue="22" itemLabel="22"/>
+						<apex:selectOption itemValue="23" itemLabel="23"/>
+					</apex:selectList>        		
+	        	</apex:pageBlockSectionItem>
+	        	<apex:pageBlockSectionItem helpText="Select None, Every Day or one or more days of the month">
+		        	<apex:outputLabel value="Day of Month"/>
+			        <apex:selectList value="{!day}" size="8" multiselect="true" style="width:100px">
+						<apex:selectOption itemValue="?" itemLabel="None (?)"/>
+						<apex:selectOption itemValue="*" itemLabel="Every Day (*)"/>
+						<apex:selectOption itemValue="1" itemLabel="1"/>
+						<apex:selectOption itemValue="2" itemLabel="2"/>
+						<apex:selectOption itemValue="3" itemLabel="3"/>
+						<apex:selectOption itemValue="4" itemLabel="4"/>
+						<apex:selectOption itemValue="5" itemLabel="5"/>
+						<apex:selectOption itemValue="6" itemLabel="6"/>
+						<apex:selectOption itemValue="7" itemLabel="7"/>
+						<apex:selectOption itemValue="8" itemLabel="8"/>
+						<apex:selectOption itemValue="9" itemLabel="9"/>
+						<apex:selectOption itemValue="10" itemLabel="10"/>
+						<apex:selectOption itemValue="11" itemLabel="11"/>
+						<apex:selectOption itemValue="12" itemLabel="12"/>
+						<apex:selectOption itemValue="13" itemLabel="13"/>
+						<apex:selectOption itemValue="14" itemLabel="14"/>
+						<apex:selectOption itemValue="15" itemLabel="15"/>
+						<apex:selectOption itemValue="16" itemLabel="16"/>
+						<apex:selectOption itemValue="17" itemLabel="17"/>
+						<apex:selectOption itemValue="18" itemLabel="18"/>
+						<apex:selectOption itemValue="19" itemLabel="19"/>
+						<apex:selectOption itemValue="20" itemLabel="20"/>
+						<apex:selectOption itemValue="21" itemLabel="21"/>
+						<apex:selectOption itemValue="22" itemLabel="22"/>
+						<apex:selectOption itemValue="23" itemLabel="23"/>
+						<apex:selectOption itemValue="24" itemLabel="24"/>
+						<apex:selectOption itemValue="25" itemLabel="25"/>
+						<apex:selectOption itemValue="26" itemLabel="26"/>
+						<apex:selectOption itemValue="27" itemLabel="27"/>
+						<apex:selectOption itemValue="28" itemLabel="28"/>
+						<apex:selectOption itemValue="29" itemLabel="29"/>
+						<apex:selectOption itemValue="30" itemLabel="30"/>
+						<apex:selectOption itemValue="31" itemLabel="31"/>
+					</apex:selectList>        	
+	        	</apex:pageBlockSectionItem>
+	        	<apex:pageBlockSectionItem helpText="Select Every Month or one or more months">
+		        	<apex:outputLabel value="Month"/>
+			        <apex:selectList value="{!month}" size="8" multiselect="true" style="width:100px">
+						<apex:selectOption itemValue="*" itemLabel="Every Month (*)"/>
+						<apex:selectOption itemValue="1" itemLabel="January"/>
+						<apex:selectOption itemValue="2" itemLabel="February"/>
+						<apex:selectOption itemValue="3" itemLabel="March"/>
+						<apex:selectOption itemValue="4" itemLabel="April"/>
+						<apex:selectOption itemValue="5" itemLabel="May"/>
+						<apex:selectOption itemValue="6" itemLabel="June"/>
+						<apex:selectOption itemValue="7" itemLabel="July"/>
+						<apex:selectOption itemValue="8" itemLabel="August"/>
+						<apex:selectOption itemValue="9" itemLabel="Septemer"/>
+						<apex:selectOption itemValue="10" itemLabel="October"/>
+						<apex:selectOption itemValue="11" itemLabel="November"/>
+						<apex:selectOption itemValue="12" itemLabel="December"/>
+					</apex:selectList>        	
+	        	</apex:pageBlockSectionItem>
+	        	<apex:pageBlockSectionItem helpText="Select None, Every Weekday or one or more week days">
+		        	<apex:outputLabel value="Day of Week"/>
+			        <apex:selectList value="{!weekday}" size="8" multiselect="true" style="width:100px">
+						<apex:selectOption itemValue="?" itemLabel="None (?)"/>
+						<apex:selectOption itemValue="*" itemLabel="Every Weekday (*)"/>
+                        <apex:selectOption itemValue="1" itemLabel="Sunday"/>                        
+						<apex:selectOption itemValue="2" itemLabel="Monday"/>
+						<apex:selectOption itemValue="3" itemLabel="Tuesday"/>
+						<apex:selectOption itemValue="4" itemLabel="Wednesday"/>
+						<apex:selectOption itemValue="5" itemLabel="Thursday"/>
+						<apex:selectOption itemValue="6" itemLabel="Friday"/>
+						<apex:selectOption itemValue="7" itemLabel="Saturday"/>
+					</apex:selectList>        	
+	        	</apex:pageBlockSectionItem>
+	        </apex:pageBlockSection>        	
+        </apex:pageBlock>
+        <apex:commandButton action="{!scheduleCalculateJob}" value="Schedule Recurring Calculate Job"/>        
+        <apex:commandButton action="{!cancel}" value="Cancel"/>
+    </apex:form>
+</apex:page>

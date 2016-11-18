@@ -17,7 +17,7 @@ function createRemoteSite()
 			'<env:Body>' +
 				'<createMetadata xmlns="http://soap.sforce.com/2006/04/metadata">' + 
 					'<metadata xsi:type="RemoteSiteSetting">' + 
-						'<fullName>dlrs_mdapi</fullName>' + 
+						'<fullName>{!RemoteSiteName}</fullName>' +
 						'<description>Metadata API Remote Site Setting for Declarative Rollup Tool (DLRS)</description>' + 
 						'<disableProtocolSecurity>false</disableProtocolSecurity>' + 
 						'<isActive>true</isActive>' + 
@@ -54,12 +54,15 @@ function createRemoteSite()
 		<img src="http://andrewfawcett.files.wordpress.com/2013/07/blog_chart1.jpg" width="200" height="200" align="left"/>
 		<apex:outputPanel rendered="{!MetadataConnectionWarning}">
 			<h1>Important Post Install Step:</h1> 
-			<p>In order to utlise the features of this tool you need to permit the tool access to the Salesforce Metadata API by adding a <a target="_new" href="http://na1.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL <b>https://{!Host}</b></p>
+			<p>In order to utilize the features of this tool you need to permit it to access the Salesforce Metadata API of your organization by adding a <a target="_new" href="http://na1.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL <b>https://{!Host}</b></p>
 			<p> Click the <b>Create Remote Site Setting</b> button to have the tool perform this step for you.</p>
 			<input id="createremotesitebtn" type="button" onclick="createRemoteSite();" value="Create Remote Site Setting"/>
 		</apex:outputPanel>
 		<p><b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships using the declarative mode of Force.com, but not between lookup relationships. You can read more about the tool and watch a video demo by reading this <a target="_new" href="http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/">blog</a>.</p>
 		<p>Release details can be found <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries">here</a>.</p>
+		<apex:outputPanel rendered="{!MetadataConnectionWarning}">
+			<p style="color:gray">DEBUG USE ONLY: {!metadataApiException}</p>
+		</apex:outputPanel>
 	</apex:form>
 </body>
 </apex:page>

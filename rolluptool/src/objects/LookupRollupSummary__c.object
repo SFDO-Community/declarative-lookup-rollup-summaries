@@ -5,6 +5,10 @@
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
+        <actionName>CancelEdit</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
         <actionName>Clone</actionName>
         <type>Default</type>
     </actionOverrides>
@@ -17,11 +21,19 @@
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
+        <actionName>Follow</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
         <actionName>List</actionName>
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
         <actionName>New</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>SaveEdit</actionName>
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
@@ -32,12 +44,18 @@
         <actionName>View</actionName>
         <type>Default</type>
     </actionOverrides>
+    <allowInChatterGroups>false</allowInChatterGroups>
+    <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
     <deprecated>false</deprecated>
     <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableReports>false</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <enableStreamingApi>true</enableStreamingApi>
     <fields>
         <fullName>Active__c</fullName>
         <defaultValue>false</defaultValue>
@@ -45,6 +63,17 @@
         <externalId>false</externalId>
         <inlineHelpText>For Realtime rollups can only be set when the Child Apex Trigger has been deployed.</inlineHelpText>
         <label>Active</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>AggregateAllRows__c</fullName>
+        <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <inlineHelpText>Includes child records that have been archived by the system and/or placed in the recycle bin.</inlineHelpText>
+        <label>Aggregate All Rows</label>
+        <trackTrending>false</trackTrending>
         <type>Checkbox</type>
     </fields>
     <fields>
@@ -74,8 +103,29 @@
                 <fullName>Count</fullName>
                 <default>false</default>
             </picklistValues>
+            <picklistValues>
+                <fullName>Count Distinct</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Concatenate</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Concatenate Distinct</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>First</fullName>
+                <default>false</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>Last</fullName>
+                <default>false</default>
+            </picklistValues>
             <sorted>false</sorted>
         </picklist>
+        <trackTrending>false</trackTrending>
         <type>Picklist</type>
     </fields>
     <fields>
@@ -86,6 +136,7 @@
         <label>Aggregate Result Field</label>
         <length>80</length>
         <required>true</required>
+        <trackTrending>false</trackTrending>
         <type>Text</type>
         <unique>false</unique>
     </fields>
@@ -97,6 +148,7 @@
         <label>Calculate Job Id</label>
         <length>18</length>
         <required>false</required>
+        <trackTrending>false</trackTrending>
         <type>Text</type>
         <unique>false</unique>
     </fields>
@@ -119,8 +171,33 @@
                 <fullName>Developer</fullName>
                 <default>false</default>
             </picklistValues>
+            <picklistValues>
+                <fullName>Process Builder</fullName>
+                <default>false</default>
+            </picklistValues>
             <sorted>false</sorted>
         </picklist>
+        <trackTrending>false</trackTrending>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>CalculationSharingMode__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <inlineHelpText>Determines if the Sharing Rules defined on the Child Object are considered when calculating the rollup. Default is User.</inlineHelpText>
+        <label>Calculation Sharing Mode</label>
+        <picklist>
+            <picklistValues>
+                <fullName>User</fullName>
+                <default>true</default>
+            </picklistValues>
+            <picklistValues>
+                <fullName>System</fullName>
+                <default>false</default>
+            </picklistValues>
+            <sorted>false</sorted>
+        </picklist>
+        <trackTrending>false</trackTrending>
         <type>Picklist</type>
     </fields>
     <fields>
@@ -131,14 +208,29 @@
         <label>Child Object</label>
         <length>80</length>
         <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ConcatenateDelimiter__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <inlineHelpText>Enter the character or characters to delimit values in the Field to Aggregate when rolling up text values into the Aggregate Result Field, enter BR() for new line. Only applies when using Concatenate operation.</inlineHelpText>
+        <label>Concatenate Delimiter</label>
+        <length>32</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <fields>
         <fullName>Description__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Description</label>
         <length>131072</length>
+        <trackTrending>false</trackTrending>
         <type>LongTextArea</type>
         <visibleLines>6</visibleLines>
     </fields>
@@ -150,6 +242,23 @@
         <label>Field to Aggregate</label>
         <length>80</length>
         <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>FieldToOrderBy__c</fullName>
+        <deprecated>false</deprecated>
+        <description>Examples:
+1) Amount__c
+2) Amount__c, Color__c ASC
+3) Amount__c NULLS LAST, Color__c DESC NULLS LAST</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Only applicable when using the Concatenate, Concatenate Distinct, Last and First aggregate operations. Supports multiple fields (comma separated) with optional ASC/DESC and/or NULLS FIRST/LAST.</inlineHelpText>
+        <label>Field to Order By</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
         <type>Text</type>
         <unique>false</unique>
     </fields>
@@ -161,6 +270,7 @@
         <label>Parent Object</label>
         <length>80</length>
         <required>true</required>
+        <trackTrending>false</trackTrending>
         <type>Text</type>
         <unique>false</unique>
     </fields>
@@ -171,6 +281,7 @@
         <inlineHelpText>If you have specified a relationship criteria, you must confirm the fields referenced by it here on separate lines, for example for criteria StageName = &apos;Won&apos; list StageName in this field. You do not need to specify the Field to Aggregate field however.</inlineHelpText>
         <label>Relationship Criteria Fields</label>
         <required>false</required>
+        <trackTrending>false</trackTrending>
         <type>TextArea</type>
     </fields>
     <fields>
@@ -181,6 +292,7 @@
         <label>Relationship Criteria</label>
         <length>255</length>
         <required>false</required>
+        <trackTrending>false</trackTrending>
         <type>Text</type>
         <unique>false</unique>
     </fields>
@@ -192,8 +304,55 @@
         <label>Relationship Field</label>
         <length>80</length>
         <required>true</required>
+        <trackTrending>false</trackTrending>
         <type>Text</type>
         <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>RowLimit__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <inlineHelpText>Limits the number of rows used in the rollup. Applies only to the Last and Concatenate operators.</inlineHelpText>
+        <label>Row Limit</label>
+        <precision>5</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>TestCodeSeeAllData__c</fullName>
+        <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <inlineHelpText>Only use this option as a last resort to get the generated test or custom test code working. It is generally considered bad practice to make your test dependent on org data. Always try to create test data in the test code if possible.</inlineHelpText>
+        <label>Test Code See All Data</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>TestCode__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <inlineHelpText>This tool utilises a dynamically generated Apex Trigger and by default a generated Apex Test. Use this field if instructed by a developer to replace the generated test code. For more information see the tools Wiki on GitHub.</inlineHelpText>
+        <label>Test Code</label>
+        <length>32768</length>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>12</visibleLines>
+    </fields>
+    <fields>
+        <fullName>UniqueName__c</fullName>
+        <caseSensitive>false</caseSensitive>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>Lookup Rollup Summary Unique Name</label>
+        <length>80</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>true</unique>
     </fields>
     <label>Lookup Rollup Summary</label>
     <listViews>
@@ -253,6 +412,17 @@
         <masterLabel>Manage Child Trigger</masterLabel>
         <openType>sidebar</openType>
         <page>managetrigger</page>
+        <protected>false</protected>
+    </webLinks>
+    <webLinks>
+        <fullName>Schedule_Calculate</fullName>
+        <availability>online</availability>
+        <displayType>button</displayType>
+        <height>600</height>
+        <linkType>page</linkType>
+        <masterLabel>Schedule Calculate</masterLabel>
+        <openType>sidebar</openType>
+        <page>rollupscheduledcalculate</page>
         <protected>false</protected>
     </webLinks>
 </CustomObject>

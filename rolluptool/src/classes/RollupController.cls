@@ -27,23 +27,35 @@
 /**
  * Handles the Manage Trigger and Calculate Custom Buttons
  **/
-public with sharing class RollupController 
+public with sharing class RollupController
 {
 	public String ZipData { get; set; }	
 	
 	public MetadataService.AsyncResult AsyncResult {get; private set;}
 	
-	public LookupRollupSummary__c RollupSummary  { get; set; }
+	public RollupSummary RollupSummary  { get; set; }
 
 	public String RollupTriggerName { get; set; }
 	
 	public String RollupTriggerTestName { get; set; }
+
+	public String RollupParentTriggerName { get; set; }
+	
+	public String RollupParentTriggerTestName { get; set; }
 	
 	public Boolean Deployed { get; set; }
+
+	public Boolean ParentMergeable { get; set; }
+
+	public Boolean ParentTriggerRequired { get; set; }
 	
 	public ApexTrigger RollupTrigger { get; private set; }
 	
 	public ApexClass RollupTriggerTest { get; private set; }
+	
+	public ApexTrigger RollupParentTrigger { get; private set; }
+	
+	public ApexClass RollupParentTriggerTest { get; private set; }
 	
 	public Integer deployCount;
 	
@@ -52,12 +64,19 @@ public with sharing class RollupController
 	public RollupController(ApexPages.StandardController standardController)
 	{
 		// Query Lookup Rollup Summary record
-		RollupSummary = new RollupSummariesSelector().selectById(new Set<Id> { standardController.getId() })[0];
+		RollupSummary = new RollupSummariesSelector().selectById(new Set<String> { (String) standardController.getId() })[0];
 		
 		// Generate names for test and triggers to deploy / undeploy
 		RollupTriggerName = RollupSummaries.makeTriggerName(RollupSummary);
 		RollupTriggerTestName = RollupSummaries.makeTriggerTestName(RollupSummary);
-				
+		RollupParentTriggerName = RollupSummaries.makeParentTriggerName(RollupSummary);
+		RollupParentTriggerTestName = RollupSummaries.makeParentTriggerTestName(RollupSummary);
+
+		// Does the parent object support merge?
+		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
+		SObjectType parentObjectType = gd.get(RollupSummary.ParentObject);
+		ParentTriggerRequired = ParentMergeable = parentObjectType.getDescribe().isMergeable();
+
 		// Initialise view state
 		init();
 	}
@@ -69,7 +88,7 @@ public with sharing class RollupController
 			return 
 			    '<?xml version="1.0" encoding="UTF-8"?>' + 
 				'<Package xmlns="http://soap.sforce.com/2006/04/metadata">' + 
-	    			'<version>28.0</version>' + 
+	    			'<version>32.0</version>' + 
 				'</Package>';		
 		else
 			// package.xml for deploy
@@ -84,7 +103,16 @@ public with sharing class RollupController
 	        			'<members>'+RollupTriggerTestName+'</members>' +
 	        			'<name>ApexClass</name>' + 
 	    			'</types>' + 
-	    			'<version>28.0</version>' + 
+	    			(ParentTriggerRequired ? 
+		    			('<types>' + 
+		        			'<members>'+RollupParentTriggerName+'</members>' +
+		        			'<name>ApexTrigger</name>' + 
+		    			'</types>' + 
+		    			'<types>' + 
+		        			'<members>'+RollupParentTriggerTestName+'</members>' +
+		        			'<name>ApexClass</name>' + 
+		    			'</types>') : '') + 
+	    			'<version>32.0</version>' + 
 				'</Package>';		
 	}
 	
@@ -101,16 +129,29 @@ public with sharing class RollupController
         			'<members>'+RollupTriggerTestName+'</members>' +
         			'<name>ApexClass</name>' + 
     			'</types>' + 
-    			'<version>28.0</version>' + 
+    			(ParentTriggerRequired ? 
+	    			('<types>' + 
+	        			'<members>'+RollupParentTriggerName+'</members>' +
+	        			'<name>ApexTrigger</name>' + 
+	    			'</types>' + 
+	    			'<types>' + 
+	        			'<members>'+RollupParentTriggerTestName+'</members>' +
+	        			'<name>ApexClass</name>' + 
+	    			'</types>') : '') +     			
+    			'<version>32.0</version>' + 
 			'</Package>';				
 	}
 	
+	/**
+	 * CHILD OBJECT CODE
+	 **/
+
 	public String getTriggerTestCodeMetadata()
 	{
 		return 
 		    '<?xml version="1.0" encoding="UTF-8"?>' +
 			'<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>28.0</apiVersion>' + 
+			    '<apiVersion>32.0</apiVersion>' + 
 			    '<status>Active</status>' +
 			'</ApexClass>';		
 	}
@@ -121,6 +162,9 @@ public with sharing class RollupController
 			// Display currently deployed code for confirmation
 			return RollupTriggerTest.Body; 
 		else
+		{
+			// Namespace?
+			String namespace = Utilities.namespace();
 			// Deploy generated code
 			return
 			 	'/**\n' +
@@ -129,12 +173,18 @@ public with sharing class RollupController
 				'@IsTest\n' +	 
 			    'private class ' + RollupTriggerTestName + '\n' +  
 				'{\n' + 
-				'    private static testmethod void testTrigger()\n' +
+					 (RollupSummary.TestCodeSeeAllData == true ? '    @IsTest(SeeAllData=true)\n' : '    @IsTest\n') +
+				'    private static void testTrigger()\n' +
 				'    {\n' + 
-				'        // Code to cover the one line trigger, the method called has been tested separately by the packaged tests.\n' +
-				'        try { insert new ' + RollupSummary.ChildObject__c + '(); } catch(Exception e) { }\n' +
+					((RollupSummary.TestCode!=null && RollupSummary.TestCode.length()>0) ? 
+						RollupSummary.TestCode + '\n' : 
+						(
+							'        // Force the ' + RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
+							'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ChildObject + '());\n')
+						) +
 				'    }\n' +
-				'}';
+				'}';			
+		}
 	}
 	
 	public String getTriggerCodeMetadata()
@@ -142,7 +192,7 @@ public with sharing class RollupController
 		return 
 		    '<?xml version="1.0" encoding="UTF-8"?>' +
 			'<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>28.0</apiVersion>' + 
+			    '<apiVersion>32.0</apiVersion>' + 
 			    '<status>Active</status>' +
 			'</ApexTrigger>';		
 	}
@@ -157,16 +207,88 @@ public with sharing class RollupController
 		else
 		{
 			// Namespace?
-			Schema.DescribeSObjectResult describe = LookupRollupSummary__c.sObjectType.getDescribe();
-			String name = describe.getName();
-			String localName = describe.getLocalName();
-			String namespace = name.removeEnd(localName).removeEnd('__');					
+			String namespace = Utilities.namespace();
 			// Deploy generated code		
 			return 
 				'/**\n' +
 				' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
 				' **/\n' +
-				'trigger ' + RollupTriggerName + ' on ' + RollupSummary.ChildObject__c + '\n' + 
+				'trigger ' + RollupTriggerName + ' on ' + RollupSummary.ChildObject + '\n' + 
+				'    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n'+ 
+				'{\n'+
+				'    '+ (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.triggerHandler();\n'+
+				'}\n';
+		}		
+	}
+
+	/**
+	 * PARENT OBJECT CODE
+	 **/
+	 
+	public String getParentTriggerTestCodeMetadata()
+	{
+		return 
+		    '<?xml version="1.0" encoding="UTF-8"?>' +
+			'<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
+			    '<apiVersion>32.0</apiVersion>' + 
+			    '<status>Active</status>' +
+			'</ApexClass>';		
+	}
+		
+	public String getParentTriggerTestCode()	
+	{
+		if(Deployed && RollupTriggerTest!=null)
+			// Display currently deployed code for confirmation
+			return RollupParentTriggerTest.Body; 
+		else
+		{
+			// Namespace?
+			String namespace = Utilities.namespace();
+			// Deploy generated code
+			return
+			 	'/**\n' +
+				' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+				' **/\n' +	
+				'@IsTest\n' +	 
+			    'private class ' + RollupParentTriggerTestName + '\n' +  
+				'{\n' + 
+					 (RollupSummary.TestCodeSeeAllData == true ? '    @IsTest(SeeAllData=true)\n' : '    @IsTest\n') +
+				'    private static void testTrigger()\n' +
+				'    {\n' + 
+				'        // Force the ' + RollupParentTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
+				'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ParentObject + '());\n' + 
+				'    }\n' +
+				'}';			
+		}
+	}
+	
+	public String getParentTriggerCodeMetadata()
+	{
+		return 
+		    '<?xml version="1.0" encoding="UTF-8"?>' +
+			'<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
+			    '<apiVersion>32.0</apiVersion>' + 
+			    '<status>Active</status>' +
+			'</ApexTrigger>';		
+	}
+	
+	public String getParentTriggerCode()
+	{
+		if(Deployed && RollupTrigger!=null)
+		{
+			// Display currently deployed code for confirmation
+			return RollupParentTrigger.Body;
+		} 
+		else
+		{
+			// Namespace?
+			String namespace = Utilities.namespace();
+			// Deploy generated code		
+			return 
+				'/**\n' +
+				' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+				' **/\n' +
+				'trigger ' + RollupParentTriggerName + ' on ' + RollupSummary.ParentObject + '\n' + 
 				'    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n'+ 
 				'{\n'+
 				'    '+ (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.triggerHandler();\n'+
@@ -181,6 +303,11 @@ public with sharing class RollupController
 		// Deploy zip file posted back from the page action function				
 		MetadataService.MetadataPort service = createService();
 		MetadataService.DeployOptions deployOptions = new MetadataService.DeployOptions();
+		deployOptions.testLevel = 'RunSpecifiedTests';
+        deployOptions.runTests = new List<String> { RollupTriggerTestName };
+        if(ParentTriggerRequired) {
+        	deployOptions.runTests.add(RollupParentTriggerTestName);
+        }
         deployOptions.allowMissingFiles = false;
         deployOptions.autoUpdatePackage = false;
         deployOptions.checkOnly = false;
@@ -188,8 +315,6 @@ public with sharing class RollupController
         deployOptions.performRetrieve = false;
         deployOptions.purgeOnDelete = false;
         deployOptions.rollbackOnError = true;
-        deployOptions.runAllTests = false;
-        deployOptions.runTests = null;
         deployOptions.singlePackage = true;		
 		AsyncResult = service.deploy(ZipData, DeployOptions);		
 		return null;
@@ -199,61 +324,58 @@ public with sharing class RollupController
 	{	
 		// Check the status of the retrieve request
 		MetadataService.MetadataPort service = createService();
-		MetadataService.AsyncResult[] aysncResults = service.checkStatus(new String[] { AsyncResult.Id });
-		if(aysncResults[0].done)
+		MetadataService.DeployResult deployResult = service.checkDeployStatus(AsyncResult.Id, true);
+		if(deployResult.done)
 		{
-			// Errors?
-			if(aysncResults[0].state == 'Error')
-			{
-			 	ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, aysncResults[0].message));
-				AsyncResult = null;				
-			}
-			else
-			{
-				ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, Deployed ? 'Remove complete.' : 'Deployment complete.'));
+			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, Deployed ? 'Remove complete.' : 'Deployment complete.'));
 
-				// Deployment errors?
-				MetadataService.DeployResult deployResult = service.checkDeployStatus(AsyncResult.Id);
-				for(MetadataService.DeployMessage deployMessage : deployResult.messages)
+			// Deployment errors?
+			if(deployResult.details!=null && deployResult.details.componentFailures!=null)
+				for(MetadataService.DeployMessage deployMessage : deployResult.details.componentFailures)
 					if(deployMessage.problem!=null)
 						ApexPages.addMessage(
 							new ApexPages.Message(ApexPages.Severity.Error, 
 								deployMessage.fileName + 
 									' (Line: ' + deployMessage.lineNumber + ': Column:' + deployMessage.columnNumber + ') : ' + 
 										deployMessage.problem));
-				// Test errors?
-				MetadataService.RunTestsResult runTestResult = deployResult.runTestResult;
-				if(runTestResult.numFailures > 0)
-					for(MetadataService.RunTestFailure testFailure : runTestResult.failures)
-						ApexPages.addMessage(
-							new ApexPages.Message(ApexPages.Severity.Error, 
-								testFailure.name + '.' + testFailure.methodName + ' ' + testFailure.message + ' ' + testFailure.stackTrace));
-				// Code coverage warnings?
-				if(runTestResult.codeCoverageWarnings!=null)
-					for(MetadataService.CodeCoverageWarning codeCoverageWarning : runTestResult.codeCoverageWarnings)
-						ApexPages.addMessage(
-							new ApexPages.Message(ApexPages.Severity.Warning, 
-								(codeCoverageWarning.namespace!=null ? codeCoverageWarning.namespace+'.' : '') +
-								codeCoverageWarning.name + ':' +
-								codeCoverageWarning.message));
-				
-				AsyncResult = null;
-				
-				// If this was an undeploy and was successful?
-				if(Deployed && !ApexPages.hasMessages(ApexPages.Severity.Error))
-				{
-					// Determine active rollups for this child and deactivate them
-					List<LookupRollupSummary__c> rollups = 
-						new RollupSummariesSelector().selectActiveByChildObject(
-							RollupSummaries.CalculationMode.Realtime, new Set<String> { RollupSummary.ChildObject__c });
-					for(LookupRollupSummary__c rollup : rollups)
-						rollup.Active__c = false;
-					update rollups;
+			// Test errors?
+			MetadataService.RunTestsResult runTestResult = deployResult.details.runTestResult;
+			if(runTestResult.numFailures > 0)
+				for(MetadataService.RunTestFailure testFailure : runTestResult.failures)
+					ApexPages.addMessage(
+						new ApexPages.Message(ApexPages.Severity.Error, 
+							testFailure.name + '.' + testFailure.methodName + ' ' + testFailure.message + ' ' + testFailure.stackTrace));
+			// Code coverage warnings?
+			if(runTestResult.codeCoverageWarnings!=null)
+				for(MetadataService.CodeCoverageWarning codeCoverageWarning : runTestResult.codeCoverageWarnings)
+					ApexPages.addMessage(
+						new ApexPages.Message(ApexPages.Severity.Warning, 
+							(codeCoverageWarning.namespace!=null ? codeCoverageWarning.namespace+'.' : '') +
+							codeCoverageWarning.name + ':' +
+							codeCoverageWarning.message));
+			
+			AsyncResult = null;
+			
+			// If this was an undeploy and was successful?
+			if(Deployed && !ApexPages.hasMessages(ApexPages.Severity.Error))
+			{
+				// Determine active rollups for this child and deactivate them
+				List<RollupSummary> rollups = 
+					new RollupSummariesSelector().selectActiveByChildObject(
+						RollupSummaries.CalculationMode.Realtime, new Set<String> { RollupSummary.ChildObject });
+				List<LookupRollupSummary__c> recordsToUpdate = new List<LookupRollupSummary__c>();
+				for(RollupSummary rollup : rollups) {
+					// TODO: Can only auto deactivate Custom Object based rollups
+					if(rollup.Record instanceof LookupRollupSummary__c) {
+						rollup.Active = false;
+						recordsToUpdate.add((LookupRollupSummary__c) rollup.Record);						
+					}
 				}
-				
-				// Initialise view state to try again
-				init();
+				update recordsToUpdate;
 			}
+			
+			// Initialise view state to try again
+			init();
 		}
 		else
 		{
@@ -273,11 +395,20 @@ public with sharing class RollupController
 		}
 		
 		// Already deployed?
-		Map<String, ApexTrigger> apexTriggers = new ApexTriggersSelector().selectByName(new Set<String> { RollupTriggerName });
-		Map<String, ApexClass> apexClasses = new ApexClassesSelector().selectByName(new Set<String> { RollupTriggerTestName });
-		Deployed = apexTriggers.size()==1 && apexClasses.size()==1;
-		RollupTrigger = Deployed ? apexTriggers.values()[0] : null;
-		RollupTriggerTest = Deployed ? apexClasses.values()[0] : null;
+		Set<String> triggerNames = new Set<String> { RollupTriggerName };
+		Set<String> testNames = new Set<String> { RollupTriggerTestName };
+		if(ParentMergeable) {
+			triggerNames.add(RollupParentTriggerName);
+			testNames.add(RollupParentTriggerTestName);			
+		}
+		Map<String, ApexTrigger> apexTriggers = new ApexTriggersSelector().selectByName(triggerNames);
+		Map<String, ApexClass> apexClasses = new ApexClassesSelector().selectByName(testNames);
+		Deployed = apexTriggers.containsKey(RollupTriggerName) && apexClasses.containsKey(RollupTriggerTestName);
+		RollupTrigger = Deployed ? apexTriggers.get(RollupTriggerName) : null;
+		RollupTriggerTest = Deployed ? apexClasses.get(RollupTriggerTestName) : null;
+		RollupParentTrigger = Deployed ? apexTriggers.get(RollupParentTriggerName) : null;
+		RollupParentTriggerTest = Deployed ? apexClasses.get(RollupParentTriggerTestName) : null;
+		ParentTriggerRequired = Deployed ? RollupParentTrigger!=null && RollupParentTriggerTest!=null : ParentTriggerRequired;
 		deployCount = 0;
 		
 		// Message to confirm current status
@@ -285,6 +416,12 @@ public with sharing class RollupController
 		{
 			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Apex Trigger <b>' + RollupTriggerName + '</b> is installed.'));  		
 			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Apex Class <b>' + RollupTriggerTestName + '</b> is installed.'));  		
+			if(RollupParentTrigger!=null) {
+				ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Apex Trigger <b>' + RollupParentTriggerName + '</b> is installed.'));  		
+			}
+			if(RollupParentTriggerTest!=null) {
+				ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Apex Trigger <b>' + RollupParentTriggerTestName + '</b> is installed.'));  		
+			}
 			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Click <b>Remove</b> to uninstall the Apex Trigger and Apex Class for this child object.'));  					
 		}
 		else

@@ -33,10 +33,12 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 @isTest
 private class TestLREngine {
 		// common master records for the test case
-		static Account acc1, acc2;
+		static Account acc1, acc2, acc3, acc4;
 		// common bunch of detail records for the test case
 		static Opportunity[] detailRecords;
+        static Opportunity[] detailRecords2;
 		static Opportunity[] detailRecordsAcc1;
+        static Opportunity[] detailRecordsAcc3;
 		// dynamic reference to this field to avoid it being included in the package
 		static Schema.SObjectField ACCOUNT_SLA_EXPIRATION_DATE;
 		static Schema.SObjectField ACCOUNT_NUMBER_OF_EMPLOYEES;
@@ -107,7 +109,7 @@ private class TestLREngine {
 	                                                AccountId = acc2.Id,
 	                                                Amount = 200.00,
 	                                                CloseDate = System.today().addMonths(2),
-	                                                StageName = 'test'
+	                                                StageName = 'Won'
 	         									);
 	         
 	         Opportunity o2Acc2 = new Opportunity(
@@ -115,7 +117,7 @@ private class TestLREngine {
 	                                                AccountId = acc2.Id,
 	                                                Amount = 400.00,
 	                                                CloseDate = System.today().addMonths(3),
-	                                                StageName = 'test'
+	                                                StageName = 'Lost'
 	         									);
 	
 	         Opportunity o3Acc2 = new Opportunity(
@@ -123,7 +125,7 @@ private class TestLREngine {
 	                                                AccountId = acc2.Id,
 	                                                Amount = 300.00,
 	                                                CloseDate = System.today().addMonths(4),
-	                                                StageName = 'test'
+	                                                StageName = 'Won'
 	         									);
 	         detailRecords = new Opportunity[] {o1Acc1, o2Acc1, o3Acc1, o1Acc2, o2Acc2, o3Acc2};
              if(ANNUALIZED_RECCURING_REVENUE!=null)
@@ -131,7 +133,76 @@ private class TestLREngine {
                     detailRecord.put(ANNUALIZED_RECCURING_REVENUE, 1000);
 	         detailRecordsAcc1 = new Opportunity[] {o1Acc1, o2Acc1, o3Acc1};
 	         insert detailRecords;			
-		}		
+        }
+
+        /*
+         creates the common seed data using Opportunity and Account objects. 
+         */
+        static void prepareData2() {
+             acc3 =  new Account(Name = 'Acc3');
+             acc4 =  new Account(Name = 'Acc4');
+             insert new Account[] {acc3, acc4};
+               
+             Date today = System.today();
+             Opportunity o1Acc3 = new Opportunity( 
+                                                    Name = 'o1Acc3', 
+                                                    AccountId = acc3.Id,
+                                                    Amount = 100.00,
+                                                    CloseDate = today,
+                                                    Type = 'New Customer',
+                                                    StageName = 'red'
+                                                );
+             Opportunity o2Acc3 = new Opportunity(
+                                                    Name = 'o2Acc3',
+                                                    AccountId = acc3.Id,
+                                                    Amount = 100.00,
+                                                    CloseDate = today,
+                                                    Type = 'New Customer',
+                                                    StageName = 'yellow'
+                                                );
+    
+             Opportunity o3Acc3 = new Opportunity(
+                                                    Name = 'o3Acc3',
+                                                    AccountId = acc3.Id,
+                                                    Amount = null,
+                                                    CloseDate = today,
+                                                    Type = 'New Customer',
+                                                    StageName = 'blue'
+                                                );
+    
+             Opportunity o1Acc4 = new Opportunity(
+                                                    Name = 'o1Acc4',
+                                                    AccountId = acc4.Id,
+                                                    Amount = 100.00,
+                                                    CloseDate = today,
+                                                    Type = 'New Customer',
+                                                    StageName = 'orange'
+                                                );
+             
+             Opportunity o2Acc4 = new Opportunity(
+                                                    Name = 'o2Acc4',
+                                                    AccountId = acc4.Id,
+                                                    Amount = 100.00,
+                                                    CloseDate = today,
+                                                    Type = 'New Customer',
+                                                    StageName = 'green'
+                                                );
+    
+             Opportunity o3Acc4 = new Opportunity(
+                                                    Name = 'o3Acc4',
+                                                    AccountId = acc4.Id,
+                                                    Amount = 100.00,
+                                                    CloseDate = today,
+                                                    Type = 'New Customer',
+                                                    StageName = 'purple'
+                                                );
+             detailRecords2 = new Opportunity[] {o1Acc3, o2Acc3, o3Acc3, o1Acc4, o2Acc4, o3Acc4};
+             if(ANNUALIZED_RECCURING_REVENUE!=null)
+                for(Opportunity detailRecord : detailRecords2)
+                    detailRecord.put(ANNUALIZED_RECCURING_REVENUE, 1000);
+             detailRecordsAcc3 = new Opportunity[] {o1Acc3, o2Acc3, o3Acc3};
+             insert detailRecords2;          
+        }           	
 
 	
 	/*
@@ -282,6 +353,42 @@ private class TestLREngine {
          System.assertEquals(3, reloadedAcc1.get(ACCOUNT_NUMBER_OF_EMPLOYEES));
          System.assertEquals(3, reloadedAcc2.get(ACCOUNT_NUMBER_OF_EMPLOYEES));
     }
+
+    /*
+        Tests count distinct
+    */
+    static testMethod void testCountDistinctOperations() {
+        
+        // Required custom field/s present?
+        if(ACCOUNT_NUMBER_OF_EMPLOYEES==null)
+            return;
+
+        // create seed data 
+         prepareData();
+         
+         LREngine.Context ctx = new LREngine.Context(Account.SobjectType, 
+                                                Opportunity.SobjectType, 
+                                                Schema.SObjectType.Opportunity.fields.AccountId);         
+         ctx.add(
+                new LREngine.RollupSummaryField(
+                                                Schema.SObjectType.Account.fields.AnnualRevenue,
+                                                Schema.SObjectType.Opportunity.fields.StageName,
+                                                LREngine.RollupOperation.Count_Distinct
+                                             )); 
+                
+         Sobject[] masters = LREngine.rollUp(ctx, detailRecords);                 
+         // 2 masters should be back  
+         System.assertEquals(2, masters.size());
+         
+         Account reloadedAcc1, reloadedAcc2;         
+         for (Sobject so : masters) { 
+            if (so.Id == acc1.id) reloadedAcc1 = (Account)so;
+            if (so.Id == acc2.id) reloadedAcc2 = (Account)so;
+         }
+
+         System.assertEquals(1, reloadedAcc1.AnnualRevenue); // Only one set of distinct StageName's on Account 1
+         System.assertEquals(2, reloadedAcc2.AnnualRevenue); // Two sets of distinct StageName's on Account 2
+    }
     
     
     /*
@@ -370,6 +477,43 @@ private class TestLREngine {
         mastersById = new Map<Id, Sobject>(masters);               
         System.assertEquals(0, ((Account)mastersById.get(acc1.id)).AnnualRevenue);
         System.assertEquals(0, ((Account)mastersById.get(acc2.id)).AnnualRevenue);
+    }
+
+
+    /**
+     * Test enhancement where AllRows is used, which includes deleted rows
+     **/
+    static testMethod void testDeletingChildRecordsWithAllRowsSet()
+    {
+        // create seed data 
+        prepareData();
+
+        LREngine.Context ctx = new LREngine.Context(
+            Account.SobjectType, 
+            Opportunity.SobjectType, 
+            Schema.SObjectType.Opportunity.fields.AccountId,
+            'Amount > 200', // filter out any opps with amount less than 200
+            null, null, true); // Include child rows including deleted
+        ctx.add(
+            new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.AnnualRevenue,
+                Schema.SObjectType.Opportunity.fields.Amount,
+                LREngine.RollupOperation.Avg)); 
+
+        Sobject[] masters = LREngine.rollUp(ctx, detailRecords);
+        Map<Id, Sobject> mastersById = new Map<Id, Sobject>(masters);
+        System.assertEquals(2, masters.size());         
+        System.assertEquals(300, ((Account)mastersById.get(acc1.id)).AnnualRevenue);
+        System.assertEquals(350.00, ((Account)mastersById.get(acc2.id)).AnnualRevenue);
+
+        // Delete all children
+        delete [select Id from Opportunity];
+
+        // Recacluate rollups again
+        masters = LREngine.rollUp(ctx, detailRecords);  
+        mastersById = new Map<Id, Sobject>(masters);               
+        System.assertEquals(300, ((Account)mastersById.get(acc1.id)).AnnualRevenue);
+        System.assertEquals(350.00, ((Account)mastersById.get(acc2.id)).AnnualRevenue);
     }
     
     /**
@@ -533,5 +677,514 @@ private class TestLREngine {
          catch (Exception e) {
             System.assertEquals('Only Date/DateTime/Time/Numeric fields are allowed for Sum, Max, Min and Avg', e.getMessage());
          }
+    }   
+
+    static testMethod void testRollupContextsValidRollupFieldCombosOnly() {
+
+        // Cannot mix (Sum, Max, Min, Avg, Count, Count_Distinct) with (Concatenate, Concatenate_Distinct, First, Last)
+        try {
+            LREngine.Context ctx = 
+                new LREngine.Context(
+                    Account.SobjectType, Opportunity.SobjectType, 
+                    Schema.SObjectType.Opportunity.fields.AccountId);
+            ctx.add(new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.Description,
+                Schema.SObjectType.Opportunity.fields.StageName,
+                LREngine.RollupOperation.Concatenate));                 
+            ctx.add(new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.AnnualRevenue,
+                Schema.SObjectType.Opportunity.fields.Amount,
+                LREngine.RollupOperation.Sum));                 
+            System.assert(false, 'Expecting an exception');            
+        } catch (Exception e) {
+            System.assertEquals('Cannot mix Sum, Max, Min, Avg, Count, Count_Distinct operations with Concatenate, Concatenate_Distinct, First, Last operations', e.getMessage());
+        }
+        try {
+            LREngine.Context ctx = 
+                new LREngine.Context(
+                    Account.SobjectType, Opportunity.SobjectType, 
+                    Schema.SObjectType.Opportunity.fields.AccountId);
+            ctx.add(new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.AnnualRevenue,
+                Schema.SObjectType.Opportunity.fields.Amount,
+                LREngine.RollupOperation.Sum));                 
+            ctx.add(new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.Description,
+                Schema.SObjectType.Opportunity.fields.StageName,
+                LREngine.RollupOperation.Concatenate));                 
+            System.assert(false, 'Expecting an exception');            
+        } catch (Exception e) {
+            System.assertEquals('Cannot mix Sum, Max, Min, Avg, Count, Count_Distinct operations with Concatenate, Concatenate_Distinct, First, Last operations', e.getMessage());
+        }
+    } 
+
+    static testMethod void testRollupSummaryFieldValidationConcatenate() {
+        // Master must be text type
+        try {
+            LREngine.Context ctx = 
+                new LREngine.Context(
+                    Account.SobjectType, Opportunity.SobjectType, 
+                    Schema.SObjectType.Opportunity.fields.AccountId);
+            ctx.add(new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.AnnualRevenue,
+                Schema.SObjectType.Opportunity.fields.Id,
+                LREngine.RollupOperation.Concatenate));                 
+            System.assert(false, 'Expecting an exception');            
+        } catch (Exception e) {
+            System.assertEquals('Only Text/Text Area fields are allowed for Concatenate and Concatenate Distinct', e.getMessage());
+        }
+    } 
+
+    static testMethod void testRollupSummaryFieldValidationFirstAndLast() {
+        // Master and detail field type must match
+        try {
+            LREngine.Context ctx = 
+                new LREngine.Context(
+                    Account.SobjectType, Opportunity.SobjectType, 
+                    Schema.SObjectType.Opportunity.fields.AccountId);
+            ctx.add(new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.AnnualRevenue,
+                Schema.SObjectType.Opportunity.fields.Id,
+                LREngine.RollupOperation.Last));                 
+            System.assert(false, 'Expecting an exception');            
+        } catch (Exception e) {
+            System.assertEquals('Master and detail fields must be the same field type (or text/Id based) for First or Last operations', e.getMessage());
+        }
+        try {
+            LREngine.Context ctx = 
+                new LREngine.Context(
+                    Account.SobjectType, Opportunity.SobjectType, 
+                    Schema.SObjectType.Opportunity.fields.AccountId);
+            ctx.add(new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.AnnualRevenue,
+                Schema.SObjectType.Opportunity.fields.Id,
+                LREngine.RollupOperation.First));                 
+            System.assert(false, 'Expecting an exception');            
+        } catch (Exception e) {
+            System.assertEquals('Master and detail fields must be the same field type (or text/Id based) for First or Last operations', e.getMessage());
+        }
+        // Master and detail field type match
+        try {
+            LREngine.Context ctx = 
+                new LREngine.Context(
+                    Account.SobjectType, Opportunity.SobjectType, 
+                    Schema.SObjectType.Opportunity.fields.AccountId);
+            ctx.add(new LREngine.RollupSummaryField(
+                Schema.SObjectType.Account.fields.AnnualRevenue,
+                Schema.SObjectType.Opportunity.fields.Amount,
+                LREngine.RollupOperation.First));                 
+        } catch (Exception e) {
+            System.assert(false, 'Not expecting an exception ' + e.getMessage());
+        }
+    } 
+
+    static testMethod void testRollupConcatenateTruncate() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.AccountNumber,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, '01234567890123456789,'),
+                'test01234567890123456789,test01234567...',
+                'Lost01234567890123456789,Won012345678...');
     }    
+
+    static testMethod void testRollupConcatenate() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ','),
+                'test,test,test',
+                'Lost,Won,Won');
+    } 
+
+    static testMethod void testRollupConcatenateLimited() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ',', 2),
+                'test,test',
+                'Lost,Won');
+    } 
+
+    static testMethod void testRollupConcatenateDeletedChildRows() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ','),
+                'test,test,test',
+                'Lost,Won,Won',
+                true);
+    } 
+
+    static testMethod void testRollupConcatenateBR() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'BR()'),
+                'test\ntest\ntest',
+                'Lost\nWon\nWon');
+    }
+
+    static testMethod void testRollupConcatenateMultipleBR() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'BR()BR()BR()'),
+                'test\n\n\ntest\n\n\ntest',
+                'Lost\n\n\nWon\n\n\nWon');
+    }
+
+    static testMethod void testRollupConcatenateCommaBR() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ',BR()'),
+                'test,\ntest,\ntest',
+                'Lost,\nWon,\nWon');
+    }    
+
+    static testMethod void testRollupConcatenateSP() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'SP()'),
+                'test test test',
+                'Lost Won Won');
+    }
+
+    static testMethod void testRollupConcatenateMultipleSP() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'SP()SP()SP()'),
+                'test   test   test',
+                'Lost   Won   Won');
+    }
+
+    static testMethod void testRollupConcatenateCommaSP() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ',SP()'),
+                'test, test, test',
+                'Lost, Won, Won');
+    }    
+
+    static testMethod void testRollupConcatenateTB() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'TB()'),
+                'test\ttest\ttest',
+                'Lost\tWon\tWon');
+    }
+
+    static testMethod void testRollupConcatenateMultipleTB() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'TB()TB()TB()'),
+                'test\t\t\ttest\t\t\ttest',
+                'Lost\t\t\tWon\t\t\tWon');
+    }   
+
+    static testMethod void testRollupConcatenateCommaTB() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ',TB()'),
+                'test,\ttest,\ttest',
+                'Lost,\tWon,\tWon');
+    }      
+
+    static testMethod void testRollupConcatenateAllTokens() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, 'TB()BR()SP()'),
+                'test\t\n test\t\n test',
+                'Lost\t\n Won\t\n Won');
+    }   
+
+    static testMethod void testRollupConcatenateCommaAllTokens() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ',TB()BR()SP()'),
+                'test,\t\n test,\t\n test',
+                'Lost,\t\n Won,\t\n Won');
+    }       
+
+    static testMethod void testRollupConcatenateOrderBy() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.Amount.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ','),
+                'test,test,test',
+                'Won,Won,Lost');
+    } 
+
+    static testMethod void testRollupConcatenateOrderByMultipleAscendingNullsFirst() {
+        testRollup2(
+            'CloseDate, Type, Amount, Name',
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ','),
+                'blue,red,yellow',
+                'orange,green,purple');
+    } 
+
+    static testMethod void testRollupConcatenateOrderByMultipleAscendingNullsLast() {
+        testRollup2(
+            'CloseDate NULLS LAST, Type NULLS LAST, Amount NULLS LAST, Name NULLS LAST',
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ','),
+                'red,yellow,blue',
+                'orange,green,purple');
+    }
+
+    static testMethod void testRollupConcatenateOrderByMultipleDescendingNullsFirst() {
+        testRollup2(
+            'CloseDate DESC, Type DESC, Amount DESC, Name DESC',
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ','),
+                'blue,yellow,red',
+                'purple,green,orange');
+    } 
+
+    static testMethod void testRollupConcatenateOrderByMultipleDescendingNullsLast() {
+        testRollup2(
+            'CloseDate DESC NULLS LAST, Type DESC NULLS LAST, Amount DESC NULLS LAST, Name DESC NULLS LAST',
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, ','),
+                'yellow,red,blue',
+                'purple,green,orange');
+    }
+
+    static testMethod void testRollupConcatenateNoDelimiter() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate, null),
+                'testtesttest',
+                'LostWonWon');
+    } 
+
+    static testMethod void testRollupConcatenateDistinct() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.StageName.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate_Distinct, ','),
+                'test',
+                'Lost,Won');
+    } 
+
+    static testMethod void testRollupConcatenateDistinctWithOrderBy() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.Amount.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate_Distinct, ','),
+                'test',
+                'Won,Lost');
+    } 
+
+    static testMethod void testRollupConcatenateDistinctWithMultipleFieldsOrderBy() {
+        testRollup(
+            'Amount DESC, CloseDate DESC, Type DESC, Name DESC',
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Concatenate_Distinct, ','),
+                'test',
+                'Lost,Won');
+    } 
+
+    static testMethod void testRollupFirst() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.Amount.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.First, null),
+                'test',
+                'Won');
+    }
+
+    static testMethod void testRollupLast() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.Amount.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Last, null),
+                'test',
+                'Lost');
+    } 
+
+    static testMethod void testRollupLastLimit() {
+        testRollup(
+            Schema.SObjectType.Opportunity.fields.Amount.getName(),
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Last, null, 2),
+                'test',
+                'Won');
+    } 
+
+    static testMethod void testMultipleRollupsSameResultField() {
+        prepareData();
+
+        LREngine.Context ctx = new LREngine.Context(
+            Account.SobjectType, 
+            Opportunity.SobjectType, 
+            Schema.SObjectType.Opportunity.fields.AccountId,
+            null,
+            Schema.SObjectType.Opportunity.fields.Amount.getName());
+
+        LREngine.RollupSummaryField rollupField1 = 
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Description,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.Last, null);
+        ctx.add(rollupField1);
+        LREngine.RollupSummaryField rollupField2 =         
+            new LREngine.RollupSummaryField(
+                    Schema.SObjectType.Account.fields.Sic,
+                    Schema.SObjectType.Opportunity.fields.StageName,
+                    LREngine.RollupOperation.First, null);
+        ctx.add(rollupField2);
+
+        SObject[] masters = LREngine.rollUp(ctx, detailRecords);
+
+        Map<Id, SObject> mastersById = new Map<Id, SObject>(masters);
+        Account reloadedAcc1 = (Account)mastersById.get(acc1.Id);
+        Account reloadedAcc2 = (Account)mastersById.get(acc2.Id);
+        System.assertEquals(2, masters.size());
+        System.assertEquals('test', reloadedAcc1.get(rollupField1.master.getName()));
+        System.assertEquals('test', reloadedAcc1.get(rollupField2.master.getName()));
+        System.assertEquals('Lost', reloadedAcc2.get(rollupField1.master.getName()));        
+        System.assertEquals('Won', reloadedAcc2.get(rollupField2.master.getName()));                
+    }
+
+    static testMethod void testIsAggregateOrQueryBasedRollup()
+    {
+        // map of operations with flag indicating if it is an aggregate operation
+        Map<LREngine.RollupOperation, Boolean> operations = new Map<LREngine.RollupOperation, Boolean> {
+                                                        LREngine.RollupOperation.Sum => true,
+                                                        LREngine.RollupOperation.Min => true,
+                                                        LREngine.RollupOperation.Max => true,
+                                                        LREngine.RollupOperation.Avg => true,
+                                                        LREngine.RollupOperation.Count => true,
+                                                        LREngine.RollupOperation.Count_Distinct => true,
+                                                        LREngine.RollupOperation.Concatenate => false,
+                                                        LREngine.RollupOperation.Concatenate_Distinct => false,
+                                                        LREngine.RollupOperation.First => false,
+                                                        LREngine.RollupOperation.Last => false
+                                                };
+        for (LREngine.RollupOperation op :operations.keySet()) {
+            Boolean isAggregate = operations.get(op);
+            System.assertEquals(isAggregate, LREngine.isAggregateBasedRollup(op));
+            System.assertEquals(!isAggregate, LREngine.isQueryBasedRollup(op));
+        }
+    }
+
+    static private void testRollup(String detailOrderByClause, LREngine.RollupSummaryField rollupField, String expected1, String expected2) {
+        testRollup(detailOrderByClause, rollupField, expected1, expected2, false);
+    }
+
+    static private void testRollup(String detailOrderByClause, LREngine.RollupSummaryField rollupField, String expected1, String expected2, boolean allRows) {
+
+        prepareData();
+
+        if(allRows)
+            delete detailRecordsAcc1;
+
+        LREngine.Context ctx = new LREngine.Context(
+            Account.SobjectType, 
+            Opportunity.SobjectType, 
+            Schema.SObjectType.Opportunity.fields.AccountId,
+            null, // detailWhereClause
+            null, 
+            detailOrderByClause,
+            allRows);
+
+        ctx.add(rollupField);
+
+        SObject[] masters = LREngine.rollUp(ctx, detailRecords);
+
+        Map<Id, SObject> mastersById = new Map<Id, SObject>(masters);
+        Account reloadedAcc1 = (Account)mastersById.get(acc1.Id);
+        Account reloadedAcc2 = (Account)mastersById.get(acc2.Id);
+        System.assertEquals(2, masters.size());
+        System.assertEquals(expected1, reloadedAcc1.get(rollupField.master.getName()));
+        System.assertEquals(expected2, reloadedAcc2.get(rollupField.master.getName()));
+    } 
+
+    static private void testRollup2(String detailOrderByClause, LREngine.RollupSummaryField rollupField, String expected1, String expected2) {
+
+        prepareData2();
+
+        LREngine.Context ctx = new LREngine.Context(
+            Account.SobjectType, 
+            Opportunity.SobjectType, 
+            Schema.SObjectType.Opportunity.fields.AccountId,
+            null, // detailWhereClause
+            detailOrderByClause);
+
+        ctx.add(rollupField);
+
+        SObject[] masters = LREngine.rollUp(ctx, detailRecords2);
+
+        Map<Id, SObject> mastersById = new Map<Id, SObject>(masters);
+        Account reloadedAcc3 = (Account)mastersById.get(acc3.Id);
+        Account reloadedAcc4 = (Account)mastersById.get(acc4.Id);
+        System.assertEquals(2, masters.size());
+        System.assertEquals(expected1, reloadedAcc3.get(rollupField.master.getName()));
+        System.assertEquals(expected2, reloadedAcc4.get(rollupField.master.getName()));
+    } 
 }

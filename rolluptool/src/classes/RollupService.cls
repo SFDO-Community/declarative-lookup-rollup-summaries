@@ -25,14 +25,16 @@
 **/
 
 /**
- * Service class implements rollup functionality using LREngine library and based on lookups described in LookupRollupSummary__c
+ * Service class implements rollup functionality using LREngine library and based on lookups described in RollupSummary
  *
  *   TODO: This class could do with using the fflib_Describe util class, it would cut down on describe cahcing logic and make things cleaner
  *
  *   TODO: As this class has developed to support schedule and develoepr API entry points some further refactoring for reuse can be done
  **/
-global with sharing class RollupService 
+global with sharing class RollupService
 {	
+	global static Exception LastMetadataAPIConnectionException {get; private set;}
+
 	global static Boolean checkMetadataAPIConnection()
 	{
 		try {
@@ -45,8 +47,10 @@ global with sharing class RollupService
 			queries.add(remoteSites);					
 			service.listMetadata(queries, 28);			
 		} catch (Exception e) {
+			LastMetadataAPIConnectionException = e;
 			return false;
 		}
+		LastMetadataAPIConnectionException = null;
 		return true;
 	}
 	
@@ -55,27 +59,62 @@ global with sharing class RollupService
 	 **/
 	global static Id runJobToCalculate(Id lookupId)
 	{
+		return runJobToCalculate((String)lookupId, null);
+	}
+
+	/**
+	 * Starts the Job to recalculate the given rollup filtering the master object records by the WHERE clause
+	 **/
+	global static Id runJobToCalculate(Id lookupId, String masterWhereClause)
+	{
+		return runJobToCalculate((String) lookupId, masterWhereClause);
+	}
+
+	/**
+	 * Starts the Job to recalculate the given rollup 
+	 **/
+	global static Id runJobToCalculate(String lookupId)
+	{
+		return runJobToCalculate(lookupId, null);
+	}
+
+	/**
+	 * Starts the Job to recalculate the given rollup filtering the master object records by the WHERE clause
+	 **/
+	global static Id runJobToCalculate(String lookupId, String masterWhereClause)
+	{
 		// Is another calculate job running for this lookup?
-		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });		
+		List<RollupSummary> lookups = new RollupSummariesSelector().selectById(new Set<String> { (String) lookupId });
 		if(lookups.size()==0)
 			throw RollupServiceException.rollupNotFound(lookupId);
-		LookupRollupSummary__c lookup = lookups[0];
-		if(lookup.CalculateJobId__c!=null)
+		RollupSummary lookup = lookups[0];
+
+		// Already running?
+		try {
+			// This object has a unique constraint over LookupRollupSummaryId__c
+			insert new LookupRollupCalculateJob__c(LookupRollupSummaryId__c = lookupId);
+		} catch (Exception e) {
 			throw RollupServiceException.jobAlreadyRunning(lookup.Name);
-			
+		}
+
 		// Already active?
-		if(lookup.Active__c==null || lookup.Active__c==false)
+		if((lookup.Active==null || lookup.Active==false) && lookup.CalculationMode=='Realtime' )
 			throw new RollupServiceException('The rollup must be Active before you can run a Calculate job.');
 
 		// Start the job and record the Job Id
 		Integer scopeSize = (Integer) DeclarativeLookupRollupSummaries__c.getInstance().CalculateJobScopeSize__c;
-		Id jobId = Database.executeBatch(new RollupCalculateJob(lookupId), scopeSize == null ? 100 : scopeSize);
-		lookup.CalculateJobId__c = jobId;
-		update lookup;
-		
+		Id jobId = Database.executeBatch(new RollupCalculateJob(lookupId, masterWhereClause), scopeSize == null ? 100 : scopeSize);
+
+		// Update CalculateJobId__c for Custom Object based rollups?
+		if(lookup.Record instanceof LookupRollupSummary__c) {
+			LookupRollupSummary__c rollupSummary = (LookupRollupSummary__c) lookup.Record;
+			rollupSummary.CalculateJobId__c = jobId;
+			update lookup.Record;
+		}
+
 		return jobId;
 	}
-	
+
 	/**
 	 * Starts the Job to process the scheduled items for rollup 
 	 **/
@@ -89,6 +128,87 @@ global with sharing class RollupService
 		Integer scopeSize = (Integer) DeclarativeLookupRollupSummaries__c.getInstance().ScheduledJobScopeSize__c;
 		return Database.executeBatch(new RollupJob(), scopeSize == null ? 100 : scopeSize);
 	}	
+
+	/**
+	 * Describes a specific rollup to process
+	 **/
+	global class RollupToCalculate {
+		global Id parentId;
+		global String rollupSummaryUniqueName;
+	}
+
+	/**
+	 * Executes Process Builder rollups
+	 **/
+	global static void rollup(List<RollupToCalculate> rollupsToCalculate) {
+
+		// Anything to process?
+		if(rollupsToCalculate==null || rollupsToCalculate.size()==0)
+			return;
+
+		// Load summaries
+		Set<String> uniqueNames = new Set<String>();
+		Set<Id> masterIds = new Set<Id>();
+		for(RollupToCalculate rollupToCalc : rollupsToCalculate) {
+			uniqueNames.add(rollupToCalc.rollupSummaryUniqueName);
+			masterIds.add(rollupToCalc.parentId);
+		}
+		List<RollupSummary> lookups =
+			new RollupSummariesSelector().selectActiveByUniqueName(uniqueNames);
+		if(lookups.size()==0)
+			return;
+
+		// Process each context (parent child relationship) and its associated rollups
+		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
+		for(LREngine.Context ctx : createLREngineContexts(lookups))
+		{
+			// Produce a set of master Id's applicable to this context (parent only)			
+			Set<Id> ctxMasterIds = new Set<Id>();
+			for(Id masterId : masterIds)
+				if(masterId.getSObjectType() == ctx.master)
+					ctxMasterIds.add(masterId);
+			// Execute the rollup and process the resulting updated master records
+			for(SObject masterRecord : LREngine.rollup(ctx, ctxMasterIds)) 
+			{
+				// Skip master records without Id's (LREngine can return these where there was 
+				//	no related master records to children, for examlpe where a relationship is optional)
+				if(masterRecord.Id==null)
+					break;
+				// Merge this master record result into a previous one from another rollup ctx?
+				SObject existingRecord = masterRecords.get(masterRecord.Id);
+				if(existingRecord==null)
+					masterRecords.put(masterRecord.Id, masterRecord);
+				else
+					for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll)
+						existingRecord.put(fieldToRoll.master.getSObjectField(), 
+							masterRecord.get(fieldToRoll.master.getSObjectField()));
+			}			
+		}
+
+		// Update the master records
+		update masterRecords.values();
+	}
+
+	/**
+	 * Developer API for the tool, only executes Rollup Summmaries with Calculation Mode set to Developer 
+	 *
+	 * Automatically resolves child records to process via LREngine and lookups described in RollupSummary
+	 *    also determines if based on the old records if the rollup processing needs to occur
+	 *
+	 * @param existingRecords Deleted or existing version of Updated records
+	 * @param newRecords Inserted/Updated/Undeleted records
+	 * @param sObjectType SObjectType of the existing/new records
+	 *
+	 * @usage rollup(Trigger.oldMap, Trigger.newMap, Account.SObjectType)
+	 *
+	 * @remark All SObjects (existing and new) must be of the same SObjectType
+	 * @remark Supports mixture of old/new records.  For example, you can include a record in existing 
+	 *         that was deleted and a record in new that was inserted.
+	 **/ 
+	global static void rollup(Map<Id, SObject> existingRecords, Map<Id, SObject> newRecords, Schema.SObjectType sObjectType)
+	{
+		handleRollups(existingRecords, newRecords, sObjectType, new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Developer });
+	}
 
 	/**
 	 * Developer API for the tool, only executes Rollup Summmaries with Calculation Mode set to Developer 
@@ -105,7 +225,7 @@ global with sharing class RollupService
 		// Describe Developer rollups for these child records
 		SObjectType childObjectType = childRecords[0].Id.getSObjectType();
 		Schema.DescribeSObjectResult childRecordDescribe = childObjectType.getDescribe();		
-		List<LookupRollupSummary__c> lookups =
+		List<RollupSummary> lookups =
 			new RollupSummariesSelector().selectActiveByChildObject(
 				new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Developer }, 
 				new Set<String> { childRecordDescribe.getName() });
@@ -115,13 +235,13 @@ global with sharing class RollupService
 		// Rollup child records and update master records
 		Set<Id> masterRecordIds = new Set<Id>();
 		for(SObject childRecord : childRecords)
-			for(LookupRollupSummary__c lookup : lookups)
-				if(childRecord.get(lookup.RelationShipField__c)!=null)
-					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField__c));
+			for(RollupSummary lookup : lookups)
+				if(childRecord.get(lookup.RelationShipField)!=null)
+					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField));
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
-		for(LREngine.Context ctx : createLREngineContexts(lookups).values())
+		for(LREngine.Context ctx : createLREngineContexts(lookups))
 		{
 			// Produce a set of master Id's applicable to this context (parent only)			
 			Set<Id> ctxMasterIds = new Set<Id>();
@@ -147,13 +267,36 @@ global with sharing class RollupService
 		}
 		return masterRecords.values();
 	}
+
+	/**
+	 * Apex Test handler (call from Apex Test only)
+	 **/
+	global static void testHandler(SObject dummyChildRecord) 
+	{
+		try {
+			insert dummyChildRecord;
+		} catch (Exception e) {
+			// If the auto generated trigger was invoked this test served its purpose (code coverage wise) ignore this error
+			if(triggerHandleInvoked)
+				return;
+			// Otherwise fail the test with the underlying exception as it prevented our trigger being invoked
+			throw e;
+		}
+	}
 	
 	/**
-	 * Apex Trigger helper, automatically resolves child records to process via LREngine and lookups described in LookupRollupSummary__c
+	 * Used in a test context to determine if errors from the dummy child insert should fail the test
+	 **/
+	private static boolean triggerHandleInvoked = false;
+
+	/**
+	 * Apex Trigger helper, automatically resolves child records to process via LREngine and lookups described in RollupSummary
 	 *    also determines if based on the old trigger records if the rollup processing needs to occur
 	 **/
 	global static void triggerHandler()
 	{
+		triggerHandleInvoked = true;
+
 		// Currently no processing in the before phase
 		if(Trigger.isBefore)
 			return;		
@@ -161,107 +304,36 @@ global with sharing class RollupService
 		// Anything to rollup?
 		List<SObject> childRecords = Trigger.isDelete ? Trigger.old : Trigger.new;
 		SObjectType childObjectType = childRecords[0].Id.getSObjectType();		
-		List<LookupRollupSummary__c> lookups = describeRollups(childRecords[0].Id.getSObjectType());
-		if(lookups.size()==0)
-			return; // Nothing to see here! :)
-			
-		// Has anything changed on the child records in respect to the fields referenced on the lookup definition?
-		if(Trigger.isUpdate)
-		{
-			// Master records to update
-			Set<Id> masterRecordIds = new Set<Id>();
-			 
-			// Set of field names from the child used in the rollup to search for changes on
-			Set<String> fieldsToSearchForChanges = new Set<String>(); 
-			Set<String> relationshipFields = new Set<String>(); 
-			for(LookupRollupSummary__c lookup : lookups)
-			{
-				fieldsToSearchForChanges.add(lookup.FieldToAggregate__c);
-				fieldsToSearchForChanges.add(lookup.RelationShipField__c);
-				if(lookup.RelationshipCriteriaFields__c!=null)
-					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n'))
-						fieldsToSearchForChanges.add(criteriaField);
-				relationshipFields.add(lookup.RelationShipField__c);
-			}
-				
-			// Determine if a a field referenced on the lookup has changed and thus if the lookup itself needs recalculating
-			Set<String> fieldsChanged = new Set<String>();  
-			for(SObject childRecord : childRecords)
-			{
-				// Determine if any of the fields referenced on our selected rollups have changed on this record
-				for(String fieldToSearch : fieldsToSearchForChanges)
-				{
-					SObject oldChildRecord = Trigger.oldMap.get(childRecord.Id);
-					Object newValue = childRecord.get(fieldToSearch);
-					Object oldValue = oldChildRecord.get(fieldToSearch);
-					// Register this field as having changed?
-					if(newValue != oldValue)
-						fieldsChanged.add(fieldToSearch);
-					// Add both old and new value to master record Id list for relationship fields to ensure old and new parent master records are updated (re-parenting)
-					if(relationshipFields.contains(fieldToSearch))
-					{
-						if(newValue!=null)
-							masterRecordIds.add((Id) newValue);
-						if(oldValue!=null)
-							masterRecordIds.add((Id) oldValue);		
-					}
-				}
-			}
-			
-			// Build a revised list of lookups to process that includes only where fields used in the rollup have changed
-			List<LookupRollupSummary__c> lookupsToProcess = new List<LookupRollupSummary__c>(); 
-			for(LookupRollupSummary__c lookup : lookups)
-			{
-				// Are any of the changed fields used by this lookup?
-				Boolean processLookup = false; 
-				if(fieldsChanged.contains(lookup.FieldToAggregate__c) ||
-				   fieldsChanged.contains(lookup.RelationShipField__c))
-				   	processLookup = true;
-				if(lookup.RelationshipCriteriaFields__c!=null)
-					for(String criteriaField : lookup.RelationshipCriteriaFields__c.split('\r\n'))
-						if(fieldsChanged.contains(criteriaField))
-							processLookup = true;
-				if(processLookup)
-					lookupsToProcess.add(lookup);
-			}
-			lookups = lookupsToProcess;
-			
-			// Rollup child records and update master records 
-			if(lookupsToProcess.size()>0)
-				updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
-			return;
-		}
-			
-		// Rollup child records and update master records
-		Set<Id> masterRecordIds = new Set<Id>();
-		for(SObject childRecord : childRecords)
-			for(LookupRollupSummary__c lookup : lookups)
-				if(childRecord.get(lookup.RelationShipField__c)!=null)
-					masterRecordIds.add((Id)childRecord.get(lookup.RelationShipField__c));
-		updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds), false, true);
+		handleRollups(Trigger.oldMap, Trigger.newMap, childObjectType, new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Realtime, RollupSummaries.CalculationMode.Scheduled });
 	}
-	
+
 	/**
 	 * Method returns a QueryLocator that returns master records (as per the lookup definition) meeting the criteria expressed (if defined)
 	 **/
 	public static Database.QueryLocator masterRecordsAsQueryLocator(Id lookupId)
-	{ 
-		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(new Set<Id> { lookupId });
+	{
+		return masterRecordsAsQueryLocator(lookupId, null);
+	}
+
+	public static Database.QueryLocator masterRecordsAsQueryLocator(Id lookupId, String whereClause)
+	{
+		List<RollupSummary> lookups = new RollupSummariesSelector().selectById(new Set<String> { (String) lookupId });
 		if(lookups.size()==0)
-			throw RollupServiceException.rollupNotFound(lookupId); 
-		LookupRollupSummary__c lookup = lookups[0];				
-		return Database.getQueryLocator('Select Id From ' + lookup.ParentObject__c);
+			throw RollupServiceException.rollupNotFound(lookupId);
+		RollupSummary lookup = lookups[0];
+		if (String.isBlank(whereClause)) {
+			return Database.getQueryLocator('Select Id From ' + lookup.ParentObject);
+		} else {
+			return Database.getQueryLocator(String.format('Select Id From {0} WHERE {1}', new List<String>{lookup.ParentObject, whereClause}));
+		}
 	}
 
 	/**
 	 * Clears the Calcualte Job Id's on the given lookups preventng concurrent Calculate jobs
 	 **/ 	
-	public static void clearCalculateJobId(Set<Id> lookupIds)
+	public static void clearCalculateJobId(Set<String> lookupIds)
 	{
-		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(lookupIds);
-		for(LookupRollupSummary__c lookup : lookups)
-			lookup.CalculateJobId__c = null;
-		update lookups;
+		delete [select Id from LookupRollupCalculateJob__c where LookupRollupSummaryId__c in :lookupIds];
 	}
 	
 	/**
@@ -270,47 +342,58 @@ global with sharing class RollupService
 	public static void processScheduleItems(List<LookupRollupSummaryScheduleItems__c> rollupSummaryScheduleItems)
 	{
 		// Load related Lookup summaries for the scheduled items
-		Set<Id> lookupIds = new Set<Id>();
-		for(LookupRollupSummaryScheduleItems__c scheduleItem : rollupSummaryScheduleItems)
-			lookupIds.add(scheduleItem.LookupRollupSummary__c);
-		Map<Id, LookupRollupSummary__c> lookups = 
-			new Map<Id, LookupRollupSummary__c>(new RollupSummariesSelector().selectById(lookupIds));
+		Set<String> lookupIds = new Set<String>();
+		for(LookupRollupSummaryScheduleItems__c scheduleItem : rollupSummaryScheduleItems) {			
+			if(scheduleItem.LookupRollupSummary2__c!=null)
+				lookupIds.add(scheduleItem.LookupRollupSummary2__c);
+			else
+				lookupIds.add(scheduleItem.LookupRollupSummary__c);
+		}
+		Map<String, RollupSummary> lookups = 
+			RollupSummary.toMap(new RollupSummariesSelector().selectById(lookupIds));
 			
 		// Group the parent Id's by parent type
+		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
 		Map<String, Set<Id>> parentIdsByParentType = new Map<String, Set<Id>>();  
 		for(LookupRollupSummaryScheduleItems__c scheduleItem : rollupSummaryScheduleItems)
 		{
 			Id parentId = scheduleItem.ParentId__c;
-			LookupRollupSummary__c lookup = lookups.get(scheduleItem.LookupRollupSummary__c);
-			Set<Id> parentIds = parentIdsByParentType.get(lookup.ParentObject__c);
+			RollupSummary lookup = lookups.get(scheduleItem.LookupRollupSummary2__c!=null ? scheduleItem.LookupRollupSummary2__c : scheduleItem.LookupRollupSummary__c);
+			// The lookup definition could have been changed or due to a historic bug in correctly associated
+			if(parentId.getSobjectType() != gd.get(lookup.ParentObject))
+				continue;
+			Set<Id> parentIds = parentIdsByParentType.get(lookup.ParentObject);
 			if(parentIds==null)
-				parentIdsByParentType.put(lookup.ParentObject__c, (parentIds = new Set<Id>()));
+				parentIdsByParentType.put(lookup.ParentObject, (parentIds = new Set<Id>()));
 			parentIds.add(parentId);
 		}
 			
 		// Group lookups by parent and relationship into LREngine ctx's
-		Map<String, LREngine.Context> engineCtxByParentRelationship = createLREngineContexts(lookups.values());
+		List<LREngine.Context> engineCtxByParentRelationship = createLREngineContexts(lookups.values());
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
-		for(LREngine.Context ctx : engineCtxByParentRelationship.values())
+		for(LREngine.Context ctx : engineCtxByParentRelationship)
 		{
 			Set<Id> masterIds = parentIdsByParentType.get(ctx.master.getDescribe().getName());
-			for(SObject masterRecord : LREngine.rollup(ctx, masterIds))
-			{
-				// Skip master records without Id's (LREngine can return these where there was 
-				//	no related master records to children, for examlpe where a relationship is optional)
-				if(masterRecord.Id==null)
-					break;
-				// Merge this master record result into a previous one from another rollup ctx?
-				SObject existingRecord = masterRecords.get(masterRecord.Id);
-				if(existingRecord==null)
-					masterRecords.put(masterRecord.Id, masterRecord);
-				else
-					for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll)
-						existingRecord.put(fieldToRoll.master.getSObjectField(), 
-							masterRecord.get(fieldToRoll.master.getSObjectField()));
-			}			
+			// This maybe null if the reconcilation check above to match master ID to lookup parent failed
+			if(masterIds!=null && masterIds.size()>0) {
+				for(SObject masterRecord : LREngine.rollup(ctx, masterIds))
+				{
+					// Skip master records without Id's (LREngine can return these where there was 
+					//	no related master records to children, for examlpe where a relationship is optional)
+					if(masterRecord.Id==null)
+						continue;
+					// Merge this master record result into a previous one from another rollup ctx?
+					SObject existingRecord = masterRecords.get(masterRecord.Id);
+					if(existingRecord==null)
+						masterRecords.put(masterRecord.Id, masterRecord);
+					else
+						for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll)
+							existingRecord.put(fieldToRoll.master.getSObjectField(), 
+								masterRecord.get(fieldToRoll.master.getSObjectField()));
+				}
+			}
 		}
 
 		// Map rollup summary schedule items by parent id, in order to remove only those whos parent/master record actually gets updated below
@@ -339,17 +422,27 @@ global with sharing class RollupService
 			// Errors?
 			if(!saveResult.isSuccess())
 			{
+				// Was this failure due to the parent record no longer existing?
+				Boolean masterRecordDeletionError = false;
 				// Log the failure updating the master record for review
 				LookupRollupSummaryLog__c logEntry = new LookupRollupSummaryLog__c();
 				logEntry.ErrorMessage__c = '';
 				logEntry.ParentId__c = masterRecordList[masterRecordIdx].Id;
 				logEntry.ParentObject__c = masterRecordList[masterRecordIdx].Id.getSObjectType().getDescribe().getName();
 				List<Database.Error> databaseErrors = saveResult.getErrors();
-				for(Database.Error databaseError : databaseErrors)
+				for(Database.Error databaseError : databaseErrors) {
 					logEntry.ErrorMessage__c+= databaseError.getMessage() + ' : ' + databaseError.getStatusCode() + ' ' + databaseError.getFields() + '\n';
-				rollupSummaryLogs.add(logEntry);
-				// Remove from scheduled items to be deleted to allow a retry
-				rollupSummaryScheduleItemsByParentId.remove(masterRecordList[masterRecordIdx].Id);
+					if(databaseError.getStatusCode() == StatusCode.ENTITY_IS_DELETED) {
+						masterRecordDeletionError = true;
+						break;
+					}
+				}
+				// Was this error a result of the parent record being deleted?
+				if(!masterRecordDeletionError) {
+					rollupSummaryLogs.add(logEntry);
+					// Remove from scheduled items to be deleted to allow a retry
+					rollupSummaryScheduleItemsByParentId.remove(masterRecordList[masterRecordIdx].Id);					
+				}
 			}
 			masterRecordIdx++;
 		}
@@ -373,12 +466,12 @@ global with sharing class RollupService
 	 * @param lookups Lookup to calculate perform
 	 * @param childRecords Child records being modified
 	 **/ 
-	public static void updateMasterRollups(Set<Id> lookupIds, Set<Id> masterRecordIds)
+	public static void updateMasterRollups(Set<String> lookupIds, Set<Id> masterRecordIds)
 	{		
 		// Process rollup
-		List<LookupRollupSummary__c> lookups = new RollupSummariesSelector().selectById(lookupIds);
+		List<RollupSummary> lookups = new RollupSummariesSelector().selectById(lookupIds);
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
-		for(LREngine.Context ctx : createLREngineContexts(lookups).values())
+		for(LREngine.Context ctx : createLREngineContexts(lookups))
 		{
 			// Produce a set of master Id's applicable to this context (parent only)			
 			Set<Id> ctxMasterIds = new Set<Id>();
@@ -440,49 +533,421 @@ global with sharing class RollupService
 		// Delete any old logs entries for master records that have now been updated successfully
 		delete [select Id from LookupRollupSummaryLog__c where ParentId__c in :masterRecordsUpdatedId];
 	}
+
+	/**
+	 * Insert the given rollup summaries (only supports Custom Metadata backed records)
+	 **/
+	public static List<Id> create(List<SObject> rollupSummaryRecords) {
+		// Valid records?
+		List<SObject> validRecords = validateRollups(rollupSummaryRecords);
+		// Create
+		CustomMetadataService.createMetadata(validRecords);
+		return null;
+	}
+
+	/**
+	 * Update the given rollup summaries (only supports Custom Metadata backed records)
+	 **/
+	public static List<Id> update_x(List<SObject> rollupSummaryRecords) {
+		// Valid records?
+		List<SObject> validRecords = validateRollups(rollupSummaryRecords);
+		// Create
+		CustomMetadataService.updateMetadata(validRecords);
+		return null;
+	}
+
+	/**
+	 * Delete the given rollup summaries (only supports Custom Metadata backed records)
+	 **/
+	public static void delete_x(List<String> rollupSummaryIds) {
+		// Currently assumes the Id's are Custom Metadata record DeveloperName's
+		CustomMetadataService.deleteMetadata(LookupRollupSummary2__mdt.getSObjectType(), rollupSummaryIds);
+	}
+
+	/**
+	 * Validates records (currenyly only Custom Metadata based ones)
+	 **/
+	private static List<SObject> validateRollups(List<SObject> rollupSummaryRecords) {
+
+		// Process only Custom Metadata records here
+		List<LookupRollupSummary2__mdt> mdtRecords = new List<LookupRollupSummary2__mdt>();
+		for(SObject rollupSummaryRecord : rollupSummaryRecords) {
+			if(rollupSummaryRecord instanceof LookupRollupSummary2__mdt) {
+				mdtRecords.add((LookupRollupSummary2__mdt) rollupSummaryRecord);
+			}
+		}
+		if(mdtRecords.size()==0)
+			return mdtRecords;
+
+		// Validate via Domain class and throw appropirte exception
+		RollupSummaries rollupSummaries = new RollupSummaries(mdtRecords);
+		rollupSummaries.onValidate();
+		RollupValidationException validationException = new RollupValidationException();
+		for(RollupSummary rollupSummaryRecord : rollupSummaries.Records) {
+			if(rollupSummaryRecord.Error!=null || 
+			   rollupSummaryRecord.Fields.Errors.size() >0) {
+				RollupRecordValidationError recordError = new RollupRecordValidationError();
+				recordError.Error = rollupSummaryRecord.Error;
+				recordError.FieldErrors = rollupSummaryRecord.Fields.Errors;
+				validationException.RecordErrors.add(recordError);
+			}
+		}
+		if(validationException.RecordErrors.size()>0) 
+			throw validationException;
+
+		return (List<SObject>) mdtRecords;
+	}
+
+	/**
+	 * Represents a rollup validation exception, contains a list of record errors
+	 **/
+	public class RollupValidationException extends Exception {
+		public final List<RollupRecordValidationError> RecordErrors = new List<RollupRecordValidationError>();
+	}
+
+	/**
+	 * Represents record level error and/or field level errors
+	 **/
+	public class RollupRecordValidationError {
+		public Id Id {get; private set;}
+		public String Error {get; private set;}
+		public List<String> FieldErrors {get; private set;}
+	}
+
+	/**
+	 * Process rollups for specified modes 
+	 *
+	 * @param childRecords List of childRecords to process rollups against
+	 * @param existingRecords Map of existing records.  Pass null if no existing records are available.
+	 * @param calculationModes Modes to use to determine which rollups to evaluate and process
+	 *
+	 * @remark Will process both lists looking for insert/update/delete/undelete and execute rollups on the following conditions:
+	 *             1) if in newRecords and not in existingRecords (insert and undelete)
+	 *             2) if in existingRecords and not in newRecords (delete)
+	 *             3) if in existingRecords and newRecords and rollup FieldToAggregate__c has changed (update)
+	 *
+	 **/	 
+	private static void handleRollups(Map<Id, SObject> existingRecords, Map<Id, SObject> newRecords, Schema.SObjectType sObjectType, List<RollupSummaries.CalculationMode> calculationModes)
+	{
+		// make sure we have Maps to avoid conditional statements in loops below
+		if (existingRecords == null) {
+			existingRecords = new Map<Id, SObject>();
+		}
+		if (newRecords == null) {
+			newRecords = new Map<Id, SObject>();
+		}
+
+		// Anything to process?
+		if (existingRecords.isEmpty() && newRecords.isEmpty()) {
+			return;
+		}
+
+		// Its possible for the user to deploy a trigger on parent objects, to monitor for merge operations...
+		DescribeSObjectResult sObjectDescribe = sObjectType.getDescribe();
+		Set<Id> masterRecordIdsFromMerge = new Set<Id>();
+		if(sObjectDescribe.isMergeable()) {
+			for(SObject existingRecord : existingRecords.values()) {
+				Id masterRecordId = (Id) existingRecord.get('MasterRecordId');
+				if(masterRecordId!=null) {
+					masterRecordIdsFromMerge.add(masterRecordId);					
+				}
+			}			
+		}
+	
+		// If this is a parent record merge operation, determine child object rollups to recalculate...
+		Boolean scheduleAllRollups = false;
+		Set<SObjectType> childObjects = new Set<SObjectType>();
+		childObjects.add(sObjectType);
+		if(masterRecordIdsFromMerge.size()>0) {
+			// If a parent record is being merged, include a recalc of any related child rollups
+			List<Schema.ChildRelationship> childRelationships = sObjectDescribe.getChildRelationships();
+			for(Schema.ChildRelationship childRelationship : childRelationships) {
+				childObjects.add(childRelationship.getChildSObject());
+			}
+			// Any rollups associated with these child objects will need to done in async, 
+			//   as parent records cannot be updated realtime since the platform is also updating them
+			scheduleAllRollups = true;
+		}
+
+		// Are there any rollups to process?
+		List<RollupSummary> lookups = describeRollups(childObjects, calculationModes);
+		if(lookups.isEmpty())
+			return; // Nothing to see here! :)
+			
+		// if records exist in both maps, then we need to go through change detection.
+		// Has anything changed on the child records in respect to the fields referenced on the lookup definition?
+		// Or does a record exist in one map but not the other
+		if(!existingRecords.isEmpty() && !newRecords.isEmpty())
+		{
+			// Master records to update
+			Set<Id> masterRecordIds = new Set<Id>();
+			 
+			// Set of field names from the child used in the rollup to search for changes on
+			Set<String> fieldsToSearchForChanges = new Set<String>(); 
+			Set<String> relationshipFields = new Set<String>(); 
+			// keep track of fields that should trigger a rollup to be processed
+			// this avoids having to re-parse RelationshipCriteria & OrderBy fields during field change detection
+			Map<Id, Set<String>> fieldsInvolvedInLookup = new Map<Id, Set<String>>();
+			for(RollupSummary lookup : lookups)
+			{
+				Set<String> lookupFields = new Set<String>();				
+				lookupFields.add(lookup.FieldToAggregate);
+				if(!String.isBlank(lookup.RelationshipCriteriaFields)) {
+					for(String criteriaField : lookup.RelationshipCriteriaFields.split('[\r\n]+')) {
+						lookupFields.add(criteriaField);
+					}
+				}
+				// only include order by fields when query based rollup (concat, first, last, etc.) since changes to them
+				// will not impact the outcome of an aggregate based rollup (sum, count, etc.)
+				if(LREngine.isQueryBasedRollup(RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation)) && !String.isBlank(lookup.FieldToOrderBy)) {
+					List<Utilities.Ordering> orderByFields = Utilities.parseOrderByClause(lookup.FieldToOrderBy);
+					if (orderByFields != null && !orderByFields.isEmpty()) {
+						for (Utilities.Ordering orderByField :orderByFields) {
+							lookupFields.add(orderByField.getField());
+						}
+					}
+				}
+
+				// add all lookup fields to our master list of fields to search for
+				fieldsToSearchForChanges.addAll(lookupFields);
+
+				// add relationshipfield to fields for this lookup
+				// this comes after adding to fieldsToSearchForChanges because we handle
+				// change detection separately for non-relationship fields and relationship fields
+				lookupFields.add(lookup.RelationShipField);
+
+				// add to map for later use
+				fieldsInvolvedInLookup.put(lookup.Id, lookupFields);
+
+				// add relationship field to master list of relationship fields
+				relationshipFields.add(lookup.RelationShipField);
+			}
+			
+			// merge all record Id's
+			Set<Id> mergedRecordIds = new Set<Id>(existingRecords.keySet());
+			mergedRecordIds.addAll(newRecords.keySet());
+
+			// Determine if a a field referenced on the lookup has changed and thus if the lookup itself needs recalculating
+			Set<String> fieldsChanged = new Set<String>();  
+			for(Id recordId : mergedRecordIds)
+			{
+				// keep track of whether or not this child has changed in any of the fields involved in
+				// lookups that are NOT relationship fields themselves.  We'll check relationship fields
+				// separately to avoid unnecessary rollups firing on master records that don't require updating				
+				Boolean nonRelationshipFieldsChanged = false;
+							
+				// Determine if any of the fields referenced on our selected rollups have changed on this record
+				for(String fieldToSearch : fieldsToSearchForChanges)
+				{
+					// retrieve old and new records and values if they exist
+					SObject oldRecord = existingRecords.get(recordId);
+					Object oldValue = oldRecord == null ? null : oldRecord.get(fieldToSearch);
+					SObject newRecord = newRecords.get(recordId);
+					Object newValue = newRecord == null ? null : newRecord.get(fieldToSearch);
+
+					// Register this field as having changed?
+					// if in old but not in new then its a delete and rollup should be processed
+					// if in new but not in old then its an insert and rollup should be processed
+					// if in both then its an update and field change detection should occur and rollup should be processed if different
+					if((oldRecord == null) || (newRecord == null) || (newValue != oldValue)) {
+						fieldsChanged.add(fieldToSearch);
+						// mark record as having a non-relationship field changed
+						nonRelationshipFieldsChanged = true;
+					}
+				}
+				
+				// iterate relationship fields looking and track old/new master id
+				// if there were changes to the relationship field itself or any 
+				// other fields involved in a lookup
+				for(String relationshipField : relationshipFields)
+				{
+					// should we add associated master to list?
+					// default to whether or not a non-relationship field on record has changed
+					Boolean addMasterIds = nonRelationshipFieldsChanged;
+
+					// retrieve old and new records and values if they exist
+					SObject oldRecord = existingRecords.get(recordId);
+					Object oldValue = oldRecord == null ? null : oldRecord.get(relationshipField);
+					SObject newRecord = newRecords.get(recordId);
+					Object newValue = newRecord == null ? null : newRecord.get(relationshipField);
+
+					// Register this field as having changed?
+					// if in old but not in new then its a delete and rollup should be processed and master ids included
+					// if in new but not in old then its an insert and rollup should be processed and master ids included
+					// if in both then its an update and field change detection should occur and rollup should be processed and master ids included if different
+					if((oldRecord == null) || (newRecord == null) || (newValue != oldValue)) {
+						fieldsChanged.add(relationshipField);
+						// master field itself changed so we force old/new master ids to be added for processing
+						addMasterIds = true;
+					}
+
+					// if relationship field itself changed or if change in another non-relationship field
+					// Add both old and new value to master record Id list for relationship fields 
+					// to ensure old and new parent master records are updated (re-parenting)
+					if (addMasterIds)
+					{
+						if(newValue!=null)
+							masterRecordIds.add((Id) newValue);
+						if(oldValue!=null)
+							masterRecordIds.add((Id) oldValue);
+					}
+				}
+			}
+			
+			// Build a revised list of lookups to process that includes only where fields used in the rollup have changed
+			List<RollupSummary> lookupsToProcess = new List<RollupSummary>(); 
+			for(RollupSummary lookup : lookups)
+			{
+				// Are any of the changed fields used by this lookup?
+				Set<String> lookupFields = fieldsInvolvedInLookup.get(lookup.Id);
+				for (String lookupField :lookupFields) {
+					if (fieldsChanged.contains(lookupField)) {
+						// add lookup to be processed and exit for loop since we have our answer
+						lookupsToProcess.add(lookup);
+						break;
+					}
+				}
+			}
+			lookups = lookupsToProcess;
+			
+			// Rollup child records and update master records 
+			if(lookupsToProcess.size()>0)
+				updateRecords(updateMasterRollupsTrigger(lookups, masterRecordIds, false), false, true);
+			return;
+		}
+			
+		// Rollup whichever side has records and update master records
+		// only one map should have records at this point
+		Boolean isDeleting = newRecords.isEmpty();
+		Set<Id> masterRecordIds = new Set<Id>(masterRecordIdsFromMerge);
+		Map<Id, SObject> recordsToProcess = existingRecords.isEmpty() ? newRecords : existingRecords;
+		for(SObject childRecord : recordsToProcess.values()) {
+			for(RollupSummary lookup : lookups) {
+				// Does this rollup apply to this child record?
+				if(lookup.ChildObject.equalsIgnoreCase(sObjectDescribe.getName())) {
+					if(childRecord.get(lookup.RelationShipField)!=null) {
+						// Check for self referencing rollups, https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/39
+						Id masterRecordId = (Id)childRecord.get(lookup.RelationShipField);
+						if(isDeleting && masterRecordId == childRecord.Id) {
+							continue;
+						}
+						masterRecordIds.add(masterRecordId);
+					}					
+				}
+			}
+		}
+
+		// Process the rollups and update the master records
+		updateRecords(
+			updateMasterRollupsTrigger(lookups, masterRecordIds, scheduleAllRollups), false, true);
+	}	
 	
 	/**
-	 * Method wraps the LREngine.rolup method, provides context via the lookups described in LookupRollupSummary__c
+	 * Method wraps the LREngine.rolup method, provides context via the lookups described in RollupSummary
 	 *
 	 * @param lookups Lookup to calculate perform
 	 * @param childRecords Child records being modified
 	 * @returns Array of master records containing the updated rollups, calling code must perform update DML operation
 	 **/ 
-	private static List<SObject> updateMasterRollupsTrigger(List<LookupRollupSummary__c> lookups, Set<Id> masterRecordIds)
+	private static List<SObject> updateMasterRollupsTrigger(List<RollupSummary> lookups, Set<Id> masterRecordIds, Boolean scheduleAllRollups)
 	{
 		// Process lookups, 
-		//    Realtime are added to a list for later LRE context creation and processing, 
+		//    Realtime & Developer are added to a list for later LRE context creation and processing, 
 		//    Scheduled result in parent Id's being emitted to scheduled item object for later processing
-        List<LookupRollupSummary__c> realtimeLookups = new List<LookupRollupSummary__c>();      
+        Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
+        List<RollupSummary> runnowLookups = new List<RollupSummary>();      
         List<LookupRollupSummaryScheduleItems__c> scheduledItems = new List<LookupRollupSummaryScheduleItems__c>(); 
-        for(LookupRollupSummary__c lookup : lookups)
+        List<LookupRollupSummaryScheduleItems__c> scheduledItemsForMDTs = new List<LookupRollupSummaryScheduleItems__c>(); 
+        for(RollupSummary lookup : lookups)
         {
-            if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Realtime.name())
-            {
-                // Filter realtime looks in order to generate LRE contexts below
-                realtimeLookups.add(lookup);
-            }
-            else if(lookup.CalculationMode__c == RollupSummaries.CalculationMode.Scheduled.name())
+            if(lookup.CalculationMode == RollupSummaries.CalculationMode.Scheduled.name() || scheduleAllRollups)
             {       
+            	// For polymoprhic relationships the master Id list maybe mixed types, associated with the correct rollup
+                SObjectType parentType = gd.get(lookup.ParentObject);
+                if(parentType==null)
+                	continue;
                 // For scheduled rollups queue the parent Id record for processing
                 for (Id parentId : masterRecordIds)
                 {
-                    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
-                    scheduledItem.Name = parentId;
-                    scheduledItem.LookupRollupSummary__c = lookup.Id;
-                    scheduledItem.ParentId__c = parentId;
-                    scheduledItem.QualifiedParentID__c = parentId + '#' + lookup.Id; 
-                    scheduledItems.add(scheduledItem);
+                	if(parentId.getSobjectType() == parentType) {
+	                    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
+	                    scheduledItem.Name = parentId;
+	                    scheduledItem.LookupRollupSummary__c = lookup.Record instanceof LookupRollupSummary2__mdt ? null : lookup.Id;
+	                    scheduledItem.LookupRollupSummary2__c = lookup.Id;
+	                    scheduledItem.ParentId__c = parentId;
+	                    scheduledItem.QualifiedParentID__c = parentId + '#' + lookup.Id; 
+	                    scheduledItems.add(scheduledItem);
+	                    if(lookup.Record instanceof LookupRollupSummary2__mdt) {
+	                 		scheduledItemsForMDTs.add(scheduledItem);   	
+	                    }
+	                }
                 }                   
             }
+            else if(lookup.CalculationMode == RollupSummaries.CalculationMode.Realtime.name() ||
+            	lookup.CalculationMode == RollupSummaries.CalculationMode.Developer.name())
+            {
+                // Filter realtime & Developer lookups in order to generate LRE contexts below
+                runnowLookups.add(lookup);
+            }
         }
+
+        // Any parent scheduled calculations that relate to Custom Metadata based rollups?
+    	if(scheduledItemsForMDTs.size()>0) {
+
+    		// Look for existing shadow rollup records
+    		Set<String> uniqueNames = new Set<String>();
+    		for(LookupRollupSummaryScheduleItems__c scheduledItem : scheduledItemsForMDTs)
+    			uniqueNames.add('mdt:' + scheduledItem.LookupRollupSummary2__c);
+    		Map<String, RollupSummary> shadowRollupsByMdtId = new Map<String, RollupSummary>();
+    		for(RollupSummary shadowRollup : new RollupSummariesSelector.CustomObjectSelector(false).selectByUniqueName(uniqueNames)) {
+    			String uniqueName = shadowRollup.UniqueName;
+    			String mdtRollupId = uniqueName.split(':')[1];
+    			shadowRollupsByMdtId.put(mdtRollupId, shadowRollup);
+			}
+
+    		// Associate the Schedule Items with the correct shadow rollup record
+    		Map<String, RollupSummary> lookupsById = RollupSummary.toMap(lookups);
+    		Map<String, LookupRollupSummary__c> shadowRollupsToInsertByRollupId = new Map<String, LookupRollupSummary__c>();
+    		for(LookupRollupSummaryScheduleItems__c scheduledItem : scheduledItemsForMDTs) {
+    			String rollupId = scheduledItem.LookupRollupSummary2__c;
+    			RollupSummary shadowRollup = shadowRollupsByMdtId.get(rollupId);
+    			if(shadowRollup!=null) {
+    				scheduledItem.LookupRollupSummary__c = shadowRollup.Id;
+    			} else if(shadowRollupsToInsertByRollupId.containsKey(rollupId) == false) {
+					shadowRollupsToInsertByRollupId.put(rollupId, 
+						new LookupRollupSummary__c(
+							Name = lookupsById.get(rollupId).Name,
+						    UniqueName__c = 'mdt:' + rollupId,
+							ParentObject__c = 'N/A',
+							ChildObject__c = 'N/A',
+							RelationshipField__c = 'N/A',
+							AggregateResultField__c = 'N/A',
+							FieldToAggregate__c = 'N/A',
+						    CalculationMode__c = null,
+						    CalculationSharingMode__c = null,
+						    AggregateOperation__c = null,
+							Active__c = false,
+							Description__c = 'System managed do not touch.'));
+    			}
+    		}
+			if(shadowRollupsToInsertByRollupId.size()>0) {
+				// Insert new shadow rollups and associate with the correct schedule item
+				insert shadowRollupsToInsertByRollupId.values();
+	    		for(LookupRollupSummaryScheduleItems__c scheduledItem : scheduledItemsForMDTs) {
+	    			String rollupId = scheduledItem.LookupRollupSummary2__c;
+	    			if(scheduledItem.LookupRollupSummary__c == null) {
+	    				scheduledItem.LookupRollupSummary__c = shadowRollupsToInsertByRollupId.get(rollupId).Id;	    				
+	    			}
+	    		}
+			}
+    	}
 
         // Add parent Id's to schedule items object
         upsert scheduledItems QualifiedParentID__c;
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
-		for(LREngine.Context ctx : createLREngineContexts(realtimeLookups).values())
+		for(LREngine.Context ctx : createLREngineContexts(runnowLookups))
 		{
 			// Produce a set of master Id's applicable to this context (parent only)			
 			Set<Id> ctxMasterIds = new Set<Id>();
@@ -516,71 +981,218 @@ global with sharing class RollupService
 	 *
 	 * @returns List of rollup summary definitions
 	 **/
-	private static List<LookupRollupSummary__c> describeRollups(SObjectType childObjectType)
+	private static List<RollupSummary> describeRollups(Set<SObjectType> childObjectTypes, List<RollupSummaries.CalculationMode> calculationModes)
 	{	
 		// Query applicable lookup definitions
-		Schema.DescribeSObjectResult childRecordDescribe = childObjectType.getDescribe();
-		List<LookupRollupSummary__c> lookups =
-			new RollupSummariesSelector().selectActiveByChildObject(
-				new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Realtime, RollupSummaries.CalculationMode.Scheduled }, 
-				new Set<String> { childRecordDescribe.getName() });
+		Set<String> childNames = new Set<String>();
+		for(SObjectType sobjectType : childObjectTypes) {
+			childNames.add( sobjectType.getDescribe().getName());
+		}
+		List<RollupSummary> lookups =
+			new RollupSummariesSelector(false).selectActiveByChildObject(
+				calculationModes, 
+				childNames);
 		return lookups;		
 	}
 		
 	/**
 	 * Method takes a list of Lookups and creates the most optimum list of LREngine.Context's to execute
 	 **/
-	private static Map<String, LREngine.Context> createLREngineContexts(List<LookupRollupSummary__c> lookups)
+	private static List<LREngine.Context> createLREngineContexts(List<RollupSummary> lookups)
 	{ 
-		// Group lookups by parent and relationship into LREngine ctx's
-		Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
-		Map<SObjectType, Map<String, Schema.SObjectField>> gdFields = new Map<SObjectType, Map<String, Schema.SObjectField>>(); 	
-		Map<String, LREngine.Context> engineCtxByParentRelationship = 
-			new Map<String, LREngine.Context>();
+		// list of contexts generated
+		List<LREngine.Context> engineContexts = new List<LREngine.Context>();
+		// map of context criteria (except for order by) to a map of orderby with context		
+		Map<String, Map<String, LREngine.Context>> engineCtxByParentRelationship = 
+			new Map<String, Map<String, LREngine.Context>>();
+		// list of rollupsummaryfields that do not have a specific orderby
+		List<LookupRollupSummaryWrapper> noOrderByLookupWrappers = new List<LookupRollupSummaryWrapper>();
 		Map<Id, LookupRollupSummaryScheduleItems__c> scheduledItems = 
 			new Map<Id, LookupRollupSummaryScheduleItems__c>(); 
-		for(LookupRollupSummary__c lookup : lookups)
+		for(RollupSummary lookup : lookups)
 		{
-			// Resolve (and cache) SObjectType's and fields for Parent and Child objects
-			SObjectType parentObjectType = gd.get(lookup.ParentObject__c);
-			if(parentObjectType==null)
-				throw RollupServiceException.invalidRollup(lookup);
-			Map<String, Schema.SObjectField> parentFields = gdFields.get(parentObjectType);
-			if(parentFields==null)
-				gdFields.put(parentObjectType, ((parentFields = parentObjectType.getDescribe().fields.getMap())));
-			SObjectType childObjectType = gd.get(lookup.ChildObject__c);
-			if(childObjectType==null)
-				throw RollupServiceException.invalidRollup(lookup);
-			Map<String, Schema.SObjectField> childFields = gdFields.get(childObjectType);
-			if(childFields==null)
-				gdFields.put(childObjectType, ((childFields = childObjectType.getDescribe().fields.getMap())));
-			SObjectField fieldToAggregate = childFields.get(lookup.FieldToAggregate__c);
-			SObjectField relationshipField = childFields.get(lookup.RelationshipField__c);
-			SObjectField aggregateResultField = parentFields.get(lookup.AggregateResultField__c);
-			if(fieldToAggregate==null || relationshipField==null || aggregateResultField==null)
-				throw RollupServiceException.invalidRollup(lookup);
-			
-			// Determine if an LREngine Context has been created for this parent child relationship and filter combination?
-			String contextKey = lookup.ParentObject__c + '#' + lookup.RelationshipField__c + '#' + lookup.RelationShipCriteria__c;
-			LREngine.Context lreContext = engineCtxByParentRelationship.get(contextKey);
-			if(lreContext==null)
-			{								
-				// Construct LREngine.Context
-				lreContext = new LREngine.Context(
-					parentObjectType, // parent object
-                    childObjectType,  // child object
-                    relationshipField.getDescribe(), // relationship field name
-                    lookup.RelationShipCriteria__c); 
-				engineCtxByParentRelationship.put(contextKey, lreContext);
-			}				
-			// Add the lookup
-			lreContext.add(
-	            new LREngine.RollupSummaryField(
-					aggregateResultField.getDescribe(),
-					fieldToAggregate.getDescribe(),
-					RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation__c)));
-		}		
-		return engineCtxByParentRelationship;
+			// if no order is specified, we'll defer context identification until after we build contexts for
+			// all the lookups that contain a specific order by
+			LookupRollupSummaryWrapper lookupWrapper = createLSFWrapper(lookup);
+			if (!lookupWrapper.OrderByRequired) {
+				// add to the list of lookups that do not have an order by specified
+				noOrderByLookupWrappers.add(lookupWrapper);
+			} else {
+				// Note that context key here will not include the order by
+				String contextKey = getContextKey(lookupWrapper);
+				// obtain the map of orderby to context based on contextKey
+				Map<String, LREngine.Context> lreContextByOrderBy = engineCtxByParentRelationship.get(contextKey);
+				// if we don't have a map yet, create it
+				if (lreContextByOrderBy == null) {
+					lreContextByOrderBy = new Map<String, LREngine.Context>();
+					engineCtxByParentRelationship.put(contextKey, lreContextByOrderBy);
+				}
+				String orderBy = lookupWrapper.OrderByClause; // this will be the FieldToOrderBy__c from the RollupSummary
+				// Lowering case on Describable fields is only required for Legacy purposes since RollupSummary records
+				// will be updated with describe names on insert/update moving forward.				
+				String orderByKey = orderBy.toLowerCase();
+				// obtain the context for this orderby key
+				LREngine.Context lreContext = lreContextByOrderBy.get(orderByKey);
+				// if not context yet, create one
+				if(lreContext==null)
+				{								
+					// Construct LREngine.Context
+					lreContext = createContext(lookupWrapper);
+					lreContextByOrderBy.put(orderByKey, lreContext);
+					engineContexts.add(lreContext);
+				}				
+				// Add the rollup summary field to the context
+				lreContext.add(lookupWrapper.RollupSummaryField);
+			}
+		}
+
+		// now that we have contexts built for all lookups that have a specific order by
+		// we iterate those that do not and pick the first one that matches all other criteria
+		// if there is not one that matches other criteria, we create a new context
+		if (!noOrderByLookupWrappers.isEmpty())
+		{
+			// loop through our list of lookups that do not have an orderby specified
+			for (LookupRollupSummaryWrapper lookupWrapper :noOrderByLookupWrappers)
+			{
+				// Note that context key here will not include the order by
+				String contextKey = getContextKey(lookupWrapper);			
+				// obtain the map of orderby to context based on contextKey
+				Map<String, LREngine.Context> lreContextByOrderBy = engineCtxByParentRelationship.get(contextKey);
+				// if we don't have a map yet, create it
+				if (lreContextByOrderBy == null) {
+					lreContextByOrderBy = new Map<String, LREngine.Context>();
+					engineCtxByParentRelationship.put(contextKey, lreContextByOrderBy);
+				}
+
+				LREngine.Context lreContext = null;
+				if (lreContextByOrderBy.isEmpty()) 
+				{
+					// if we do not have any contexts yet then create one					
+					// when created, the OrderBy on the context will be set null since no order by was specified
+					// Construct LREngine.Context
+					lreContext = createContext(lookupWrapper);
+					// ensure key is lowered
+					lreContextByOrderBy.put('####NOORDERBY####', lreContext);
+					engineContexts.add(lreContext);
+				} 
+				else 
+				{
+					// since no orderby was specified we can execute in a non-deterministic manner
+					// so for that reason we'll just grab the first one
+					// Note - In an effort to support some backwards compat here, we could try to find a context
+					//        whos first orderby field (ASC NULLS FIRST) matches this lookups FieldToAggregate__c
+					//        however for performance reasons, we'll forgo that and just pick the first
+					lreContext = lreContextByOrderBy.values()[0];
+				}
+
+				// Add the rollup summary field to the context
+				lreContext.add(lookupWrapper.RollupSummaryField);				
+			}
+		}
+
+		return engineContexts;
+	}
+
+	private static LREngine.Context createContext(LookupRollupSummaryWrapper lookupWrapper)
+	{
+		return new LREngine.Context(
+						lookupWrapper.ParentObjectType, // parent object
+	                    lookupWrapper.ChildObjectType,  // child object                    
+	                    lookupWrapper.RelationshipField.getDescribe(), // relationship field name
+	                    lookupWrapper.Lookup.RelationShipCriteria,
+	                    lookupWrapper.SharingMode,
+	                    lookupWrapper.OrderByClause,
+	                    lookupWrapper.AggregateAllRows);		
+	}
+
+	private static SObjectType getSObjectType(String sObjectName)
+	{
+		fflib_SObjectDescribe describe = fflib_SObjectDescribe.getDescribe(sObjectName);
+		return (describe == null) ? null : describe.getSObjectType();
+
+	}
+
+	private static Map<String, Schema.SObjectField> getSObjectTypeFields(SObjectType sObjectType)
+	{
+		return fflib_SObjectDescribe.getDescribe(sObjectType).getFieldsMap();
+	}
+
+	private class LookupRollupSummaryWrapper
+	{
+		public RollupSummary Lookup;		
+		public Schema.SObjectType ParentObjectType;
+		public Schema.SObjectType ChildObjectType;
+		public Schema.SObjectField FieldToAggregate;		
+		public Schema.SObjectField RelationshipField;
+		public Schema.SObjectField AggregateResultField;
+		public Boolean AggregateAllRows;
+		public LREngine.SharingMode SharingMode;
+		public Boolean OrderByRequired; // true if FieldToOrderBy__c is not blank
+		public String OrderByClause; // FieldToOrderBy__c if OrderByRequired is true; null otherwise
+		public LREngine.RollupSummaryField RollupSummaryField;
+	}
+
+	private static LookupRollupSummaryWrapper createLSFWrapper(RollupSummary lookup)
+	{
+		// Resolve (and cache) SObjectType's and fields for Parent and Child objects
+		SObjectType parentObjectType = getSObjectType(lookup.ParentObject);
+		if(parentObjectType==null)
+			throw RollupServiceException.invalidRollup(lookup);
+		Map<String, Schema.SObjectField> parentFields = getSObjectTypeFields(parentObjectType);
+		SObjectType childObjectType = getSObjectType(lookup.ChildObject);
+		if(childObjectType==null)
+			throw RollupServiceException.invalidRollup(lookup);
+		Map<String, Schema.SObjectField> childFields = getSObjectTypeFields(childObjectType);
+		SObjectField fieldToAggregate = childFields.get(lookup.FieldToAggregate);
+		SObjectField relationshipField = childFields.get(lookup.RelationshipField);
+		SObjectField aggregateResultField = parentFields.get(lookup.AggregateResultField);
+		if(fieldToAggregate==null || relationshipField==null || aggregateResultField==null)
+			throw RollupServiceException.invalidRollup(lookup);
+
+		// Summary field definition used by LREngine
+		LREngine.RollupSummaryField rsf = 
+            new LREngine.RollupSummaryField(
+				aggregateResultField.getDescribe(),
+				fieldToAggregate.getDescribe(),
+				RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(lookup.AggregateOperation),
+            	lookup.ConcatenateDelimiter,
+            	Integer.valueOf(lookup.RowLimit));
+
+		LookupRollupSummaryWrapper wrapper = new LookupRollupSummaryWrapper();
+		wrapper.Lookup = lookup;
+		wrapper.ParentObjectType = parentObjectType;
+		wrapper.ChildObjectType = childObjectType;
+		wrapper.FieldToAggregate = fieldToAggregate;
+		wrapper.RelationshipField = relationshipField;
+		wrapper.AggregateResultField = aggregateResultField;
+		wrapper.AggregateAllRows = lookup.AggregateAllRows;
+		wrapper.SharingMode =
+			lookup.CalculationSharingMode == null || lookup.CalculationSharingMode == 'User' ?
+				LREngine.SharingMode.User : LREngine.SharingMode.System_x;
+		// if order by is not specified, orderby will be null else it will be FieldToOrderBy__c
+		wrapper.OrderByRequired = !String.isBlank(lookup.FieldToOrderBy);
+		wrapper.OrderByClause =  wrapper.OrderByRequired ? lookup.FieldToOrderBy : null;
+		wrapper.RollupSummaryField = rsf;
+
+		return wrapper;
+	}
+
+	private static String getContextKey(LookupRollupSummaryWrapper lookupWrapper)
+	{
+		// Context Key Based On: ParentObject__c, RelationshipField__c, RelationShipCriteria__c, rsfType, SharingMode, AggergateAllRows
+		// Note we do not include OrderBy here because orderby map is contained within the map of contextKeys
+		String rsfType = lookupWrapper.RollupSummaryField.isAggregateBasedRollup() ? 'aggregate' : 'query';
+		// Lowering case on Describable fields is only required for Legacy purposes since RollupSummary records
+		// will be updated with describe names on insert/update moving forward.
+		// Ideally this would not be needed to save CPU cycles but including to ensure context is properly re-used when possible for
+		// rollups that have not been updated/inserted after the insert/update enhancement is applied
+		// Unable to lower RelationShipCriteria__c because of field value case-(in)sensitivity configuration
+		return  (lookupWrapper.Lookup.ParentObject.toLowerCase() + '#' + 
+			     lookupWrapper.Lookup.RelationshipField.toLowerCase() + '#' + 
+			     lookupWrapper.Lookup.RelationShipCriteria + '#' + 
+			     rsfType + '#' + 
+			     lookupWrapper.SharingMode + '#' +
+			     lookupWrapper.AggregateAllRows);
 	}
 	
 	/**

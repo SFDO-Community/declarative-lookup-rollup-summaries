@@ -1,0 +1,178 @@
+<apex:page controller="ManageLookupRollupSummariesController" tabStyle="ManageLookupRollupSummaries__tab" showHeader="true" sidebar="true" action="{!init}">
+	<apex:form >
+		<apex:sectionHeader title="Manage Lookup Rollup Summaries - Custom Metadata Pilot"/>
+		<apex:pageMessage rendered="{!$Setup.DeclarativeLookupRollupSummaries__c.HideManageLookupRollupSummariesInfo__c==false}" strength="1" escape="false" severity="Info" summary="Where is the <b>Lookup Rollup Summaries</b> Tab? If you have used the tool before, <u>firstly don't worry the old Tab is still present</u>, see <b>All Tabs</b> or the link below if you still prefer to utilise classic rollups for the moment. However this new Tab is the future of the tool, as it supports the ability to store rollups as <b>Custom Metadata</b>. Allowing your rollups to be added to <b>Change Sets</b> and <b>Packages</b> and are also now automatically cloned during a <b>Sandbox</b> refresh. <p>Note that you can also change configuration entered here under the <b>Setup</b> menu <b>Custom Metadata Types</b> page, however it is recommended you <u>utilise this page as it provides added validation and features</u>. For <u>limitations of this Pilot feature</u> see the tools <b>README</b> on GitHub.</p>"><a href="{!URLFOR($Action.LookupRollupSummary__c.Tab,$ObjectType.LookupRollupSummary__c)}">Classic Lookup Rollup Summaries</a>&nbsp;<apex:commandLink action="{!hideMessage}" value="Hide this message"/></apex:pageMessage>
+		<apex:pageMessages />
+		<apex:outputPanel rendered="{!MetadataConnectionError==true}">
+			<apex:outputLink value="{!$Page.welcometab}">Return to the Welcome page</apex:outputLink>
+		</apex:outputPanel>
+		<apex:outputPanel rendered="{!MetadataConnectionError==false}">				
+			<apex:outputLabel value="Select Lookup Rollup Summary:" />&nbsp;
+			<apex:selectList value="{!SelectedLookup}" size="1">
+				<apex:actionSupport event="onchange" action="{!load}" reRender="rollupDetailView"/>
+				<apex:selectOptions value="{!Lookups}"/>
+			</apex:selectList>
+			<p/>
+			<apex:pageBlock mode="edit" id="rollupDetailView">
+				<apex:pageBlockButtons >
+					<apex:commandButton value="Save" action="{!save}"/>
+					<apex:commandButton value="Delete" action="{!deleteX}" rendered="{!LookupRollupSummary.Id!=null}"/>
+					<apex:commandButton value="Manage Child Trigger" action="{!URLFOR($Page.managetriggermdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
+					<apex:commandButton value="Calculate" action="{!URLFOR($Page.rollupcalculatemdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
+					<apex:commandButton value="Schedule Calculate" action="{!URLFOR($Page.rollupscheduledcalculatemdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
+				</apex:pageBlockButtons>
+				<apex:pageBlockSection title="Information" columns="2">
+					<apex:pageBlockSectionItem >
+						<apex:outputLabel value="Lookup Rollup Summary Name"/>
+						<apex:outputPanel >
+							<div class="requiredInput">
+								<div class="requiredBlock"/>
+								<apex:inputText size="32" value="{!LookupRollupSummary.Label}"/>			
+							</div>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem >
+						<apex:outputLabel value="Lookup Rollup Summary Unique Name"/>
+						<apex:outputPanel >
+							<div class="requiredInput">
+								<div class="requiredBlock"/>
+								<apex:inputText size="32" value="{!LookupRollupSummary.DeveloperName}" disabled="{!LookupRollupSummary.Id!=null}"/>					
+							</div>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+				</apex:pageBlockSection>		
+				<apex:pageBlockSection title="Lookup Relationship" columns="2">
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.ParentObject__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.ParentObject__c.Label}"/>	
+						<apex:outputPanel >
+							<div class="requiredInput">
+								<div class="requiredBlock"/>					
+								<apex:inputText value="{!LookupRollupSummary.ParentObject__c}"/>
+							</div>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipField__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipField__c.Label}"/>				
+						<apex:outputPanel >
+							<div class="requiredInput">
+								<div class="requiredBlock"/>					
+								<apex:inputText value="{!LookupRollupSummary.RelationshipField__c}"/>	
+							</div>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.ChildObject__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.ChildObject__c.Label}"/>	
+						<apex:outputPanel >
+							<div class="requiredInput">
+								<div class="requiredBlock"/>					
+								<apex:inputText value="{!LookupRollupSummary.ChildObject__c}"/>				
+							</div>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteria__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteria__c.Label}"/>
+						<apex:inputText size="60" value="{!LookupRollupSummary.RelationshipCriteria__c}"/>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem />
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteriaFields__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteriaFields__c.Label}"/>
+						<apex:inputTextArea cols="40" rows="3" value="{!LookupRollupSummary.RelationshipCriteriaFields__c}"/>		
+					</apex:pageBlockSectionItem>
+				</apex:pageBlockSection>		
+				<apex:pageBlockSection title="Rollup Details" columns="2">
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.FieldToAggregate__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.FieldToAggregate__c.Label}"/>
+						<apex:outputPanel >
+							<div class="requiredInput">
+								<div class="requiredBlock"/>										
+								<apex:inputText value="{!LookupRollupSummary.FieldToAggregate__c}"/>					
+							</div>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.Active__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.Active__c.Label}"/>				
+						<apex:inputCheckbox value="{!LookupRollupSummary.Active__c}"/>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.FieldToOrderBy__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.FieldToOrderBy__c.Label}"/>				
+						<apex:inputText value="{!LookupRollupSummary.FieldToOrderBy__c}"/>				
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.CalculationMode__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.CalculationMode__c.Label}"/>				
+						<apex:outputPanel >
+							<div class="requiredInput">
+								<div class="requiredBlock"/>				
+								<apex:selectList value="{!LookupRollupSummary.CalculationMode__c}" size="1">
+									<apex:selectOptions value="{!CalculationModes}"/>
+								</apex:selectList> 							
+							</div>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateOperation__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateOperation__c.Label}"/>
+						<apex:outputPanel >
+							<div class="requiredInput">
+								<div class="requiredBlock"/>	
+								<apex:selectList value="{!LookupRollupSummary.AggregateOperation__c}" size="1">
+									<apex:selectOptions value="{!AggregateOperations}"/>
+								</apex:selectList> 							
+							</div>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.CalculationSharingMode__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.CalculationSharingMode__c.Label}"/>
+						<apex:outputPanel >
+							<div class="requiredInput">
+								<div class="requiredBlock"/>
+								<apex:selectList value="{!LookupRollupSummary.CalculationSharingMode__c}" size="1">
+									<apex:selectOptions value="{!CalculationSharingModes}"/>
+								</apex:selectList> 
+							</div>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateResultField__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateResultField__c.Label}"/>			
+						<apex:outputPanel >
+							<div class="requiredInput">
+								<div class="requiredBlock"/>		
+								<apex:inputText value="{!LookupRollupSummary.AggregateResultField__c}"/>
+							</div>
+						</apex:outputPanel>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem />
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateAllRows__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateAllRows__c.Label}"/>			
+						<apex:inputCheckbox value="{!LookupRollupSummary.AggregateAllRows__c}"/>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem />
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RowLimit__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RowLimit__c.Label}"/>			
+						<apex:inputText value="{!LookupRollupSummary.RowLimit__c}"/>
+					</apex:pageBlockSectionItem>
+				</apex:pageBlockSection>		
+				<apex:pageBlockSection title="Text Lookups" columns="2">
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.ConcatenateDelimiter__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.ConcatenateDelimiter__c.Label}"/>
+						<apex:inputText value="{!LookupRollupSummary.ConcatenateDelimiter__c}"/>
+					</apex:pageBlockSectionItem>
+				</apex:pageBlockSection>		
+				<apex:pageBlockSection title="Description" columns="2">
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.Description__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.Description__c.Label}"/>
+						<apex:inputTextArea cols="80" rows="3" value="{!LookupRollupSummary.Description__c}"/>
+					</apex:pageBlockSectionItem>
+				</apex:pageBlockSection>		
+				<apex:pageBlockSection title="Advanced" columns="1">
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCode__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCode__c.Label}"/>
+						<apex:inputTextArea cols="64" rows="5" value="{!LookupRollupSummary.TestCode__c}"/>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCodeSeeAllData__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCodeSeeAllData__c.Label}"/>
+						<apex:inputCheckbox value="{!LookupRollupSummary.TestCodeSeeAllData__c}"/>
+					</apex:pageBlockSectionItem>
+				</apex:pageBlockSection>			
+			</apex:pageBlock>
+		</apex:outputPanel>
+	</apex:form>
+</apex:page>

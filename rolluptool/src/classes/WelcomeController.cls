@@ -30,10 +30,14 @@
 public with sharing class WelcomeController {
 	
 	public String Host {get;set;}
-	
+
+	public String RemoteSiteName { get { return Utilities.componentPrefix() + 'mdapi'; } }
+
 	public String MetadataResponse {get;set;}
 	
 	public Boolean MetadataConnectionWarning {get;set;}
+
+	public String MetadataApiException {get;set;}
 		
 	public PageReference checkMetadataAPIConnection()
 	{
@@ -48,6 +52,9 @@ public with sharing class WelcomeController {
 			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'A Remote Site Setting must be created in your org before you can use this tool.'));
 			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'Press the Create Remote Site Setting button to perform this step or refer to the post install step below to perform this manually.'));
 			MetadataConnectionWarning = true;
+			MetadataApiException = '';
+			if(RollupService.LastMetadataAPIConnectionException!=null)
+				MetadataApiException = RollupService.LastMetadataAPIConnectionException.getMessage();
 		}
 		
 		return null;				
@@ -58,7 +65,7 @@ public with sharing class WelcomeController {
 		// Display the response from the client side Metadata API callout
 		if(metadataResponse.length()==0)
 		{
-			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Remote Site Setting dlrs_mdapi has been created.' ));
+			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Remote Site Setting ' + RemoteSiteName + ' has been created.' ));
 			MetadataConnectionWarning = false;
 		}
 		else

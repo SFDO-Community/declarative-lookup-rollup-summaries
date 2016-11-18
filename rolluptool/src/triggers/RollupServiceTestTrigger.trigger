@@ -8,6 +8,10 @@
 trigger RollupServiceTestTrigger on Opportunity
     (before delete, before insert, before update, after delete, after insert, after undelete, after update)
 {
-	if(TestContext.OpportunityTestTriggerEnabled)
-    	RollupService.triggerHandler();
+	// Avoids the unit test triggers conflicting with manual testing in the org
+	if(Test.isRunningTest()) {		
+		if(TestContext.OpportunityTestTriggerEnabled) {			
+			RollupService.triggerHandler();
+		}
+	}
 }

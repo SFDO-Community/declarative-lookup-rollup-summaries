@@ -30,28 +30,35 @@
 public with sharing class RollupCalculateJob 
 	implements Database.Batchable<sObject>
 {
-	private Id lookupId;
+	private String lookupId;
+	private String masterWhereClause;
 	
 	public RollupCalculateJob(String lookupId)
 	{
 		this.lookupId = lookupId;
 	}
+
+	public RollupCalculateJob(String lookupId, String masterWhereClause)
+	{
+		this.lookupId = lookupId;
+		this.masterWhereClause = masterWhereClause;
+	}
 	
 	public Database.QueryLocator start(Database.BatchableContext BC) 
 	{
 		// Query all the parent records as per the lookup definition
-		return RollupService.masterRecordsAsQueryLocator(lookupId);
+		return RollupService.masterRecordsAsQueryLocator(lookupId, masterWhereClause);
 	}
 	
 	public void execute(Database.BatchableContext BC, List<sObject> masterRecords)
 	{
 		// Update the master records as per the lookup definition
-		RollupService.updateMasterRollups(new Set<Id> { lookupId }, new Map<Id, Sobject>(masterRecords).keySet());
+		RollupService.updateMasterRollups(new Set<String> { lookupId }, new Map<Id, Sobject>(masterRecords).keySet());
 	}
 	
 	public void finish(Database.BatchableContext BC) 
 	{
 		// Clear the Job Id which was preventing another calculate job running while this one was running
-		RollupService.clearCalculateJobId(new Set<Id> { lookupId }); 
+		RollupService.clearCalculateJobId(new Set<String> { lookupId }); 
 	}
 }

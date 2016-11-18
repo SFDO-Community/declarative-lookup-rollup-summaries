@@ -32,7 +32,7 @@ public class RollupServiceException extends Exception
 	/**
 	 * Generic exception when aspects of the rollup summary definition are found to be in error at runtime
 	 **/
-	public static RollupServiceException invalidRollup(LookupRollupSummary__c lookup)
+	public static RollupServiceException invalidRollup(RollupSummary lookup)
 	{ 
 		return new RollupServiceException('Lookup Rollup Summary  \'' + lookup.Name + '\' is invalid, your org configuration may have changed.');
 	}
@@ -50,7 +50,7 @@ public class RollupServiceException extends Exception
 	 **/
 	public static RollupServiceException jobAlreadyRunning(String name)
 	{
-		return new RollupServiceException('A calculate job for rollup \'' + name + '\' is already executing. If you suspect it is not aleady running try clearing the Calculate Job Id field and try again.');
+		return new RollupServiceException('A calculate job for rollup \'' + name + '\' is already executing. If you suspect it is not aleady running try clearing the applicable record from the Lookup Rollup Calculate Jobs tab and try again.');
 	}
 	
 	/**

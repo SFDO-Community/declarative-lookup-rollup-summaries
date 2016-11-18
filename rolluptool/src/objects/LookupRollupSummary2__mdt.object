@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fields>
+        <fullName>Active__c</fullName>
+        <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>For Realtime rollups can only be set when the Child Apex Trigger has been deployed.</inlineHelpText>
+        <label>Active</label>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>AggregateAllRows__c</fullName>
+        <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>SubscriberControlled</fieldManageability>
+        <inlineHelpText>Includes child records that have been archived by the system and/or placed in the recycle bin.</inlineHelpText>
+        <label>Aggregate All Rows</label>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>AggregateOperation__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>Rollup operation.</inlineHelpText>
+        <label>Aggregate Operation</label>
+        <length>32</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>AggregateResultField__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>API name of the field that will store the result of the rollup on the Parent Object, e.g. AnnualRevenue</inlineHelpText>
+        <label>Aggregate Result Field</label>
+        <length>80</length>
+        <required>true</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>CalculationMode__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>Realtime mode requires an Apex Trigger to be deployed for the Child Object. Click Manage Child Trigger button to deploy.</inlineHelpText>
+        <label>Calculation Mode</label>
+        <length>32</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>CalculationSharingMode__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>Determines if the Sharing Rules defined on the Child Object are considered when calculating the rollup. Default is User.</inlineHelpText>
+        <label>Calculation Sharing Mode</label>
+        <length>32</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ChildObject__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>API name of the Child Object, e.g. Opportunity</inlineHelpText>
+        <label>Child Object</label>
+        <length>80</length>
+        <required>true</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ConcatenateDelimiter__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>Enter the character or characters to delimit values in the Field to Aggregate when rolling up text values into the Aggregate Result Field, enter BR() for new line. Only applies when using Concatenate operation.</inlineHelpText>
+        <label>Concatenate Delimiter</label>
+        <length>32</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Description__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>SubscriberControlled</fieldManageability>
+        <label>Description</label>
+        <required>false</required>
+        <type>TextArea</type>
+    </fields>
+    <fields>
+        <fullName>FieldToAggregate__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>API name of the field on the Child Object that contains the value to rollup, e.g. Amount</inlineHelpText>
+        <label>Field to Aggregate</label>
+        <length>80</length>
+        <required>true</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>FieldToOrderBy__c</fullName>
+        <deprecated>false</deprecated>
+        <description>Examples:
+1) Amount__c
+2) Amount__c, Color__c ASC
+3) Amount__c NULLS LAST, Color__c DESC NULLS LAST</description>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>Only applicable when using the Concatenate, Concatenate Distinct, Last and First aggregate operations. Supports multiple fields (comma separated) with optional ASC/DESC and/or NULLS FIRST/LAST.</inlineHelpText>
+        <label>Field to Order By</label>
+        <length>255</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>ParentObject__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>API name of the Parent Object, e.g. Account</inlineHelpText>
+        <label>Parent Object</label>
+        <length>80</length>
+        <required>true</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>RelationshipCriteriaFields__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>If you have specified a relationship criteria, you must confirm the fields referenced by it here on separate lines, for example for criteria StageName = &apos;Won&apos; list StageName in this field. You do not need to specify the Field to Aggregate field however.</inlineHelpText>
+        <label>Relationship Criteria Fields</label>
+        <required>false</required>
+        <type>TextArea</type>
+    </fields>
+    <fields>
+        <fullName>RelationshipCriteria__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>SOQL WHERE clause applied when querying Child Object records, e.g. Amount &gt; 200</inlineHelpText>
+        <label>Relationship Criteria</label>
+        <length>255</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>RelationshipField__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>API name of the Lookup field on the Child Object relating to the Parent Object, e.g. AccountId</inlineHelpText>
+        <label>Relationship Field</label>
+        <length>80</length>
+        <required>true</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>RowLimit__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>Limits the number of rows used in the rollup. Applies only to the Last and Concatenate operators.</inlineHelpText>
+        <label>Row Limit</label>
+        <precision>5</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>TestCodeSeeAllData__c</fullName>
+        <defaultValue>false</defaultValue>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>Only use this option as a last resort to get the generated test or custom test code working. It is generally considered bad practice to make your test dependent on org data. Always try to create test data in the test code if possible.</inlineHelpText>
+        <label>Test Code See All Data</label>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>TestCode__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>This tool utilises a dynamically generated Apex Trigger and by default a generated Apex Test. Use this field if instructed by a developer to replace the generated test code. See Wiki on GitHub.</inlineHelpText>
+        <label>Test Code</label>
+        <required>false</required>
+        <type>TextArea</type>
+    </fields>
+    <label>Lookup Rollup Summary</label>
+    <pluralLabel>Lookup Rollup Summaries</pluralLabel>
+    <visibility>Public</visibility>
+</CustomObject>

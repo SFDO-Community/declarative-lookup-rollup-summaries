@@ -1,83 +1,51 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
-        <members>ApexClassesSelector</members>
-        <members>ApexTriggersSelector</members>
-        <members>AsyncApexJobsSelector</members>
-        <members>LREngine</members>
-        <members>MetadataService</members>
-        <members>MetadataServiceTest</members>
-        <members>RollupCalculateController</members>
-        <members>RollupCalculateJob</members>
-        <members>RollupController</members>
-        <members>RollupControllerTest</members>
-        <members>RollupJob</members>
-        <members>RollupJobTest</members>
-        <members>RollupService</members>
-        <members>RollupServiceException</members>
-        <members>RollupServiceTest</members>
-        <members>RollupServiceTest2</members>
-        <members>RollupServiceTest3</members>
-        <members>RollupSummaries</members>
-        <members>RollupSummariesSelector</members>
-        <members>RollupSummariesTest</members>
-        <members>RollupSummaryEnhancedController</members>
-        <members>RollupSummaryEnhancedControllerTest</members>
-        <members>RollupSummaryScheduleItemsSelector</members>
-        <members>SObjectDomain</members>
-        <members>SObjectDomainTest</members>
-        <members>SObjectSelector</members>
-        <members>SObjectSelectorTest</members>
-        <members>StringBuilder</members>
-        <members>TestContext</members>
-        <members>TestLREngine</members>
-        <members>WelcomeController</members>
-        <members>WelcomeControllerTest</members>
+        <members>*</members>
         <name>ApexClass</name>
     </types>
     <types>
-        <members>zip</members>
-        <members>zipEntry</members>
+        <members>*</members>
         <name>ApexComponent</name>
     </types>
     <types>
-        <members>managetrigger</members>
-        <members>rollupcalculate</members>
-        <members>rollupsummaryenhanced</members>
-        <members>rollupsummaryenhancednew</members>
-        <members>welcome</members>
+        <members>*</members>
         <name>ApexPage</name>
     </types>
     <types>
-        <members>RollupServiceTest2Trigger</members>
-        <members>RollupServiceTest3Trigger</members>
-        <members>RollupServiceTestTrigger</members>
-        <members>RollupSummariesTrigger</members>
+        <members>*</members>
         <name>ApexTrigger</name>
     </types>
     <types>
         <members>*</members>
-        <name>CustomApplication</name>
+        <name>StaticResource</name>
     </types>
     <types>
-        <members>*</members>
+        <members>DeclarativeLookupRollupSummaries__c</members>
+        <members>LookupChild__c</members>
+        <members>LookupParent__c</members>
+        <members>LookupRollupCalculateJob__c</members>
+        <members>LookupRollupSummary__c</members>
+        <members>LookupRollupSummaryLog__c</members>
+        <members>LookupRollupSummaryScheduleItems__c</members>
+        <members>LookupRollupSummary2__mdt</members>
         <name>CustomObject</name>
     </types>
     <types>
-        <members>Welcome</members>
-        <name>CustomPageWebLink</name>
+        <members>LookupRollupCalculateJob__c-Lookup Rollup Calculate Job Layout</members>
+        <members>LookupRollupSummary__c-Lookup Rollup Summary Layout</members>
+        <members>LookupRollupSummary2__mdt-Lookup Rollup Summary Layout</members>
+        <members>LookupRollupSummaryLog__c-Lookup Rollup Summary Log Layout</members>
+        <members>LookupRollupSummaryScheduleItems__c-Lookup Rollup Summary Queue Layout</members>
+        <name>Layout</name>
     </types>
     <types>
         <members>*</members>
         <name>CustomTab</name>
     </types>
     <types>
-        <members>LookupChild__c-Lookup Child Layout</members>
-        <members>LookupParent__c-Lookup Parent Layout</members>
-        <members>LookupRollupSummaryLog__c-Lookup Rollup Summary Log Layout</members>
-        <members>LookupRollupSummaryScheduleItems__c-Lookup Rollup Summary Queue Layout</members>
-        <members>LookupRollupSummary__c-Lookup Rollup Summary Layout</members>
-        <name>Layout</name>
+        <members>DeclarativeLookupRollupSummaries</members>
+        <name>CustomApplication</name>
     </types>
     <types>
         <members>LookupRollupSummariesFull</members>
@@ -85,8 +53,12 @@
         <name>PermissionSet</name>
     </types>
     <types>
-        <members>jszip</members>
-        <name>StaticResource</name>
+        <members>*</members>
+        <name>CustomPageWebLink</name>
     </types>
-    <version>28.0</version>
+    <types>
+        <members>CustomLabels</members>
+        <name>CustomLabels</name>
+    </types>
+    <version>37.0</version>
 </Package>

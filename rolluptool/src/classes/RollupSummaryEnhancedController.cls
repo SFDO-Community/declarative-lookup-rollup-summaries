@@ -29,7 +29,7 @@
  *
  * https://github.com/afawcett/declarative-lookup-rollup-summaries/pull/15
  **/
-public class RollupSummaryEnhancedController {
+public with sharing class RollupSummaryEnhancedController {
 	private ApexPages.StandardController controller {get; set;}
 	private LookupRollupSummary__c rus;
 	private Set<String> numeric;
@@ -155,7 +155,7 @@ public class RollupSummaryEnhancedController {
 			Set<String> childTrigger = new Set<String>();
 			childTrigger.add(rus.ChildObject__c);
 			Map<String, ApexTrigger> apexTriggers = new ApexTriggersSelector().selectByName(childTrigger);
-			String triggerName = RollupSummaries.makeTriggerName(rus);
+			String triggerName = RollupSummaries.makeTriggerName(new RollupSummary(rus));
 			foundTrigger = apexTriggers.containsKey(triggerName);
 		}
 		 
@@ -171,19 +171,27 @@ public class RollupSummaryEnhancedController {
 			if(triggerWasDeployedSuccessfully)
 			{
 				//rus.Active__c = true; //Uncomment once the trigger deploying works.
-				if(rus.Id!=null)
-					sr = Database.update(rus, false);
-				else
-					sr = Database.insert(rus, false);
+				if(rus.Id!=null) {
+				    fflib_SecurityUtils.checkObjectIsUpdateable(LookupRollupSummary__c.SObjectType);
+                    sr = Database.update(rus, false);				    
+				}
+				else {
+                    fflib_SecurityUtils.checkObjectIsInsertable(LookupRollupSummary__c.SObjectType);
+                    sr = Database.insert(rus, false);				    
+				}
 			}
 		}
 		else
 		{
 			//rus.Active__c = true; //Uncomment once the trigger deploying works.
-			if(rus.Id!=null)
-				sr = Database.update(rus, false);
-			else
-				sr = Database.insert(rus, false);
+			if(rus.Id!=null) {
+                fflib_SecurityUtils.checkObjectIsUpdateable(LookupRollupSummary__c.SObjectType);
+                sr = Database.update(rus, false);			    
+			}
+			else {
+                fflib_SecurityUtils.checkObjectIsInsertable(LookupRollupSummary__c.SObjectType);			    
+                sr = Database.insert(rus, false);			    
+			}
 		}
 		PageReference pageRef;
 		if(sr.isSuccess())

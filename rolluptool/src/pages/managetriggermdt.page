@@ -1,0 +1,88 @@
+<!--
+/**
+ * Copyright (c) 2013, Andrew Fawcett
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, 
+ *   are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, 
+ *      this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice, 
+ *      this list of conditions and the following disclaimer in the documentation 
+ *      and/or other materials provided with the distribution.
+ * - Neither the name of the Andrew Fawcett, nor the names of its contributors 
+ *      may be used to endorse or promote products derived from this software without 
+ *      specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
+ *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**/
+-->
+<apex:page standardController="LookupRollupSummary2__mdt" tabStyle="ManageLookupRollupSummaries__tab" extensions="RollupController" sidebar="false">
+	<apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip-load.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip-deflate.js')}"/>
+	<apex:includeScript value="{!URLFOR($Resource.jszip, '/jszip-inflate.js')}"/>
+	<apex:form id="form">
+	    <apex:sectionHeader title="Lookup Rollup Summary" subtitle="Manage Apex Trigger for {!RollupSummary.ChildObject}"/>
+		<apex:pageMessages escape="false" />
+		<apex:outputPanel rendered="{!MetadataConnectionError==true}">
+			<apex:outputLink value="{!$Page.welcome}?showHeader=1">Return to the Welcome page</apex:outputLink>
+		</apex:outputPanel>
+		<apex:outputPanel id="code" rendered="{!MetadataConnectionError==false}">		
+			<apex:pageBlock >
+				<apex:pageBlockSection rendered="{!ParentMergeable && NOT(Deployed) && ISNULL(AsyncResult)}">
+					<apex:pageBlockSectionItem >
+						<apex:outputLabel value="Deploy code to support record merging?"/>
+						<apex:inputCheckbox value="{!ParentTriggerRequired}">
+							<apex:actionSupport event="onclick" reRender="code"/>
+						</apex:inputCheckbox>
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem >
+					</apex:pageBlockSectionItem>
+				</apex:pageBlockSection>
+				<apex:pageBlockSection rendered="{!ParentTriggerRequired}" >
+				<pre>{!ParentTriggerCode}</pre>
+				</apex:pageBlockSection>
+				<apex:pageBlockSection rendered="{!ParentTriggerRequired}" >
+				<pre>{!ParentTriggerTestCode}</pre>
+				</apex:pageBlockSection>
+				<apex:pageBlockSection >
+				<pre>{!TriggerCode}</pre>
+				</apex:pageBlockSection>
+				<apex:pageBlockSection >
+				<pre>{!TriggerTestCode}</pre>
+				</apex:pageBlockSection>
+			</apex:pageBlock>
+			<apex:actionPoller action="{!checkAsyncRequest}" interval="5" rerender="form" rendered="{!NOT(ISNULL(AsyncResult))}"/>
+			<apex:actionFunction name="deployZip" action="{!deployZip}" rendered="{!ISNULL(AsyncResult)}" rerender="form">
+				<apex:param name="data" assignTo="{!ZipData}" value=""/>
+			</apex:actionFunction>
+			<c:zip name="generateZip" oncomplete="deployZip(data);" rendered="{!ISNULL(AsyncResult)}">
+				<c:zipEntry path="package.xml" data="{!PackageXml}"/>
+				<c:zipEntry path="destructiveChanges.xml" data="{!DestructiveChangesXml}" rendered="{!Deployed}"/>
+				<!-- Child Trigger and Test Code -->
+				<c:zipEntry path="classes/{!RollupTriggerTestName}.cls-meta.xml" data="{!TriggerTestCodeMetadata}" rendered="{!NOT(Deployed)}"/>
+				<c:zipEntry path="classes/{!RollupTriggerTestName}.cls" data="{!TriggerTestCode}" rendered="{!NOT(Deployed)}"/>
+				<c:zipEntry path="triggers/{!RollupTriggerName}.trigger-meta.xml" data="{!TriggerCodeMetadata}" rendered="{!NOT(Deployed)}"/>
+				<c:zipEntry path="triggers/{!RollupTriggerName}.trigger" data="{!TriggerCode}" rendered="{!NOT(Deployed)}"/>
+				<!-- Parent Trigger and Test Code -->
+				<c:zipEntry path="classes/{!RollupParentTriggerTestName}.cls-meta.xml" data="{!ParentTriggerTestCodeMetadata}" rendered="{!NOT(Deployed) && ParentTriggerRequired}"/>
+				<c:zipEntry path="classes/{!RollupParentTriggerTestName}.cls" data="{!ParentTriggerTestCode}" rendered="{!NOT(Deployed) && ParentTriggerRequired}"/>
+				<c:zipEntry path="triggers/{!RollupParentTriggerName}.trigger-meta.xml" data="{!ParentTriggerCodeMetadata}" rendered="{!NOT(Deployed) && ParentTriggerRequired}"/>
+				<c:zipEntry path="triggers/{!RollupParentTriggerName}.trigger" data="{!ParentTriggerCode}" rendered="{!NOT(Deployed) && ParentTriggerRequired}"/>
+			</c:zip>
+			<apex:outputPanel rendered="{!ISNULL(AsyncResult)}">
+				<input type="button" onclick="generateZip();" value="{!IF(Deployed, 'Remove', 'Deploy')}" class="btn"/>
+				<apex:commandButton value="Cancel" action="{!URLFOR($Page.managelookuprollupsummaries, null, ['id'=Id])}"/>
+			</apex:outputPanel>
+		</apex:outputPanel>
+ 	</apex:form>
+</apex:page>
