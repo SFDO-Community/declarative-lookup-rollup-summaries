@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2014, FinancialForce.com, inc
  * All rights reserved.
  *
@@ -23,62 +23,48 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/**
- * @nodoc
- */
-@isTest
-public with sharing class fflib_MyList implements IList
+public with sharing class fflib_MethodArgValues
 {
-	public interface IList
+	public List<Object> argValues;
+	
+	/**
+	 * Wrapper object which encapsulates the argument values
+	 * supplied during a given method call.
+	 * @param argValues The
+	 * @return fflib_MethodArgValues The method argument wrapper object
+	 */
+	public fflib_MethodArgValues(List<Object> argValues)
 	{
-		void add(String value);
-		void add(String value1, String value2, String value3, String value4);
-		void addMore(String value);
-		void add(String[] value); // Test methods with the same name and number of params
-		String get(Integer index);
-		String get2(Integer index, String value); // This is just a method signature to allow me to test stubbing a method with multiple arguments
-		void clear();
-		Boolean isEmpty();
-		void set(Integer index, Object value);
+		this.argValues = argValues;
 	}
-
-	public void add(String[] value)
+	
+	/**
+	 * Standard equals override.
+	 * @param other The object whose equality we are verifying
+	 * @return Boolean True if meaningfully equivalent, false otherwise.
+	 */
+	public Boolean equals(Object other)
 	{
+		if (this === other)
+		{
+			return true;
+		}
+		
+		fflib_MethodArgValues that = other instanceof fflib_MethodArgValues ? (fflib_MethodArgValues)other : null;
+		return that != null && this.argValues == that.argValues;
 	}
-
-	public void add(String value)
+	
+	/**
+	 * Standard hashCode override.
+	 * @return Integer The generated hashCode
+	 */
+	public Integer hashCode()
 	{
-	}
-
-	public void add(String value1, String value2, String value3, String value4)
-	{
-	}
-
-	public void addMore(String value)
-	{
-	}
-
-	public String get(Integer index)
-	{
-		return 'fred';
-	}
-
-	public void clear()
-	{
-	}
-
-	public Boolean isEmpty()
-	{
-		return true;
-	}
-
-	public void set(Integer index, Object value)
-	{
-	}
-
-	public String get2(Integer index, String value)
-	{
-		return 'mary';
+		Integer prime = 31;
+		Integer result = 1;
+		
+		result = prime * result + ((argValues == null) ? 0 : argValues.hashCode());
+		
+		return result;
 	}
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2014, FinancialForce.com, inc
  * All rights reserved.
  *
@@ -23,112 +23,98 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+/**
+ * @group Core
+ */
 public with sharing class fflib_MethodCountRecorder
 {
 	public Boolean Verifying { get; set; }
 	public Integer VerifyCount { get; set; }
 
-	/**
+	/*
 	 * Map of method counts by type name.
 	 *
-	 * Key: typeName
-	 * Object: map of method calls by methodName.
+	 * Key: qualifiedMethod
+	 * Object: map of method calls by method.
 	 *
-	 * Key: methodName
+	 * Key: methodArgValues
 	 * Object: map of count by method call argument.
 	 */
-	private Map<String, Map<String, Map<Object, Integer>>> methodCountsByTypeName;
+	private Map<fflib_QualifiedMethod, Map<fflib_MethodArgValues, Integer>> methodCountsByTypeName;
 
 	public fflib_MethodCountRecorder()
 	{
-		methodCountsByTypeName = new Map<String, Map<String, Map<Object, Integer>>>();
+		methodCountsByTypeName = new Map<fflib_QualifiedMethod, Map<fflib_MethodArgValues, Integer>>();
 	}
 
 	/**
-	 * Verfiy a method was called on a mock object.
-	 * @param mockInstance The mock object instance.
-	 * @param methodName The method you expect to have been called.
+	 * Verify a method was called on a mock object.
+	 * @param qm The method you expect to have been called.
 	 * @param methodArg The argument you expect to have been passed to the method being verified.
 	 */
-	public void verifyMethodCall(Object mockInstance, String methodName, Object methodArg)
+	public void verifyMethodCall(fflib_QualifiedMethod qm, fflib_MethodArgValues methodArg)
 	{
-		String typeName = fflib_ApexMocks.extractTypeName(mockInstance);
-		System.assertEquals(VerifyCount, getMethodCount(mockInstance, methodName, methodArg), 'Wanted but not invoked: ' + typeName + '.' + methodName + '.');
+		System.assertEquals(VerifyCount, getMethodCount(qm, methodArg), 'Wanted but not invoked: ' + qm + '.');
 		Verifying = false;
 	}
 
 	/**
 	 * Record a method was called on a mock object.
-	 * @param mockInstance The mock object instance.
-	 * @param methodName The method to be recorded.
+	 * @param qm The method to be recorded.
 	 * @param methodArg The method argument to be recorded.
 	 */
-	public void recordMethod(Object mockInstance, String methodName, Object methodArg)
+	public void recordMethod(fflib_QualifiedMethod qm, fflib_MethodArgValues methodArg)
 	{
-		String typeName = fflib_ApexMocks.extractTypeName(mockInstance);
-		Map<String, Map<Object, Integer>> methodCountsForType = methodCountsByTypeName.get(typeName);
-
-		if (methodCountsForType == null)
+		Map<fflib_MethodArgValues, Integer> methodCountByArgs = methodCountsByTypeName.get(qm);
+		if (methodCountByArgs == null)
 		{
-			recordInitialMethodCall(typeName, methodName, methodArg);
+			methodCountByArgs = new Map<fflib_MethodArgValues, Integer>();
+			methodCountsByTypeName.put(qm, methodCountByArgs);
 		}
-		else
+
+		Integer currentCount = methodCountByArgs.get(methodArg);
+		Integer newCount = currentCount == null ? 1 : ++currentCount;
+
+		methodCountByArgs.put(methodArg, newCount);
+	}
+
+	private Integer getMethodCount(fflib_QualifiedMethod qm, fflib_MethodArgValues methodArg)
+	{
+		List<fflib_IMatcher> matchers = fflib_Match.Matching ? fflib_Match.getAndClearMatchers(methodArg.argValues.size()) : null;
+		Integer retval = 0;
+		Map<fflib_MethodArgValues, Integer> methodCountByArgs = methodCountsByTypeName.get(qm);
+		if (methodCountByArgs != null)
 		{
-			Map<Object, Integer> methodCountsForArg = methodCountsForType.get(methodName);
-			Integer count;
-
-			if (methodCountsForArg == null)
+			if (matchers != null)
 			{
-				count = null;
-			}
-			else
-			{
-				count = methodCountsForArg.get(methodArg);
-			}
-
-			if (count == null)
-			{
-				if (methodCountsForType.get(methodName) == null)
+				for (fflib_MethodArgValues args : methodCountByArgs.keySet())
 				{
-					methodCountsForType.put(methodName, new Map<Object, Integer>());
+					if (fflib_Match.matchesAllArgs(args, matchers))
+					{
+						capture(matchers);
+
+						retval += methodCountByArgs.get(args);
+					}
 				}
-
-				methodCountsByTypeName.get(typeName).get(methodName).put(methodArg, 1);
 			}
-			else
+			else if (methodCountByArgs.get(methodArg) != null)
 			{
-				methodCountsForType.get(methodName).put(methodArg, count + 1);
+				return methodCountByArgs.get(methodArg);
 			}
 		}
+
+		return retval;
 	}
 
-	private void recordInitialMethodCall(String typeName, String methodName, Object methodArg)
+	private void capture(List<fflib_IMatcher> matchers)
 	{
-		methodCountsByTypeName.put(typeName, new Map<String, Map<Object, Integer>>());
-		methodCountsByTypeName.get(typeName).put(methodName, new Map<Object, Integer>());
-		methodCountsByTypeName.get(typeName).get(methodName).put(methodArg, 1);
-	}
-
-	private Integer getMethodCount(Object mockInstance, String methodName, Object methodArg)
-	{
-		String typeName = fflib_ApexMocks.extractTypeName(mockInstance);
-		Map<String, Map<Object, Integer>> methodCountsForType = methodCountsByTypeName.get(typeName);
-
-		if (methodCountsForType == null)
+		for(fflib_IMatcher matcher : matchers)
 		{
-			return 0;
-		}
-		else
-		{
-			Map<Object, Integer> methodCountsForArg = methodCountsForType.get(methodName);
-
-			if (methodCountsForArg == null)
+			if( matcher instanceof fflib_ArgumentCaptor.AnyObject )
 			{
-				return 0;
+				((fflib_ArgumentCaptor.AnyObject)matcher).storeArgument();
 			}
-
-			Integer methodCounts = methodCountsForArg.get(methodArg);
-			return methodCounts == null ? 0 : methodCounts;
 		}
 	}
 }

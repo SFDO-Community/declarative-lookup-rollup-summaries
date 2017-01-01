@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2014, FinancialForce.com, inc
  * All rights reserved.
  *
@@ -23,62 +23,61 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/**
- * @nodoc
- */
-@isTest
-public with sharing class fflib_MyList implements IList
+public with sharing class fflib_QualifiedMethod
 {
-	public interface IList
+	private String typeName;
+	private String methodName;
+	private List<Type> methodArgTypes;
+	
+	public fflib_QualifiedMethod(String typeName, String methodName, List<Type> methodArgTypes)
 	{
-		void add(String value);
-		void add(String value1, String value2, String value3, String value4);
-		void addMore(String value);
-		void add(String[] value); // Test methods with the same name and number of params
-		String get(Integer index);
-		String get2(Integer index, String value); // This is just a method signature to allow me to test stubbing a method with multiple arguments
-		void clear();
-		Boolean isEmpty();
-		void set(Integer index, Object value);
+		this.typeName = typeName;
+		this.methodName = methodName;
+		this.methodArgTypes = methodArgTypes;	
 	}
-
-	public void add(String[] value)
+	
+	/**
+	 * Standard equals override.
+	 * @param other The object whose equality we are verifying
+	 * @return Boolean True if meaningfully equivalent, false otherwise.
+	 */
+	public Boolean equals(Object other)
 	{
+		if (this === other)
+		{
+			return true;
+		}
+		
+		fflib_QualifiedMethod that = other instanceof fflib_QualifiedMethod ? (fflib_QualifiedMethod)other : null;
+		
+		return that != null
+			&& this.typeName == that.typeName
+			&& this.methodName == that.methodName
+			&& this.methodArgTypes == that.methodArgTypes;
 	}
-
-	public void add(String value)
+	
+	/**
+	 * Standard hashCode override.
+	 * @return Integer The generated hashCode
+	 */
+	public Integer hashCode()
 	{
+		Integer prime = 31;
+		Integer result = 1;
+		
+		result = prime * result + ((methodArgTypes == null) ? 0 : methodArgTypes.hashCode());
+		result = prime * result + ((methodName == null) ? 0 : methodName.hashCode());
+		result = prime * result + ((typeName == null) ? 0 : typeName.hashCode());
+		
+		return result;
 	}
-
-	public void add(String value1, String value2, String value3, String value4)
+	
+	/**
+	 * Standard toString override.
+	 * @return String The human friendly description of the method.
+	 */
+	public override String toString()
 	{
-	}
-
-	public void addMore(String value)
-	{
-	}
-
-	public String get(Integer index)
-	{
-		return 'fred';
-	}
-
-	public void clear()
-	{
-	}
-
-	public Boolean isEmpty()
-	{
-		return true;
-	}
-
-	public void set(Integer index, Object value)
-	{
-	}
-
-	public String get2(Integer index, String value)
-	{
-		return 'mary';
+		return typeName + '.' + methodName + methodArgTypes;
 	}
 }

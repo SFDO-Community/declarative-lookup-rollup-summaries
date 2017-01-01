@@ -30,49 +30,58 @@ public with sharing class fflib_MethodReturnValueRecorder
 	public Exception DoThrowWhenException { get; set; }
 
 	/**
-	 * Map of method return values by type name.
+	 * Map of matchers by method.
 	 *
-	 * Key: typeName
-	 * Object: map of method return values by methodName.
-	 *
-	 * Key: methodName
-	 * Object: map of MethodReturnVakue by method call argument.
+	 * Key: qualifiedMethod
+	 * Object: map of method return values by method.
 	 */
-	private Map<String, Map<String, Map<Object, fflib_MethodReturnValue>>> methodReturnValuesByTypeName;
+	
+	private Map<fflib_QualifiedMethod, List<fflib_MatchersReturnValue>> matcherReturnValuesByMethod;
 
 	public fflib_MethodReturnValue MethodReturnValue { get; private set; }
 
 	public fflib_MethodReturnValueRecorder()
 	{
-		methodReturnValuesByTypeName = new Map<String, Map<String, Map<Object, fflib_MethodReturnValue>>>();
+		matcherReturnValuesByMethod = new Map<fflib_QualifiedMethod, List<fflib_MatchersReturnValue>>();
+		
 		MethodReturnValue = null;
 	}
 
 	/**
 	 * Prepare a stubbed method return value.
 	 * @param mockInstance The mock object instance.
-	 * @param methodName The method for which to prepare a return value.
+	 * @param qm The method for which to prepare a return value.
 	 * @param methodArg The method argument for which to prepare a return value.
 	 */
-	public fflib_MethodReturnValue prepareMethodReturnValue(Object mockInstance, String methodName, Object methodArg)
+	public fflib_MethodReturnValue prepareMethodReturnValue(fflib_QualifiedMethod qm, fflib_MethodArgValues methodArg)
 	{
-		String typeName = fflib_ApexMocks.extractTypeName(mockInstance);
-
-		if (methodReturnValuesByTypeName.get(typeName) == null)
-		{
-			methodReturnValuesByTypeName.put(typeName, new Map<String, Map<Object, fflib_MethodReturnValue>>());
-		}
-
-		Map<String, Map<Object, fflib_MethodReturnValue>> methodReturnValues = methodReturnValuesByTypeName.get(typeName);
-
 		MethodReturnValue = new fflib_MethodReturnValue();
 
-		if (methodReturnValues.get(methodName) == null)
+		List<fflib_MatchersReturnValue> matcherReturnValues = matcherReturnValuesByMethod.get(qm);
+		if (matcherReturnValues == null)
 		{
-			methodReturnValues.put(methodName, new Map<Object, fflib_MethodReturnValue>());
+			matcherReturnValues = new List<fflib_MatchersReturnValue>();
+			matcherReturnValuesByMethod.put(qm, matcherReturnValues);
 		}
-
-		methodReturnValues.get(methodName).put(methodArg, MethodReturnValue);
+		
+		//Register explicit arg values as 'equals' matchers, to preserve old behaviour
+		if (!fflib_Match.Matching)
+		{
+			for (Object arg : methodArg.argValues)
+			{
+				if (arg == null)
+				{
+					fflib_Match.isNull();
+				}
+				else
+				{
+					fflib_Match.eq(arg);
+				}
+			}
+		}
+		
+		List<fflib_IMatcher> matchers = fflib_Match.getAndClearMatchers(methodArg.argValues.size());
+		matcherReturnValues.add(new fflib_MatchersReturnValue(matchers, MethodReturnValue));
 
 		return MethodReturnValue;
 	}
@@ -80,17 +89,23 @@ public with sharing class fflib_MethodReturnValueRecorder
 	/**
 	 * Get the method return value for the given method call.
 	 * @param mockInstance The mock object instance.
-	 * @param methodName The method for which to prepare a return value.
+	 * @param qm The method for which to prepare a return value.
 	 * @param methodArg The method argument for which to prepare a return value.
 	 * @return The MethodReturnValue instance.
 	 */
-	public fflib_MethodReturnValue getMethodReturnValue(Object mockInstance, String methodName, Object methodArg)
+	public fflib_MethodReturnValue getMethodReturnValue(fflib_QualifiedMethod qm, fflib_MethodArgValues methodArg)
 	{
-		String typeName = fflib_ApexMocks.extractTypeName(mockInstance);
-
-		if (methodReturnValuesByTypeName.get(typeName) != null && methodReturnValuesByTypeName.get(typeName).get(methodName) != null)
+		List<fflib_MatchersReturnValue> matchersForMethods = matcherReturnValuesByMethod.get(qm);
+		if (matchersForMethods != null)
 		{
-			return methodReturnValuesByTypeName.get(typeName).get(methodName).get(methodArg);
+			for (Integer i = matchersForMethods.size() - 1; i >= 0; i--)
+			{
+				fflib_MatchersReturnValue matchersReturnValue = (fflib_MatchersReturnValue)matchersForMethods.get(i);
+				if (fflib_Match.matchesAllArgs(methodArg, matchersReturnValue.matchers))
+				{
+					return matchersReturnValue.returnValue;
+				}
+			}
 		}
 
 		return null;

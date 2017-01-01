@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2014, FinancialForce.com, inc
  * All rights reserved.
  *
@@ -23,62 +23,14 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/**
- * @nodoc
- */
-@isTest
-public with sharing class fflib_MyList implements IList
+public interface fflib_IMatcher
 {
-	public interface IList
-	{
-		void add(String value);
-		void add(String value1, String value2, String value3, String value4);
-		void addMore(String value);
-		void add(String[] value); // Test methods with the same name and number of params
-		String get(Integer index);
-		String get2(Integer index, String value); // This is just a method signature to allow me to test stubbing a method with multiple arguments
-		void clear();
-		Boolean isEmpty();
-		void set(Integer index, Object value);
-	}
-
-	public void add(String[] value)
-	{
-	}
-
-	public void add(String value)
-	{
-	}
-
-	public void add(String value1, String value2, String value3, String value4)
-	{
-	}
-
-	public void addMore(String value)
-	{
-	}
-
-	public String get(Integer index)
-	{
-		return 'fred';
-	}
-
-	public void clear()
-	{
-	}
-
-	public Boolean isEmpty()
-	{
-		return true;
-	}
-
-	public void set(Integer index, Object value)
-	{
-	}
-
-	public String get2(Integer index, String value)
-	{
-		return 'mary';
-	}
+	/**
+	 * Whether or not the supplied argument is a match.
+	 * Any supplementary information (e.g. boundary conditions, objects to match to etc)
+	 * should be cached by the matcher constructor.
+	 * @param arg The argument value supplied to the method
+	 * @return Boolean True if the argument value is a match, false otherwise.
+	 */
+	Boolean matches(Object arg);
 }
