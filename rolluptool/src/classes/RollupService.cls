@@ -626,7 +626,8 @@ global with sharing class RollupService
 	 *             2) if in existingRecords and not in newRecords (delete)
 	 *             3) if in existingRecords and newRecords and rollup FieldToAggregate__c has changed (update)
 	 *
-	 **/	 
+	 **/
+	@TestVisible	 
 	private static void handleRollups(Map<Id, SObject> existingRecords, Map<Id, SObject> newRecords, Schema.SObjectType sObjectType, List<RollupSummaries.CalculationMode> calculationModes)
 	{
 		// make sure we have Maps to avoid conditional statements in loops below

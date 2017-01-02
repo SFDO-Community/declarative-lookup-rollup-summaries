@@ -27,6 +27,48 @@
 @IsTest
 private class RollupServiceTest6 {
 
+    /**
+     * See issue comments for more information https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/375
+     **/
+    @IsTest
+    private static void testParentIdsVaryOnlyByCaseTolerated() {
+
+        // Between Task and Account
+        LookupRollupSummary__c rollupSummaryAccount = new LookupRollupSummary__c();
+        rollupSummaryAccount.Name = 'Test Rollup';
+        rollupSummaryAccount.ParentObject__c = 'Account';
+        rollupSummaryAccount.ChildObject__c = 'Task';
+        rollupSummaryAccount.RelationShipField__c = 'WhatId';
+        rollupSummaryAccount.FieldToAggregate__c = 'Id';
+        rollupSummaryAccount.AggregateOperation__c = RollupSummaries.AggregateOperation.Count.name();
+        rollupSummaryAccount.AggregateResultField__c = 'AnnualRevenue';
+        rollupSummaryAccount.Active__c = true;
+        rollupSummaryAccount.CalculationMode__c = 'Scheduled';
+        insert rollupSummaryAccount;
+        
+        // Tasks
+        Id accountAId = '001b0000008RmID'; // Safe since the key prefix for Account is the same accross all orgs
+        Id taskAId = fflib_IDGenerator.generate(Task.SObjectType);
+        Task taskA = new Task(WhatId = accountAId);
+        Id accountBId = '001b0000008rmID'; // Safe since the key prefix for Account is the same accross all orgs
+        Id taskBId = fflib_IDGenerator.generate(Task.SObjectType);
+        Task taskB = new Task(WhatId = accountBId);
+        
+        // Given               
+        Map<Id, SObject> existingRecords = new Map<Id, SObject>(); // Insert only test is fine for this test
+        Map<Id, SObject> newRecords = new Map<Id, SObject> { taskAId => taskA, taskBId => taskB };
+        Schema.SObjectType sObjectType = Task.SObjectType;
+        List<RollupSummaries.CalculationMode> calculationModes = 
+            new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Scheduled }; 
+        
+        // When 
+        RollupService.handleRollups(existingRecords, newRecords, sObjectType, calculationModes);        
+        
+        // Then
+        // System.assertEquals(2, [select Id, ParentId__c from LookupRollupSummaryScheduleItems__c].size());
+        System.debug([select Id, ParentId__c from LookupRollupSummaryScheduleItems__c]); 
+    }
+    
 	/**
 	 * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/318
 	 **/
