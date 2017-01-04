@@ -539,6 +539,56 @@ private class RollupServiceTest5 {
 						new List<Utilities.SortOrder> { Utilities.SortOrder.ASCENDING, Utilities.SortOrder.DESCENDING },
 						new List<Boolean> { true, false});
 	}
+	
+	/**
+	 * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/379
+	 **/
+    @IsTest
+    private static void testCheckboxRollupWithNoChildren() {
+
+        // Lookup between Task and Opportunity
+        LookupRollupSummary__c rollupSummaryOpp = new LookupRollupSummary__c();
+        rollupSummaryOpp.Name = 'Test Rollup';
+        rollupSummaryOpp.ParentObject__c = 'Lead';
+        rollupSummaryOpp.ChildObject__c = 'Task';
+        rollupSummaryOpp.RelationShipField__c = 'WhoId';
+        rollupSummaryOpp.RelationShipCriteriaFields__c = 'Priority';
+        rollupSummaryOpp.FieldToAggregate__c = 'IsHighPriority';
+        rollupSummaryOpp.AggregateOperation__c = RollupSummaries.AggregateOperation.Last.name();
+        rollupSummaryOpp.AggregateResultField__c = 'HasOptedOutOfEmail';
+        rollupSummaryOpp.Active__c = true;
+        rollupSummaryOpp.CalculationMode__c = 'Realtime';
+        insert rollupSummaryOpp;
+        
+        // Setup parent test records
+        Lead lead = new Lead();
+        lead.LastName = 'Bob';
+        lead.Company = 'Lego';
+        insert lead;
+
+        // Insert Tasks to generated scheduled job work items
+        Task task = new Task();
+        task.Subject = 'Task A';
+        task.Priority = 'High';
+        task.WhoId = lead.Id;
+        insert task;
+        
+        // Assert HasOptedOutOfEmail is True
+        System.assertEquals(true, [select HasOptedOutOfEmail from Lead where Id = :lead.Id].HasOptedOutOfEmail);
+        
+        // Update Task
+        task.Priority = 'Low';
+        update task;
+         
+        // Assert HasOptedOutOfEmail is False
+        System.assertEquals(false, [select HasOptedOutOfEmail from Lead where Id = :lead.Id].HasOptedOutOfEmail);
+        
+        // Now delete the Task (so there is no children)
+        delete task;
+         
+        // Assert HasOptedOutOfEmail is False
+        System.assertEquals(false, [select HasOptedOutOfEmail from Lead where Id = :lead.Id].HasOptedOutOfEmail);
+    }   	
 
 	@IsTest
 	private static void testParseOrderByBlankClause() {

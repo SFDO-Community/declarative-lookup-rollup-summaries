@@ -318,9 +318,15 @@ public class LREngine {
         
         // Zero rollups for unprocessed master records (those with no longer any child relationships)
         for(Id masterRecId : masterIds)
-            for (RollupSummaryField rsf : ctx.fieldsToRoll)
-                masterRecordsMap.get(masterRecId).put(rsf.master.getName(), 
-                    rsf.isMasterTypeNumber ? 0 : null);
+            for (RollupSummaryField rsf : ctx.fieldsToRoll) {
+                Object nullValue = null;
+                if(rsf.isMasterTypeNumber) {
+                    nullValue = 0;
+                } else if (rsf.isMasterTypeCheckbox) {
+                    nullValue = false;
+                }
+                masterRecordsMap.get(masterRecId).put(rsf.master.getName(), nullValue); 
+            }
         
         return masterRecordsMap.values();   
     }
@@ -403,6 +409,8 @@ public class LREngine {
         public boolean isDetailTypeText;
         public boolean isMasterTypeId;
         public boolean isDetailTypeId;
+        public boolean isMasterTypeCheckbox;
+        public boolean isDetailTypeCheckbox;        
 
         public RollupSummaryField(Schema.Describefieldresult m, 
                                          Schema.Describefieldresult d, RollupOperation op) {
@@ -440,6 +448,8 @@ public class LREngine {
             this.isDetailTypeText = isText(detail.getType());
 			this.isMasterTypeId = isIdOrReference(master.getType());
             this.isDetailTypeId = isIdOrReference(detail.getType());
+			this.isMasterTypeCheckbox = isCheckbox(master.getType());
+			this.isDetailTypeCheckbox = isCheckbox(detail.getType());            
             // validate if field is good to work on later 
             validate();
         }   
@@ -507,7 +517,11 @@ public class LREngine {
         boolean isCurrency(Schema.DisplayType dt) {
             return dt == Schema.Displaytype.Currency;
         }
-
+        
+		boolean isCheckbox (Schema.Displaytype dt) {
+		    return dt == Schema.DisplayType.Boolean;
+		}
+		
         public boolean isAggregateBasedRollup() {
             return isAggregateBasedRollup(operation);
         }
