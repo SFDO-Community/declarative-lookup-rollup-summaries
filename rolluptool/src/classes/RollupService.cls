@@ -90,12 +90,7 @@ global with sharing class RollupService
 		RollupSummary lookup = lookups[0];
 
 		// Already running?
-		try {
-			// This object has a unique constraint over LookupRollupSummaryId__c
-			insert new LookupRollupCalculateJob__c(LookupRollupSummaryId__c = lookupId);
-		} catch (Exception e) {
-			throw RollupServiceException.jobAlreadyRunning(lookup.Name);
-		}
+		checkJobAlreadyRunning(lookupId, lookup.Name);
 
 		// Already active?
 		if((lookup.Active==null || lookup.Active==false) && lookup.CalculationMode=='Realtime' )
@@ -563,6 +558,19 @@ global with sharing class RollupService
 		// Currently assumes the Id's are Custom Metadata record DeveloperName's
 		CustomMetadataService.deleteMetadata(LookupRollupSummary2__mdt.getSObjectType(), rollupSummaryIds);
 	}
+
+    /**
+     * Throws RollupServiceException if the Calculate Job is already running for the given lookup
+     **/    
+    @TestVisible
+    private static void checkJobAlreadyRunning(String lookupId, String lookupName) {
+        try {
+            // This object has a unique constraint over LookupRollupSummaryId__c
+            insert new LookupRollupCalculateJob__c(LookupRollupSummaryId__c = (String) ((Id)lookupId));
+        } catch (Exception e) {
+            throw RollupServiceException.jobAlreadyRunning(lookupName);
+        }       
+    }
 
 	/**
 	 * Validates records (currenyly only Custom Metadata based ones)

@@ -39,7 +39,18 @@ private with sharing class RollupServiceTest3
         ACCOUNT_SLA_EXPIRATION_DATE = describe.getField('SLAExpirationDate__c');
         ACCOUNT_NUMBER_OF_LOCATIONS = describe.getField('NumberOfLocations__c');
     }
-	
+
+    /**
+     * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/347
+     **/
+    private testmethod static void testCalculateJobWithRollupIdsVaryingOnlyByCase()
+    {        
+        String rollupA = LookupRollupSummary__c.SObjectType.getDescribe().getKeyPrefix() + 'A00000000000';
+        String rollupB = LookupRollupSummary__c.SObjectType.getDescribe().getKeyPrefix() + 'a00000000000';
+        RollupService.checkJobAlreadyRunning(rollupA, 'Rollup A');
+        RollupService.checkJobAlreadyRunning(rollupB, 'Rollup B');
+    }
+    	
 	private testmethod static void testCalculateJob()
 	{		
 		// Test supported?
