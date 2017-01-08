@@ -36,6 +36,7 @@ The tool has been featured in a number of blog entries as it has evolved...
 - [New Release: Declarative Rollup Summary Tool Community Powered!](http://andyinthecloud.com/2014/04/09/new-declarative-rollup-tool-release-community-powered/)
 - [New Release: Spring’14 Declarative Rollup Summary Tool](http://andyinthecloud.com/2014/02/09/new-release-spring14-declarative-rollup-summary-tool/) 
 - [New Tool : Declarative Rollups for Lookups!](http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/)
+- [Refer to this for Schedule mode usage](https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/What-you-need-to-know-about-Scheduling-Rollups)
 
 There is also an early releaes video demonstration here...
 
@@ -59,6 +60,7 @@ Usage Information and Known Issues
 - **Sandbox Testing**. While the tool can be installed and enabled directly in production, sandbox testing is still strongly recommended.
 - **Professional Edition**. Professional Edition is not supported, due to the Metadata API used by the tool not being available in this edition.
 - **INVALID_SESSION_ID: Invalid Session ID found in SessionHeader: Illegal Session faultcode=sf:INVALID_SESSION_ID faultactor=**. This can occur when your using the Manage Child Trigger button or editing rollups via the Manage Lookup Rollup Summaries tab. Solution is to disable the 'Lock sessions to the IP address from which they they originated.' setting under Session Settings under Setup. Salesforce documentation notes the following 'This option can inhibit various applications and mobile devices.'. Note this issue only applies while configuration changes are being made with the tool, especially via the Manage Lookup Rollup Summaries (see release notes v2.0). Once rollups are configured this issue does not apply during rollup calculations.
+- **Schedule Mode Setup**. This is not so much a know issue, but a known source of confusion with the current tool. If you want to use the schedule mode features please read [this first](https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/What-you-need-to-know-about-Scheduling-Rollups)
 
 Please feel free to raise feedback and issues via the **Github Issues** page [here](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues).
 
