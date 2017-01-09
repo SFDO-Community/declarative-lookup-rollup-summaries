@@ -1239,7 +1239,32 @@ global with sharing class RollupService
 				masterRecords.set( outerIndex, masterRecords.get(indexOfMin) );
 				masterRecords.set(indexOfMin, temp);
 			}
-			return Database.update(masterRecords, allOrNothing);
+			try {
+                return Database.update(masterRecords, allOrNothing);
+			} catch (DMLException e) {
+			    // Determine if the exception is due to parent record/s having been deleted
+			    Boolean throwException = true;
+			    if(allOrNothing) {
+			        Integer rowIdx = 0;
+			        while(rowIdx<e.getNumDml()) {
+                        // Keep looking for entity/record deletion for other parent records
+                        if(e.getDmlType(rowIdx) == StatusCode.ENTITY_IS_DELETED) {
+                            rowIdx++;
+                            continue;
+                        } else {
+                            break;
+                        }                                    			            
+			        }
+			        throwException = rowIdx < e.getNumDml(); 			     
+			    }
+			    if(!throwException) {
+	                // Swallow an exception describing failure to update parent rows that have been deleted
+	                // See related discussion here https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/39
+                    return new List<Database.Saveresult>();
+			    }
+                // Throw on as normal
+                throw e;        
+			}
 		}						
 	}
 	

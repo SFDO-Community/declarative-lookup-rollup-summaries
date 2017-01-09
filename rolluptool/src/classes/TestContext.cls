@@ -32,6 +32,8 @@ public class TestContext
 	
 	public static Boolean AccountTestTriggerEnabled = true;
 	
+	public static Boolean DeleteParentRecord = false;
+	
 	/**
 	 * Tests are only executed when the test trigger is present (not packaged)
 	 **/
