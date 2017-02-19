@@ -328,7 +328,12 @@ global with sharing class RollupService
 	 **/ 	
 	public static void clearCalculateJobId(Set<String> lookupIds)
 	{
-		delete [select Id from LookupRollupCalculateJob__c where LookupRollupSummaryId__c in :lookupIds];
+	    // LookupRollupSummaryId__c are 18 char Ids ensure the ones we filter on are as well 
+	    Set<String> char18Ids = new Set<String>();
+	    for(String lookupId : lookupIds) {
+	        char18Ids.add((String) ((Id)lookupId));
+	    }
+		delete [select Id from LookupRollupCalculateJob__c where LookupRollupSummaryId__c in :char18Ids];
 	}
 	
 	/**
