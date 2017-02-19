@@ -247,7 +247,12 @@ public class LREngine {
                     if(IsMultiCurrencyOrg() == true && rsf.isMasterTypeCurrency){
                         masterObj.put(rsf.master.getName(), convertCurrency((String)res.get(MASTERCURRENCYALIAS),(Decimal)aggregatedDetailVal));
                     } else {
-                        masterObj.put(rsf.master.getName(), aggregatedDetailVal);
+                        if(rsf.master.getType() == Schema.Displaytype.Integer) {
+                            // Explicit down cast avoids runtime error
+                            masterObj.put(rsf.master.getName(), Integer.valueOf(aggregatedDetailVal));
+                        } else {
+                            masterObj.put(rsf.master.getName(), aggregatedDetailVal);                            
+                        }
                     }
                 }           
                 // Remove master Id record as its been processed    

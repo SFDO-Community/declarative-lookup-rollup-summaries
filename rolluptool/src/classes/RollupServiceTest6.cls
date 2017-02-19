@@ -28,6 +28,38 @@
 private class RollupServiceTest6 {
 
     /**
+     * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/326
+     **/
+    @IsTest  
+    private static void testAccountHierarchySumNumberOfEmployees() {
+
+        LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+        rollupSummaryA.Name = 'Test Rollup';
+        rollupSummaryA.ParentObject__c = 'Account';
+        rollupSummaryA.ChildObject__c = 'Account';
+        rollupSummaryA.RelationShipField__c = 'ParentId';
+        rollupSummaryA.FieldToAggregate__c = 'NumberOfEmployees';
+        rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+        rollupSummaryA.AggregateResultField__c = 'NumberOfEmployees';
+        rollupSummaryA.Active__c = true;
+        rollupSummaryA.CalculationMode__c = 'Realtime';
+        insert rollupSummaryA;
+
+        // Setup parent test records
+        Account accountParent = new Account();
+        accountParent.Name = 'Test Opportunity';
+        insert accountParent;
+        Account accountChild = new Account();
+        accountChild.Name = 'Test Opportunity';
+        accountChild.NumberOfEmployees = 1;
+        accountChild.ParentId = accountParent.Id;
+        insert accountChild;
+
+        // Assert
+        System.assertEquals(1, [select NumberOfEmployees from Account where id = :accountParent.Id][0].NumberOfEmployees);
+    }
+
+    /**
      * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/39
      **/
     @IsTest     
