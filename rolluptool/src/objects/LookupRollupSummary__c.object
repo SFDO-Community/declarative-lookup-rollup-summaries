@@ -156,7 +156,7 @@
         <fullName>CalculationMode__c</fullName>
         <deprecated>false</deprecated>
         <externalId>false</externalId>
-        <inlineHelpText>Realtime mode requires an Apex Trigger to be deployed for the Child Object. Click Manage Child Trigger button to deploy.</inlineHelpText>
+        <inlineHelpText>Realtime and Schedule modes require an Apex Trigger to be deployed for the Child Object. Click Manage Child Trigger button to deploy.</inlineHelpText>
         <label>Calculation Mode</label>
         <picklist>
             <picklistValues>
