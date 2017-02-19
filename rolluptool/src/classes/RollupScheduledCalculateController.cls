@@ -34,15 +34,30 @@ public with sharing class RollupScheduledCalculateController
     public List<String> day { get; set; }
     public List<String> month { get; set; }
     public List<String> weekday { get; set; }
+    public String uniqueNameForJob { get; set; }
     
     public RollupScheduledCalculateController (ApexPages.StandardController standardController)
     {
+        // Since thie controller is shared between custom object and custom mestadata, determine the applicable unique field
+        String uniqueNameField = 
+            ((Id)standardController.getId()).getSObjectType() == Schema.LookupRollupSummary2__mdt.SObjectType  
+                ? 'DeveloperName' : 'UniqueName__c';
+        
+        // Ensure the unique name field is included in the standard controller read fields
         this.standardController = standardController;
+        if(!Test.isRunningTest()) { // See https://developer.salesforce.com/forums/?id=906F00000008ytQIAQ
+            this.standardController.addFields(new List<String> { uniqueNameField });            
+        }
+        
+        // Calculate unique name
+        String rollupUniqueName = (String) standardController.getRecord().get(uniqueNameField);
+        uniqueNameForJob = 'rollup_' + (rollupUniqueName==null || rollupUniqueName.equals('') ? standardController.getId() : rollupUniqueName + ' (' + standardController.getId() + ')');
         
         // Page load messages
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Clicking the Schedule Calculate Job will schedule a recurring background rebuild for this rollup only.'));
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'The default shown below will run the Calculate job at 2am every day.'));
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Once the job completes any failed rollups will be shown in the Rollup Summary Logs tab.'));
+        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'The Calculate job can be managed at Setup -> Jobs -> Scheduled Jobs; its name will be ' + uniqueNameForJob));
 
         // Minutes
         minutes = new List<SelectOption>();
@@ -75,7 +90,7 @@ public with sharing class RollupScheduledCalculateController
                     ' ');
 
             // Kickoff the calculate job for this lookup
-            System.schedule('rollup_'+standardController.getId(), cronString, new RollupCalculateJobSchedulable(standardController.getId(), masterObjectWhere));
+            System.schedule(uniqueNameForJob, cronString, new RollupCalculateJobSchedulable(standardController.getId(), masterObjectWhere));
             ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Calculate job scheduled for this lookup.'));
         }
         catch (Exception e)
