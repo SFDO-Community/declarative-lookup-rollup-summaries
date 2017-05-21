@@ -84,6 +84,8 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 - Enhancement [Feature Request - the ability to set schedule dlrs job name](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/415)
 - Enhancement [Better messaging when scheduling jobs](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/353)
 
+**IMPORTANT NOTE:** Please check your Rollup Calculate Job records and if needed delete them.
+
 **Release Version 2.7**
 _______________________
 
