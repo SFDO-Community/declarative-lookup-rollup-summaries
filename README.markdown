@@ -24,7 +24,7 @@ This is a community driven tool, please help support it, share your experiences 
 Documentation
 -------------
 
-The tool has been featured in a number of blog entries as it has evolved...
+In addition to the [Wiki](https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki) the tool has been featured in a number of blog entries as it has evolved...
 
 **NOTE:** The links are in chronological order, if your new to the tool, read from the bottom upwards
 
