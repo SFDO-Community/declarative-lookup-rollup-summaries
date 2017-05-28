@@ -33,6 +33,10 @@ private class RollupServiceTest6 {
     @IsTest  
     private static void testAccountHierarchySumNumberOfEmployees() {
 
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
+
         LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
         rollupSummaryA.Name = 'Test Rollup';
         rollupSummaryA.ParentObject__c = 'Account';
@@ -121,6 +125,10 @@ private class RollupServiceTest6 {
     @IsTest
     private static void testParentIdsVaryOnlyByCaseTolerated() {
 
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
+
         // Between Task and Account
         LookupRollupSummary__c rollupSummaryAccount = new LookupRollupSummary__c();
         rollupSummaryAccount.Name = 'Test Rollup';
@@ -162,6 +170,10 @@ private class RollupServiceTest6 {
 	 **/
 	@IsTest
 	private static void testHistoricBeforeV2ScheduleItemsAreTolerated() {
+
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
 
 		// Setup parent test records
 		Account accountParent = new Account(Name = 'Test Account');
@@ -227,6 +239,10 @@ private class RollupServiceTest6 {
 	@IsTest	 
 	private static void selfRollupInsert() {
 
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
+
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Test Rollup';
 		rollupSummaryA.ParentObject__c = 'Opportunity';
@@ -256,6 +272,10 @@ private class RollupServiceTest6 {
 	 **/
 	@IsTest	 
 	private static void selfRollupDelete() {
+
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
 
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Test Rollup';
@@ -383,6 +403,10 @@ private class RollupServiceTest6 {
 	@IsTest
 	private static void testAccountMergeAsParent() {
 
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
+
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Test Rollup';
 		rollupSummaryA.ParentObject__c = 'Account';
@@ -442,6 +466,10 @@ private class RollupServiceTest6 {
 	@IsTest
 	private static void testAccountMergeAsParentWithoutParentTriggerDeployed() {
 
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
+
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Test Rollup';
 		rollupSummaryA.ParentObject__c = 'Account';
@@ -496,6 +524,10 @@ private class RollupServiceTest6 {
 	 **/
 	@IsTest
 	private static void testContactMergeAsChild() {
+
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
 
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';

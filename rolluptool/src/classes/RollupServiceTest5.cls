@@ -30,6 +30,10 @@ private class RollupServiceTest5 {
 	@IsTest
 	private static void testPolymorphicRelationshipsRealtime() {
 
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
+
 		// Polymorphic lookup between Task and Account
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Test Rollup';
@@ -85,6 +89,10 @@ private class RollupServiceTest5 {
 
 	@IsTest
 	private static void testPolymorphicRelationshipsScheduled() {
+
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
 
 		// Polymorphic lookup between Task and Account
 		LookupRollupSummary__c rollupSummaryAccount = new LookupRollupSummary__c();
@@ -148,6 +156,10 @@ private class RollupServiceTest5 {
 
 	@IsTest
 	private static void testPolymorphicRelationshipsScheduledIgnoreBadScheduleItems() {
+
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
 
 		// Setup parent test records
 		Account accountParent = new Account(Name = 'Test Account');
@@ -545,6 +557,10 @@ private class RollupServiceTest5 {
 	 **/
     @IsTest
     private static void testCheckboxRollupWithNoChildren() {
+
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
 
         // Lookup between Task and Opportunity
         LookupRollupSummary__c rollupSummaryOpp = new LookupRollupSummary__c();

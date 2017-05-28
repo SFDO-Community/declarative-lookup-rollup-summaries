@@ -30,6 +30,10 @@ private class RollupScheduledCalculateControllerTest {
 	@IsTest
 	private static void testCronHelperDefault() {
 
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
+
 		// Between Task and Account
 		LookupRollupSummary__c rollupSummaryAccount = new LookupRollupSummary__c();
 		rollupSummaryAccount.Name = 'Test Rollup';
@@ -60,6 +64,10 @@ private class RollupScheduledCalculateControllerTest {
 
     @IsTest
     private static void testCronHelperDefaultWithUniqueName() {
+
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
 
         // Between Task and Account
         LookupRollupSummary__c rollupSummaryAccount = new LookupRollupSummary__c();
@@ -93,6 +101,10 @@ private class RollupScheduledCalculateControllerTest {
 	@IsTest
 	private static void testCronHelperError() {
 
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
+
 		// Between Task and Account
 		LookupRollupSummary__c rollupSummaryAccount = new LookupRollupSummary__c();
 		rollupSummaryAccount.Name = 'Test Rollup';
@@ -125,6 +137,10 @@ private class RollupScheduledCalculateControllerTest {
 
 	@IsTest
 	private static void testCronHelperCustomised() {
+
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
 
 		// Between Task and Account
 		LookupRollupSummary__c rollupSummaryAccount = new LookupRollupSummary__c();
