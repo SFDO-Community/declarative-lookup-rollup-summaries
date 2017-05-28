@@ -29,6 +29,8 @@
  **/
 public with sharing class RollupController
 {
+    public static String API_VERSION = '37.0';
+    
 	public String ZipData { get; set; }	
 	
 	public MetadataService.AsyncResult AsyncResult {get; private set;}
@@ -88,7 +90,7 @@ public with sharing class RollupController
 			return 
 			    '<?xml version="1.0" encoding="UTF-8"?>' + 
 				'<Package xmlns="http://soap.sforce.com/2006/04/metadata">' + 
-	    			'<version>32.0</version>' + 
+	    			'<version>' + API_VERSION + '</version>' + 
 				'</Package>';		
 		else
 			// package.xml for deploy
@@ -112,7 +114,7 @@ public with sharing class RollupController
 		        			'<members>'+RollupParentTriggerTestName+'</members>' +
 		        			'<name>ApexClass</name>' + 
 		    			'</types>') : '') + 
-	    			'<version>32.0</version>' + 
+	    			'<version>' + API_VERSION + '</version>' + 
 				'</Package>';		
 	}
 	
@@ -138,7 +140,7 @@ public with sharing class RollupController
 	        			'<members>'+RollupParentTriggerTestName+'</members>' +
 	        			'<name>ApexClass</name>' + 
 	    			'</types>') : '') +     			
-    			'<version>32.0</version>' + 
+    			'<version>' + API_VERSION + '</version>' + 
 			'</Package>';				
 	}
 	
@@ -151,7 +153,7 @@ public with sharing class RollupController
 		return 
 		    '<?xml version="1.0" encoding="UTF-8"?>' +
 			'<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>32.0</apiVersion>' + 
+			    '<apiVersion>' + API_VERSION + '</apiVersion>' + 
 			    '<status>Active</status>' +
 			'</ApexClass>';		
 	}
@@ -192,7 +194,7 @@ public with sharing class RollupController
 		return 
 		    '<?xml version="1.0" encoding="UTF-8"?>' +
 			'<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>32.0</apiVersion>' + 
+			    '<apiVersion>' + API_VERSION + '</apiVersion>' + 
 			    '<status>Active</status>' +
 			'</ApexTrigger>';		
 	}
@@ -230,7 +232,7 @@ public with sharing class RollupController
 		return 
 		    '<?xml version="1.0" encoding="UTF-8"?>' +
 			'<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>32.0</apiVersion>' + 
+			    '<apiVersion>' + API_VERSION + '</apiVersion>' + 
 			    '<status>Active</status>' +
 			'</ApexClass>';		
 	}
@@ -267,7 +269,7 @@ public with sharing class RollupController
 		return 
 		    '<?xml version="1.0" encoding="UTF-8"?>' +
 			'<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>32.0</apiVersion>' + 
+			    '<apiVersion>' + API_VERSION + '</apiVersion>' + 
 			    '<status>Active</status>' +
 			'</ApexTrigger>';		
 	}

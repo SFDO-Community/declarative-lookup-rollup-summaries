@@ -76,7 +76,7 @@ private class RollupControllerTest
 		System.assertEquals(
 			    '<?xml version="1.0" encoding="UTF-8"?>' + 
 				'<Package xmlns="http://soap.sforce.com/2006/04/metadata">' + 
-	    			'<version>32.0</version>' + 
+	    			'<version>' + RollupController.API_VERSION + '</version>' + 
 				'</Package>',	
 			controller.getPackageXml());
 		System.assertEquals(
@@ -90,20 +90,20 @@ private class RollupControllerTest
 	        			'<members>'+controller.RollupTriggerTestName+'</members>' +
 	        			'<name>ApexClass</name>' + 
 	    			'</types>' + 
-	    			'<version>32.0</version>' + 
+	    			'<version>' + RollupController.API_VERSION + '</version>' + 
 				'</Package>',				
 				controller.getDestructiveChangesXml());
 		System.assertEquals(
 		    '<?xml version="1.0" encoding="UTF-8"?>' +
 			'<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>32.0</apiVersion>' + 
+			    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
 			    '<status>Active</status>' +
 			'</ApexTrigger>',		
 			controller.getTriggerCodeMetadata());
 		System.assertEquals(
 		    '<?xml version="1.0" encoding="UTF-8"?>' +
 			'<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>32.0</apiVersion>' + 
+			    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
 			    '<status>Active</status>' +
 			'</ApexClass>',		
 			controller.getTriggerTestCodeMetadata());
@@ -199,20 +199,20 @@ private class RollupControllerTest
 	        			'<members>'+controller.RollupParentTriggerTestName+'</members>' +
 	        			'<name>ApexClass</name>' + 
 	    			'</types>' + 
-	    			'<version>32.0</version>' + 
+	    			'<version>' + RollupController.API_VERSION + '</version>' + 
 				'</Package>',
 			controller.getPackageXml());
 		System.assertEquals(
 		    '<?xml version="1.0" encoding="UTF-8"?>' +
 			'<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>32.0</apiVersion>' + 
+			    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
 			    '<status>Active</status>' +
 			'</ApexTrigger>',
 			controller.getTriggerCodeMetadata());
 		System.assertEquals(
 		    '<?xml version="1.0" encoding="UTF-8"?>' +
 			'<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>32.0</apiVersion>' + 
+			    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
 			    '<status>Active</status>' +
 			'</ApexClass>',		
 			controller.getTriggerTestCodeMetadata());
