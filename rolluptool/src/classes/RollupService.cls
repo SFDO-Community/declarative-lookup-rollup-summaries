@@ -284,6 +284,23 @@ global with sharing class RollupService
 	 **/
 	private static boolean triggerHandleInvoked = false;
 
+    /**
+     * Apex Trigger helper, automatically resolves child records to process via LREngine and lookups described in RollupSummary
+     *    also determines if based on the old trigger records if the rollup processing needs to occur
+     * @param childObjectType This can be used in cases where the prior overload was used an the Id.getSobjectType method fails to return the SOBjectType (see Issue 17 in the repo)
+     **/
+    global static void triggerHandler(SObjectType childObjectType)
+    {
+        triggerHandleInvoked = true;
+
+        // Currently no processing in the before phase
+        if(Trigger.isBefore)
+            return;     
+            
+        // Anything to rollup?
+        handleRollups(Trigger.oldMap, Trigger.newMap, childObjectType, new List<RollupSummaries.CalculationMode> { RollupSummaries.CalculationMode.Realtime, RollupSummaries.CalculationMode.Scheduled });
+    }
+
 	/**
 	 * Apex Trigger helper, automatically resolves child records to process via LREngine and lookups described in RollupSummary
 	 *    also determines if based on the old trigger records if the rollup processing needs to occur
@@ -1151,17 +1168,21 @@ global with sharing class RollupService
 		// Resolve (and cache) SObjectType's and fields for Parent and Child objects
 		SObjectType parentObjectType = getSObjectType(lookup.ParentObject);
 		if(parentObjectType==null)
-			throw RollupServiceException.invalidRollup(lookup);
+			throw RollupServiceException.invalidRollup(lookup, 'Parent Object : ' + lookup.ParentObject);
 		Map<String, Schema.SObjectField> parentFields = getSObjectTypeFields(parentObjectType);
 		SObjectType childObjectType = getSObjectType(lookup.ChildObject);
 		if(childObjectType==null)
-			throw RollupServiceException.invalidRollup(lookup);
+			throw RollupServiceException.invalidRollup(lookup, 'Child Object : ' + lookup.ChildObject);
 		Map<String, Schema.SObjectField> childFields = getSObjectTypeFields(childObjectType);
 		SObjectField fieldToAggregate = childFields.get(lookup.FieldToAggregate);
 		SObjectField relationshipField = childFields.get(lookup.RelationshipField);
 		SObjectField aggregateResultField = parentFields.get(lookup.AggregateResultField);
-		if(fieldToAggregate==null || relationshipField==null || aggregateResultField==null)
-			throw RollupServiceException.invalidRollup(lookup);
+		if(fieldToAggregate==null)
+			throw RollupServiceException.invalidRollup(lookup, 'Field to Aggregate: ' + lookup.FieldToAggregate);
+        if(relationshipField==null)
+            throw RollupServiceException.invalidRollup(lookup, 'Relationship Field: ' + lookup.RelationshipField);
+        if(aggregateResultField==null)
+            throw RollupServiceException.invalidRollup(lookup, 'Aggregate Result Field: ' + lookup.AggregateResultField);
 
 		// Summary field definition used by LREngine
 		LREngine.RollupSummaryField rsf = 

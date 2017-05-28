@@ -216,7 +216,7 @@ public with sharing class RollupController
 				'trigger ' + RollupTriggerName + ' on ' + RollupSummary.ChildObject + '\n' + 
 				'    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n'+ 
 				'{\n'+
-				'    '+ (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.triggerHandler();\n'+
+				'    '+ (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.triggerHandler(' + RollupSummary.ChildObject + '.SObjectType);\n'+
 				'}\n';
 		}		
 	}

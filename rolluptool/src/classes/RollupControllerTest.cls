@@ -164,7 +164,7 @@ private class RollupControllerTest
 				'trigger ' + controller.RollupTriggerName + ' on ' + rollupSummary.ChildObject__c + '\n' + 
 				'    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n'+ 
 				'{\n'+
-				'    ' + Utilities.classPrefix() + 'RollupService.triggerHandler();\n'+
+				'    ' + Utilities.classPrefix() + 'RollupService.triggerHandler(Contact.SObjectType);\n'+
 				'}\n', controller.getTriggerCode());
 		System.assertEquals(
 			 	'/**\n' +

@@ -32,9 +32,9 @@ public class RollupServiceException extends Exception
 	/**
 	 * Generic exception when aspects of the rollup summary definition are found to be in error at runtime
 	 **/
-	public static RollupServiceException invalidRollup(RollupSummary lookup)
+	public static RollupServiceException invalidRollup(RollupSummary lookup, String configInvalid)
 	{ 
-		return new RollupServiceException('Lookup Rollup Summary  \'' + lookup.Name + '\' is invalid, your org configuration may have changed.');
+		return new RollupServiceException('Lookup Rollup Summary  \'' + lookup.Name + '\' is invalid, your org configuration may have changed (' + configInvalid + ').');
 	}
 	
 	/**
