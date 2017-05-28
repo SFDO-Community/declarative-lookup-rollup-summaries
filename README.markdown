@@ -28,6 +28,8 @@ The tool has been featured in a number of blog entries as it has evolved...
 
 **NOTE:** The links are in chronological order, if your new to the tool, read from the bottom upwards
 
+- [Monitoring your Scheduled Rollups via Report Subscriptions](https://www.dandonin.com/2017/05/24/automated-error-alerts-and-mass-delete-error-records/)
+- [Counting Tasks with DLRS](https://www.dandonin.com/2017/04/21/counting-tasks-with-dlrs/)
 - [Getting Started With DLRS](https://www.dandonin.com/2017/03/16/how-to-dlrs/)
 - [Refer to this for Schedule mode usage](https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/What-you-need-to-know-about-Scheduling-Rollups)
 - [Declarative Rollup Tool Summer (2016) Release](https://andyinthecloud.com/2016/06/19/declarative-rollup-tool-summer-release/)
