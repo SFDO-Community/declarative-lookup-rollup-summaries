@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2014, FinancialForce.com, inc
  * All rights reserved.
  *
@@ -23,6 +23,10 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+/**
+ * @group Core
+ */
 public with sharing class fflib_MethodReturnValueRecorder
 {
 	public Boolean Stubbing { get; set; }
@@ -35,7 +39,7 @@ public with sharing class fflib_MethodReturnValueRecorder
 	 * Key: qualifiedMethod
 	 * Object: map of method return values by method.
 	 */
-	
+
 	private Map<fflib_QualifiedMethod, List<fflib_MatchersReturnValue>> matcherReturnValuesByMethod;
 
 	public fflib_MethodReturnValue MethodReturnValue { get; private set; }
@@ -43,44 +47,41 @@ public with sharing class fflib_MethodReturnValueRecorder
 	public fflib_MethodReturnValueRecorder()
 	{
 		matcherReturnValuesByMethod = new Map<fflib_QualifiedMethod, List<fflib_MatchersReturnValue>>();
-		
+
 		MethodReturnValue = null;
 	}
 
 	/**
 	 * Prepare a stubbed method return value.
-	 * @param mockInstance The mock object instance.
-	 * @param qm The method for which to prepare a return value.
-	 * @param methodArg The method argument for which to prepare a return value.
+	 * @param invocation The object holding all the data of the invocation, like the method and arguments and the mock instance.
+	 * @return The MethodReturnValue instance.
 	 */
-	public fflib_MethodReturnValue prepareMethodReturnValue(fflib_QualifiedMethod qm, fflib_MethodArgValues methodArg)
+	public fflib_MethodReturnValue prepareMethodReturnValue(fflib_InvocationOnMock invocation)
 	{
 		MethodReturnValue = new fflib_MethodReturnValue();
 
-		List<fflib_MatchersReturnValue> matcherReturnValues = matcherReturnValuesByMethod.get(qm);
+		List<fflib_MatchersReturnValue> matcherReturnValues = matcherReturnValuesByMethod.get(invocation.getMethod());
 		if (matcherReturnValues == null)
 		{
 			matcherReturnValues = new List<fflib_MatchersReturnValue>();
-			matcherReturnValuesByMethod.put(qm, matcherReturnValues);
+			matcherReturnValuesByMethod.put(invocation.getMethod(), matcherReturnValues);
 		}
-		
+
+		List<Object> argValues = invocation.getMethodArgValues().argValues;
+
 		//Register explicit arg values as 'equals' matchers, to preserve old behaviour
 		if (!fflib_Match.Matching)
 		{
-			for (Object arg : methodArg.argValues)
+			for (Object arg : argValues)
 			{
 				if (arg == null)
-				{
 					fflib_Match.isNull();
-				}
 				else
-				{
 					fflib_Match.eq(arg);
-				}
 			}
 		}
-		
-		List<fflib_IMatcher> matchers = fflib_Match.getAndClearMatchers(methodArg.argValues.size());
+
+		List<fflib_IMatcher> matchers = fflib_Match.getAndClearMatchers(argValues.size());
 		matcherReturnValues.add(new fflib_MatchersReturnValue(matchers, MethodReturnValue));
 
 		return MethodReturnValue;
@@ -88,22 +89,20 @@ public with sharing class fflib_MethodReturnValueRecorder
 
 	/**
 	 * Get the method return value for the given method call.
-	 * @param mockInstance The mock object instance.
-	 * @param qm The method for which to prepare a return value.
-	 * @param methodArg The method argument for which to prepare a return value.
+	 * @param invocation The object holding all the data of the invocation, like the method and arguments and the mock instance.
 	 * @return The MethodReturnValue instance.
 	 */
-	public fflib_MethodReturnValue getMethodReturnValue(fflib_QualifiedMethod qm, fflib_MethodArgValues methodArg)
+	public fflib_MethodReturnValue getMethodReturnValue(fflib_InvocationOnMock invocation)
 	{
-		List<fflib_MatchersReturnValue> matchersForMethods = matcherReturnValuesByMethod.get(qm);
+		List<fflib_MatchersReturnValue> matchersForMethods = matcherReturnValuesByMethod.get(invocation.getMethod());
 		if (matchersForMethods != null)
 		{
 			for (Integer i = matchersForMethods.size() - 1; i >= 0; i--)
 			{
 				fflib_MatchersReturnValue matchersReturnValue = (fflib_MatchersReturnValue)matchersForMethods.get(i);
-				if (fflib_Match.matchesAllArgs(methodArg, matchersReturnValue.matchers))
+				if (fflib_Match.matchesAllArgs(invocation.getMethodArgValues(), matchersReturnValue.matchers))
 				{
-					return matchersReturnValue.returnValue;
+					return matchersReturnValue.ReturnValue;
 				}
 			}
 		}

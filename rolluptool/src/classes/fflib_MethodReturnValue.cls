@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2014, FinancialForce.com, inc
  * All rights reserved.
  *
@@ -23,13 +23,19 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+/**
+ * @group Core
+ * Class defining a method return value.
+ */
 @isTest
 public with sharing class fflib_MethodReturnValue
 {
 	/**
-	 * Class defining a method return value.
+	 * Instance of the implementation of the Answer interface that implements the answer,
+	 * if an answer isn't explicitly set the standard answer will be used, which just returns the stubbed return value.
 	 */
-	public Object ReturnValue { get; private set; }
+	public fflib_Answer Answer { get; set; }
 
 	/**
 	 * Setup a stubbed return value.
@@ -37,7 +43,7 @@ public with sharing class fflib_MethodReturnValue
 	 */
 	public void thenReturn(Object value)
 	{
-		returnValue = value;
+		thenAnswer(new StandardAnswer(value));
 	}
 
 	/**
@@ -46,6 +52,48 @@ public with sharing class fflib_MethodReturnValue
 	 */
 	public void thenThrow(Exception e)
 	{
-		returnValue = e;
+		thenAnswer(new StandardAnswer(e));
+	}
+
+	/**
+	 * Setup a stubbed answer.
+	 * @param answer The answer to run from the stubbed method call.
+	 */
+	public void thenAnswer(fflib_Answer answer)
+	{
+		this.Answer = answer;
+	}
+
+	/**
+	 * @group Core
+	 * Inner class to handle all the stubs that do not use the thenAnswer method directly.
+	 * For internal use only.
+	 */
+	public class StandardAnswer implements fflib_Answer
+	{
+		/**
+		 * It stores the return value for the method stubbed.
+		 * The value would be stored and then returned as part of the standard answer invocation.
+		 */
+		public Object ReturnValue { get; set; }
+
+		/**
+		 * Constructor for the StandardAnswer object.
+		 * @param value The value to be set as return value for the StandardAnswer object.
+		 */
+		public StandardAnswer(Object value)
+		{
+			ReturnValue = value;
+		}
+
+		/**
+		 * Standard basic implementation for the fflib_Answer answer method, to be used as default answering.
+		 * @param invocation The invocation to answer for.
+		 * @return The ReturnValue for the method stubbed.
+		 */
+		public Object answer(fflib_InvocationOnMock invocation)
+		{
+			return ReturnValue;
+		}
 	}
 }
