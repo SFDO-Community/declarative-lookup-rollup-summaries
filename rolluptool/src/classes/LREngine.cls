@@ -67,13 +67,22 @@ public class LREngine {
     // Currency lookup
     static final Map<String,Decimal> currencyConversionMap = new Map<String,Decimal>();
     private static Decimal convertCurrency(String iso, Decimal val) {
-        if(currencyConversionMap.isEmpty()){
-            String query = 'select IsoCode, ConversionRate from CurrencyType where IsActive = true';
-            for(sObject ct : Database.query(query))
-                currencyConversionMap.put((String)ct.get('IsoCode'), (Decimal)ct.get('ConversionRate'));
-        }
-        return val!=null ? val * currencyConversionMap.get(iso) : 0;
+        return new ConvertCurrencyHelper().convertCurrencyWithoutSharing(iso, val);
     }
+    
+    /**
+     * See here for the reason why this has to run "without sharing" https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/454
+     **/
+    private without sharing class ConvertCurrencyHelper {
+	    private Decimal convertCurrencyWithoutSharing(String iso, Decimal val) {
+	        if(currencyConversionMap.isEmpty()){
+	            String query = 'select IsoCode, ConversionRate from CurrencyType where IsActive = true';
+	            for(sObject ct : Database.query(query))
+	                currencyConversionMap.put((String)ct.get('IsoCode'), (Decimal)ct.get('ConversionRate'));
+	        }
+	        return val!=null ? val * currencyConversionMap.get(iso) : 0;
+	    }
+    } 
 
     /**
         Key driver method that rolls up lookup fields based on the context. This is specially useful in Trigger context.
