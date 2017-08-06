@@ -336,7 +336,7 @@ global with sharing class RollupService
 		if (String.isBlank(whereClause)) {
 			return Database.getQueryLocator('Select Id From ' + lookup.ParentObject);
 		} else {
-			return Database.getQueryLocator(String.format('Select Id From {0} WHERE {1}', new List<String>{lookup.ParentObject, whereClause}));
+			return Database.getQueryLocator(String.format('Select Id From {0} WHERE {1} ORDER BY Id', new List<String>{lookup.ParentObject, whereClause}));
 		}
 	}
 
