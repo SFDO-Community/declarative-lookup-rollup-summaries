@@ -37,8 +37,9 @@ public class LREngine {
 			2 : Optional WHERE clause filter to add
 			3 : Group By field name
 			4 : ALL ROWS or empty string
+			5 : Group By additional fields
 	*/
-    static String SOQL_AGGREGATE_TEMPLATE = 'SELECT {0} FROM {1} WHERE {3} in :masterIds {2} GROUP BY {3} {4}';
+    static String SOQL_AGGREGATE_TEMPLATE = 'SELECT {0} FROM {1} WHERE {3} in :masterIds {2} GROUP BY {3}{5} {4}';
 
     /*
 		Tempalte tokens
@@ -192,8 +193,13 @@ public class LREngine {
             }
         }
 
-        for(Schema.Describefieldresult af : ctx.additionalFields) {
-            soqlProjection += ', ' + ctx.lookupField.getRelationshipName() + '.' + af.getName();
+        // Adding additional fields to query. If it is an aggregated query, add alias
+        exprIdx = 0;
+        Map<String, String> afByAlias = new Map<String, String>();
+        for (Schema.Describefieldresult af : ctx.additionalFields) {
+            String alias = 'are'+exprIdx++;
+            soqlProjection += ', ' + ctx.lookupField.getRelationshipName() + '.' + af.getName() + (builtAggregateQuery ? ' ' + alias : '');
+            afByAlias.put(af.getName(), alias);
         }
 
         // #1 token for SOQL_TEMPLATE
@@ -207,6 +213,14 @@ public class LREngine {
 
         // #3 Group by field
         String grpByFld = ctx.lookupField.getName();
+
+        // #5 Group by additional fields
+        String additionalGrpByFld = '';
+        if(builtAggregateQuery) {
+            for (Schema.Describefieldresult af : ctx.additionalFields) {
+                additionalGrpByFld += ', ' + ctx.lookupField.getRelationshipName() + '.' + af.getName();
+            }
+        }
 
         // #4 Order by clause fields
         // i.e. Amount ASC NULLS FIRST, Name DESC NULL LAST
@@ -224,7 +238,8 @@ public class LREngine {
                         detailTblName,
                         whereClause,
                         grpByFld,
-                        allRows}) :
+                        allRows,
+                        additionalGrpByFld}) :
         String.format(SOQL_QUERY_TEMPLATE,
                 new String[]{
                         soqlProjection,
@@ -262,6 +277,11 @@ public class LREngine {
                 if (masterObj == null) {
                     System.debug(Logginglevel.WARN, 'No master record found for ID :' + masterRecId);
                     continue;
+                }
+
+                // Adding additional fields to master object using alias
+                for(Schema.Describefieldresult af : ctx.additionalFields) {
+                    masterObj.put(af.getName(), res.get(afByAlias.get(af.getName())));
                 }
 
                 for (String alias : rsfByAlais.keySet()) {
@@ -345,18 +365,18 @@ public class LREngine {
                     } else if(rsf.operation == RollupOperation.SumAdvancedCurrency) {
                         Decimal sum = 0;
                         for(SObject childDetailRecord : childDetailRecords) {
-                            Decimal amountInMasterCurrency  = 0;
+                            Decimal amountInMasterCurrency = 0;
                             String masterCurrencyIsoCode = (String) childDetailRecord.getSObject(ctx.lookupField.getRelationshipName()).get(CURRENCYISOCODENAME);
                             String childCurrencyIsoCode = (String) childDetailRecord.get(CURRENCYISOCODENAME);
                             if(childCurrencyIsoCode != masterCurrencyIsoCode) {
                                 Date currencyDate = (ctx.dateLookupField != null) ? (Date) childDetailRecord.getSObject(ctx.dateLookupField.getRelationshipName()).get(ctx.dateField.getName()) : (Date) childDetailRecord.get(ctx.dateField.getName());
                                 Decimal amountInCorporateCurrency = CurrencyManagement.convertToCorporateCurrency(childCurrencyIsoCode, (Decimal) childDetailRecord.get(rsf.detail.getName()), currencyDate);
-                                amountInMasterCurrency  = CurrencyManagement.convertFromCorporateCurrency(masterCurrencyIsoCode, amountInCorporateCurrency, currencyDate);
+                                amountInMasterCurrency = CurrencyManagement.convertFromCorporateCurrency(masterCurrencyIsoCode, amountInCorporateCurrency, currencyDate);
                             }
                             else {
-                                amountInMasterCurrency  = (Decimal) childDetailRecord.get(rsf.detail.getName());
+                                amountInMasterCurrency = (Decimal) childDetailRecord.get(rsf.detail.getName());
                             }
-                            sum += amountInMasterCurrency ;
+                            sum += amountInMasterCurrency;
                         }
                         masterRecordsMap.get(masterId).put(rsf.master.getName(), sum);
                     }
@@ -687,7 +707,7 @@ public class LREngine {
             if(this.fieldsToRoll.isEmpty())
                 throw new BadRollUpSummaryStateException('Add atleast one RollupSummaryField before adding additional fields');
             if(isAggregateBased)
-                throw new BadRollUpSummaryStateException('Cannot add additional fields on aggregate query');
+                System.debug(LoggingLevel.WARN,'On aggregate query, be careful to only add additional fields from parent object');
             this.additionalFields.add(af);
         }
 
