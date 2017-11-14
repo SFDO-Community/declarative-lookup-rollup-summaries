@@ -656,6 +656,9 @@ public class LREngine {
      **/
     public abstract class QueryExecutor {
         public virtual List<SObject> query(String query, Set<Id> masterIds) {
+            if ( masterIds == null || masterIds.isEmpty() ) {
+                return new List<SObject>();
+            }
             return Database.query(query);
         }
     }
