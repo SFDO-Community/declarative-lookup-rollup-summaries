@@ -192,6 +192,10 @@ public class LREngine {
             }
         }
 
+        for(Schema.Describefieldresult af : ctx.additionalFields) {
+            soqlProjection += ', ' + ctx.lookupField.getRelationshipName() + '.' + af.getName();
+        }
+
         // #1 token for SOQL_TEMPLATE
         String detailTblName = ctx.detail.getDescribe().getName();
         
@@ -291,6 +295,9 @@ public class LREngine {
                 if(masterId != lastMasterId) {
                     currentDetailRecords = new List<SObject>();
                     detailRecordsByMasterId.put(masterId, currentDetailRecords);
+                }
+                for(Schema.Describefieldresult af : ctx.additionalFields) {
+                    masterRecordsMap.get(masterId).put(af.getName(), detailRecord.getSObject(ctx.lookupField.getRelationshipName()).get(af.getName()));
                 }
                 currentDetailRecords.add(detailRecord);
                 lastMasterId = masterId;
@@ -616,6 +623,8 @@ public class LREngine {
         public Schema.Describefieldresult dateField;
         // various fields to rollup on
         public List<RollupSummaryField> fieldsToRoll;
+        // various additional fields
+        public List<Schema.Describefieldresult> additionalFields;
         // include all rows
         public Boolean allRows;
         // what type of rollups does this context contain
@@ -661,6 +670,7 @@ public class LREngine {
             this.detailWhereClause = detailWhereClause;
             this.detailOrderByClause = detailOrderByClause;
             this.fieldsToRoll = new List<RollupSummaryField>();
+            this.additionalFields = new List<Schema.Describefieldresult>();
             this.sharingMode = sharingMode;
             this.allRows = allRows;
         }
@@ -671,6 +681,14 @@ public class LREngine {
 
         public void setDateLookupField(Schema.Describefieldresult dlf) {
             this.dateLookupField = dlf;
+        }
+
+        public void addAdditionalField(Schema.Describefieldresult af) {
+            if(this.fieldsToRoll.isEmpty())
+                throw new BadRollUpSummaryStateException('Add atleast one RollupSummaryField before adding additional fields');
+            if(isAggregateBased)
+                throw new BadRollUpSummaryStateException('Cannot add additional fields on aggregate query');
+            this.additionalFields.add(af);
         }
 
         /**
