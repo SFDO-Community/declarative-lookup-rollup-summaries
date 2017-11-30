@@ -1,4 +1,4 @@
-@isTest
+@isTest(isParallel=true)
 private class CurrencyManagementTest {
     // common master records for the test case
     static Account acc1;
