@@ -83,31 +83,41 @@ global with sharing class RollupService
 	 **/
 	global static Id runJobToCalculate(String lookupId, String masterWhereClause)
 	{
-		// Is another calculate job running for this lookup?
-		List<RollupSummary> lookups = new RollupSummariesSelector().selectById(new Set<String> { (String) lookupId });
-		if(lookups.size()==0)
-			throw RollupServiceException.rollupNotFound(lookupId);
-		RollupSummary lookup = lookups[0];
-
-		// Already running?
-		checkJobAlreadyRunning(lookupId, lookup.Name);
-
-		// Already active?
-		if((lookup.Active==null || lookup.Active==false) && lookup.CalculationMode=='Realtime' )
-			throw new RollupServiceException('The rollup must be Active before you can run a Calculate job.');
-
-		// Start the job and record the Job Id
-		Integer scopeSize = (Integer) DeclarativeLookupRollupSummaries__c.getInstance().CalculateJobScopeSize__c;
-		Id jobId = Database.executeBatch(new RollupCalculateJob(lookupId, masterWhereClause), scopeSize == null ? 100 : scopeSize);
-
-		// Update CalculateJobId__c for Custom Object based rollups?
-		if(lookup.Record instanceof LookupRollupSummary__c) {
-			LookupRollupSummary__c rollupSummary = (LookupRollupSummary__c) lookup.Record;
-			rollupSummary.CalculateJobId__c = jobId;
-			update lookup.Record;
+		System.SavePoint sp = Database.setSavepoint();
+		
+		try {
+			
+			// Is another calculate job running for this lookup?
+			List<RollupSummary> lookups = new RollupSummariesSelector().selectById(new Set<String> { (String) lookupId });
+			if(lookups.size()==0)
+				throw RollupServiceException.rollupNotFound(lookupId);
+			RollupSummary lookup = lookups[0];
+	
+			// Already running?
+			checkJobAlreadyRunning(lookupId, lookup.Name);
+	
+			// Already active?
+			if((lookup.Active==null || lookup.Active==false) && lookup.CalculationMode=='Realtime' )
+				throw new RollupServiceException('The rollup must be Active before you can run a Calculate job.');
+	
+			// Start the job and record the Job Id
+			Integer scopeSize = (Integer) DeclarativeLookupRollupSummaries__c.getInstance().CalculateJobScopeSize__c;
+			Id jobId = Database.executeBatch(new RollupCalculateJob(lookupId, masterWhereClause), scopeSize == null ? 100 : scopeSize);
+	
+			// Update CalculateJobId__c for Custom Object based rollups?
+			if(lookup.Record instanceof LookupRollupSummary__c) {
+				LookupRollupSummary__c rollupSummary = (LookupRollupSummary__c) lookup.Record;
+				rollupSummary.CalculateJobId__c = jobId;
+				update lookup.Record;
+			}
+	
+			return jobId;
+						
+		} catch (Exception e) {
+			// Fix for https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/511, avoid leaking control record
+			Database.rollback(sp);
+			throw e;
 		}
-
-		return jobId;
 	}
 
 	/**
