@@ -497,11 +497,12 @@ global with sharing class RollupService
 	{		
 		// Process rollup
 		List<RollupSummary> lookups = new RollupSummariesSelector().selectById(lookupIds);
-		Map<Id, SObject> masterRecords = new Map<Id, SObject>();		
-		for(LREngine.Context ctx : createLREngineContexts(lookups))
+		Map<Id, SObject> masterRecords = new Map<Id, SObject>();
+		List<LREngine.Context> ctxs = createLREngineContexts(lookups);		
+		Set<Id> ctxMasterIds = new Set<Id>();
+		for(LREngine.Context ctx : ctxs)
 		{
 			// Produce a set of master Id's applicable to this context (parent only)			
-			Set<Id> ctxMasterIds = new Set<Id>();
 			for(Id masterId : masterRecordIds)
 				if(masterId.getSObjectType() == ctx.master)
 					ctxMasterIds.add(masterId);
@@ -523,8 +524,39 @@ global with sharing class RollupService
 			}			
 		}
 
-		// Update master records
+		// Master records to update		
 		List<SObject> masterRecordList = masterRecords.values();
+
+		// The following optimisation currently only works if processing a single rollup (parent)
+		if(ctxs.size()==1) {
+			LREngine.Context ctx = ctxs[0];
+			// Query the current values of the master objects rollup fields
+			fflib_QueryFactory masterRecordQuery = new fflib_QueryFactory(ctx.master);
+			for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll) {
+				masterRecordQuery.selectField(fieldToRoll.master.getSObjectField());
+			}
+			masterRecordQuery.setCondition('Id in :ctxMasterIds FOR UPDATE');
+			// Filter master records to update only if rollups have changed
+			Map<Id, SObject> currentMasterRecordsById = new Map<Id, SObject>(Database.query(masterRecordQuery.toSOQL()));
+			List<SObject> newMasterRecordList = new List<SObject>();
+			for(SObject masterRecordToUpdate : masterRecordList) {
+				SObject currentRecord = currentMasterRecordsById.get(masterRecordToUpdate.Id);
+				boolean rollupValueChange = false;
+				for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll) {
+					if(currentRecord.get(fieldToRoll.master.getSObjectField()) == masterRecordToUpdate.get(fieldToRoll.master.getSObjectField())) {
+						continue;
+					}
+					rollupValueChange = true;
+					break;
+				}			
+				if(rollupValueChange) {
+					newMasterRecordList.add(masterRecordToUpdate);
+				}
+			}
+			masterRecordList = newMasterRecordList;
+		}
+
+		// Update master records
 		List<Database.Saveresult> saveResults = updateRecords(masterRecordList, false, false);
 		
 		// Log errors to the summary log

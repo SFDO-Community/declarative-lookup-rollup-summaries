@@ -26,6 +26,127 @@
 
 @IsTest
 private class RollupCalculateControllerTest {
+
+	static Schema.SObjectField ACCOUNT_SLA_EXPIRATION_DATE;
+	static Schema.SObjectField ACCOUNT_NUMBER_OF_LOCATIONS;		
+	static
+	{
+		// Dynamically resolve these fields, if they are not present when the test runs, the test will return as passed to avoid failures in subscriber org when packaged
+		fflib_SObjectDescribe describe = fflib_SObjectDescribe.getDescribe(Account.SObjectType);
+		ACCOUNT_SLA_EXPIRATION_DATE = describe.getField('SLAExpirationDate__c');
+		ACCOUNT_NUMBER_OF_LOCATIONS = describe.getField('NumberOfLocations__c');
+	}
+	
+	@IsTest
+	private static void testMasterUpdatesSkipped() {
+		
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+
+		// Test data
+		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
+					
+		// Test data for rollup A
+		Decimal expectedResultA = 600;
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		
+		// Configure rollup A
+		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummaryA.ParentObject__c = 'Account';
+		rollupSummaryA.ChildObject__c = 'Opportunity';
+		rollupSummaryA.RelationShipField__c = 'AccountId';
+		rollupSummaryA.FieldToAggregate__c = 'Amount';
+		rollupSummaryA.AggregateOperation__c = operationA.name();
+		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+		rollupSummaryA.Active__c = true;
+		rollupSummaryA.CalculationMode__c = 'Process Builder';
+
+		// Insert rollup definitions
+		insert new List<LookupRollupSummary__c> { rollupSummaryA };
+		
+		// Test data
+		Account account1 = new Account();
+		account1.Name = 'Test Account 1';
+		Account account2 = new Account();
+		account2.Name = 'Test Account 2';
+		List<Account> accounts = new List<Account> { account1, account2 };
+		insert accounts;
+		List<Opportunity> opps = new List<Opportunity>(); 
+		for(Decimal rollupValue : rollups)
+		{
+			Opportunity opp = new Opportunity();
+			opp.Name = 'Test Opportunity';
+			opp.StageName = 'Open';
+			opp.CloseDate = System.today();
+			opp.AccountId = account1.Id;
+			opp.Amount = rollupValue;
+			opps.add(opp);			
+		}
+		insert opps;
+		
+		// Assert rollups are null
+		Id accountId = account1.Id;
+		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(null, accountResult.AnnualRevenue);
+
+		// Run a full calculate for the given master records (used by the Full Recalc mode)
+		RollupService.updateMasterRollups(new Set<String> { rollupSummaryA.Id }, new Set<Id> { account1.Id, account2.Id });
+		
+		// Assert rollups are calculated
+		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+		
+		// Capture query and dml rows used up so far
+		Integer queryRows = Limits.getQueryRows();
+		Integer dmlRows = Limits.getDmlRows();
+
+		// Run a full calculate for the given master records (used by the Full Recalc mode)
+		RollupService.updateMasterRollups(new Set<String> { rollupSummaryA.Id }, new Set<Id> { account1.Id, account2.Id });
+		
+		// Assert what has been done DML and Query rows wise
+		System.assertEquals(
+			/* Expected no further DML rows to be updated*/ 0,
+			Limits.getDmlRows() - dmlRows);
+		System.assertEquals(  
+			/* Expected following additional query rows */
+			/* Lookup row **/ + 1 
+			/* Rollup query rows (children) **/ + rollups.size() 
+			/* Master query rows (parents) */ + accounts.size(),
+			Limits.getQueryRows() - queryRows);					
+		
+		// Assert rollups are still ok
+		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+		
+		// Modify child record and thus expected rollup value (which will now be different from the one on the db)
+		expectedResultA = 550;
+		opps[0].Amount = 200;
+		update opps[0];		
+
+		// Capture query and dml rows used up so far
+		queryRows = Limits.getQueryRows();
+		dmlRows = Limits.getDmlRows();
+
+		// Run the Calculate job (inlined as Limits stats are not available for Apex jobs run in tests)
+		RollupService.updateMasterRollups(new Set<String> { rollupSummaryA.Id }, new Set<Id> { account1.Id, account2.Id });
+		
+		// Assert what has been done DML and Query rows wise
+		System.assertEquals(
+			/* Expected one DML row to be updated*/ 1,
+			Limits.getDmlRows() - dmlRows);
+		System.assertEquals(  
+			/* Expected following additional query rows */
+			/* Lookup row **/ + 1 
+			/* Rollup query rows (children) **/ + rollups.size() 
+			/* Master query rows (parents) */ + accounts.size(),
+			Limits.getQueryRows() - queryRows);					
+		
+		// Assert rollups are still ok
+		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+	}
 	
 	@IsTest
 	private static void testJobRecordCleanedUp() {
