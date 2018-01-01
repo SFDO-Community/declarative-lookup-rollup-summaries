@@ -164,8 +164,8 @@
 				</apex:pageBlockSection>		
 				<apex:pageBlockSection title="Advanced" columns="1">
 					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCode__c.inlineHelpText}">
-						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCode__c.Label}"/>
-						<apex:inputTextArea cols="64" rows="5" value="{!LookupRollupSummary.TestCode__c}"/>
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCode2__c.Label}"/>
+						<apex:inputTextArea cols="64" rows="5" value="{!LookupRollupSummary.TestCode2__c}"/>
 					</apex:pageBlockSectionItem>
 					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCodeSeeAllData__c.inlineHelpText}">
 						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCodeSeeAllData__c.Label}"/>

@@ -34,14 +34,18 @@ public class RollupSummariesSelector
 	private CustomMetadataSelector m_customMetadataSelector;
 
 	public RollupSummariesSelector() { 
-		this(false);
+		this(false, false);
 	}
 
 	public RollupSummariesSelector(boolean enforceSecurity) {
+		this(enforceSecurity, false);
+	}
+	
+	public RollupSummariesSelector(boolean enforceSecurity, boolean forEdit) {
 
 		// Dual selectors for querying custom object and custom metadata stores
-		m_customObjectSelector = new CustomObjectSelector(enforceSecurity);
-		m_customMetadataSelector = new CustomMetadataSelector(enforceSecurity);
+		m_customObjectSelector = new CustomObjectSelector(enforceSecurity, forEdit);
+		m_customMetadataSelector = new CustomMetadataSelector(enforceSecurity, forEdit);
 	}
 
 	/**
@@ -94,11 +98,11 @@ public class RollupSummariesSelector
 	 **/
 	public class CustomObjectSelector extends fflib_SObjectSelector {
 
-		public CustomObjectSelector() { 
-			super();
+		public CustomObjectSelector(boolean enforceSecurity) {
+			this(enforceSecurity, false);
 		}
 
-		public CustomObjectSelector(boolean enforceSecurity) {
+		public CustomObjectSelector(boolean enforceSecurity, boolean forEdit) {
 			super(false, enforceSecurity, enforceSecurity);
 		}
 
@@ -199,39 +203,47 @@ public class RollupSummariesSelector
 	 **/
 	public class CustomMetadataSelector extends fflib_SObjectSelector {
 
-		public CustomMetadataSelector() { 
-			super();
-		}
+		private boolean forEdit = false;
 
 		public CustomMetadataSelector(boolean enforceSecurity) {
+			this(enforceSecurity, false);
+		}
+
+		public CustomMetadataSelector(boolean enforceSecurity, boolean forEdit) {
 			super(false, enforceSecurity, enforceSecurity);
+			this.forEdit = forEdit;
 		}
 
 		public List<Schema.SObjectField> getSObjectFieldList()
 		{
-			return new List<Schema.SObjectField> {
-				LookupRollupSummary2__mdt.Id,
-				LookupRollupSummary2__mdt.Label,
-				LookupRollupSummary2__mdt.DeveloperName,
-				LookupRollupSummary2__mdt.Active__c,
-				LookupRollupSummary2__mdt.AggregateOperation__c,
-				LookupRollupSummary2__mdt.AggregateResultField__c,
-				LookupRollupSummary2__mdt.CalculationMode__c,
-				LookupRollupSummary2__mdt.ChildObject__c,
-				LookupRollupSummary2__mdt.ConcatenateDelimiter__c,
-				LookupRollupSummary2__mdt.FieldToAggregate__c,
-				LookupRollupSummary2__mdt.FieldToOrderBy__c,
-				LookupRollupSummary2__mdt.ParentObject__c,
-				LookupRollupSummary2__mdt.RelationshipCriteria__c,
-				LookupRollupSummary2__mdt.RelationshipCriteriaFields__c,
-				LookupRollupSummary2__mdt.RelationshipField__c,
-				LookupRollupSummary2__mdt.CalculationSharingMode__c,
-				LookupRollupSummary2__mdt.TestCode__c,
-				LookupRollupSummary2__mdt.TestCodeSeeAllData__c,
-				LookupRollupSummary2__mdt.Description__c,
-				LookupRollupSummary2__mdt.AggregateAllRows__c,
-				LookupRollupSummary2__mdt.RowLimit__c
-			};
+			List<Schema.SObjectField> selectorFields = 
+				new List<Schema.SObjectField> {
+					LookupRollupSummary2__mdt.Id,
+					LookupRollupSummary2__mdt.Label,
+					LookupRollupSummary2__mdt.DeveloperName,
+					LookupRollupSummary2__mdt.Active__c,
+					LookupRollupSummary2__mdt.AggregateOperation__c,
+					LookupRollupSummary2__mdt.AggregateResultField__c,
+					LookupRollupSummary2__mdt.CalculationMode__c,
+					LookupRollupSummary2__mdt.ChildObject__c,
+					LookupRollupSummary2__mdt.ConcatenateDelimiter__c,
+					LookupRollupSummary2__mdt.FieldToAggregate__c,
+					LookupRollupSummary2__mdt.FieldToOrderBy__c,
+					LookupRollupSummary2__mdt.ParentObject__c,
+					LookupRollupSummary2__mdt.RelationshipCriteria__c,
+					LookupRollupSummary2__mdt.RelationshipCriteriaFields__c,
+					LookupRollupSummary2__mdt.RelationshipField__c,
+					LookupRollupSummary2__mdt.CalculationSharingMode__c,
+					LookupRollupSummary2__mdt.TestCode__c,
+					LookupRollupSummary2__mdt.TestCodeSeeAllData__c,
+					LookupRollupSummary2__mdt.Description__c,
+					LookupRollupSummary2__mdt.AggregateAllRows__c,
+					LookupRollupSummary2__mdt.RowLimit__c
+				};
+			if(forEdit) {
+				selectorFields.add(LookupRollupSummary2__mdt.TestCode2__c);				
+			}
+			return selectorFields;
 		}
 
 		public Schema.SObjectType getSObjectType()

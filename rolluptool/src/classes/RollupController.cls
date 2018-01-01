@@ -66,7 +66,7 @@ public with sharing class RollupController
 	public RollupController(ApexPages.StandardController standardController)
 	{
 		// Query Lookup Rollup Summary record
-		RollupSummary = new RollupSummariesSelector().selectById(new Set<String> { (String) standardController.getId() })[0];
+		RollupSummary = new RollupSummariesSelector(true, true).selectById(new Set<String> { (String) standardController.getId() })[0];
 		
 		// Generate names for test and triggers to deploy / undeploy
 		RollupTriggerName = RollupSummaries.makeTriggerName(RollupSummary);

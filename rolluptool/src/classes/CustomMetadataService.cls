@@ -100,6 +100,10 @@ public class CustomMetadataService {
 						cmdv.value = fieldValueNumber.format();											
 					}
 				}
+			} else if( dsr.getType() == Schema.DisplayType.String) {
+				cmdv.value = fieldValue == null ? '' : (String) fieldValue;
+			} else if( dsr.getType() == Schema.DisplayType.TextArea) {
+				cmdv.value = fieldValue == null ? '' : (String) fieldValue;
 			} else {
 				cmdv.value = fieldValue + ''; // TODO: More work here, type conversion				
 			}

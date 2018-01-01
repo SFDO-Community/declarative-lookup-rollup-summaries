@@ -189,6 +189,16 @@
         <unique>false</unique>
     </fields>
     <fields>
+        <fullName>TestCode2__c</fullName>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>This tool utilises a dynamically generated Apex Trigger and by default a generated Apex Test. Use this field if instructed by a developer to replace the generated test code. See Wiki on GitHub.</inlineHelpText>
+        <label>Test Code</label>
+        <length>131072</length>
+        <type>LongTextArea</type>
+        <visibleLines>8</visibleLines>
+    </fields>
+    <fields>
         <fullName>TestCodeSeeAllData__c</fullName>
         <defaultValue>false</defaultValue>
         <deprecated>false</deprecated>
@@ -204,7 +214,7 @@
         <externalId>false</externalId>
         <fieldManageability>DeveloperControlled</fieldManageability>
         <inlineHelpText>This tool utilises a dynamically generated Apex Trigger and by default a generated Apex Test. Use this field if instructed by a developer to replace the generated test code. See Wiki on GitHub.</inlineHelpText>
-        <label>Test Code</label>
+        <label>Test Code (Deprecated)</label>
         <required>false</required>
         <type>TextArea</type>
     </fields>

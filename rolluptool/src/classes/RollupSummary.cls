@@ -53,7 +53,7 @@ public class RollupSummary {
 	 * Wraps the given LookupRollupSummary__c or LookupRollupSummary2__c
 	 **/
 	public RollupSummary(SObject record) {
-		this.Record = record;
+		this.Record = migrate(record);
 		this.Fields = new RecordMetadata(this);
 	}
 
@@ -142,8 +142,8 @@ public class RollupSummary {
 	}
 	
 	public String TestCode {
-		get { return (String) Record.get('TestCode__c'); }
-		set { Record.put('TestCode__c', value); } 
+		get { return (String) Record.get(Record instanceof LookupRollupSummary2__mdt ? 'TestCode2__c' : 'TestCode__c'); }
+		set { Record.put(Record instanceof LookupRollupSummary2__mdt ? 'TestCode2__c' : 'TestCode__c', value); } 
 	}
 	
 	public Boolean TestCodeSeeAllData {
@@ -337,5 +337,30 @@ public class RollupSummary {
 			summariesById.put(record.Id, record);
 		}
 		return summariesById;
+	}
+	
+	/**
+	 * Migrate in memory representation to latest by migrating values from old fields to new ones accordingly
+	 *   (this approach makes code elsewhere in the tool simpler as it only deals with the latest fields)
+	 **/
+	public static SObject migrate(SObject rollup) {
+		// No migrations for legacy Custom Object based rollups presently
+		if(rollup instanceof LookupRollupSummary__c) {						
+			return rollup;
+		}
+		// Perform various field migrations for Custom Metadata based rollups (done via JSON, since Apex cannot write to MDT fields)
+		String jsonRollup = JSON.serialize(rollup, true);
+		Map<String, Object> jsonParsed = (Map<String, Object>) JSON.deserializeUntyped(jsonRollup);
+		Map<String, Object> jsonNew = new Map<String, Object>();
+		for(String field : jsonParsed.keySet()) {
+			// Migrate TestCode__c to TestCode2__c
+			if(field.endsWith('TestCode__c')) {
+				jsonNew.put(field.replace('TestCode__c', 'TestCode2__c'), jsonParsed.get(field));
+			// Migrate all other fields as-is
+			} else {
+				jsonNew.put(field, jsonParsed.get(field));
+			}			
+		}
+		return (SObject) JSON.deserializeStrict(JSON.serialize(jsonNew),LookupRollupSummary2__mdt.class);		
 	}	
 }

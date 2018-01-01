@@ -40,7 +40,7 @@ public with sharing class ManageLookupRollupSummariesController {
 		// List current rollup custom metadata configs
 		List<SelectOption> options = new List<SelectOption>();
 		options.add(new SelectOption('[new]','Create new...'));
-		for(RollupSummary rollup : new RollupSummariesSelector.CustomMetadataSelector().selectAll())
+		for(RollupSummary rollup : new RollupSummariesSelector.CustomMetadataSelector(false, false).selectAll())
 			options.add(new SelectOption(rollup.Id,rollup.Name));
 		return options;
 	}
@@ -59,14 +59,14 @@ public with sharing class ManageLookupRollupSummariesController {
 		selectedLookup = (Id) ApexPages.currentPage().getParameters().get('id');		
 		if(selectedLookup!=null) {
 			LookupRollupSummary = (LookupRollupSummary2__mdt) 
-				new RollupSummariesSelector.CustomMetadataSelector().
+				new RollupSummariesSelector.CustomMetadataSelector(false, true).
 					selectById(new Set<String> { selectedLookup })[0].Record;
 		} 
 		else {
 			selectedLookup = ApexPages.currentPage().getParameters().get('developerName');		
 			if(selectedLookup!=null) {
 				LookupRollupSummary = (LookupRollupSummary2__mdt) 
-					new RollupSummariesSelector.CustomMetadataSelector().
+					new RollupSummariesSelector.CustomMetadataSelector(false, true).
 						selectByDeveloperName(new Set<String> { selectedLookup })[0].Record;
 				selectedLookup = LookupRollupSummary.Id;
 			}			
