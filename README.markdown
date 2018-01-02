@@ -86,6 +86,8 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 - Bug [Error When Adding a Note in SF Lightning Due to DLRS Trigger](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/558)
 - Bug [Calculate new roll up failing on "The rollup must be Active before you can run a Calculate job"](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/511)
 
+**UPGRADE NOTE:** If you access the Rollup definitions via the standard Salesforce Custom Metadata UI under the Setup menu. Make sure to remove 'Test Code (Depricated)' (small one) from the layout and add the new 'Test Code' field (large one). If you only ever use the Manage Rollup Summaries tab you do not need to worry about this. Also note that any test code placed in the original smaller field will be automatically migrated to the new field on next edit (via Manage Rollup Summaries tab).
+
 **Release Version 2.9**
 _______________________
 
