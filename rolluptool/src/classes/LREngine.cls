@@ -186,7 +186,7 @@ public class LREngine {
         // #2 Where clause
         String whereClause = '';
         if (ctx.detailWhereClause != null && ctx.detailWhereClause.trim().length() > 0) {
-            whereClause = 'AND ' + ctx.detailWhereClause ;
+            whereClause = 'AND (' + ctx.detailWhereClause +')';
         }
         
         // #3 Group by field

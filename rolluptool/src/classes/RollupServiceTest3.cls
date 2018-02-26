@@ -1259,6 +1259,53 @@ private with sharing class RollupServiceTest3
 	}
 
 	/**
+	 * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/631
+	 **/
+	private testmethod static void testOrInCriteria()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		// Configure rollup
+		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.ChildObject__c = 'Opportunity';
+		rollupSummary.RelationShipField__c = 'AccountId';
+		rollupSummary.RelationShipCriteria__c = 'CloseDate < TODAY OR Amount > 100';
+		rollupSummary.FieldToAggregate__c = 'CloseDate';
+		rollupSummary.AggregateOperation__c = 'Max';
+		rollupSummary.AggregateResultField__c = 'SLAExpirationDate__c';
+		rollupSummary.Active__c = true;
+		rollupSummary.CalculationMode__c = 'Realtime';
+		insert new List<LookupRollupSummary__c> { rollupSummary };
+		
+		// Test data
+		Account account = new Account();
+		account.Name = 'Test Account';
+		account.AnnualRevenue = 0;
+		insert account;
+		Opportunity opp = new Opportunity(); 
+		opp.Name = 'Test Opportunity';
+		opp.StageName = 'Open';
+		opp.CloseDate = System.today();
+		opp.AccountId = account.Id;
+		opp.Amount = 100;
+		insert opp;
+		
+		// Assert rollup
+		Id accountId = account.Id;
+		System.assertEquals(null, Database.query('select SLAExpirationDate__c from Account where Id = :accountId')[0].get(ACCOUNT_SLA_EXPIRATION_DATE));
+		
+		// Delete Opportunity
+		delete opp;
+		
+		// Assert rollup
+		System.assertEquals(null, Database.query('select SLAExpirationDate__c from Account where Id = :accountId')[0].get(ACCOUNT_SLA_EXPIRATION_DATE));								 	
+	}
+
+	/**
 	 * Create test user
 	 **/
 	private static User createUser()
