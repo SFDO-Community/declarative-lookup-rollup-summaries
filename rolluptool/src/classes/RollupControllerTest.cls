@@ -33,97 +33,100 @@ private class RollupControllerTest
 		if(!TestContext.isSupported())
 			return;
 		
-    	// Metadata API web Service mock implementation for tests
-        Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-		
-		// Test data
-		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-		rollupSummaryA.ParentObject__c = 'Account';
-		rollupSummaryA.ChildObject__c = 'Opportunity';
-		rollupSummaryA.RelationShipField__c = 'AccountId';
-		rollupSummaryA.RelationShipCriteria__c = null;
-		rollupSummaryA.FieldToAggregate__c = 'Amount';
-		rollupSummaryA.AggregateOperation__c = 'Sum';
-		rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-		rollupSummaryA.Active__c = true;
-		rollupSummaryA.CalculationMode__c = 'Realtime';			
-		LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-		rollupSummaryB.Name = 'Total Opportunities into Number Of Locations on Accountt';
-		rollupSummaryB.ParentObject__c = 'Account';
-		rollupSummaryB.ChildObject__c = 'Opportunity';
-		rollupSummaryB.RelationShipField__c = 'AccountId';
-		rollupSummaryB.RelationShipCriteria__c = null;
-		rollupSummaryB.FieldToAggregate__c = 'CloseDate';
-		rollupSummaryB.AggregateOperation__c = 'Count';
-		rollupSummaryB.AggregateResultField__c = 'NumberOfLocations__c';
-		rollupSummaryB.Active__c = true;
-		rollupSummaryB.CalculationMode__c = 'Realtime';
-		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
-								
-		// Open test context, permits callouts following DML
-		Test.startTest();
-					
-		// Assert initial state of controller when the trigger for the child object is deployed
-		RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummaryA ));
-		System.assertEquals(true, controller.Deployed);
-		System.assertEquals('RollupServiceTestTrigger', controller.RollupTriggerName);
-		System.assertEquals('RollupSummariesTest', controller.RollupTriggerTestName);
-		System.assertEquals('RollupServiceTestTrigger', controller.RollupTrigger.Name);
-		System.assertEquals('RollupSummariesTest', controller.RollupTriggerTest.Name);
-		System.assertEquals(controller.RollupTrigger.Body, controller.getTriggerCode());
-		System.assertEquals(controller.RollupTriggerTest.Body, controller.getTriggerTestCode());
-		System.assertEquals(
-			    '<?xml version="1.0" encoding="UTF-8"?>' + 
-				'<Package xmlns="http://soap.sforce.com/2006/04/metadata">' + 
-	    			'<version>' + RollupController.API_VERSION + '</version>' + 
-				'</Package>',	
-			controller.getPackageXml());
-		System.assertEquals(
-			    '<?xml version="1.0" encoding="UTF-8"?>' + 
-				'<Package xmlns="http://soap.sforce.com/2006/04/metadata">' + 
-	    			'<types>' + 
-	        			'<members>'+controller.RollupTriggerName+'</members>' +
-	        			'<name>ApexTrigger</name>' + 
-	    			'</types>' + 
-	    			'<types>' + 
-	        			'<members>'+controller.RollupTriggerTestName+'</members>' +
-	        			'<name>ApexClass</name>' + 
-	    			'</types>' + 
-	    			'<version>' + RollupController.API_VERSION + '</version>' + 
-				'</Package>',				
-				controller.getDestructiveChangesXml());
-		System.assertEquals(
-		    '<?xml version="1.0" encoding="UTF-8"?>' +
-			'<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
-			    '<status>Active</status>' +
-			'</ApexTrigger>',		
-			controller.getTriggerCodeMetadata());
-		System.assertEquals(
-		    '<?xml version="1.0" encoding="UTF-8"?>' +
-			'<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
-			    '<status>Active</status>' +
-			'</ApexClass>',		
-			controller.getTriggerTestCodeMetadata());
+		System.runAs(setupTestUser('Read Only')) {
 			
-		// Undeploy (no need to emulate the zip contents prepared by the client as mock service does not bother with this)
-		controller.deployZip();
-		
-		// Check deployment (mock service impl emulates a positive response)
-		// TODO: Revist this, broken since started making HTTP callouts in the init function 
-		// controller.checkAsyncRequest();
-		
-		Test.stopTest();
-		
-		// Assert Active__c is false on lookups referencing this child object
-		// TODO: Revist this, broken since started making HTTP callouts in the init function
-		/*
-		List<LookupRollupSummary__c> lookups = [select Active__c from LookupRollupSummary__c];
-		System.assertEquals(false, lookups[0].Active__c);
-		System.assertEquals(false, lookups[1].Active__c);
-		*/
+	    	// Metadata API web Service mock implementation for tests
+	        Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+			
+			// Test data
+			LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+			rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+			rollupSummaryA.ParentObject__c = 'Account';
+			rollupSummaryA.ChildObject__c = 'Opportunity';
+			rollupSummaryA.RelationShipField__c = 'AccountId';
+			rollupSummaryA.RelationShipCriteria__c = null;
+			rollupSummaryA.FieldToAggregate__c = 'Amount';
+			rollupSummaryA.AggregateOperation__c = 'Sum';
+			rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+			rollupSummaryA.Active__c = true;
+			rollupSummaryA.CalculationMode__c = 'Realtime';			
+			LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+			rollupSummaryB.Name = 'Total Opportunities into Number Of Locations on Accountt';
+			rollupSummaryB.ParentObject__c = 'Account';
+			rollupSummaryB.ChildObject__c = 'Opportunity';
+			rollupSummaryB.RelationShipField__c = 'AccountId';
+			rollupSummaryB.RelationShipCriteria__c = null;
+			rollupSummaryB.FieldToAggregate__c = 'CloseDate';
+			rollupSummaryB.AggregateOperation__c = 'Count';
+			rollupSummaryB.AggregateResultField__c = 'NumberOfLocations__c';
+			rollupSummaryB.Active__c = true;
+			rollupSummaryB.CalculationMode__c = 'Realtime';
+			insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
+									
+			// Open test context, permits callouts following DML
+			Test.startTest();
+						
+			// Assert initial state of controller when the trigger for the child object is deployed
+			RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummaryA ));
+			System.assertEquals(true, controller.Deployed);
+			System.assertEquals('RollupServiceTestTrigger', controller.RollupTriggerName);
+			System.assertEquals('RollupSummariesTest', controller.RollupTriggerTestName);
+			System.assertEquals('RollupServiceTestTrigger', controller.RollupTrigger.Name);
+			System.assertEquals('RollupSummariesTest', controller.RollupTriggerTest.Name);
+			System.assertEquals(controller.RollupTrigger.Body, controller.getTriggerCode());
+			System.assertEquals(controller.RollupTriggerTest.Body, controller.getTriggerTestCode());
+			System.assertEquals(
+				    '<?xml version="1.0" encoding="UTF-8"?>' + 
+					'<Package xmlns="http://soap.sforce.com/2006/04/metadata">' + 
+		    			'<version>' + RollupController.API_VERSION + '</version>' + 
+					'</Package>',	
+				controller.getPackageXml());
+			System.assertEquals(
+				    '<?xml version="1.0" encoding="UTF-8"?>' + 
+					'<Package xmlns="http://soap.sforce.com/2006/04/metadata">' + 
+		    			'<types>' + 
+		        			'<members>'+controller.RollupTriggerName+'</members>' +
+		        			'<name>ApexTrigger</name>' + 
+		    			'</types>' + 
+		    			'<types>' + 
+		        			'<members>'+controller.RollupTriggerTestName+'</members>' +
+		        			'<name>ApexClass</name>' + 
+		    			'</types>' + 
+		    			'<version>' + RollupController.API_VERSION + '</version>' + 
+					'</Package>',				
+					controller.getDestructiveChangesXml());
+			System.assertEquals(
+			    '<?xml version="1.0" encoding="UTF-8"?>' +
+				'<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
+				    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
+				    '<status>Active</status>' +
+				'</ApexTrigger>',		
+				controller.getTriggerCodeMetadata());
+			System.assertEquals(
+			    '<?xml version="1.0" encoding="UTF-8"?>' +
+				'<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
+				    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
+				    '<status>Active</status>' +
+				'</ApexClass>',		
+				controller.getTriggerTestCodeMetadata());
+				
+			// Undeploy (no need to emulate the zip contents prepared by the client as mock service does not bother with this)
+			controller.deployZip();
+			
+			// Check deployment (mock service impl emulates a positive response)
+			// TODO: Revist this, broken since started making HTTP callouts in the init function 
+			// controller.checkAsyncRequest();
+			
+			Test.stopTest();
+			
+			// Assert Active__c is false on lookups referencing this child object
+			// TODO: Revist this, broken since started making HTTP callouts in the init function
+			/*
+			List<LookupRollupSummary__c> lookups = [select Active__c from LookupRollupSummary__c];
+			System.assertEquals(false, lookups[0].Active__c);
+			System.assertEquals(false, lookups[1].Active__c);
+			*/			
+		}
 	}
 
 	private testmethod static void testNotDeployedStatus()
@@ -131,93 +134,96 @@ private class RollupControllerTest
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
-		
-    	// Metadata API web Service mock implementation for tests
-        Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-
-		// Test data		
-		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
-		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-		rollupSummary.ParentObject__c = 'Account';
-		rollupSummary.ChildObject__c = 'Contact';
-		rollupSummary.RelationShipField__c = 'AccountId';
-		rollupSummary.RelationShipCriteria__c = null;
-		rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
-		rollupSummary.AggregateOperation__c = 'Count';
-		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
-		rollupSummary.Active__c = false;
-		rollupSummary.CalculationMode__c = 'Realtime';
-		insert rollupSummary;
 			
-		// Open test context, permits callouts following DML
-		Test.startTest();
-		
-		// Assert initial state of controller when the trigger for the child object is deployed
-		RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummary ));
-		System.assertEquals(false, controller.Deployed);
-		System.assertEquals(null, controller.RollupTrigger);
-		System.assertEquals(null, controller.RollupTriggerTest);
-		System.assertEquals(
-				'/**\n' +
-				' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-				' **/\n' +
-				'trigger ' + controller.RollupTriggerName + ' on ' + rollupSummary.ChildObject__c + '\n' + 
-				'    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n'+ 
-				'{\n'+
-				'    ' + Utilities.classPrefix() + 'RollupService.triggerHandler(Contact.SObjectType);\n'+
-				'}\n', controller.getTriggerCode());
-		System.assertEquals(
-			 	'/**\n' +
-				' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-				' **/\n' +	
-				'@IsTest\n' +	 
-			    'private class ' + controller.RollupTriggerTestName + '\n' +  
-				'{\n' + 
-				'    @IsTest\n' +
-				'    private static void testTrigger()\n' +
-				'    {\n' + 
-				'        // Force the ' + controller.RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-				'        ' + Utilities.classPrefix() + 'RollupService.testHandler(new ' + rollupSummary.ChildObject__c + '());\n' +
-				'    }\n' +
-				'}', controller.getTriggerTestCode());
-		System.assertEquals(
-			    '<?xml version="1.0" encoding="UTF-8"?>' + 
-				'<Package xmlns="http://soap.sforce.com/2006/04/metadata">' + 
-	    			'<types>' + 
-	        			'<members>'+controller.RollupTriggerName+'</members>' +
-	        			'<name>ApexTrigger</name>' + 
-	    			'</types>' + 
-	    			'<types>' + 
-	        			'<members>'+controller.RollupTriggerTestName+'</members>' +
-	        			'<name>ApexClass</name>' + 
-	    			'</types>' + 
-	    			'<types>' + 
-	        			'<members>'+controller.RollupParentTriggerName+'</members>' +
-	        			'<name>ApexTrigger</name>' + 
-	    			'</types>' + 
-	    			'<types>' + 
-	        			'<members>'+controller.RollupParentTriggerTestName+'</members>' +
-	        			'<name>ApexClass</name>' + 
-	    			'</types>' + 
-	    			'<version>' + RollupController.API_VERSION + '</version>' + 
-				'</Package>',
-			controller.getPackageXml());
-		System.assertEquals(
-		    '<?xml version="1.0" encoding="UTF-8"?>' +
-			'<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
-			    '<status>Active</status>' +
-			'</ApexTrigger>',
-			controller.getTriggerCodeMetadata());
-		System.assertEquals(
-		    '<?xml version="1.0" encoding="UTF-8"?>' +
-			'<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-			    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
-			    '<status>Active</status>' +
-			'</ApexClass>',		
-			controller.getTriggerTestCodeMetadata());
-											
-		Test.stopTest();
+		System.runAs(setupTestUser('Read Only')) {
+						
+	    	// Metadata API web Service mock implementation for tests
+	        Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+	
+			// Test data		
+			LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+			rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+			rollupSummary.ParentObject__c = 'Account';
+			rollupSummary.ChildObject__c = 'Contact';
+			rollupSummary.RelationShipField__c = 'AccountId';
+			rollupSummary.RelationShipCriteria__c = null;
+			rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
+			rollupSummary.AggregateOperation__c = 'Count';
+			rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+			rollupSummary.Active__c = false;
+			rollupSummary.CalculationMode__c = 'Realtime';
+			insert rollupSummary;
+				
+			// Open test context, permits callouts following DML
+			Test.startTest();
+			
+			// Assert initial state of controller when the trigger for the child object is deployed
+			RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummary ));
+			System.assertEquals(false, controller.Deployed);
+			System.assertEquals(null, controller.RollupTrigger);
+			System.assertEquals(null, controller.RollupTriggerTest);
+			System.assertEquals(
+					'/**\n' +
+					' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+					' **/\n' +
+					'trigger ' + controller.RollupTriggerName + ' on ' + rollupSummary.ChildObject__c + '\n' + 
+					'    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n'+ 
+					'{\n'+
+					'    ' + Utilities.classPrefix() + 'RollupService.triggerHandler(Contact.SObjectType);\n'+
+					'}\n', controller.getTriggerCode());
+			System.assertEquals(
+				 	'/**\n' +
+					' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+					' **/\n' +	
+					'@IsTest\n' +	 
+				    'private class ' + controller.RollupTriggerTestName + '\n' +  
+					'{\n' + 
+					'    @IsTest\n' +
+					'    private static void testTrigger()\n' +
+					'    {\n' + 
+					'        // Force the ' + controller.RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
+					'        ' + Utilities.classPrefix() + 'RollupService.testHandler(new ' + rollupSummary.ChildObject__c + '());\n' +
+					'    }\n' +
+					'}', controller.getTriggerTestCode());
+			System.assertEquals(
+				    '<?xml version="1.0" encoding="UTF-8"?>' + 
+					'<Package xmlns="http://soap.sforce.com/2006/04/metadata">' + 
+		    			'<types>' + 
+		        			'<members>'+controller.RollupTriggerName+'</members>' +
+		        			'<name>ApexTrigger</name>' + 
+		    			'</types>' + 
+		    			'<types>' + 
+		        			'<members>'+controller.RollupTriggerTestName+'</members>' +
+		        			'<name>ApexClass</name>' + 
+		    			'</types>' + 
+		    			'<types>' + 
+		        			'<members>'+controller.RollupParentTriggerName+'</members>' +
+		        			'<name>ApexTrigger</name>' + 
+		    			'</types>' + 
+		    			'<types>' + 
+		        			'<members>'+controller.RollupParentTriggerTestName+'</members>' +
+		        			'<name>ApexClass</name>' + 
+		    			'</types>' + 
+		    			'<version>' + RollupController.API_VERSION + '</version>' + 
+					'</Package>',
+				controller.getPackageXml());
+			System.assertEquals(
+			    '<?xml version="1.0" encoding="UTF-8"?>' +
+				'<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
+				    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
+				    '<status>Active</status>' +
+				'</ApexTrigger>',
+				controller.getTriggerCodeMetadata());
+			System.assertEquals(
+			    '<?xml version="1.0" encoding="UTF-8"?>' +
+				'<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
+				    '<apiVersion>' + RollupController.API_VERSION + '</apiVersion>' + 
+				    '<status>Active</status>' +
+				'</ApexClass>',		
+				controller.getTriggerTestCodeMetadata());
+												
+			Test.stopTest();
+		}
 	}
 
 	private testmethod static void testWithCustomTestCode()
@@ -226,45 +232,48 @@ private class RollupControllerTest
 		if(!TestContext.isSupported())
 			return;
 		
-    	// Metadata API web Service mock implementation for tests
-        Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-		
-		// Test data
-		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
-		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-		rollupSummary.ParentObject__c = 'Account';
-		rollupSummary.ChildObject__c = 'Contact';
-		rollupSummary.RelationShipField__c = 'AccountId';
-		rollupSummary.RelationShipCriteria__c = null;
-		rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
-		rollupSummary.AggregateOperation__c = 'Count';
-		rollupSummary.AggregateResultField__c = 'AnnualRevenue';
-		rollupSummary.Active__c = false;
-		rollupSummary.CalculationMode__c = 'Realtime';
-		rollupSummary.TestCode__c = 'System.assertEquals(1,1);';
-		rollupSummary.TestCodeSeeAllData__c = true;
-		insert rollupSummary;
-
-		// Open test context, permits callouts following DML
-		Test.startTest();
-
-		// Assert initial state of controller when the trigger for the child object is deployed
-		RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummary ));
-		System.assertEquals(
-			 	'/**\n' +
-				' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-				' **/\n' +	
-				'@IsTest\n' +	 
-			    'private class ' + controller.RollupTriggerTestName + '\n' +  
-				'{\n' + 
-				'    @IsTest(SeeAllData=true)\n' +
-				'    private static void testTrigger()\n' +
-				'    {\n' + 
-				'System.assertEquals(1,1);\n' +
-				'    }\n' +
-				'}', controller.getTriggerTestCode());
-	}	
+		System.runAs(setupTestUser('Read Only')) {
+					
+	    	// Metadata API web Service mock implementation for tests
+	        Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+			
+			// Test data
+			LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+			rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+			rollupSummary.ParentObject__c = 'Account';
+			rollupSummary.ChildObject__c = 'Contact';
+			rollupSummary.RelationShipField__c = 'AccountId';
+			rollupSummary.RelationShipCriteria__c = null;
+			rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
+			rollupSummary.AggregateOperation__c = 'Count';
+			rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+			rollupSummary.Active__c = false;
+			rollupSummary.CalculationMode__c = 'Realtime';
+			rollupSummary.TestCode__c = 'System.assertEquals(1,1);';
+			rollupSummary.TestCodeSeeAllData__c = true;
+			insert rollupSummary;
 	
+			// Open test context, permits callouts following DML
+			Test.startTest();
+	
+			// Assert initial state of controller when the trigger for the child object is deployed
+			RollupController controller = new RollupController(new ApexPages.StandardController( rollupSummary ));
+			System.assertEquals(
+				 	'/**\n' +
+					' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+					' **/\n' +	
+					'@IsTest\n' +	 
+				    'private class ' + controller.RollupTriggerTestName + '\n' +  
+					'{\n' + 
+					'    @IsTest(SeeAllData=true)\n' +
+					'    private static void testTrigger()\n' +
+					'    {\n' + 
+					'System.assertEquals(1,1);\n' +
+					'    }\n' +
+					'}', controller.getTriggerTestCode());
+		}	
+	}	
+		
     /**
      * Metadata API web service mock class for tests above
      **/
@@ -314,5 +323,56 @@ private class RollupControllerTest
 			}
 			return;
 		}
-	}    		
+	}    	
+	
+	static User setupTestUser(String profileName){
+		//username global uniqueness is still enforced in tests 
+		//make sure we get something unique to avoid issues with parallel tests
+		String uniqueness = DateTime.now()+':'+Math.random();
+		try{ 
+			throw new NullPointerException();
+		}catch(Exception e){
+			uniqueness += e.getStackTraceString(); //includes the top level test method name without having to pass it
+		}
+		Profile p = [SELECT id, Name FROM Profile WHERE Name = :profileName];
+		User result = new User(
+			username=UserInfo.getUserId()+'.'+uniqueness.HashCode()+'@'+UserInfo.getOrganizationId()+'.sfdcOrg',
+			alias = 'testExec',
+			email='apextests@example.com',
+			emailencodingkey='UTF-8',
+			lastname='Testing',
+			languagelocalekey='en_US',
+			localesidkey='en_US',
+			profileid = p.Id,
+			timezonesidkey='America/Los_Angeles'
+		);
+		insert result;
+		
+		// Grant permissions to DLRS 
+		PermissionSetAssignment psa = new PermissionSetAssignment();
+		psa.AssigneeId = result.Id;
+		psa.PermissionSetId = [select Id from PermissionSet where Name = 'LookupRollupSummariesFull'].Id;
+		insert psa; 
+		
+		// Account permission set
+		PermissionSet ps = new PermissionSet(Name='Account', Label='Account');
+		insert ps;		
+		ObjectPermissions accountPerm = 
+			new ObjectPermissions(
+				SobjectType = 'Account',
+				ParentId = ps.Id,
+				PermissionsCreate = true,
+				PermissionsDelete = true,
+				PermissionsEdit = true,
+				PermissionsRead = true);
+		insert accountPerm;		
+
+		// Grant permissions to Account 
+		PermissionSetAssignment psa2 = new PermissionSetAssignment();
+		psa2.AssigneeId = result.Id;
+		psa2.PermissionSetId = ps.Id;
+		insert psa2; 
+		
+		return result;
+	}
 }
