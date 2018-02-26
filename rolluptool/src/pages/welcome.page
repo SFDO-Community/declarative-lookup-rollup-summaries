@@ -1,4 +1,4 @@
-<apex:page controller="WelcomeController" showHeader="{!IF($CurrentPage.Parameters.ShowHeader == '1', true, false)}" sidebar="false" tabStyle="LookupRollupSummary__c" standardStylesheets="true" action="{!checkMetadataAPIConnection}">
+<apex:page controller="WelcomeController" showHeader="{!IF($CurrentPage.Parameters.ShowHeader == '1', true, false)}" sidebar="false" tabStyle="LookupRollupSummary__c" standardStylesheets="true" lightningStylesheets="true" action="{!checkMetadataAPIConnection}">
 <script>
 function createRemoteSite()
 { 

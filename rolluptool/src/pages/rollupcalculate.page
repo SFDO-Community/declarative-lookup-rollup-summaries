@@ -25,7 +25,7 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 -->
-<apex:page standardController="LookupRollupSummary__c" extensions="RollupCalculateController">
+<apex:page standardController="LookupRollupSummary__c" extensions="RollupCalculateController" lightningStylesheets="true">
 	<apex:sectionHeader title="{!LookupRollupSummary__c.Name}" subtitle="Run Calculate Job"/>
 	<apex:pageMessages />
 	<apex:form >
