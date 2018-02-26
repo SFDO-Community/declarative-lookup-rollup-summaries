@@ -49,7 +49,8 @@ public with sharing class WelcomeController {
 		if(!RollupService.checkMetadataAPIConnection())
 		{
 			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'Unable to connect to the Salesforce Metadata API.'));
-			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'A Remote Site Setting must be created in your org before you can use this tool.'));
+			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'This could be because it is the first time installing this tool or your Salesforce domain has changed.'));
+			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'A Remote Site Setting must be created or update in your org before you can use this tool.'));
 			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, 'Press the Create Remote Site Setting button to perform this step or refer to the post install step below to perform this manually.'));
 			MetadataConnectionWarning = true;
 			MetadataApiException = '';
