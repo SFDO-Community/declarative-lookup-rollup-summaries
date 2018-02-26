@@ -1,6 +1,6 @@
 <apex:page standardController="LookupRollupSummaryLog__c" recordSetVar="logs" extensions="RollupSummaryLogDeleteController">
     <apex:pageMessage strength="2" escape="false" severity="Info" summary="Click Delete to delete selected log records."></apex:pageMessage>
-    <apex:form>
+    <apex:form >
     <apex:commandButton action="{!deleteLog}" value="Delete"/>
     <apex:commandButton action="{!cancel}" value="Cancel"/>
     </apex:form> 
