@@ -179,5 +179,41 @@ private class RollupCalculateControllerTest {
 		
 		// Tried to run 
 		System.assertEquals(0, Database.countQuery('select Count() from LookupRollupCalculateJob__c'));
-	}    
+	}
+	
+	/**
+	 * https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/619
+	 **/
+	@IsTest
+	private static void testUserRollup() {
+
+        // Test supported?
+        if(!TestContext.isSupported())
+            return;
+
+		// Between Task and Account
+		LookupRollupSummary__c rollupSummaryAccount = new LookupRollupSummary__c();
+		rollupSummaryAccount.Name = 'Test Rollup';
+		rollupSummaryAccount.ParentObject__c = 'User';
+		rollupSummaryAccount.ChildObject__c = 'Account';
+		rollupSummaryAccount.RelationShipField__c = 'OwnerId';
+		rollupSummaryAccount.FieldToAggregate__c = 'Name';
+		rollupSummaryAccount.AggregateOperation__c = RollupSummaries.AggregateOperation.Last.name();
+		rollupSummaryAccount.AggregateResultField__c = 'EmployeeNumber';
+		rollupSummaryAccount.Active__c = true;
+		rollupSummaryAccount.CalculationMode__c = 'Process Builder';
+		insert rollupSummaryAccount;
+
+		// Test default behaviour
+		Test.startTest();
+		ApexPages.StandardController standardController = 
+			new ApexPages.StandardController(rollupSummaryAccount);
+		RollupCalculateController controller = 
+			new RollupCalculateController(standardController);
+		controller.runCalculateJob();
+		Test.stopTest();
+		
+		// Tried to run 
+		System.assertEquals(0, Database.countQuery('select Count() from LookupRollupCalculateJob__c'));
+	}	    
 }

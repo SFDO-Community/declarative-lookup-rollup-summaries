@@ -535,7 +535,11 @@ global with sharing class RollupService
 			for(LREngine.RollupSummaryField fieldToRoll : ctx.fieldsToRoll) {
 				masterRecordQuery.selectField(fieldToRoll.master.getSObjectField());
 			}
-			masterRecordQuery.setCondition('Id in :ctxMasterIds FOR UPDATE');
+			// https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/619			
+			masterRecordQuery.setCondition(
+				// It appears there is no Apex Describe to determine FOR UPDATE support
+				ctx.master == User.SObjectType ? 
+					'Id in :ctxMasterIds' : 'Id in :ctxMasterIds FOR UPDATE');
 			// Filter master records to update only if rollups have changed
 			Map<Id, SObject> currentMasterRecordsById = new Map<Id, SObject>(Database.query(masterRecordQuery.toSOQL()));
 			List<SObject> newMasterRecordList = new List<SObject>();
