@@ -1,0 +1,23 @@
+{
+  "packageDirectories": [
+    {
+      "path": "force-app/main",
+      "default": true
+    },
+    {
+      "path": "force-app/libs/fflib-apexmocks"
+    },
+    {
+      "path": "force-app/libs/fflib-common"
+    },
+    {
+      "path": "force-app/libs/lrengine"
+    },
+    {
+      "path": "force-app/libs/metadataservice"
+    }
+  ],
+  "namespace": "",
+  "sfdcLoginUrl": "https://login.salesforce.com",
+  "sourceApiVersion": "42.0"
+}

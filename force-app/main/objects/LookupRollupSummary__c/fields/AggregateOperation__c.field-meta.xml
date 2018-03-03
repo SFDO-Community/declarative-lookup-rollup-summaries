@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>AggregateOperation__c</fullName>
+    <deprecated>false</deprecated>
+    <externalId>false</externalId>
+    <inlineHelpText>Rollup operation.</inlineHelpText>
+    <label>Aggregate Operation</label>
+    <picklist>
+        <picklistValues>
+            <fullName>Sum</fullName>
+            <default>true</default>
+        </picklistValues>
+        <picklistValues>
+            <fullName>Max</fullName>
+            <default>false</default>
+        </picklistValues>
+        <picklistValues>
+            <fullName>Min</fullName>
+            <default>false</default>
+        </picklistValues>
+        <picklistValues>
+            <fullName>Avg</fullName>
+            <default>false</default>
+        </picklistValues>
+        <picklistValues>
+            <fullName>Count</fullName>
+            <default>false</default>
+        </picklistValues>
+        <picklistValues>
+            <fullName>Count Distinct</fullName>
+            <default>false</default>
+        </picklistValues>
+        <picklistValues>
+            <fullName>Concatenate</fullName>
+            <default>false</default>
+        </picklistValues>
+        <picklistValues>
+            <fullName>Concatenate Distinct</fullName>
+            <default>false</default>
+        </picklistValues>
+        <picklistValues>
+            <fullName>First</fullName>
+            <default>false</default>
+        </picklistValues>
+        <picklistValues>
+            <fullName>Last</fullName>
+            <default>false</default>
+        </picklistValues>
+        <sorted>false</sorted>
+    </picklist>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+</CustomField>

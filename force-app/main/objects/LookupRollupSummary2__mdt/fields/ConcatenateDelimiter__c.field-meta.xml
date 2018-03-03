@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>ConcatenateDelimiter__c</fullName>
+    <deprecated>false</deprecated>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>Enter the character or characters to delimit values in the Field to Aggregate when rolling up text values into the Aggregate Result Field, enter BR() for new line. Only applies when using Concatenate operation.</inlineHelpText>
+    <label>Concatenate Delimiter</label>
+    <length>32</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

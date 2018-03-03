@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>RelationshipCriteriaFields__c</fullName>
+    <deprecated>false</deprecated>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>If you have specified a relationship criteria, you must confirm the fields referenced by it here on separate lines, for example for criteria StageName = 'Won' list StageName in this field. You do not need to specify the Field to Aggregate field however.</inlineHelpText>
+    <label>Relationship Criteria Fields</label>
+    <required>false</required>
+    <type>TextArea</type>
+</CustomField>

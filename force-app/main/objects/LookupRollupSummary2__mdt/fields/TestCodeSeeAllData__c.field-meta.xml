@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>TestCodeSeeAllData__c</fullName>
+    <defaultValue>false</defaultValue>
+    <deprecated>false</deprecated>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>Only use this option as a last resort to get the generated test or custom test code working. It is generally considered bad practice to make your test dependent on org data. Always try to create test data in the test code if possible.</inlineHelpText>
+    <label>Test Code See All Data</label>
+    <type>Checkbox</type>
+</CustomField>

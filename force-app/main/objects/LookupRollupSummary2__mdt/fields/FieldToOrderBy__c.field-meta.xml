@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>FieldToOrderBy__c</fullName>
+    <deprecated>false</deprecated>
+    <description>Examples:
+1) Amount__c
+2) Amount__c, Color__c ASC
+3) Amount__c NULLS LAST, Color__c DESC NULLS LAST</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>Only applicable when using the Concatenate, Concatenate Distinct, Last and First aggregate operations. Supports multiple fields (comma separated) with optional ASC/DESC and/or NULLS FIRST/LAST.</inlineHelpText>
+    <label>Field to Order By</label>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

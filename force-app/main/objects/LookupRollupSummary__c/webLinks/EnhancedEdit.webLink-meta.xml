@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebLink xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>EnhancedEdit</fullName>
+    <availability>online</availability>
+    <displayType>button</displayType>
+    <height>600</height>
+    <linkType>page</linkType>
+    <masterLabel>Enhanced Edit (Pilot)</masterLabel>
+    <openType>sidebar</openType>
+    <page>rollupsummaryenhanced</page>
+    <protected>false</protected>
+</WebLink>
