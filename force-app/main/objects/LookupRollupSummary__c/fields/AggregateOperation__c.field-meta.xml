@@ -5,49 +5,52 @@
     <externalId>false</externalId>
     <inlineHelpText>Rollup operation.</inlineHelpText>
     <label>Aggregate Operation</label>
-    <picklist>
-        <picklistValues>
-            <fullName>Sum</fullName>
-            <default>true</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Max</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Min</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Avg</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Count</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Count Distinct</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Concatenate</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Concatenate Distinct</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>First</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Last</fullName>
-            <default>false</default>
-        </picklistValues>
-        <sorted>false</sorted>
-    </picklist>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>    
+            <value>
+                <fullName>Sum</fullName>
+                <default>true</default>
+            </value>
+            <value>
+                <fullName>Max</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Min</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Avg</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Count</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Count Distinct</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Concatenate</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Concatenate Distinct</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>First</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Last</fullName>
+                <default>false</default>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
     <required>false</required>
     <trackTrending>false</trackTrending>
     <type>Picklist</type>

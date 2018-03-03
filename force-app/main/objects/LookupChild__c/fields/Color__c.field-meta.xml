@@ -4,25 +4,28 @@
     <deprecated>false</deprecated>
     <externalId>false</externalId>
     <label>Color</label>
-    <picklist>
-        <picklistValues>
-            <fullName>Red</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Yellow</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Green</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Blue</fullName>
-            <default>false</default>
-        </picklistValues>
-        <sorted>false</sorted>
-    </picklist>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>    
+            <value>
+                <fullName>Red</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Yellow</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Green</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Blue</fullName>
+                <default>false</default>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
     <trackTrending>false</trackTrending>
     <type>Picklist</type>
 </CustomField>

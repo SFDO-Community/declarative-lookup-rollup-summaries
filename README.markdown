@@ -1,8 +1,6 @@
 Declarative Rollups for Lookups!
 ================================
 
-[![Build Status](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries.svg)](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries)
-
 Features Summary
 ----------------
 
@@ -464,12 +462,4 @@ __________________
 Installing the Source Code (Developers)
 =======================================
 
-If you are a developer obtain the source code from this repository if you wish to develop it further and/or contribute to it. Click the button below to deploy the source code to your developer or sandbox org.
-
-<a href="https://githubsfdeploy.herokuapp.com?owner=afawcett&repo=declarative-lookup-rollup-summaries">
-  <img alt="Deploy to Salesforce"
-       src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
-</a>
-
-**KNOWN INSTALL ISSUE** Sometimes the Permission Set files will not deploy, based on org differences, such as features enabled. If you encounter this problem, Clone the repo manually and use your IDE or Ant script to deploy without the Permission Sets. I will be looking into fixing this [issue](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/58) in the future.
-
+This project now uses Salesforce DX for development and packaging. Clone this org and deploy the code to a scratch org to develop and contribute back changes via Pull Requests. If you want to deploy the unmanaged version of this to your sandbox or production org you can use the Salesforce DX convert and deploy commands to do so. However the recommended deployment for these orgs is via the managed package links above.

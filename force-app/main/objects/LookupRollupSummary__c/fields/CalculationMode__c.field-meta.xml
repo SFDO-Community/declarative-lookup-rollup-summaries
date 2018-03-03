@@ -5,25 +5,28 @@
     <externalId>false</externalId>
     <inlineHelpText>Realtime and Schedule modes require an Apex Trigger to be deployed for the Child Object. Click Manage Child Trigger button to deploy.</inlineHelpText>
     <label>Calculation Mode</label>
-    <picklist>
-        <picklistValues>
-            <fullName>Realtime</fullName>
-            <default>true</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Scheduled</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Developer</fullName>
-            <default>false</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>Process Builder</fullName>
-            <default>false</default>
-        </picklistValues>
-        <sorted>false</sorted>
-    </picklist>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>    
+            <value>
+                <fullName>Realtime</fullName>
+                <default>true</default>
+            </value>
+            <value>
+                <fullName>Scheduled</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Developer</fullName>
+                <default>false</default>
+            </value>
+            <value>
+                <fullName>Process Builder</fullName>
+                <default>false</default>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
     <required>false</required>
     <trackTrending>false</trackTrending>
     <type>Picklist</type>

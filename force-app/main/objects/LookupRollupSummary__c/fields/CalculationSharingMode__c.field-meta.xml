@@ -5,17 +5,20 @@
     <externalId>false</externalId>
     <inlineHelpText>Determines if the Sharing Rules defined on the Child Object are considered when calculating the rollup. Default is User.</inlineHelpText>
     <label>Calculation Sharing Mode</label>
-    <picklist>
-        <picklistValues>
-            <fullName>User</fullName>
-            <default>true</default>
-        </picklistValues>
-        <picklistValues>
-            <fullName>System</fullName>
-            <default>false</default>
-        </picklistValues>
-        <sorted>false</sorted>
-    </picklist>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>    
+            <value>
+                <fullName>User</fullName>
+                <default>true</default>
+            </value>
+            <value>
+                <fullName>System</fullName>
+                <default>false</default>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
     <required>false</required>
     <trackTrending>false</trackTrending>
     <type>Picklist</type>

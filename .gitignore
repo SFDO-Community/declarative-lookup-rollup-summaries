@@ -1,11 +1,3 @@
-
-rolluptool/.project
-
-rolluptool/.settings/com.salesforce.ide.core.prefs
-
-rolluptool/salesforce.schema
-
-rolluptool/Referenced Packages/
-
-.project
-.DS_Store
+.sfdx
+.vscode
+.DS_Store   
