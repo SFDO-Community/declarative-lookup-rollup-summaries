@@ -1,11 +1,11 @@
 {
   "packageDirectories": [
     {
-      "path": "force-app/main"
+      "path": "force-app/main",
+      "default": true      
     },
     {
-      "path": "force-app/test",
-      "default": true
+      "path": "force-app-test/test"
     },
     {
       "path": "force-app/libs/fflib-apexmocks"
