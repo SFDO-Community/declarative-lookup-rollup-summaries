@@ -5,7 +5,7 @@
       "default": true      
     },
     {
-      "path": "force-app-test/test"
+      "path": "force-app-test/main"
     },
     {
       "path": "force-app/libs/fflib-apexmocks"
