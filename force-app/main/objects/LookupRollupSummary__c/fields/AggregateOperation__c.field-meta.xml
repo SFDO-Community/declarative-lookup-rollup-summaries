@@ -6,7 +6,7 @@
     <inlineHelpText>Rollup operation.</inlineHelpText>
     <label>Aggregate Operation</label>
     <valueSet>
-        <restricted>true</restricted>
+        <restricted>false</restricted>
         <valueSetDefinition>
             <sorted>false</sorted>    
             <value>

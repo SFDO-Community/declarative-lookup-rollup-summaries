@@ -6,7 +6,7 @@
     <inlineHelpText>Realtime and Schedule modes require an Apex Trigger to be deployed for the Child Object. Click Manage Child Trigger button to deploy.</inlineHelpText>
     <label>Calculation Mode</label>
     <valueSet>
-        <restricted>true</restricted>
+        <restricted>false</restricted>
         <valueSetDefinition>
             <sorted>false</sorted>    
             <value>

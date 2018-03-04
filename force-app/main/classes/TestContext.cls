@@ -40,7 +40,6 @@ public class TestContext
 	public static Boolean isSupported()
 	{
 		return 
-			(new ApexTriggersSelector().selectByName(new Set<String> { 'RollupServiceTestTrigger' }).size() > 0) &&
-			Schema.SObjectType.Account.fields.getMap().get('SLAExpirationDate__c')!=null;
+			(new ApexTriggersSelector().selectByName(new Set<String> { 'RollupServiceTestTrigger' }).size() > 0);
 	}
 }

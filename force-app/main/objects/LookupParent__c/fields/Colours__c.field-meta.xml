@@ -5,7 +5,7 @@
     <externalId>false</externalId>
     <label>Colours</label>
     <valueSet>
-        <restricted>true</restricted>
+        <restricted>false</restricted>
         <valueSetDefinition>
             <sorted>false</sorted>    
             <value>

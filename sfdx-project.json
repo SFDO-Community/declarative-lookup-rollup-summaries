@@ -1,7 +1,10 @@
 {
   "packageDirectories": [
     {
-      "path": "force-app/main",
+      "path": "force-app/main"
+    },
+    {
+      "path": "force-app/test",
       "default": true
     },
     {
