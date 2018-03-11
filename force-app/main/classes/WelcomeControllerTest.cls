@@ -41,7 +41,7 @@ private class WelcomeControllerTest
 		System.assertEquals(false, controller.MetadataConnectionWarning);
 		controller.MetadataResponse = 'Some Error Creating Remote Site Setting';
 		controller.displayMetadataResponse();
-		System.assertEquals(true, controller.MetadataConnectionWarning);
+		System.assertEquals(false, controller.MetadataConnectionWarning);
 	}
 	
     /**
