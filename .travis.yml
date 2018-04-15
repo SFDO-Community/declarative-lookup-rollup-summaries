@@ -1,6 +1,8 @@
 sudo: true
 os: osx 
 cache: false
+language: node_js
+node_js: "8"
 
 env:
 - URL=https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
@@ -12,10 +14,11 @@ before_install:
 - export SFDX_AUTOUPDATE_DISABLE=false
 - export SFDX_USE_GENERIC_UNIX_KEYCHAIN=true
 - export SFDX_DOMAIN_RETRY=300
-- mkdir sfdx
-- wget -qO- $URL | tar xJ -C sfdx --strip-components 1
-- "./sfdx/install"
-- export PATH=./sfdx/$(pwd):$PATH
+#- mkdir sfdx
+#- wget -qO- $URL | tar xJ -C sfdx --strip-components 1
+#- "./sfdx/install"
+#- export PATH=./sfdx/$(pwd):$PATH
+- npm i -g sfdx-cli
 - sfdx --version
 - sfdx plugins --core
 - sfdx force:auth:jwt:grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key --username $USERNAME --setdefaultdevhubusername -a HubOrg
