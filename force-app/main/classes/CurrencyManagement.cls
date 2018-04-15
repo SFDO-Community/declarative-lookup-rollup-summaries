@@ -25,12 +25,13 @@
 **/
 
 public with sharing class CurrencyManagement {
-    private static Map<ID, DatedConversionRate> dcrMap;
+    private static Map<Id, Sobject> dcrMap;
     private static String corporateCurrency;
 
     public static Boolean isCorporateCurrency(String currencyIso) {
         if(corporateCurrency == null) {
-            corporateCurrency = [SELECT IsoCode FROM CurrencyType WHERE IsActive = true AND IsCorporate = true].IsoCode;
+			Sobject corporateCurrencyType = Database.query('SELECT IsoCode FROM CurrencyType WHERE IsActive = true AND IsCorporate = true');
+			corporateCurrency = (String) corporateCurrencyType.get('IsoCode');
         }
         return currencyIso == corporateCurrency;
     }
@@ -39,12 +40,12 @@ public with sharing class CurrencyManagement {
         Decimal res;
         if(currencyIso != null && currencyVal != null && !CurrencyManagement.isCorporateCurrency(currencyIso)) {
             if(dcrMap == null) {
-                dcrMap = new Map<ID,DatedConversionRate> ([SELECT Id, IsoCode, ConversionRate, StartDate, NextStartDate FROM DatedConversionRate]);
+                dcrMap = new Map<Id, Sobject>(Database.query('SELECT Id, IsoCode, ConversionRate, StartDate, NextStartDate FROM DatedConversionRate'));
             }
-            for(DatedConversionRate dcr: dcrMap.values()) {
-                if(dcr.isoCode != currencyIso)                                         continue;   // look for a match in table against input currency
-                if(currencyDate < dcr.startDate || currencyDate >= dcr.nextStartDate)  continue;   // not in the range of effective dates
-                res =  currencyVal / dcr.conversionRate;
+            for(Sobject dcr: dcrMap.values()) {
+                if((String) dcr.get('IsoCode') != currencyIso) continue;   // look for a match in table against input currency
+                if(currencyDate < (Date) dcr.get('StartDate') || currencyDate >= (Date) dcr.get('NextStartDate')) continue;   // not in the range of effective dates
+                res =  currencyVal / (Decimal) dcr.get('ConversionRate');
                 break;
             }
         }
@@ -58,12 +59,12 @@ public with sharing class CurrencyManagement {
         Decimal res;
         if(currencyIso != null && currencyVal != null) {
             if (dcrMap == null) {
-                dcrMap = new Map<ID,DatedConversionRate> ([SELECT Id, IsoCode, ConversionRate, StartDate, NextStartDate FROM DatedConversionRate]);
+                dcrMap = new Map<Id, Sobject>(Database.query('SELECT Id, IsoCode, ConversionRate, StartDate, NextStartDate FROM DatedConversionRate'));
             }
-            for(DatedConversionRate dcr: dcrMap.values()) {
-                if(dcr.isoCode != currencyIso)                                         continue;   // look for a match in table against input currency
-                if(currencyDate < dcr.startDate || currencyDate >= dcr.nextStartDate)  continue;   // not in the range of effective dates
-                res =  currencyVal * dcr.conversionRate;
+            for(Sobject dcr: dcrMap.values()) {
+                if((String) dcr.get('IsoCode') != currencyIso) continue;   // look for a match in table against input currency
+                if(currencyDate < (Date) dcr.get('StartDate') || currencyDate >= (Date) dcr.get('NextStartDate')) continue;   // not in the range of effective dates
+                res =  currencyVal * (Decimal) dcr.get('ConversionRate');
                 break;
             }
         }
