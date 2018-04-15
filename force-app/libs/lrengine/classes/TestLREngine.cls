@@ -30,7 +30,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	any dependency on custom objects and keep the code base simple and easy to deploy in new orgs.
 	
 */
-@isTest
+@isTest(isParallel=true)
 private class TestLREngine {
 		// common master records for the test case
 		static Account acc1, acc2, acc3, acc4;
@@ -73,6 +73,13 @@ private class TestLREngine {
 			return m_HasMultiCurrency;
 		}
 		
+		private static Boolean m_HasMultiDatedCurrency = null;
+		public static Boolean hasMultiDatedCurrency() {
+			if(m_HasMultiDatedCurrency!=null) return m_HasMultiDatedCurrency;
+			m_HasMultiDatedCurrency = (Database.countQuery('select count() from DatedConversionRate  WHERE ConversionRate != 1') > 0);
+			return m_HasMultiDatedCurrency;
+		}
+
 		/*
 		 creates the common seed data using Opportunity and Account objects. 
 		 */
@@ -286,6 +293,13 @@ private class TestLREngine {
 	                                            LREngine.RollupOperation.Count
                                              ));                                       
                 
+        try {
+            ctx.addAdditionalField(Schema.SObjectType.Account.fields.Name);
+        }
+        catch (Exception e) {
+            System.assertEquals('Cannot add additional fields on aggregate query', e.getMessage());
+        }
+
          Sobject[] masters = LREngine.rollUp(ctx, detailRecords);                 
          // 2 masters should be back  
          System.assertEquals(2, masters.size());
@@ -650,6 +664,72 @@ private class TestLREngine {
 		System.assertEquals(acct2Val, (Decimal)reloadedAcc2.get('AnnualRevenue'));
 	}
 
+    /*
+    Test Advanced Multi-Currency (dated exchange rate) installations
+    */
+    static testMethod void testAdvancedCurrencyConversionFields() {
+
+        // is org multi-currency?
+        // org has at least one non-corporate, not equivalent, currency installed.
+        if(IsMultiCurrencyOrg() == false || hasMultiDatedCurrency() == false)
+            return;
+
+        // create seed data
+        prepareData();
+
+        // change the currency of one of the master records to force currency conversion
+        sObject ct = Database.query('select IsoCode, ConversionRate from CurrencyType where IsActive = true AND IsCorporate = false AND ConversionRate != 1 limit 1');
+        acc1.put(CURRENCYISOCODENAME, ct.get('IsoCode'));
+        update acc1;
+
+        //change currency of one account
+        LREngine.Context ctx = new LREngine.Context(Account.SobjectType,
+                Opportunity.SobjectType,
+                Schema.SObjectType.Opportunity.fields.AccountId
+        );
+        ctx.setDateField(Schema.SObjectType.Opportunity.fields.CloseDate);
+        try {
+            ctx.addAdditionalField(Schema.SObjectType.Account.fields.Name);
+        }
+        catch (Exception e) {
+            System.debug(e);
+            System.assertEquals('Add atleast one RollupSummaryField before adding additional fields', e.getMessage());
+        }
+
+        ctx.add(
+                new LREngine.RollupSummaryField(
+                        Schema.SObjectType.Account.fields.AnnualRevenue,
+                        Schema.SObjectType.Opportunity.fields.Amount,
+                        LREngine.RollupOperation.SumAdvancedCurrency
+                ));
+        ctx.addAdditionalField(Schema.SObjectType.Account.fields.Name);
+
+        Sobject[] masters = LREngine.rollUp(ctx, detailRecords);
+
+        Decimal acct1Val = 0.0;
+        Decimal acct2Val = 0.0;
+        for(Sobject so : detailRecords){
+            if(so.get('AccountId') == acc1.Id) acct1Val += (Decimal)so.get('Amount');
+            if(so.get('AccountId') == acc2.Id) acct2Val += (Decimal)so.get('Amount');
+        }
+        System.Debug('Conversion Rate:'+ct.get('ConversionRate'));
+        System.Debug('Acct1 Val:'+acct1Val);
+
+        acct1Val = acct1Val * (Decimal)ct.get('ConversionRate');
+
+        System.Debug('Acct1 Conv Val:'+acct1Val);
+
+        Account reloadedAcc1, reloadedAcc2;
+        for (Sobject so : masters) {
+            if (so.Id == acc1.id) reloadedAcc1 = (Account)so;
+            if (so.Id == acc2.id) reloadedAcc2 = (Account)so;
+        }
+
+        //Test amount values for conversion accuracy
+        System.assertEquals(acct1Val, (Decimal)reloadedAcc1.get('AnnualRevenue'));
+        System.assertEquals(acct2Val, (Decimal)reloadedAcc2.get('AnnualRevenue'));
+    }
+
     static testMethod void testRollupSummaryFieldValidation() {
 
          LREngine.Context ctx = new LREngine.Context(Account.SobjectType, 
@@ -697,7 +777,7 @@ private class TestLREngine {
                 LREngine.RollupOperation.Sum));                 
             System.assert(false, 'Expecting an exception');            
         } catch (Exception e) {
-            System.assertEquals('Cannot mix Sum, Max, Min, Avg, Count, Count_Distinct operations with Concatenate, Concatenate_Distinct, First, Last operations', e.getMessage());
+            System.assertEquals('Cannot mix Sum, Max, Min, Avg, Count, Count_Distinct operations with Concatenate, Concatenate_Distinct, First, Last, SumAdvancedCurrency operations', e.getMessage());
         }
         try {
             LREngine.Context ctx = 
@@ -714,7 +794,7 @@ private class TestLREngine {
                 LREngine.RollupOperation.Concatenate));                 
             System.assert(false, 'Expecting an exception');            
         } catch (Exception e) {
-            System.assertEquals('Cannot mix Sum, Max, Min, Avg, Count, Count_Distinct operations with Concatenate, Concatenate_Distinct, First, Last operations', e.getMessage());
+            System.assertEquals('Cannot mix Sum, Max, Min, Avg, Count, Count_Distinct operations with Concatenate, Concatenate_Distinct, First, Last, SumAdvancedCurrency operations', e.getMessage());
         }
     } 
 

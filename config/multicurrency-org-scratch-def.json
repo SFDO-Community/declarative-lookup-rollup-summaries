@@ -1,0 +1,8 @@
+{
+    "orgName": "andrewfawcett Company",
+    "edition": "Developer",
+    "features": ["MultiCurrency", "AuthorApex"],
+    "orgPreferences" : {
+        "enabled": ["S1DesktopEnabled"]
+    }
+}
