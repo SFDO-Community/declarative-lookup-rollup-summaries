@@ -24,6 +24,8 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
+// Contribution by https://github.com/Kilay via https://github.com/afawcett/declarative-lookup-rollup-summaries/pull/591
+
 public with sharing class CurrencyManagement {
     private static Map<Id, Sobject> dcrMap;
     private static String corporateCurrency;
