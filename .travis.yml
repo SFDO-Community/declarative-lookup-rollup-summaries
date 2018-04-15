@@ -1,5 +1,5 @@
 sudo: true
-os: trusty 
+os: osx 
 cache: false
 
 env:
