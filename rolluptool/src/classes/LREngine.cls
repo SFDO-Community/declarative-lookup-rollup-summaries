@@ -85,6 +85,30 @@ public class LREngine {
 	    }
     } 
 
+    private static String getSoqlRelationship(List<Schema.Describefieldresult> dlfs) {
+        String dlfProjection = '';
+        Integer i = 0;
+        for(Schema.Describefieldresult dlf : dlfs) {
+            if(i == dlfs.size()-1)
+                continue;
+            dlfProjection += dlf.getRelationshipName() + '.';
+            i++;
+        }
+        return ', ' + dlfProjection + dlfs.get(dlfs.size()-1).getName();
+    }
+
+    private static Object getRelationship(List<Schema.Describefieldresult> dlfs, SObject record) {
+        SObject tempRelationshipObj = record;
+        Integer i = 0;
+        for(Schema.Describefieldresult dlf : dlfs) {
+            if(i == dlfs.size()-1)
+                continue;
+            tempRelationshipObj = tempRelationshipObj.getSObject(dlf.getRelationshipName());
+            i++;
+        }
+        return tempRelationshipObj.get(dlfs.get(dlfs.size()-1).getName());
+    }
+
     /**
         Key driver method that rolls up lookup fields based on the context. This is specially useful in Trigger context.
         
@@ -185,12 +209,7 @@ public class LREngine {
         }
         else if(IsMultiCurrencyOrg() == true && needsAdvancedCurrency == true){
             soqlProjection += ', ' + ctx.lookupField.getRelationshipName() + '.' + CURRENCYISOCODENAME + ', '  + CURRENCYISOCODENAME;
-            if(ctx.dateField != null && ctx.dateLookupField != null) {
-                soqlProjection += ', ' +  ctx.dateLookupField.getRelationshipName() + '.' + ctx.dateField.getName();
-            }
-            else {
-                soqlProjection += ', ' + ctx.dateField.getName();
-            }
+            soqlProjection += getSoqlRelationship(ctx.dateField);
         }
 
         // Adding additional fields to query. If it is an aggregated query, add alias
@@ -369,7 +388,8 @@ public class LREngine {
                             String masterCurrencyIsoCode = (String) childDetailRecord.getSObject(ctx.lookupField.getRelationshipName()).get(CURRENCYISOCODENAME);
                             String childCurrencyIsoCode = (String) childDetailRecord.get(CURRENCYISOCODENAME);
                             if(childCurrencyIsoCode != masterCurrencyIsoCode) {
-                                Date currencyDate = (ctx.dateLookupField != null) ? (Date) childDetailRecord.getSObject(ctx.dateLookupField.getRelationshipName()).get(ctx.dateField.getName()) : (Date) childDetailRecord.get(ctx.dateField.getName());
+                                Date currencyDate = (Date) getRelationship(ctx.dateField, childDetailRecord);
+
                                 Decimal amountInCorporateCurrency = CurrencyManagement.convertToCorporateCurrency(childCurrencyIsoCode, (Decimal) childDetailRecord.get(rsf.detail.getName()), currencyDate);
                                 amountInMasterCurrency = CurrencyManagement.convertFromCorporateCurrency(masterCurrencyIsoCode, amountInCorporateCurrency, currencyDate);
                             }
@@ -390,7 +410,7 @@ public class LREngine {
         for(Id masterRecId : masterIds) {
             for (RollupSummaryField rsf : ctx.fieldsToRoll) {
                 Object nullValue = null;
-                if(rsf.isMasterTypeNumber) {
+                if (rsf.isMasterTypeNumber) {
                     nullValue = 0;
                 } else if (rsf.isMasterTypeCheckbox) {
                     nullValue = false;
@@ -637,10 +657,8 @@ public class LREngine {
         public Schema.Sobjecttype detail;
         // Lookup field on Child/Detail Sobject
         public Schema.Describefieldresult lookupField;
-        // Date lookup field used for Dated Exchange Rate
-        public Schema.Describefieldresult dateLookupField;
         // Date field used for Dated Exchange Rate
-        public Schema.Describefieldresult dateField;
+        public List<Schema.Describefieldresult> dateField;
         // various fields to rollup on
         public List<RollupSummaryField> fieldsToRoll;
         // various additional fields
@@ -696,11 +714,11 @@ public class LREngine {
         }
         
         public void setDateField(Schema.Describefieldresult df) {
-            this.dateField = df;
+            this.setDateField(new List<Schema.Describefieldresult>{df});
         }
 
-        public void setDateLookupField(Schema.Describefieldresult dlf) {
-            this.dateLookupField = dlf;
+        public void setDateField(List<Schema.Describefieldresult> df) {
+            this.dateField = df;
         }
 
         public void addAdditionalField(Schema.Describefieldresult af) {
