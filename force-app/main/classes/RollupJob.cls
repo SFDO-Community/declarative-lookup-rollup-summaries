@@ -44,8 +44,24 @@ global with sharing class RollupJob
 
 	public void execute(Database.BatchableContext BC, List<sObject> rollupSummaryScheduleItems)
 	{
-		// Process the given schedule item rollups
-		RollupService.processScheduleItems((List<LookupRollupSummaryScheduleItems__c>) rollupSummaryScheduleItems);					
+		try {
+			// Process the given schedule item rollups
+			RollupService.processScheduleItems((List<LookupRollupSummaryScheduleItems__c>) rollupSummaryScheduleItems);
+		} catch (Exception e) {
+			// Ids in scope
+			List<String> ids = new List<String>();
+			for(Id recordId : new Map<Id, SObject> (rollupSummaryScheduleItems).keySet()) {
+				ids.add(recordId);
+			}
+            // Errors are emailed to the user that scheduled this job
+			//  (note parent record update errors are routed via Lookup Rollup Summmary Log via the service code)
+            Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+            mail.setToAddresses(new String[] { UserInfo.getUserId() });
+            mail.setSubject(String.format('Apex job id {0} failed to update rollups ', new String[] { BC.getJobId() }));
+            mail.setPlainTextBody(String.format('Error: {0}. Review Rollup Summary Schedule Items {1}', 
+				new String[] { e.getMessage(), String.join(ids, ',') } ));
+            Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
+        } 		
 	}
 	
 	public void finish(Database.BatchableContext BC) { }
