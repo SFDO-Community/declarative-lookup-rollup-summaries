@@ -726,8 +726,8 @@ private class TestLREngine {
         }
 
         //Test amount values for conversion accuracy
-        //System.assertEquals(acct1Val, (Decimal)reloadedAcc1.get('AnnualRevenue'));
-        //System.assertEquals(acct2Val, (Decimal)reloadedAcc2.get('AnnualRevenue'));
+        System.assertEquals(acct1Val, (Decimal)reloadedAcc1.get('AnnualRevenue'));
+        System.assertEquals(acct2Val, (Decimal)reloadedAcc2.get('AnnualRevenue'));
     }
 
     static testMethod void testRollupSummaryFieldValidation() {
