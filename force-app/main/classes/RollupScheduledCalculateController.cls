@@ -52,6 +52,11 @@ public with sharing class RollupScheduledCalculateController
         // Calculate unique name
         String rollupUniqueName = (String) standardController.getRecord().get(uniqueNameField);
         uniqueNameForJob = 'rollup_' + (rollupUniqueName==null || rollupUniqueName.equals('') ? standardController.getId() : rollupUniqueName + ' (' + standardController.getId() + ')');
+
+		// Deprication warning
+		if(standardController.getRecord() instanceof LookupRollupSummary__c) {
+			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Warning, 'Use of the Lookup Rollup Summaries tab is still functional but no longer being enhanced. Consider using the Manage Lookup Rollup Summaries tab.'));
+		}
         
         // Page load messages
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Clicking the Schedule Full Calculate Job will schedule a recurring background rebuild for this rollup only.'));

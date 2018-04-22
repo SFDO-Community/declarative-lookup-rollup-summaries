@@ -32,6 +32,11 @@ public with sharing class RollupCalculateController
 	public RollupCalculateController(ApexPages.StandardController standardController)
 	{
 		this.standardController = standardController;
+
+		// Deprication warning
+		if(standardController.getRecord() instanceof LookupRollupSummary__c) {
+			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Warning, 'Use of the Lookup Rollup Summaries tab is still functional but no longer being enhanced. Consider using the Manage Lookup Rollup Summaries tab.'));
+		}
 		
 		// Page load messages
 		ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Clicking the Run Full Calculate Job will start a background rebuild for this rollup only.'));

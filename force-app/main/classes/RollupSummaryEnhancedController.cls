@@ -135,6 +135,9 @@ public with sharing class RollupSummaryEnhancedController {
 			}
 		}
 		parentObjects.sort();
+
+		// Deprication warning
+		ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Warning, 'Use of the Lookup Rollup Summaries tab is still functional but no longer being enhanced. Consider using the Manage Lookup Rollup Summaries tab.'));
 	}	
 	public String getRelationshipField() {
 		return rus.ChildObject__c+'.'+rus.RelationshipField__c;

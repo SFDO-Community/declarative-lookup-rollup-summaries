@@ -423,6 +423,11 @@ public with sharing class RollupController
 		ParentTriggerRequired = Deployed ? RollupParentTrigger!=null && RollupParentTriggerTest!=null : ParentTriggerRequired;
 		deployCount = 0;
 		
+		// Deprication warning
+		if(RollupSummary.Record instanceof LookupRollupSummary__c) {
+			ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Warning, 'Use of the Lookup Rollup Summaries tab is still functional but no longer being enhanced. Consider using the Manage Lookup Rollup Summaries tab.'));
+		}
+
 		// Message to confirm current status
 		if(Deployed)
 		{
