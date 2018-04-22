@@ -26,7 +26,7 @@
 **/
 -->
 <apex:page standardController="LookupRollupSummary__c" extensions="RollupScheduledCalculateController" lightningStylesheets="true">
-    <apex:sectionHeader title="{!LookupRollupSummary__c.Name}" subtitle="Schedule Recurring Calculate Job"/>
+    <apex:sectionHeader title="{!LookupRollupSummary__c.Name}" subtitle="Schedule Recurring Full Calculate Job"/>
     <apex:pageMessages />
     <apex:form >
 		<p>Filter parent object <B>{!LookupRollupSummary__c.ParentObject__c}</B> records to update using WHERE clause (OPTIONAL):</p>
@@ -141,7 +141,7 @@
 	        	</apex:pageBlockSectionItem>
 	        </apex:pageBlockSection>        	
         </apex:pageBlock>
-		<apex:commandButton action="{!scheduleCalculateJob}" value="Schedule Recurring Calculate Job"/>
+		<apex:commandButton action="{!scheduleCalculateJob}" value="Schedule Recurring Full Calculate Job"/>
         <apex:commandButton action="{!cancel}" value="Cancel"/>
     </apex:form>
 </apex:page>

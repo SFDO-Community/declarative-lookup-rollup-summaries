@@ -54,7 +54,7 @@ public with sharing class RollupScheduledCalculateController
         uniqueNameForJob = 'rollup_' + (rollupUniqueName==null || rollupUniqueName.equals('') ? standardController.getId() : rollupUniqueName + ' (' + standardController.getId() + ')');
         
         // Page load messages
-        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Clicking the Schedule Calculate Job will schedule a recurring background rebuild for this rollup only.'));
+        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Clicking the Schedule Full Calculate Job will schedule a recurring background rebuild for this rollup only.'));
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'The default shown below will run the Calculate job at 2am every day.'));
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Once the job completes any failed rollups will be shown in the Rollup Summary Logs tab.'));
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'The Calculate job can be managed at Setup -> Jobs -> Scheduled Jobs; its name will be ' + uniqueNameForJob));

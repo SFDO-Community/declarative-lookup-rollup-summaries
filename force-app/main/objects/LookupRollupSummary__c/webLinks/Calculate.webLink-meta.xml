@@ -5,7 +5,7 @@
     <displayType>button</displayType>
     <height>600</height>
     <linkType>page</linkType>
-    <masterLabel>Calculate</masterLabel>
+    <masterLabel>Full Calculate</masterLabel>
     <openType>sidebar</openType>
     <page>rollupcalculate</page>
     <protected>false</protected>

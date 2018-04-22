@@ -5,7 +5,7 @@
     <displayType>massActionButton</displayType>
     <height>600</height>
     <linkType>page</linkType>
-    <masterLabel>Enhanced New Lookup Rollup Summary (Pilot)</masterLabel>
+    <masterLabel>New Lookup Rollup Summary Enhanced</masterLabel>
     <openType>noSidebar</openType>
     <page>rollupsummaryenhancednew</page>
     <protected>false</protected>

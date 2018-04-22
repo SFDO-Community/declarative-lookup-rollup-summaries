@@ -34,7 +34,7 @@ public with sharing class RollupCalculateController
 		this.standardController = standardController;
 		
 		// Page load messages
-		ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Clicking the Run Calculate Job will start a background rebuild for this rollup only.'));
+		ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Clicking the Run Full Calculate Job will start a background rebuild for this rollup only.'));
 		ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Info, 'Once the job completes any failed rollups will be shown in the Rollup Summary Logs tab.'));
 	}
 	

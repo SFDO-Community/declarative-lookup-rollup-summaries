@@ -16,9 +16,9 @@
 				<apex:pageBlockButtons >
 					<apex:commandButton value="Save" action="{!save}"/>
 					<apex:commandButton value="Delete" action="{!deleteX}" rendered="{!LookupRollupSummary.Id!=null}"/>
+					<apex:commandButton value="Full Calculate" action="{!URLFOR($Page.rollupcalculatemdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
+					<apex:commandButton value="Schedule Full Calculate" action="{!URLFOR($Page.rollupscheduledcalculatemdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
 					<apex:commandButton value="Manage Child Trigger" action="{!URLFOR($Page.managetriggermdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
-					<apex:commandButton value="Calculate" action="{!URLFOR($Page.rollupcalculatemdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
-					<apex:commandButton value="Schedule Calculate" action="{!URLFOR($Page.rollupscheduledcalculatemdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
 				</apex:pageBlockButtons>
 				<apex:pageBlockSection title="Information" columns="2">
 					<apex:pageBlockSectionItem >

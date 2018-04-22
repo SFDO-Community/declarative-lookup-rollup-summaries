@@ -5,7 +5,7 @@
     <displayType>button</displayType>
     <height>600</height>
     <linkType>page</linkType>
-    <masterLabel>Enhanced Edit (Pilot)</masterLabel>
+    <masterLabel>Enhanced Edit</masterLabel>
     <openType>sidebar</openType>
     <page>rollupsummaryenhanced</page>
     <protected>false</protected>
