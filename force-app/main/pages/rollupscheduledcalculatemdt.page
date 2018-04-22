@@ -142,6 +142,6 @@
 	        </apex:pageBlockSection>        	
         </apex:pageBlock>
         <apex:commandButton action="{!scheduleCalculateJob}" value="Schedule Recurring Calculate Job"/>        
-        <apex:commandButton action="{!cancel}" value="Cancel"/>
+        <apex:commandButton action="{!URLFOR($Page.managelookuprollupsummaries, null, ['id'=Id])}" value="Cancel"/>
     </apex:form>
 </apex:page>
