@@ -66,7 +66,13 @@ public with sharing class RollupController
 	public RollupController(ApexPages.StandardController standardController)
 	{
 		// Query Lookup Rollup Summary record
-		RollupSummary = new RollupSummariesSelector(true, true).selectById(new Set<String> { (String) standardController.getId() })[0];
+		this(new RollupSummariesSelector(true, true).selectById(new Set<String> { (String) standardController.getId() })[0]);
+	}
+
+	@TestVisible
+	private RollupController(RollupSummary rollupSummary) {
+		
+		this.RollupSummary = rollupSummary;
 		
 		// Generate names for test and triggers to deploy / undeploy
 		RollupTriggerName = RollupSummaries.makeTriggerName(RollupSummary);
@@ -257,9 +263,13 @@ public with sharing class RollupController
 					 (RollupSummary.TestCodeSeeAllData == true ? '    @IsTest(SeeAllData=true)\n' : '    @IsTest\n') +
 				'    private static void testTrigger()\n' +
 				'    {\n' + 
-				'        // Force the ' + RollupParentTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-				'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ParentObject + '());\n' + 
-				'    }\n' +
+					((RollupSummary.TestCodeParent!=null && RollupSummary.TestCodeParent.length()>0) ? 
+						RollupSummary.TestCodeParent + '\n' : 
+						(
+							'        // Force the ' + RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
+							'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ChildObject + '());\n')
+						) +
+				'    }\n' +				
 				'}';			
 		}
 	}

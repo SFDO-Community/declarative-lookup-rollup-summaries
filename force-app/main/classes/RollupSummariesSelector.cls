@@ -242,6 +242,7 @@ public class RollupSummariesSelector
 				};
 			if(forEdit) {
 				selectorFields.add(LookupRollupSummary2__mdt.TestCode2__c);				
+				selectorFields.add(LookupRollupSummary2__mdt.TestCodeParent__c);
 			}
 			return selectorFields;
 		}

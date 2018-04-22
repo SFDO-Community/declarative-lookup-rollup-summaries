@@ -273,6 +273,56 @@ private class RollupControllerTest
 					'}', controller.getTriggerTestCode());
 		}	
 	}	
+
+	private testmethod static void testWithCustomParentTestCode()
+	{
+		// Test supported?
+		if(!TestContext.isSupported())
+			return;
+		
+		System.runAs(setupTestUser('Read Only')) {
+					
+	    	// Metadata API web Service mock implementation for tests
+	        Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+			
+			// Custom Metadata test data
+			LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt();
+			Map<String, Object> fields = (Map<String, Object>) JSON.deserializeUntyped(JSON.serializePretty(rollupSummary));
+			fields.put(LookupRollupSummary2__mdt.Label.getDescribe().getName(), 'Total Opportunities greater than 200 into Annual Revenue on Account');
+			fields.put(LookupRollupSummary2__mdt.DeveloperName.getDescribe().getName(), 'AccountRollup');			
+			fields.put(LookupRollupSummary2__mdt.ParentObject__c.getDescribe().getName(),'Account');
+			fields.put(LookupRollupSummary2__mdt.ChildObject__c.getDescribe().getName(),'Contact');
+			fields.put(LookupRollupSummary2__mdt.RelationShipField__c.getDescribe().getName(),'AccountId');
+			fields.put(LookupRollupSummary2__mdt.RelationShipCriteria__c.getDescribe().getName(), null);
+			fields.put(LookupRollupSummary2__mdt.FieldToAggregate__c.getDescribe().getName(), 'LastCURequestDate');
+			fields.put(LookupRollupSummary2__mdt.AggregateOperation__c.getDescribe().getName(), 'Count');
+			fields.put(LookupRollupSummary2__mdt.AggregateResultField__c.getDescribe().getName(), 'AnnualRevenue');
+			fields.put(LookupRollupSummary2__mdt.Active__c.getDescribe().getName(), false);
+			fields.put(LookupRollupSummary2__mdt.CalculationMode__c.getDescribe().getName(),'Realtime');
+			fields.put(LookupRollupSummary2__mdt.TestCodeParent__c.getDescribe().getName(), 'System.assertEquals(1,1);');
+			fields.put(LookupRollupSummary2__mdt.TestCodeSeeAllData__c.getDescribe().getName(), true);
+			rollupSummary = (LookupRollupSummary2__mdt) JSON.deserialize(JSON.serialize(fields), LookupRollupSummary2__mdt.class);
+	
+			// Open test context, permits callouts following DML
+			Test.startTest();
+	
+			// Assert initial state of controller when the trigger for the child object is deployed
+			RollupController controller = new RollupController(new RollupSummary(rollupSummary));
+			System.assertEquals(
+				 	'/**\n' +
+					' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+					' **/\n' +	
+					'@IsTest\n' +	 
+				    'private class ' + controller.RollupParentTriggerTestName + '\n' +  
+					'{\n' + 
+					'    @IsTest(SeeAllData=true)\n' +
+					'    private static void testTrigger()\n' +
+					'    {\n' + 
+					'System.assertEquals(1,1);\n' +
+					'    }\n' +
+					'}', controller.getParentTriggerTestCode());
+		}	
+	}	
 		
     /**
      * Metadata API web service mock class for tests above

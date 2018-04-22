@@ -4,7 +4,7 @@
     <externalId>false</externalId>
     <fieldManageability>DeveloperControlled</fieldManageability>
     <inlineHelpText>This tool utilises a dynamically generated Apex Trigger and by default a generated Apex Test. Use this field if instructed by a developer to replace the generated test code. See Wiki on GitHub.</inlineHelpText>
-    <label>Test Code</label>
+    <label>Test Code (Child Object)</label>
     <length>131072</length>
     <type>LongTextArea</type>
     <visibleLines>8</visibleLines>

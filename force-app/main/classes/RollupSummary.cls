@@ -146,6 +146,11 @@ public class RollupSummary {
 		set { Record.put(Record instanceof LookupRollupSummary2__mdt ? 'TestCode2__c' : 'TestCode__c', value); } 
 	}
 	
+	public String TestCodeParent {
+		get { return (String) Record.get(Record instanceof LookupRollupSummary2__mdt ? 'TestCodeParent__c' : null); }
+		set { if (Record instanceof LookupRollupSummary2__mdt) { Record.put('TestCodeParent__c', value); } } 
+	}
+	
 	public Boolean TestCodeSeeAllData {
 		get { return (Boolean) Record.get('TestCodeSeeAllData__c'); }
 		set { Record.put('TestCodeSeeAllData__c', value); } 

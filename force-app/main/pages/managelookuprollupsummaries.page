@@ -166,6 +166,10 @@
 						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCode2__c.Label}"/>
 						<apex:inputTextArea cols="64" rows="5" value="{!LookupRollupSummary.TestCode2__c}"/>
 					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCodeParent__c.inlineHelpText}">
+						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCodeParent__c.Label}"/>
+						<apex:inputTextArea cols="64" rows="5" value="{!LookupRollupSummary.TestCodeParent__c}"/>
+					</apex:pageBlockSectionItem>
 					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCodeSeeAllData__c.inlineHelpText}">
 						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCodeSeeAllData__c.Label}"/>
 						<apex:inputCheckbox value="{!LookupRollupSummary.TestCodeSeeAllData__c}"/>
