@@ -131,7 +131,7 @@ private class RollupScheduledCalculateControllerTest {
 		// Assert nothing has been scheduled and we got an error
 		System.assertEquals(0, [select Id, CronJobDetail.Name, CronExpression from CronTrigger].size());
 		System.assert(ApexPages.hasMessages(ApexPages.Severity.Error));
-		System.assertEquals('\'?\' can only be specified for Day-of-Month -OR- Day-of-Week.', ApexPages.getMessages()[4].getDetail());
+		System.assertEquals('\'?\' can only be specified for Day-of-Month -OR- Day-of-Week.', ApexPages.getMessages()[5].getDetail());
 	}	
 
 
