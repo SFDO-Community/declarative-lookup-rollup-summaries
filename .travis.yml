@@ -1,11 +1,6 @@
 sudo: true
-# Relates to the npm method of installing sfdx cli below
-# os: osx 
 os: trusty 
 cache: false
-# Relates to the npm method of installing sfdx cli below
-# language: node_js
-# node_js: "8"
 
 env:
 - URL=https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz
@@ -16,21 +11,18 @@ before_install:
 - export SFDX_AUTOUPDATE_DISABLE=false
 - export SFDX_USE_GENERIC_UNIX_KEYCHAIN=true
 - export SFDX_DOMAIN_RETRY=300
-# This works...
-#- npm i -g sfdx-cli
-# This does not...
+- export SFDX_DISABLE_APP_HUB=true
+- export SFDX_LOG_LEVEL=DEBUG
 - mkdir sfdx
 - wget -qO- $URL | tar xJ -C sfdx --strip-components 1
 - "./sfdx/install"
 - export PATH=./sfdx/$(pwd):$PATH
-
 - sfdx --version
 - sfdx plugins --core
 - sfdx force:auth:jwt:grant --clientid $CONSUMERKEY --jwtkeyfile assets/server.key --username $USERNAME --setdefaultdevhubusername -a HubOrg
 
 script:
-- set -e
-- sfdx force:org:create -v HubOrg -s -f config/project-scratch-def.json -a ciorg
+- sfdx force:org:create -v HubOrg -s -f config/project-scratch-def.json -a ciorg --wait 2
 - sfdx force:org:display -u ciorg
 - sfdx force:source:push -u ciorg
 - sfdx force:apex:test:run -u ciorg --wait 10
