@@ -7,11 +7,8 @@
     <formFactors>Large</formFactors>
     <label>Declarative Lookup Rollup Summaries</label>
     <navType>Standard</navType>
-    <tabs>standard-home</tabs>
     <tabs>Welcome</tabs>
     <tabs>ManageLookupRollupSummaries</tabs>
-    <tabs>LookupRollupSummaryScheduleItems__c</tabs>
     <tabs>LookupRollupSummaryLog__c</tabs>
-    <tabs>LookupRollupCalculateJob__c</tabs>
     <uiType>Lightning</uiType>
 </CustomApplication>

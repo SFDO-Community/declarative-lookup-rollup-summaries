@@ -59,7 +59,7 @@ function createRemoteSite()
 			<input id="createremotesitebtn" type="button" onclick="createRemoteSite();" value="Create/Update Remote Site Setting"/>
 		</apex:outputPanel>
 		<p><b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships using the declarative mode of Force.com, but not between lookup relationships. You can read more about the tool and watch a video demo by reading this <a target="_new" href="http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/">blog</a>.</p>
-		<p>Release details can be found <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries">here</a>.</p>
+		<p>Documentation and release details can be found <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries">here</a>.</p>
 		<apex:outputPanel rendered="{!MetadataConnectionWarning}">
 			<p style="color:gray">DEBUG USE ONLY: {!metadataApiException}</p>
 		</apex:outputPanel>
