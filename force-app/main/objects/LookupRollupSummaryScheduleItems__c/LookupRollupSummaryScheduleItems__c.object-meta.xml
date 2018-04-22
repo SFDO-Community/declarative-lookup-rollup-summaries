@@ -63,5 +63,5 @@
     </nameField>
     <pluralLabel>Lookup Rollup Summary Schedule Items</pluralLabel>
     <searchLayouts/>
-    <sharingModel>ControlledByParent</sharingModel>
+    <sharingModel>ReadWrite</sharingModel>
 </CustomObject>

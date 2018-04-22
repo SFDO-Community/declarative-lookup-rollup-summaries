@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0070D2</headerColor>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <formFactors>Large</formFactors>
+    <label>Declarative Lookup Rollup Summaries</label>
+    <navType>Standard</navType>
+    <tabs>standard-home</tabs>
+    <tabs>Welcome</tabs>
+    <tabs>ManageLookupRollupSummaries</tabs>
+    <tabs>LookupRollupSummaryScheduleItems__c</tabs>
+    <tabs>LookupRollupSummaryLog__c</tabs>
+    <tabs>LookupRollupCalculateJob__c</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>
