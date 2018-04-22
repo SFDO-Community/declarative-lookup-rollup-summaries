@@ -141,8 +141,8 @@ private class RollupServiceTest5 {
 
 		// Should have two scheduled job work items
 		System.assertEquals(2, [select Id from LookupRollupSummaryScheduleItems__c].size()); // Assert a scheduled item has been created
-		System.assertEquals(rollupSummaryAccount.Id, [select LookupRollupSummary__c from LookupRollupSummaryScheduleItems__c where ParentId__c = :accountParent.Id][0].LookupRollupSummary__c);
-		System.assertEquals(rollupSummaryOpp.Id, [select LookupRollupSummary__c from LookupRollupSummaryScheduleItems__c where ParentId__c = :oppParent.Id][0].LookupRollupSummary__c);
+		System.assertEquals(rollupSummaryAccount.Id, [select LookupRollupSummary2__c from LookupRollupSummaryScheduleItems__c where ParentId__c = :accountParent.Id][0].LookupRollupSummary2__c);
+		System.assertEquals(rollupSummaryOpp.Id, [select LookupRollupSummary2__c from LookupRollupSummaryScheduleItems__c where ParentId__c = :oppParent.Id][0].LookupRollupSummary2__c);
 		
 		// Run rollup job
 		Test.startTest();		
@@ -208,7 +208,6 @@ private class RollupServiceTest5 {
 
 		// Inject a valid schedule item record
 		LookupRollupSummaryScheduleItems__c lrssiAccount = new LookupRollupSummaryScheduleItems__c();
-		lrssiAccount.LookupRollupSummary__c = rollupSummaryAccount.Id;
 		lrssiAccount.LookupRollupSummary2__c = rollupSummaryAccount.Id;
 		lrssiAccount.ParentId__c = accountParent.Id;
 		lrssiAccount.QualifiedParentID__c = lrssiAccount.ParentId__c + '#' + LookupRollupSummary__c.Id; 
@@ -217,7 +216,6 @@ private class RollupServiceTest5 {
 		// Inject invalid schedule item reocrd, past bug would allow this to be written against 
 		//   the wrong lookup rule or user changing the lookup after schedule item written woudl cause an error
 		LookupRollupSummaryScheduleItems__c lrssiOpp = new LookupRollupSummaryScheduleItems__c();
-		lrssiOpp.LookupRollupSummary__c = rollupSummaryAccount.Id; // Emulate invalid entry
 		lrssiOpp.LookupRollupSummary2__c = rollupSummaryAccount.Id; // Emulate invalid entry
 		lrssiOpp.ParentId__c = oppParent.Id;
 		lrssiOpp.QualifiedParentID__c = lrssiOpp.ParentId__c + '#' + LookupRollupSummary__c.Id; 

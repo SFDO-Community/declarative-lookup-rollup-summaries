@@ -31,7 +31,7 @@ public class RollupSummaryScheduleItemsSelector extends fflib_SObjectSelector
 		return new List<Schema.SObjectField> {
 			LookupRollupSummaryScheduleItems__c.Name,
 			LookupRollupSummaryScheduleItems__c.ParentId__c,
-			LookupRollupSummaryScheduleItems__c.LookupRollupSummary__c,
+			LookupRollupSummaryScheduleItems__c.ParentKeyPrefix__c,
 			LookupRollupSummaryScheduleItems__c.LookupRollupSummary2__c
 		};
 	}
@@ -43,7 +43,7 @@ public class RollupSummaryScheduleItemsSelector extends fflib_SObjectSelector
 	
 	public override String getOrderBy()
 	{
-		return 'LookupRollupSummary__r.ParentObject__c';
+		return 'ParentKeyPrefix__c';
 	}
 	
 	public Database.Querylocator selectAllQueryLocator()
