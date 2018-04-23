@@ -1,0 +1,12 @@
+<aura:component controller="OptimizerComponentController" implements="flexipage:availableForAllPageTypes" access="global">
+    <aura:attribute name="summary" type="object"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>    
+    <lightning:card iconName="standard:account" title="Optimizer" footer="Declarative Lookup Rollup Summaries"> 
+        <p class="slds-p-horizontal_small">            
+            <ui:message title="{!v.summary.title}" severity="{!v.summary.severity}" closable="false">{!v.summary.message}</ui:message>
+            <aura:iteration items="{!v.summary.notifications}" var="notification">
+                <c:optimizerNotification id="{!notification.id}" severity="{!notification.severity}" message="{!notification.message}"/>
+            </aura:iteration>
+        </p>
+    </lightning:card>
+</aura:component>

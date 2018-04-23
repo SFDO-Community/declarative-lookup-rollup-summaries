@@ -241,4 +241,8 @@
         <tab>ManageLookupRollupSummaries</tab>
         <visibility>Visible</visibility>
     </tabSettings>
+    <tabSettings>
+        <tab>LookupRollupSummariesHome</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>    
 </PermissionSet>

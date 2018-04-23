@@ -1,0 +1,11 @@
+<aura:component>
+    <aura:attribute name="id" type="string"/>    
+    <aura:attribute name="message" type="string"/>
+    <aura:attribute name="severity" type="string"/>    
+    <div class="slds-scoped-notification slds-media slds-media_center" role="status">
+        <lightning:icon iconName="{!'utility:'+v.severity}" variant="{!v.severity}" size="small" />
+        <div class="slds-media__body">
+            <p>&nbsp;{!v.message}&nbsp;<a href="{!v.id}">More Information</a></p>
+        </div>
+    </div>
+</aura:component>
