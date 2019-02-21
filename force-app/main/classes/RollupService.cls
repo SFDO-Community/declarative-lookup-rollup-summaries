@@ -633,14 +633,16 @@ global with sharing class RollupService
             // This object has a unique constraint over LookupRollupSummaryId__c
             insert new LookupRollupCalculateJob__c(LookupRollupSummaryId__c = (String) ((Id)lookupId));
 		} catch (Exception e) {
-			throwServiceException(e.getStatusCode(), lookupName);
-        }
+			throwServiceException(e, lookupName);
+		}
     }
 
 	@TestVisible
-	private static void throwServiceException(StatusCode exceptionStatusCode, String lookupName) {
-		if (exceptionStatusCode == StatusCode.STORAGE_LIMIT_EXCEEDED) {
-			throw RollupServiceException.missingStorageForJobRecord();
+	private static void throwServiceException(Exception e, String lookupName) {
+		if (e.getTypeName().toLowerCase() == 'dmlexception') {
+			if (((DMLException) e).getDmlType(0) == StatusCode.STORAGE_LIMIT_EXCEEDED) {
+				throw RollupServiceException.missingStorageForJobRecord();
+			}
 		}
 		throw RollupServiceException.jobAlreadyRunning(lookupName);
 	}
