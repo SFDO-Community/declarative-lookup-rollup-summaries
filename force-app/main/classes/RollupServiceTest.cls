@@ -1977,7 +1977,9 @@ private with sharing class RollupServiceTest
 	static void testExceptionThrowing()
 	{
 		try {
-			RollupService.throwServiceException(StatusCode.STORAGE_LIMIT_EXCEEDED, 'LookupName');
+			// cannot force a 'STORAGE_LIMIT_EXCEEDED' exception
+			// but at least we can test the method call
+			RollupService.throwServiceException(new RollupServiceException('test'), 'LookupName');
 			System.assert(false);
 		} catch (RollupServiceException e) {
 			System.assert(true);
