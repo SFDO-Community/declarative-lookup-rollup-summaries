@@ -1972,4 +1972,15 @@ private with sharing class RollupServiceTest
 		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
 		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
 	}
+
+	@IsTest
+	static void testExceptionThrowing()
+	{
+		try {
+			RollupService.throwServiceException(StatusCode.STORAGE_LIMIT_EXCEEDED, 'LookupName');
+			System.assert(false);
+		} catch (RollupServiceException e) {
+			System.assert(true);
+		}
+	}
 }
