@@ -1214,6 +1214,7 @@ global with sharing class RollupService
 		// rollups that have not been updated/inserted after the insert/update enhancement is applied
 		// Unable to lower RelationShipCriteria__c because of field value case-(in)sensitivity configuration
 		return  (lookupWrapper.Lookup.ParentObject.toLowerCase() + '#' + 
+			     lookupWrapper.Lookup.ChildObject.toLowerCase() + '#' + 
 			     lookupWrapper.Lookup.RelationshipField.toLowerCase() + '#' + 
 			     lookupWrapper.Lookup.RelationShipCriteria + '#' + 
 			     rsfType + '#' + 
