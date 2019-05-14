@@ -74,7 +74,17 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! 
 
-**Latest Release Version 2.11**
+**Latest Release Version 2.11.1**
+_______________________________
+
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t0N000001E2L5), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t0N000001E2L5)
+
+- Bug [Summer 19-Invalid field MasterRecordId for Case SobjectException due version 42](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/818)
+
+**IMPORTANT NOTE:**
+The Cases DLRS Trigger will fail in Summer '19 if you do not upgrade to 2.11.1 until the related known issue is fixed by Salesforce. This only impacts users with the Case object DLRS Child Trigger created and active.
+
+**Release Version 2.11**
 _______________________________
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000IyYr), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000IyYr)
