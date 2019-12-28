@@ -2,22 +2,22 @@
  * Copyright (c) 2013, Andrew Fawcett
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without modification, 
+ * Redistribution and use in source and binary forms, with or without modification,
  *   are permitted provided that the following conditions are met:
  *
- * - Redistributions of source code must retain the above copyright notice, 
+ * - Redistributions of source code must retain the above copyright notice,
  *      this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright notice, 
- *      this list of conditions and the following disclaimer in the documentation 
+ * - Redistributions in binary form must reproduce the above copyright notice,
+ *      this list of conditions and the following disclaimer in the documentation
  *      and/or other materials provided with the distribution.
- * - Neither the name of the Andrew Fawcett, nor the names of its contributors 
- *      may be used to endorse or promote products derived from this software without 
+ * - Neither the name of the Andrew Fawcett, nor the names of its contributors
+ *      may be used to endorse or promote products derived from this software without
  *      specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
- *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL 
- *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
@@ -28,10 +28,10 @@
  * Tests the RollupService methods, note the LREngine is test independently via TestLREngine
  **/
 @IsTest
-private with sharing class RollupServiceTest 
-{		
+private with sharing class RollupServiceTest
+{
 	static Schema.SObjectField ACCOUNT_SLA_EXPIRATION_DATE;
-	static Schema.SObjectField ACCOUNT_NUMBER_OF_LOCATIONS;		
+	static Schema.SObjectField ACCOUNT_NUMBER_OF_LOCATIONS;
 	static
 	{
 		// Dynamically resolve these fields, if they are not present when the test runs, the test will return as passed to avoid failures in subscriber org when packaged
@@ -42,27 +42,27 @@ private with sharing class RollupServiceTest
 
 	private testmethod static void testSingleSumRollup()
 	{
-		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 600, RollupSummaries.AggregateOperation.Sum, null);	
+		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 600, RollupSummaries.AggregateOperation.Sum, null);
 	}
 
 	private testmethod static void testSingleMaxRollup()
 	{
-		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 250, RollupSummaries.AggregateOperation.Max, null);	
+		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 250, RollupSummaries.AggregateOperation.Max, null);
 	}
 
 	private testmethod static void testSingleMinRollup()
 	{
-		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 50, RollupSummaries.AggregateOperation.Min, null);	
+		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 50, RollupSummaries.AggregateOperation.Min, null);
 	}
 
 	private testmethod static void testSingleAvgRollup()
 	{
-		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 150, RollupSummaries.AggregateOperation.Avg, null);	
+		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 150, RollupSummaries.AggregateOperation.Avg, null);
 	}
 
 	private testmethod static void testSingleCountRollup()
 	{
-		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 4, RollupSummaries.AggregateOperation.Count, null);	
+		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 4, RollupSummaries.AggregateOperation.Count, null);
 	}
 
 	private testmethod static void testSingleCountDistinctRollup()
@@ -72,28 +72,28 @@ private with sharing class RollupServiceTest
 
 	private testmethod static void testSingleSumRollupConditional()
 	{
-		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 500, RollupSummaries.AggregateOperation.Sum, 'Amount > 200');	
+		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 500, RollupSummaries.AggregateOperation.Sum, 'Amount > 200');
 	}
-	
+
 	private testmethod static void testMultiRollup()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
 
 		// Test data
 		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
-					
+
 		// Test data for rollup A
 		Decimal expectedResultA = 500;
-		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
 		String conditionA = 'Amount > 200';
 
 		// Test data for rollup B
 		Decimal expectedResultB = 4;
-		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count; 
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
 		String conditionB = null;
-		
+
 		// Configure rollup A
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
@@ -122,13 +122,13 @@ private with sharing class RollupServiceTest
 
 		// Insert rollup definitions
 		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		List<Opportunity> opps = new List<Opportunity>(); 
+		List<Opportunity> opps = new List<Opportunity>();
 		for(Decimal rollupValue : rollups)
 		{
 			Opportunity opp = new Opportunity();
@@ -137,36 +137,36 @@ private with sharing class RollupServiceTest
 			opp.CloseDate = System.today();
 			opp.AccountId = account.Id;
 			opp.Amount = rollupValue;
-			opps.add(opp);			
+			opps.add(opp);
 		}
 		insert opps;
-		
+
 		// Assert rollup
 		Id accountId = account.Id;
 		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
-		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));			
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
 	}
-	
+
 	private testmethod static void testMultiRollupSumAndAvg()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
 
 		// Test data
 		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
-					
+
 		// Test data for rollup A
 		Decimal expectedResultA = 600;
-		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
 		String conditionA = null;
 
 		// Test data for rollup B
 		Decimal expectedResultB = 150;
-		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Avg; 
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Avg;
 		String conditionB = null;
-		
+
 		// Configure rollup A
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Total Opportunities into Annual Revenue on Account';
@@ -195,13 +195,13 @@ private with sharing class RollupServiceTest
 
 		// Insert rollup definitions
 		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		List<Opportunity> opps = new List<Opportunity>(); 
+		List<Opportunity> opps = new List<Opportunity>();
 		for(Decimal rollupValue : rollups)
 		{
 			Opportunity opp = new Opportunity();
@@ -210,36 +210,36 @@ private with sharing class RollupServiceTest
 			opp.CloseDate = System.today();
 			opp.AccountId = account.Id;
 			opp.Amount = rollupValue;
-			opps.add(opp);			
+			opps.add(opp);
 		}
 		insert opps;
-		
+
 		// Assert rollup
 		Id accountId = account.Id;
 		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
-		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));			
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
 	}
 
 	private testmethod static void testMultiRollupNoConditions()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
 
 		// Test data
 		List<Decimal> rollups = new List<Decimal> { 10, 20, 30, 40 };
-					
+
 		// Test data for rollup A
 		Decimal expectedResultA = 160;
-		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Max; 
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Max;
 		String conditionA = null;
 
 		// Test data for rollup B
 		Decimal expectedResultB = 4;
-		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count; 
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
 		String conditionB = null;
-		
+
 		// Configure rollup A
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Max Opportunities Amount';
@@ -268,13 +268,13 @@ private with sharing class RollupServiceTest
 
 		// Insert rollup definitions
 		insert new List<LookupRollupSummary__c> { rollupSummaryB, rollupSummaryA };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		List<Opportunity> opps = new List<Opportunity>(); 
+		List<Opportunity> opps = new List<Opportunity>();
 		Integer rollupIdx = 0;
 		for(Decimal rollupValue : rollups)
 		{
@@ -285,19 +285,19 @@ private with sharing class RollupServiceTest
 			opp.CloseDate = System.today();
 			opp.AccountId = account.Id;
 			opp.Amount = rollupValue * rollupIdx;
-			opps.add(opp);			
+			opps.add(opp);
 		}
 		insert opps;
-		
+
 		// Assert rollup
 		Id accountId = account.Id;
 		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
-		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));			
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
 	}
 
 	private testmethod static void testCountByType()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
@@ -307,7 +307,7 @@ private with sharing class RollupServiceTest
 
 		// Test data for rollup B
 		Decimal expectedResultB = 2;
-		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count; 
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
 		String conditionB = null;
 
 		// Configure rollup B
@@ -325,13 +325,13 @@ private with sharing class RollupServiceTest
 
 		// Insert rollup definitions
 		insert new List<LookupRollupSummary__c> { rollupSummaryB };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		List<Opportunity> opps = new List<Opportunity>(); 
+		List<Opportunity> opps = new List<Opportunity>();
 		Integer rollupIdx = 0;
 		for(Decimal rollupValue : rollups)
 		{
@@ -343,19 +343,19 @@ private with sharing class RollupServiceTest
 			opp.CloseDate = System.today();
 			opp.AccountId = account.Id;
 			opp.Amount = rollupValue * rollupIdx;
-			opps.add(opp);			
+			opps.add(opp);
 		}
 		insert opps;
-		
+
 		// Assert rollup
 		Id accountId = account.Id;
 		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));			
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
 	}
 
 
 	private testmethod static void testCountById()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
@@ -365,7 +365,7 @@ private with sharing class RollupServiceTest
 
 		// Test data for rollup B
 		Decimal expectedResultB = 4;
-		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count; 
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
 		String conditionB = null;
 
 		// Configure rollup B
@@ -383,13 +383,13 @@ private with sharing class RollupServiceTest
 
 		// Insert rollup definitions
 		insert new List<LookupRollupSummary__c> { rollupSummaryB };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		List<Opportunity> opps = new List<Opportunity>(); 
+		List<Opportunity> opps = new List<Opportunity>();
 		Integer rollupIdx = 0;
 		for(Decimal rollupValue : rollups)
 		{
@@ -400,41 +400,41 @@ private with sharing class RollupServiceTest
 			opp.CloseDate = System.today();
 			opp.AccountId = account.Id;
 			opp.Amount = rollupValue * rollupIdx;
-			opps.add(opp);			
+			opps.add(opp);
 		}
 		insert opps;
-		
+
 		// Assert rollup
 		Id accountId = account.Id;
 		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));			
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
 	}
-	
-	
+
+
 	private testmethod static void testMultiRollupWithTwoParents()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
 
 		// Test data
 		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
-					
+
 		// Test data for rollup A
 		Decimal expectedResultA = 500;
-		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
 		String conditionA = 'Amount > 200';
 
 		// Test data for rollup B
 		Decimal expectedResultB = 4;
-		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count; 
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
 		String conditionB = null;
 
 		// Test data for rollup C
 		Decimal expectedResultC = 600;
-		RollupSummaries.AggregateOperation operationC = RollupSummaries.AggregateOperation.Sum; 
+		RollupSummaries.AggregateOperation operationC = RollupSummaries.AggregateOperation.Sum;
 		String conditionC = null;
-		
+
 		// Configure rollup A
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
@@ -476,7 +476,7 @@ private with sharing class RollupServiceTest
 
 		// Insert rollup definitions
 		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB, rollupSummaryC };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
@@ -484,8 +484,8 @@ private with sharing class RollupServiceTest
 		insert account;
 		SObject camp = Schema.getGlobalDescribe().get('Campaign').newSObject();
 		camp.put('Name', 'Test Campaign');
-		insert camp; 
-		List<Opportunity> opps = new List<Opportunity>(); 
+		insert camp;
+		List<Opportunity> opps = new List<Opportunity>();
 		for(Decimal rollupValue : rollups)
 		{
 			Opportunity opp = new Opportunity();
@@ -496,41 +496,41 @@ private with sharing class RollupServiceTest
 			opp.Amount = rollupValue;
 			opp.TotalOpportunityQuantity = rollupValue;
 			opp.put('CampaignId', camp.Id);
-			opps.add(opp);			
+			opps.add(opp);
 		}
 		insert opps;
-		
+
 		// Assert rollups
 		Id accountId = account.Id;
 		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
-		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));	
-		Id campId = camp.Id;		
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
+		Id campId = camp.Id;
 		SObject campResult = Database.query('select NumberSent from Campaign where Id = :campId');
-		System.assertEquals(expectedResultC, campResult.get('NumberSent'));			
+		System.assertEquals(expectedResultC, campResult.get('NumberSent'));
 	}
-	
+
 	private testmethod static void testMultiRollupWithTwoParentsTenChunks()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
 
 		// Test data
-		List<Decimal> rollups = new List<Decimal> { 
+		List<Decimal> rollups = new List<Decimal> {
 			1, 2, 3, 4, 5
 			,6, 7, 8, 9, 10
 			,11, 12, 13, 14, 15
 		};
-					
+
 		// Test data for rollup A
-		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
 		String conditionA = null;
 
 		// Test data for rollup B
-		RollupSummaries.AggregateOperation operationC = RollupSummaries.AggregateOperation.Sum; 
+		RollupSummaries.AggregateOperation operationC = RollupSummaries.AggregateOperation.Sum;
 		String conditionB = null;
-		
+
 		// Configure rollup A
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
@@ -559,12 +559,12 @@ private with sharing class RollupServiceTest
 
 		// Insert rollup definitions
 		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
-		
+
 		// Test data
 		List<SObject> accountList = new List<SObject>();
 		List<SObject> campaignList = new List<SObject>();
 
-		List<Opportunity> opps = new List<Opportunity>(); 
+		List<Opportunity> opps = new List<Opportunity>();
 		Integer index = 0;
 		for(Decimal rollupValue : rollups) {
 			// add each Opportunity to a new Account/Campaign to produce chunking
@@ -587,7 +587,7 @@ private with sharing class RollupServiceTest
 			opp.put('CampaignId', campaignList[index].Id);
 			opps.add(opp);
 
-			index++;			
+			index++;
 		}
 		insert opps;
 
@@ -596,22 +596,22 @@ private with sharing class RollupServiceTest
 		for(Decimal rollupValue : rollups) {
 			Id accountId = accountList[index].Id;
 			Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-			System.assertEquals(rollupValue, accountResult.AnnualRevenue);			
-			
-			Id campId = campaignList[index].Id;		
+			System.assertEquals(rollupValue, accountResult.AnnualRevenue);
+
+			Id campId = campaignList[index].Id;
 			SObject campResult = Database.query('select NumberSent from Campaign where Id = :campId');
 			System.assertEquals(rollupValue, campResult.get('NumberSent'));
-			
-			index++;			
+
+			index++;
 		}
 	}
-	
+
 	private testmethod static void testSingleRollupWithoutRelation()
 	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
-		
+
 		// Configure rollup
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
@@ -625,37 +625,37 @@ private with sharing class RollupServiceTest
 		rollupSummary.Active__c = true;
 		rollupSummary.CalculationMode__c = 'Realtime';
 		insert new List<LookupRollupSummary__c> { rollupSummary };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		Opportunity opp = new Opportunity(); 
+		Opportunity opp = new Opportunity();
 		opp.Name = 'Test Opportunity';
 		opp.StageName = 'Open';
 		opp.CloseDate = System.today();
 		opp.AccountId = null; // Note no relationship with an Account
 		opp.Amount = 100;
 		insert opp;
-		
+
 		// Assert rollup
 		System.assertEquals(0, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);
-		
+
 		// Do an update
 		opp.Amount = 101;
-		update opp;		
-		
+		update opp;
+
 		// Assert rollup
-		System.assertEquals(0, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);					
+		System.assertEquals(0, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);
 	}
-		
+
 	private testmethod static void testSingleRollupWithInsertThenDelete()
 	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
-		
+
 		// Configure rollup
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
@@ -669,28 +669,28 @@ private with sharing class RollupServiceTest
 		rollupSummary.Active__c = true;
 		rollupSummary.CalculationMode__c = 'Realtime';
 		insert new List<LookupRollupSummary__c> { rollupSummary };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		Opportunity opp = new Opportunity(); 
+		Opportunity opp = new Opportunity();
 		opp.Name = 'Test Opportunity';
 		opp.StageName = 'Open';
 		opp.CloseDate = System.today();
 		opp.AccountId = account.Id;
 		opp.Amount = 100;
 		insert opp;
-		
+
 		// Assert rollup
 		System.assertEquals(100, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);
-		
+
 		// Delete Opportunity
 		delete opp;
-		
+
 		// Assert rollup
-		System.assertEquals(0, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);							
+		System.assertEquals(0, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);
 	}
 
 	private testmethod static void testSingleRollupWithInsertsThenDelete()
@@ -698,7 +698,7 @@ private with sharing class RollupServiceTest
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
-		
+
 		// Configure rollup
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
@@ -712,14 +712,14 @@ private with sharing class RollupServiceTest
 		rollupSummary.Active__c = true;
 		rollupSummary.CalculationMode__c = 'Realtime';
 		insert new List<LookupRollupSummary__c> { rollupSummary };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
 		{
-			Opportunity opp = new Opportunity(); 
+			Opportunity opp = new Opportunity();
 			opp.Name = 'Test Opportunity';
 			opp.StageName = 'Open';
 			opp.CloseDate = System.today();
@@ -727,46 +727,46 @@ private with sharing class RollupServiceTest
 			opp.Amount = 100;
 			insert opp;
 		}
-		Opportunity opp = new Opportunity(); 
+		Opportunity opp = new Opportunity();
 		opp.Name = 'Test Opportunity';
 		opp.StageName = 'Open';
 		opp.CloseDate = System.today();
 		opp.AccountId = account.Id;
 		opp.Amount = 100;
 		insert opp;
-		
+
 		// Assert rollup
 		System.assertEquals(200, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);
-		
+
 		// Delete Opportunity
 		delete opp;
-		
+
 		// Assert rollup
-		System.assertEquals(100, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);							
+		System.assertEquals(100, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);
 	}
-	
+
 	private testmethod static void testRollupWithoutChanges()
 	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
-		
+
 		// Perform standard test
 		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 600, RollupSummaries.AggregateOperation.Sum, null);
 		List<Opportunity> opps = [select Id from Opportunity];
-		
+
 		// Sample various limits prior to an update
 		Integer beforeQueries = Limits.getQueries();
 		Integer beforeRows = Limits.getQueryRows();
-		
+
 		// Update opportunities (no changes to the field being aggregted, thus no rollup processng)
 		update opps;
-		
+
 		// Assert no further limits have been used since the field to aggregate on the detail has not changed
 		System.assertEquals(beforeQueries + 1, Limits.getQueries()); // Only tolerate a query for the Lookup definition
 		System.assertEquals(beforeRows + 1, Limits.getQueryRows()); // Only tolerate a row for the Lookup definition
 	}
-	
+
 	private testmethod static void testLimitsConsumedWithConditions()
 	{
 		// Test supported?
@@ -774,21 +774,21 @@ private with sharing class RollupServiceTest
 			return;
 
 		// Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
-		TestContext.AccountTestTriggerEnabled = false;	
+		TestContext.AccountTestTriggerEnabled = false;
 
 		// Test data
 		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
-					
+
 		// Test data for rollup A
 		Decimal expectedResultA = 500;
-		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
 		String conditionA = 'Amount > 200';
 
 		// Test data for rollup B
 		Decimal expectedResultB = 4;
-		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count; 
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
 		String conditionB = null;
-		
+
 		// Configure rollup A
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
@@ -817,13 +817,13 @@ private with sharing class RollupServiceTest
 
 		// Insert rollup definitions
 		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		List<Opportunity> opps = new List<Opportunity>(); 
+		List<Opportunity> opps = new List<Opportunity>();
 		for(Decimal rollupValue : rollups)
 		{
 			Opportunity opp = new Opportunity();
@@ -832,7 +832,7 @@ private with sharing class RollupServiceTest
 			opp.CloseDate = System.today();
 			opp.AccountId = account.Id;
 			opp.Amount = rollupValue;
-			opps.add(opp);			
+			opps.add(opp);
 		}
 		insert opps;
 
@@ -841,22 +841,22 @@ private with sharing class RollupServiceTest
 		// One query on Database.newQueryLocator (validation when insert rollup a)
 		// One query on Rollup object
 		// One query on Opportunity for rollup a
-		// One query on Opportunity for rollup b				
-		System.assertEquals(6, Limits.getQueries());	
-		
-		// One row for ApexTrigger (in the TestContext.isSupported method)		
+		// One query on Opportunity for rollup b
+		System.assertEquals(6, Limits.getQueries());
+
+		// One row for ApexTrigger (in the TestContext.isSupported method)
 		// One row for ApexTrigger
 		// Two rows for Rollup object
 		// Two rows for Opportunity for rollup a
 		// Four rows for Opportunity for rollup b
 		System.assertEquals(10, Limits.getQueryRows());
-				
+
 		// Assert rollup
 		Id accountId = account.Id;
 		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
 		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
-		
+
 		// Modify the opps, but only the Amount, this should result in only the Amount rollup executing
 		for(Opportunity opp : opps)
 			opp.Amount++;
@@ -865,41 +865,41 @@ private with sharing class RollupServiceTest
 		// + One query for the Account query above
 		// + One query on Rollup object
 		// + One query on Opportunity for rollup a
-		System.assertEquals(9, Limits.getQueries());	
+		System.assertEquals(9, Limits.getQueries());
 
-		// + One query for the Account query above		
+		// + One query for the Account query above
 		// + Two rows for Rollup object
 		// + Two rows for Opportunity for rollup a
 		System.assertEquals(15, Limits.getQueryRows());
 
 		// Assert rollup
 		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(expectedResultA + 2, accountResult.AnnualRevenue);			
-		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));								
+		System.assertEquals(expectedResultA + 2, accountResult.AnnualRevenue);
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
 	}
-	
+
 	private testmethod static void testLimitsConsumedWithoutConditions()
 	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
-			
+
 		// Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
-		TestContext.AccountTestTriggerEnabled = false;	
+		TestContext.AccountTestTriggerEnabled = false;
 
 		// Test data
 		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
-					
+
 		// Test data for rollup A
 		Decimal expectedResultA = 600;
-		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
 		String conditionA = null;
 
 		// Test data for rollup B
 		Decimal expectedResultB = 4;
-		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count; 
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
 		String conditionB = null;
-		
+
 		// Configure rollup A
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
@@ -928,13 +928,13 @@ private with sharing class RollupServiceTest
 
 		// Insert rollup definitions
 		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		List<Opportunity> opps = new List<Opportunity>(); 
+		List<Opportunity> opps = new List<Opportunity>();
 		for(Decimal rollupValue : rollups)
 		{
 			Opportunity opp = new Opportunity();
@@ -943,7 +943,7 @@ private with sharing class RollupServiceTest
 			opp.CloseDate = System.today();
 			opp.AccountId = account.Id;
 			opp.Amount = rollupValue;
-			opps.add(opp);			
+			opps.add(opp);
 		}
 		insert opps;
 
@@ -951,20 +951,20 @@ private with sharing class RollupServiceTest
 		// One query on ApexTrigger (validation when inserting rollups)
 		// One query on Rollup object
 		// One query on Opportunity for both rollups
-		System.assertEquals(4, Limits.getQueries());	
-		
+		System.assertEquals(4, Limits.getQueries());
+
 		// One row for ApexTrigger (in the TestContext.isSupported method)
 		// One row for ApexTrigger
 		// Two rows for Rollup object
 		// Four rows for Opportunity for rollup a and b
 		System.assertEquals(8, Limits.getQueryRows());
-				
+
 		// Assert rollup
 		Id accountId = account.Id;
 		Account accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
 		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
-		
+
 		// Modify the opps, but only the Amount, this should result in only the Amount rollup executing
 		for(Opportunity opp : opps)
 			opp.Amount++;
@@ -973,25 +973,25 @@ private with sharing class RollupServiceTest
 		// + One query for the Account query above
 		// + One query on Rollup object
 		// + One query on Opportunity for rollup a
-		System.assertEquals(7, Limits.getQueries());	
+		System.assertEquals(7, Limits.getQueries());
 
-		// + One query for the Account query above		
+		// + One query for the Account query above
 		// + Two rows for Rollup object
-		// + Four rows for Opportunity for rollup a and 
+		// + Four rows for Opportunity for rollup a and
 		System.assertEquals(15, Limits.getQueryRows());
 
 		// Assert rollup
 		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');
-		System.assertEquals(expectedResultA + 4, accountResult.AnnualRevenue);			
-		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));								
+		System.assertEquals(expectedResultA + 4, accountResult.AnnualRevenue);
+		System.assertEquals(expectedResultB, accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS));
 	}
-	
+
 	private static void testSingleRollup(List<Decimal> rollups, Decimal expectedResult, RollupSummaries.AggregateOperation operation, String condition)
-	{			 
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
-		
+
 		// Configure rollup
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
@@ -1005,13 +1005,13 @@ private with sharing class RollupServiceTest
 		rollupSummary.Active__c = true;
 		rollupSummary.CalculationMode__c = 'Realtime';
 		insert new List<LookupRollupSummary__c> { rollupSummary };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		List<Opportunity> opps = new List<Opportunity>(); 
+		List<Opportunity> opps = new List<Opportunity>();
 		for(Decimal rollupValue : rollups)
 		{
 			Opportunity opp = new Opportunity();
@@ -1020,33 +1020,33 @@ private with sharing class RollupServiceTest
 			opp.CloseDate = System.today();
 			opp.AccountId = account.Id;
 			opp.Amount = rollupValue;
-			opps.add(opp);			
+			opps.add(opp);
 		}
 		insert opps;
-		
+
 		// Assert rollup
-		System.assertEquals(expectedResult, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);			
-	}	
+		System.assertEquals(expectedResult, [select AnnualRevenue from Account where Id = :account.Id].AnnualRevenue);
+	}
 
 	private testmethod static void testMultiRollupOfDifferentTypes()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
 
 		// Test data
 		List<Decimal> rollups = new List<Decimal> { 250, 250, 50, 50 };
-					
+
 		// Test data for rollup A
 		Decimal expectedResultA = 600;
-		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum; 
+		RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
 		String conditionA = null;
 
 		// Test data for rollup B
 		String expectedResultB = 'Open,Open,Open,Open';
-		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate; 
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate;
 		String conditionB = null;
-		
+
 		// Configure rollup A
 		LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
 		rollupSummaryA.Name = 'Total Opportunities into Annual Revenue on Account';
@@ -1076,13 +1076,13 @@ private with sharing class RollupServiceTest
 
 		// Insert rollup definitions
 		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
 		account.AnnualRevenue = 0;
 		insert account;
-		List<Opportunity> opps = new List<Opportunity>(); 
+		List<Opportunity> opps = new List<Opportunity>();
 		for(Decimal rollupValue : rollups)
 		{
 			Opportunity opp = new Opportunity();
@@ -1091,15 +1091,15 @@ private with sharing class RollupServiceTest
 			opp.CloseDate = System.today();
 			opp.AccountId = account.Id;
 			opp.Amount = rollupValue;
-			opps.add(opp);			
+			opps.add(opp);
 		}
 		insert opps;
-		
+
 		// Assert rollup
 		Id accountId = account.Id;
 		Account accountResult = Database.query('select AnnualRevenue, Description from Account where Id = :accountId');
-		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);			
-		System.assertEquals(expectedResultB, accountResult.Description);			
+		System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+		System.assertEquals(expectedResultB, accountResult.Description);
 	}
 
 	/**
@@ -1148,7 +1148,7 @@ private with sharing class RollupServiceTest
 
 		// Insert rollup definitions
 		insert new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
-		
+
 		// Test data
 		Account account = new Account();
 		account.Name = 'Test Account';
@@ -1156,28 +1156,28 @@ private with sharing class RollupServiceTest
 		insert account;
 
 		Date today = System.today();
-		List<Opportunity> opps = new List<Opportunity>(); 
+		List<Opportunity> opps = new List<Opportunity>();
 		for (String opportunityName :opportunityData.keySet())
 		{
 			List<String> oppFieldValues = opportunityData.get(opportunityName).split(';');
 			Opportunity opp = new Opportunity();
 			opp.Name = opportunityName;
-			opp.AccountId = account.Id;			
+			opp.AccountId = account.Id;
 			opp.Amount = Decimal.valueOf(oppFieldValues[0]);
-			opp.CloseDate = today.addMonths(Integer.valueOf(oppFieldValues[1]));			
+			opp.CloseDate = today.addMonths(Integer.valueOf(oppFieldValues[1]));
 			opp.StageName = oppFieldValues[2];
-			opps.add(opp);			
+			opps.add(opp);
 		}
 		insert opps;
 
-		return account.Id;		
+		return account.Id;
 	}
 
 	/**
 	 * Test default behavior with different order by on each rollup
-	 */	 
+	 */
 	private testmethod static void testMultiRollupOfDifferentTypesDifferentOrderBy()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
@@ -1197,7 +1197,7 @@ private with sharing class RollupServiceTest
 
 		// Test data for rollup B
 		String expectedResultB = 'Steve,Kim,Charlie,Joe';
-		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate; 
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate;
 		String orderByClauseB = Schema.SObjectType.Opportunity.fields.Amount.getName();
 
 		// generate rollups and data
@@ -1205,16 +1205,16 @@ private with sharing class RollupServiceTest
 
 		// Assert rollup
 		Account accountResult = Database.query('select Sic, Description from Account where Id = :accountId');
-		System.assertEquals(expectedResultA, accountResult.Sic);			
-		System.assertEquals(expectedResultB, accountResult.Description);			
+		System.assertEquals(expectedResultA, accountResult.Sic);
+		System.assertEquals(expectedResultB, accountResult.Description);
 	}
 
 	/**
 	 * Test default behavior with different order by containing multiple fields on each rollup
 	 * for Issue https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/216
-	 */	 
+	 */
 	private testmethod static void testMultiRollupOfDifferentTypesDifferentMultipleFieldsOrderBy()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
@@ -1234,7 +1234,7 @@ private with sharing class RollupServiceTest
 
 		// Test data for rollup B
 		String expectedResultB = 'Kim,Joe,Charlie,Steve';
-		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate; 
+		RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate;
 		String orderByClauseB = 'Amount ASC NULLS FIRST, CloseDate DESC NULLS FIRST, Name';
 
 		// generate rollups and data
@@ -1242,12 +1242,12 @@ private with sharing class RollupServiceTest
 
 		// Assert rollup
 		Account accountResult = Database.query('select Sic, Description from Account where Id = :accountId');
-		System.assertEquals(expectedResultA, accountResult.Sic);			
-		System.assertEquals(expectedResultB, accountResult.Description);			
-	}	
+		System.assertEquals(expectedResultA, accountResult.Sic);
+		System.assertEquals(expectedResultB, accountResult.Description);
+	}
 
 	private testmethod static void testPicklistRollup()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
@@ -1316,7 +1316,7 @@ private with sharing class RollupServiceTest
 
 
 	private testmethod static void testPicklistRollupWithLimits()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
@@ -1384,7 +1384,7 @@ private with sharing class RollupServiceTest
 
 
 	private testmethod static void testLastRollupWithLimits()
-	{		
+	{
 		// Test supported?
 		if(!TestContext.isSupported())
 			return;
@@ -1448,7 +1448,7 @@ private with sharing class RollupServiceTest
 			return;
 
 		// Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
-		TestContext.AccountTestTriggerEnabled = false;			
+		TestContext.AccountTestTriggerEnabled = false;
 
 		// Configure rollup
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
@@ -1463,7 +1463,7 @@ private with sharing class RollupServiceTest
 		rollupSummary.Active__c = true;
 		rollupSummary.CalculationMode__c = 'Realtime';
 		insert rollupSummary;
-		
+
 		// Test data
 		Integer numAccounts = 3;
 		Account parentAccount1 = new Account();
@@ -1474,13 +1474,13 @@ private with sharing class RollupServiceTest
 		parentAccount2.AnnualRevenue = 0;
 		Account parentAccount3 = new Account();
 		parentAccount3.Name = 'Parent Account 3';
-		parentAccount3.AnnualRevenue = 0;		
+		parentAccount3.AnnualRevenue = 0;
 		List<Account> parentAccounts = new List<Account> { parentAccount1, parentAccount2, parentAccount3 };
 		insert parentAccounts;
 
 		List<Decimal> oppAmounts = new List<Decimal> { 100, 200, 300, 400 };
 		Decimal expectedAnnualRevenue = 1000;
-		List<Opportunity> childOpportunities = new List<Opportunity>(); 		
+		List<Opportunity> childOpportunities = new List<Opportunity>();
 		for (Account acct :parentAccounts)
 		{
 			for(Decimal oppAmount :oppAmounts)
@@ -1491,8 +1491,8 @@ private with sharing class RollupServiceTest
 				opp.CloseDate = System.today();
 				opp.AccountId = acct.Id;
 				opp.Amount = oppAmount;
-				childOpportunities.add(opp);			
-			}			
+				childOpportunities.add(opp);
+			}
 		}
 		insert childOpportunities;
 
@@ -1523,14 +1523,14 @@ private with sharing class RollupServiceTest
 		Integer beforeRows = Limits.getQueryRows();
 		Integer beforeDMLRows = Limits.getDMLRows();
 
-		// Update opportunities (1 record has change to field being aggregated, all others do not have changes to that field)		
+		// Update opportunities (1 record has change to field being aggregated, all others do not have changes to that field)
 		update oppsToModify;
 
 		// Assert limits
 		// + One query on Rollup object
-		// + One query on Opportunity for rollup	
-		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
-		
+		// + One query on Opportunity for rollup
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());
+
 		// + One row for Rollup object
 		// + Four rows for Opportunity on Parent 1
 		System.assertEquals(beforeRows + 5, Limits.getQueryRows());
@@ -1542,7 +1542,7 @@ private with sharing class RollupServiceTest
 		// assert rollups produced correct result
 		System.assertEquals(expectedAnnualRevenue + 1, [select AnnualRevenue from Account where Id = :parentAccount1.Id].AnnualRevenue);
 		System.assertEquals(expectedAnnualRevenue, [select AnnualRevenue from Account where Id = :parentAccount2.Id].AnnualRevenue);
-		System.assertEquals(expectedAnnualRevenue, [select AnnualRevenue from Account where Id = :parentAccount3.Id].AnnualRevenue);		
+		System.assertEquals(expectedAnnualRevenue, [select AnnualRevenue from Account where Id = :parentAccount3.Id].AnnualRevenue);
 	}
 
 	private testmethod static void testLimitsConsumedWithReparentOnly()
@@ -1584,11 +1584,11 @@ private with sharing class RollupServiceTest
 		rollupSummaryB.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
 		rollupSummaryB.AggregateResultField__c = aggregateResultField2;
 		rollupSummaryB.Active__c = true;
-		rollupSummaryB.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();		
+		rollupSummaryB.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
 
 		List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c> { rollupSummaryA, rollupSummaryB };
 		insert rollups;
-		
+
 		// Insert parents
 		SObject parentA = parentType.newSObject();
 		parentA.put('Name', 'ParentA');
@@ -1609,7 +1609,7 @@ private with sharing class RollupServiceTest
 		child2.put(relationshipField1, parentA.Id);
 		child2.put(relationshipField2, parentB.Id);
 		child2.put(aggregateField1, 'Yellow');
-		child2.put(aggregateField2, 22);		
+		child2.put(aggregateField2, 22);
 
 		List<SObject> children = new List<SObject> { child1, child2 };
 		insert children;
@@ -1638,16 +1638,16 @@ private with sharing class RollupServiceTest
 
 		// Assert limits
 		// + One query on Rollup object
-		// + One query on LookupChild__c for rollup	
-		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
-		
+		// + One query on LookupChild__c for rollup
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());
+
 		// + Two rows for Rollup object
 		// + Two rows for LookupChild__c for rollup B (One on Parent B and One on Parent C)
 		System.assertEquals(beforeRows + 4, Limits.getQueryRows());
 
 		// + Two rows for LookupChild__c (from the update statement itself)
 		// + Two rows for LookupParent__c (One for B and One for C)
-		System.assertEquals(beforeDMLRows + 4, Limits.getDMLRows());		
+		System.assertEquals(beforeDMLRows + 4, Limits.getDMLRows());
 
 		// Assert rollups
 		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0}, {1} from {2}', new List<String>{ aggregateResultField1, aggregateResultField2, parentObjectName })));
@@ -1659,7 +1659,7 @@ private with sharing class RollupServiceTest
 
 		System.assertEquals(null, (String) assertParents.get(parentC.id).get(aggregateResultField1));
 		System.assertEquals(20, (Decimal) assertParents.get(parentC.id).get(aggregateResultField2));
-	}	
+	}
 
     private static void assertOrdering(Utilities.Ordering o, String orderBy, Boolean useAsSpecifiedString, String field, Utilities.SortOrder direction, Boolean nullsLast)
     {
@@ -1669,7 +1669,8 @@ private with sharing class RollupServiceTest
         System.assertEquals(nullsLast, o.getNullsLast());
     }
 
-    static testMethod void testOrderingStringification()
+    @IsTest
+	static void testOrderingStringification()
     {
         Utilities.Ordering o = new Utilities.Ordering('CloseDate');
         assertOrdering(o, 'CloseDate ASC NULLS FIRST', false, 'CloseDate', Utilities.SortOrder.ASCENDING, false);
@@ -1693,16 +1694,16 @@ private with sharing class RollupServiceTest
         assertOrdering(o, 'CloseDate ASC NULLS LAST', false,'CloseDate', Utilities.SortOrder.ASCENDING, true);
 
         o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.ASCENDING, false);
-        assertOrdering(o, 'CloseDate ASC NULLS FIRST', false, 'CloseDate', Utilities.SortOrder.ASCENDING, false);        
+        assertOrdering(o, 'CloseDate ASC NULLS FIRST', false, 'CloseDate', Utilities.SortOrder.ASCENDING, false);
 
         o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.ASCENDING, true);
-        assertOrdering(o, 'CloseDate ASC NULLS LAST', false, 'CloseDate', Utilities.SortOrder.ASCENDING, true);        
+        assertOrdering(o, 'CloseDate ASC NULLS LAST', false, 'CloseDate', Utilities.SortOrder.ASCENDING, true);
 
         o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.DESCENDING, false);
-        assertOrdering(o, 'CloseDate DESC NULLS FIRST', false, 'CloseDate', Utilities.SortOrder.DESCENDING, false);        
+        assertOrdering(o, 'CloseDate DESC NULLS FIRST', false, 'CloseDate', Utilities.SortOrder.DESCENDING, false);
 
         o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.DESCENDING, true);
-        assertOrdering(o, 'CloseDate DESC NULLS LAST', false, 'CloseDate', Utilities.SortOrder.DESCENDING, true);        
+        assertOrdering(o, 'CloseDate DESC NULLS LAST', false, 'CloseDate', Utilities.SortOrder.DESCENDING, true);
 
          try {
             o = new Utilities.Ordering(null);
@@ -1710,10 +1711,11 @@ private with sharing class RollupServiceTest
          }
          catch (Utilities.BadOrderingStateException e) {
             System.assertEquals('field cannot be blank.', e.getMessage());
-         }        
+         }
     }
 
-    static testMethod void testOrderingAsSpecifiedStringification()
+    @IsTest
+	static void testOrderingAsSpecifiedStringification()
     {
         Utilities.Ordering o = new Utilities.Ordering('CloseDate');
         assertOrdering(o, 'CloseDate', true, 'CloseDate', Utilities.SortOrder.ASCENDING, false);
@@ -1737,17 +1739,17 @@ private with sharing class RollupServiceTest
         assertOrdering(o, 'CloseDate NULLS LAST', true, 'CloseDate', Utilities.SortOrder.ASCENDING, true);
 
         o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.ASCENDING, false);
-        assertOrdering(o, 'CloseDate ASC NULLS FIRST', true, 'CloseDate', Utilities.SortOrder.ASCENDING, false);        
+        assertOrdering(o, 'CloseDate ASC NULLS FIRST', true, 'CloseDate', Utilities.SortOrder.ASCENDING, false);
 
         o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.ASCENDING, true);
-        assertOrdering(o, 'CloseDate ASC NULLS LAST', true, 'CloseDate', Utilities.SortOrder.ASCENDING, true);        
+        assertOrdering(o, 'CloseDate ASC NULLS LAST', true, 'CloseDate', Utilities.SortOrder.ASCENDING, true);
 
         o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.DESCENDING, false);
-        assertOrdering(o, 'CloseDate DESC NULLS FIRST', true, 'CloseDate', Utilities.SortOrder.DESCENDING, false);        
+        assertOrdering(o, 'CloseDate DESC NULLS FIRST', true, 'CloseDate', Utilities.SortOrder.DESCENDING, false);
 
         o = new Utilities.Ordering('CloseDate', Utilities.SortOrder.DESCENDING, true);
-        assertOrdering(o, 'CloseDate DESC NULLS LAST', true, 'CloseDate', Utilities.SortOrder.DESCENDING, true);      
-    }  	
+        assertOrdering(o, 'CloseDate DESC NULLS LAST', true, 'CloseDate', Utilities.SortOrder.DESCENDING, true);
+    }
 
 	private testmethod static void testSingleQueryBasedRollupUpdateOrderByFieldChanged()
 	{
@@ -1776,11 +1778,11 @@ private with sharing class RollupServiceTest
 		rollupSummary.AggregateResultField__c = aggregateResultField;
 		rollupSummary.ConcatenateDelimiter__c = ';';
 		rollupSummary.Active__c = true;
-		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();	
+		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
 
 		List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c> { rollupSummary };
 		insert rollups;
-		
+
 		// Insert parents
 		SObject parentA = parentType.newSObject();
 		parentA.put('Name', 'ParentA');
@@ -1811,7 +1813,7 @@ private with sharing class RollupServiceTest
 			child3.put(orderByField, 30);
 			children.add(child3);
 		}
-		insert children;		
+		insert children;
 
 		// Assert rollups
 		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
@@ -1821,7 +1823,7 @@ private with sharing class RollupServiceTest
 
 		// change Amount__c to effect order by result of rollup
 		// this change will result in rollup being processed because it is a query based rollup
-		// and order by influences rolled up value	
+		// and order by influences rolled up value
 		List<SObject> childrenToUpdate = new List<SObject>();
 		for (SObject child :children)
 		{
@@ -1842,16 +1844,16 @@ private with sharing class RollupServiceTest
 
 		// Assert limits
 		// + One query on Rollup object
-		// + One query on LookupChild__c for rollup	
-		System.assertEquals(beforeQueries + 2, Limits.getQueries());	
-		
+		// + One query on LookupChild__c for rollup
+		System.assertEquals(beforeQueries + 2, Limits.getQueries());
+
 		// + One row for Rollup object
 		// + Nine rows for LookupChild__c for rollup
 		System.assertEquals(beforeRows + 10, Limits.getQueryRows());
 
 		// + Three rows for LookupChild__c (from the update statement itself)
 		// + Three rows for LookupParent__c for the rollup
-		System.assertEquals(beforeDMLRows + 6, Limits.getDMLRows());		
+		System.assertEquals(beforeDMLRows + 6, Limits.getDMLRows());
 
 		// Assert rollups
 		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
@@ -1887,11 +1889,11 @@ private with sharing class RollupServiceTest
 		rollupSummary.AggregateResultField__c = aggregateResultField;
 		rollupSummary.ConcatenateDelimiter__c = ';';
 		rollupSummary.Active__c = true;
-		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();	
+		rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
 
 		List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c> { rollupSummary };
 		insert rollups;
-		
+
 		// Insert parents
 		SObject parentA = parentType.newSObject();
 		parentA.put('Name', 'ParentA');
@@ -1922,7 +1924,7 @@ private with sharing class RollupServiceTest
 			child3.put(orderByField, 'Blue');
 			children.add(child3);
 		}
-		insert children;		
+		insert children;
 
 		// Assert rollups
 		Map<Id, SObject> assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
@@ -1954,20 +1956,33 @@ private with sharing class RollupServiceTest
 		// Assert limits
 		// + One query on Rollup object
 		// No query on LookupChild__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
-		System.assertEquals(beforeQueries + 1, Limits.getQueries());	
-		
+		System.assertEquals(beforeQueries + 1, Limits.getQueries());
+
 		// + One row for Rollup object
-		// No rows on LookupChild__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed		
+		// No rows on LookupChild__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
 		System.assertEquals(beforeRows + 1, Limits.getQueryRows());
 
 		// + Three rows for LookupChild__c (from the update statement itself)
-		// No query on LookupParent__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed		
-		System.assertEquals(beforeDMLRows + 3, Limits.getDMLRows());		
+		// No query on LookupParent__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
+		System.assertEquals(beforeDMLRows + 3, Limits.getDMLRows());
 
 		// Assert rollups
 		assertParents = new Map<Id, SObject>(Database.query(String.format('select id, {0} from {1}', new List<String>{ aggregateResultField, parentObjectName })));
 		System.assertEquals(42, (Decimal) assertParents.get(parentA.id).get(aggregateResultField));
 		System.assertEquals(42, (Decimal) assertParents.get(parentB.id).get(aggregateResultField));
 		System.assertEquals(42, (Decimal) assertParents.get(parentC.id).get(aggregateResultField));
+	}
+
+	@IsTest
+	static void testExceptionThrowing()
+	{
+		try {
+			// cannot force a 'STORAGE_LIMIT_EXCEEDED' exception
+			// but at least we can test the method call
+			RollupService.throwServiceException(new RollupServiceException('test'), 'LookupName');
+			System.assert(false);
+		} catch (RollupServiceException e) {
+			System.assert(true);
+		}
 	}
 }
