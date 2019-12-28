@@ -848,8 +848,8 @@ private with sharing class RollupServiceTest
 		// One row for ApexTrigger
 		// Two rows for Rollup object
 		// Two rows for Opportunity for rollup a
-		// Four rows for Opportunity for rollup b
-		System.assertEquals(10, Limits.getQueryRows());
+		// One rows for Opportunity for rollup b (since its a COUNT and only uses 1 row since Summer'18)
+		System.assertEquals(7, Limits.getQueryRows());
 
 		// Assert rollup
 		Id accountId = account.Id;
@@ -870,7 +870,7 @@ private with sharing class RollupServiceTest
 		// + One query for the Account query above
 		// + Two rows for Rollup object
 		// + Two rows for Opportunity for rollup a
-		System.assertEquals(15, Limits.getQueryRows());
+		System.assertEquals(12, Limits.getQueryRows());
 
 		// Assert rollup
 		accountResult = Database.query('select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId');

@@ -12,22 +12,11 @@
         <apexClass>RollupService</apexClass>
         <enabled>true</enabled>
     </classAccesses>
+    <customMetadataTypeAccesses>
+        <enabled>true</enabled>
+        <name>LookupRollupSummary2__mdt</name>
+    </customMetadataTypeAccesses>
     <description>Provides full configuration access to the rollup summaries. This enabled Author Apex and API access to enable it to deploy the necessary Triggers via the Manage Child Trigger button.</description>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>LookupChild__c.Amount__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>LookupChild__c.LookupParent__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>LookupParent__c.Total__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
         <field>LookupRollupSummaryLog__c.ErrorMessage__c</field>
@@ -55,22 +44,37 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>LookupRollupSummary__c.AggregateOperation__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
         <field>LookupRollupSummary__c.AggregateAllRows__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>LookupRollupSummary__c.RowLimit__c</field>
+        <field>LookupRollupSummary__c.AggregateOperation__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
         <field>LookupRollupSummary__c.CalculationMode__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>LookupRollupSummary__c.CalculationSharingMode__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>LookupRollupSummary__c.ConcatenateDelimiter__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>LookupRollupSummary__c.Description__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>LookupRollupSummary__c.FieldToOrderBy__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -85,7 +89,7 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>LookupRollupSummary__c.TestCode__c</field>
+        <field>LookupRollupSummary__c.RowLimit__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -95,7 +99,7 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>LookupRollupSummary__c.CalculationSharingMode__c</field>
+        <field>LookupRollupSummary__c.TestCode__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -103,21 +107,7 @@
         <field>LookupRollupSummary__c.UniqueName__c</field>
         <readable>true</readable>
     </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>LookupRollupSummary__c.FieldToOrderBy__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>LookupRollupSummary__c.Description__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
-        <field>LookupRollupSummary__c.ConcatenateDelimiter__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
+    <hasActivationRequired>false</hasActivationRequired>
     <label>Lookup Rollup Summaries - Configure Rollups</label>
     <objectPermissions>
         <allowCreate>true</allowCreate>
@@ -135,6 +125,15 @@
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
         <object>LookupParent__c</object>
+        <viewAllRecords>false</viewAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>true</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>LookupRollupCalculateJob__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <objectPermissions>
@@ -164,17 +163,16 @@
         <object>LookupRollupSummary__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
-    <objectPermissions>
-        <allowCreate>true</allowCreate>
-        <allowDelete>true</allowDelete>
-        <allowEdit>true</allowEdit>
-        <allowRead>true</allowRead>
-        <modifyAllRecords>false</modifyAllRecords>
-        <object>LookupRollupCalculateJob__c</object>
-        <viewAllRecords>false</viewAllRecords>
-    </objectPermissions>
+    <pageAccesses>
+        <apexPage>managelookuprollupsummaries</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
     <pageAccesses>
         <apexPage>managetrigger</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+    <pageAccesses>
+        <apexPage>managetriggermdt</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
     <pageAccesses>
@@ -182,7 +180,15 @@
         <enabled>true</enabled>
     </pageAccesses>
     <pageAccesses>
+        <apexPage>rollupcalculatemdt</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+    <pageAccesses>
         <apexPage>rollupscheduledcalculate</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+    <pageAccesses>
+        <apexPage>rollupscheduledcalculatemdt</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
     <pageAccesses>
@@ -201,28 +207,12 @@
         <apexPage>welcometab</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
-    <pageAccesses>
-        <apexPage>managelookuprollupsummaries</apexPage>
-        <enabled>true</enabled>
-    </pageAccesses>
-    <pageAccesses>
-        <apexPage>managetriggermdt</apexPage>
-        <enabled>true</enabled>
-    </pageAccesses>
-    <pageAccesses>
-        <apexPage>rollupcalculatemdt</apexPage>
-        <enabled>true</enabled>
-    </pageAccesses>
-    <pageAccesses>
-        <apexPage>rollupscheduledcalculatemdt</apexPage>
-        <enabled>true</enabled>
-    </pageAccesses>
     <tabSettings>
-        <tab>LookupRollupSummary__c</tab>
+        <tab>LookupRollupCalculateJob__c</tab>
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>
-        <tab>LookupRollupCalculateJob__c</tab>
+        <tab>LookupRollupSummariesHome</tab>
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>
@@ -234,7 +224,7 @@
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>
-        <tab>Welcome</tab>
+        <tab>LookupRollupSummary__c</tab>
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>
@@ -242,7 +232,7 @@
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>
-        <tab>LookupRollupSummariesHome</tab>
+        <tab>Welcome</tab>
         <visibility>Visible</visibility>
-    </tabSettings>    
+    </tabSettings>
 </PermissionSet>
