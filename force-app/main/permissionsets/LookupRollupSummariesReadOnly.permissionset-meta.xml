@@ -1,129 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
-    <classAccesses>
-        <apexClass>ApexClassesSelector</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>ApexTriggersSelector</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>AsyncApexJobsSelector</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>LREngine</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>MetadataService</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>MetadataServiceTest</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupCalculateController</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupCalculateJob</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupController</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupControllerTest</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupJob</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupJobTest</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupService</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupServiceException</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupServiceTest</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupServiceTest2</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupServiceTest3</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupSummaries</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupSummariesSelector</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupSummariesTest</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupSummaryEnhancedController</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupSummaryEnhancedControllerTest</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>RollupSummaryScheduleItemsSelector</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>TestContext</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>TestLREngine</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>WelcomeController</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>WelcomeControllerTest</apexClass>
-        <enabled>false</enabled>
-    </classAccesses>
+    <customMetadataTypeAccesses>
+        <enabled>true</enabled>
+        <name>LookupRollupSummary2__mdt</name>
+    </customMetadataTypeAccesses>
     <description>Grant this permission set to end users that indirectly cause the rollup summaries to be executed. Such users can only read the rollup summary definitions, logs and scheduled entires.</description>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>LookupChild__c.Amount__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>LookupChild__c.LookupParent__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>LookupParent__c.Total__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
         <field>LookupRollupSummaryLog__c.ErrorMessage__c</field>
@@ -156,17 +37,12 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>LookupRollupSummary__c.AggregateOperation__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>false</editable>
         <field>LookupRollupSummary__c.AggregateAllRows__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>LookupRollupSummary__c.RowLimit__c</field>
+        <field>LookupRollupSummary__c.AggregateOperation__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -184,7 +60,22 @@
         <field>LookupRollupSummary__c.RelationshipCriteria__c</field>
         <readable>true</readable>
     </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>LookupRollupSummary__c.RowLimit__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <hasActivationRequired>false</hasActivationRequired>
     <label>Lookup Rollup Summaries - Process Rollups</label>
+    <objectPermissions>
+        <allowCreate>false</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>LookupRollupCalculateJob__c</object>
+        <viewAllRecords>false</viewAllRecords>
+    </objectPermissions>
     <objectPermissions>
         <allowCreate>false</allowCreate>
         <allowDelete>false</allowDelete>
@@ -212,39 +103,6 @@
         <object>LookupRollupSummary__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
-    <objectPermissions>
-        <allowCreate>false</allowCreate>
-        <allowDelete>false</allowDelete>
-        <allowEdit>false</allowEdit>
-        <allowRead>true</allowRead>
-        <modifyAllRecords>false</modifyAllRecords>
-        <object>LookupRollupCalculateJob__c</object>
-        <viewAllRecords>false</viewAllRecords>
-    </objectPermissions>
-    <pageAccesses>
-        <apexPage>managetrigger</apexPage>
-        <enabled>false</enabled>
-    </pageAccesses>
-    <pageAccesses>
-        <apexPage>rollupcalculate</apexPage>
-        <enabled>false</enabled>
-    </pageAccesses>
-    <pageAccesses>
-        <apexPage>rollupsummaryenhanced</apexPage>
-        <enabled>false</enabled>
-    </pageAccesses>
-    <pageAccesses>
-        <apexPage>rollupsummaryenhancednew</apexPage>
-        <enabled>false</enabled>
-    </pageAccesses>
-    <pageAccesses>
-        <apexPage>welcome</apexPage>
-        <enabled>false</enabled>
-    </pageAccesses>
-    <pageAccesses>
-        <apexPage>welcometab</apexPage>
-        <enabled>true</enabled>
-    </pageAccesses>
     <pageAccesses>
         <apexPage>managelookuprollupsummaries</apexPage>
         <enabled>true</enabled>
@@ -261,10 +119,10 @@
         <apexPage>rollupscheduledcalculatemdt</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
-    <tabSettings>
-        <tab>LookupRollupSummary__c</tab>
-        <visibility>Available</visibility>
-    </tabSettings>
+    <pageAccesses>
+        <apexPage>welcometab</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
     <tabSettings>
         <tab>LookupRollupCalculateJob__c</tab>
         <visibility>Available</visibility>
@@ -278,11 +136,15 @@
         <visibility>Available</visibility>
     </tabSettings>
     <tabSettings>
-        <tab>Welcome</tab>
+        <tab>LookupRollupSummary__c</tab>
         <visibility>Available</visibility>
     </tabSettings>
     <tabSettings>
         <tab>ManageLookupRollupSummaries</tab>
+        <visibility>Available</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Welcome</tab>
         <visibility>Available</visibility>
     </tabSettings>
 </PermissionSet>

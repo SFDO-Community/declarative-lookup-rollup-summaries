@@ -731,7 +731,10 @@ global with sharing class RollupService
 		Set<Id> masterRecordIdsFromMerge = new Set<Id>();
 		if(sObjectDescribe.isMergeable()) {
 			for(SObject existingRecord : existingRecords.values()) {
-				Id masterRecordId = (Id) existingRecord.get('MasterRecordId');
+				Id masterRecordId = null;
+				try {
+					masterRecordId = (Id) existingRecord.get('MasterRecordId');
+				} catch(Exception e) {}				
 				if(masterRecordId!=null) {
 					masterRecordIdsFromMerge.add(masterRecordId);
 				}
