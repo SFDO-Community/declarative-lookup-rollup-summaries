@@ -1985,4 +1985,29 @@ private with sharing class RollupServiceTest
 			System.assert(true);
 		}
 	}
+
+	@IsTest
+    static void testBypassApi()
+	{
+        String rollupUniqueName = 'SampleRollup';
+        Boolean bypassResult;
+
+        Test.startTest();
+        System.assertEquals(false, RollupService.isBypassed(rollupUniqueName), 'The rollup should not be bypassed yet.');
+        bypassResult = RollupService.bypass(rollupUniqueName);
+        System.assert(bypassResult, 'Should have modified the bypassed rollups set.');
+        System.assertEquals(true, RollupService.isBypassed(rollupUniqueName), 'The rollup should be bypassed.');
+        bypassResult = RollupService.clearBypass(rollupUniqueName);
+        System.assert(bypassResult, 'Should have modified the bypassed rollups set.');
+        System.assertEquals(false, RollupService.isBypassed(rollupUniqueName), 'The rollup should not be bypassed anymore.');
+        RollupService.bypass(rollupUniqueName);
+        RollupService.clearAllBypasses();
+        System.assertEquals(false, RollupService.isBypassed(rollupUniqueName), 'The rollup should not be bypassed anymore.');
+
+        bypassResult = RollupService.bypass(null);
+        System.assertEquals(false, bypassResult, 'Should return "false" for a null rollup name.');
+        bypassResult = RollupService.clearBypass(null);
+        System.assertEquals(false, bypassResult, 'Should return "false" for a null rollup name.');
+        Test.stopTest();
+    }
 }

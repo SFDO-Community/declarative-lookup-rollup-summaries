@@ -330,6 +330,38 @@ global with sharing class RollupService
 	}
 
 	/**
+	 * Allows the subscriber to check if a specific rollup is bypassed or not.
+	 */
+	global static Boolean isBypassed(String rollupName)
+	{
+		return BypassHandler.isBypassed(rollupName);
+	}
+
+	/**
+	 * Allows the bypass of a rollup, given its unique name.
+	 */
+	global static Boolean bypass(String rollupName)
+	{
+		return BypassHandler.bypass(rollupName);
+	}
+
+	/**
+	 * Clears the bypass of a rollup, given its unique name.
+	 */
+	global static Boolean clearBypass(String rollupName)
+	{
+		return BypassHandler.clearBypass(rollupName);
+	}
+
+	/**
+	 * Clears the bypass of aall rollups.
+	 */
+	global static void clearAllBypasses()
+	{
+		BypassHandler.clearAllBypasses();
+	}
+
+	/**
 	 * Method returns a QueryLocator that returns master records (as per the lookup definition) meeting the criteria expressed (if defined)
 	 **/
 	public static Database.QueryLocator masterRecordsAsQueryLocator(Id lookupId)
