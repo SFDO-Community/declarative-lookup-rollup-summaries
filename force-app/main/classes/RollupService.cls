@@ -330,6 +330,38 @@ global with sharing class RollupService
 	}
 
 	/**
+	 * Allows the subscriber to check if a specific rollup is bypassed or not.
+	 */
+	global static Boolean isBypassed(String rollupName)
+	{
+		return BypassHandler.isBypassed(rollupName);
+	}
+
+	/**
+	 * Allows the bypass of a rollup, given its unique name.
+	 */
+	global static Boolean bypass(String rollupName)
+	{
+		return BypassHandler.bypass(rollupName);
+	}
+
+	/**
+	 * Clears the bypass of a rollup, given its unique name.
+	 */
+	global static Boolean clearBypass(String rollupName)
+	{
+		return BypassHandler.clearBypass(rollupName);
+	}
+
+	/**
+	 * Clears the bypass of aall rollups.
+	 */
+	global static void clearAllBypasses()
+	{
+		BypassHandler.clearAllBypasses();
+	}
+
+	/**
 	 * Method returns a QueryLocator that returns master records (as per the lookup definition) meeting the criteria expressed (if defined)
 	 **/
 	public static Database.QueryLocator masterRecordsAsQueryLocator(Id lookupId)
@@ -734,7 +766,7 @@ global with sharing class RollupService
 				Id masterRecordId = null;
 				try {
 					masterRecordId = (Id) existingRecord.get('MasterRecordId');
-				} catch(Exception e) {}				
+				} catch(Exception e) {}
 				if(masterRecordId!=null) {
 					masterRecordIdsFromMerge.add(masterRecordId);
 				}
@@ -777,6 +809,11 @@ global with sharing class RollupService
 			Map<Id, Set<String>> fieldsInvolvedInLookup = new Map<Id, Set<String>>();
 			for(RollupSummary lookup : lookups)
 			{
+				if (BypassHandler.isBypassed(lookup.UniqueName))
+				{
+					continue;
+				}
+
 				Set<String> lookupFields = new Set<String>();
 				lookupFields.add(lookup.FieldToAggregate);
 				if(!String.isBlank(lookup.RelationshipCriteriaFields)) {
@@ -885,6 +922,11 @@ global with sharing class RollupService
 			List<RollupSummary> lookupsToProcess = new List<RollupSummary>();
 			for(RollupSummary lookup : lookups)
 			{
+				if (BypassHandler.isBypassed(lookup.UniqueName))
+				{
+					continue;
+				}
+
 				// Are any of the changed fields used by this lookup?
 				Set<String> lookupFields = fieldsInvolvedInLookup.get(lookup.Id);
 				for (String lookupField :lookupFields) {
@@ -910,6 +952,12 @@ global with sharing class RollupService
 		Map<Id, SObject> recordsToProcess = existingRecords.isEmpty() ? newRecords : existingRecords;
 		for(SObject childRecord : recordsToProcess.values()) {
 			for(RollupSummary lookup : lookups) {
+
+				if (BypassHandler.isBypassed(lookup.UniqueName))
+				{
+					continue;
+				}
+
 				// Does this rollup apply to this child record?
 				if(lookup.ChildObject.equalsIgnoreCase(sObjectDescribe.getName())) {
 					if(childRecord.get(lookup.RelationShipField)!=null) {
@@ -947,6 +995,11 @@ global with sharing class RollupService
         List<LookupRollupSummaryScheduleItems__c> scheduledItemsForMDTs = new List<LookupRollupSummaryScheduleItems__c>();
         for(RollupSummary lookup : lookups)
         {
+			if (BypassHandler.isBypassed(lookup.UniqueName))
+			{
+				continue;
+			}
+
             if(lookup.CalculationMode == RollupSummaries.CalculationMode.Scheduled.name() || scheduleAllRollups)
             {
             	// For polymoprhic relationships the master Id list maybe mixed types, associated with the correct rollup
@@ -1021,7 +1074,7 @@ global with sharing class RollupService
 		// Query applicable lookup definitions
 		Set<String> childNames = new Set<String>();
 		for(SObjectType sobjectType : childObjectTypes) {
-			childNames.add( sobjectType.getDescribe().getName());
+			childNames.add(sobjectType.getDescribe().getName());
 		}
 		List<RollupSummary> lookups =
 			new RollupSummariesSelector(false).selectActiveByChildObject(
