@@ -766,7 +766,7 @@ global with sharing class RollupService
 				Id masterRecordId = null;
 				try {
 					masterRecordId = (Id) existingRecord.get('MasterRecordId');
-				} catch(Exception e) {}				
+				} catch(Exception e) {}
 				if(masterRecordId!=null) {
 					masterRecordIdsFromMerge.add(masterRecordId);
 				}
@@ -942,6 +942,12 @@ global with sharing class RollupService
 		Map<Id, SObject> recordsToProcess = existingRecords.isEmpty() ? newRecords : existingRecords;
 		for(SObject childRecord : recordsToProcess.values()) {
 			for(RollupSummary lookup : lookups) {
+
+				if (BypassHandler.isBypassed(lookup.UniqueName))
+				{
+					continue;
+				}
+
 				// Does this rollup apply to this child record?
 				if(lookup.ChildObject.equalsIgnoreCase(sObjectDescribe.getName())) {
 					if(childRecord.get(lookup.RelationShipField)!=null) {

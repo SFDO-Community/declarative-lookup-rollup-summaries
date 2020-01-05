@@ -45,6 +45,17 @@ private with sharing class RollupServiceTest
 		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 600, RollupSummaries.AggregateOperation.Sum, null);
 	}
 
+	@IsTest
+	static void testRollupBypass() {
+		String name = 'SingleTestRollup';
+
+		RollupService.bypass(name);
+
+		Test.startTest();
+		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 0, RollupSummaries.AggregateOperation.Sum, null);
+		Test.stopTest();
+	}
+
 	private testmethod static void testSingleMaxRollup()
 	{
 		testSingleRollup(new List<Decimal> { 250, 250, 50, 50 }, 250, RollupSummaries.AggregateOperation.Max, null);
@@ -996,6 +1007,7 @@ private with sharing class RollupServiceTest
 		LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
 		rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
 		rollupSummary.ParentObject__c = 'Account';
+		rollupSummary.UniqueName__c = 'SingleTestRollup';
 		rollupSummary.ChildObject__c = 'Opportunity';
 		rollupSummary.RelationShipField__c = 'AccountId';
 		rollupSummary.RelationShipCriteria__c = condition; // 'Amount > 200';
