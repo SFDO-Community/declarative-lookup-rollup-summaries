@@ -809,6 +809,11 @@ global with sharing class RollupService
 			Map<Id, Set<String>> fieldsInvolvedInLookup = new Map<Id, Set<String>>();
 			for(RollupSummary lookup : lookups)
 			{
+				if (BypassHandler.isBypassed(lookup.UniqueName))
+				{
+					continue;
+				}
+
 				Set<String> lookupFields = new Set<String>();
 				lookupFields.add(lookup.FieldToAggregate);
 				if(!String.isBlank(lookup.RelationshipCriteriaFields)) {
@@ -917,6 +922,11 @@ global with sharing class RollupService
 			List<RollupSummary> lookupsToProcess = new List<RollupSummary>();
 			for(RollupSummary lookup : lookups)
 			{
+				if (BypassHandler.isBypassed(lookup.UniqueName))
+				{
+					continue;
+				}
+
 				// Are any of the changed fields used by this lookup?
 				Set<String> lookupFields = fieldsInvolvedInLookup.get(lookup.Id);
 				for (String lookupField :lookupFields) {
@@ -985,6 +995,11 @@ global with sharing class RollupService
         List<LookupRollupSummaryScheduleItems__c> scheduledItemsForMDTs = new List<LookupRollupSummaryScheduleItems__c>();
         for(RollupSummary lookup : lookups)
         {
+			if (BypassHandler.isBypassed(lookup.UniqueName))
+			{
+				continue;
+			}
+
             if(lookup.CalculationMode == RollupSummaries.CalculationMode.Scheduled.name() || scheduleAllRollups)
             {
             	// For polymoprhic relationships the master Id list maybe mixed types, associated with the correct rollup
@@ -1059,7 +1074,7 @@ global with sharing class RollupService
 		// Query applicable lookup definitions
 		Set<String> childNames = new Set<String>();
 		for(SObjectType sobjectType : childObjectTypes) {
-			childNames.add( sobjectType.getDescribe().getName());
+			childNames.add(sobjectType.getDescribe().getName());
 		}
 		List<RollupSummary> lookups =
 			new RollupSummariesSelector(false).selectActiveByChildObject(
