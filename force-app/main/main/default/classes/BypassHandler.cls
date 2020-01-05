@@ -1,5 +1,5 @@
 /**
- * Copyright (c), Renato Oliveira
+ * Copyright (c), Andrew Fawcett
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -50,7 +50,6 @@ public without sharing class BypassHandler
      */
     public static Boolean isBypassed(String handlerName)
     {
-        System.debug('Hello world!');
         return bypassedRollups != null && bypassedRollups.contains(handlerName);
     }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c), Renato Oliveira
+ * Copyright (c), Andrew Fawcett
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
