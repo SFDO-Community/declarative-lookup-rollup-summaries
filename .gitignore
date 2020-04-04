@@ -1,3 +1,4 @@
 .sfdx
 .vscode
 .DS_Store   
+mdapi_output_dir

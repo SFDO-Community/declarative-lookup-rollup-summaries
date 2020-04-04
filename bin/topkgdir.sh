@@ -1,0 +1,1 @@
+sfdx force:source:convert --outputdir mdapi_output_dir --packagename "Declarative Lookup Rollup Summaries Tool" --sourcepath ./force-app/libs/fflib-apexmocks,./force-app/libs/fflib-common,./force-app/libs/lrengine,./force-app/libs/metadataservice,./force-app/main
