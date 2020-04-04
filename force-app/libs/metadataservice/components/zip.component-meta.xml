@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ApexComponent xmlns="http://soap.sforce.com/2006/04/metadata">
-    <apiVersion>42.0</apiVersion>
+    <apiVersion>48.0</apiVersion>
     <label>Zip</label>
     <packageVersions>
         <majorNumber>1</majorNumber>
