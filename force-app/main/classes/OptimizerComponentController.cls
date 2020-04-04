@@ -69,6 +69,7 @@ public with sharing class OptimizerComponentController {
                 responseNotification.id = notification.Id.name();
                 responseNotification.severity = mapNotificationStatusToUIServerity.get(notification.Status);
                 responseNotification.message = notification.Message;
+                responseNotification.moreInfoUrl = notification.MoreInfoURL;
                 responseSummary.notifications.add(responseNotification);
             }
             return responseSummary;
@@ -96,5 +97,7 @@ public with sharing class OptimizerComponentController {
         public String severity;
         @AuraEnabled
         public String message;
+        @AuraEnabled
+        public string moreInfoURL; 
     }
 }

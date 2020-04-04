@@ -26,4 +26,36 @@
 
 @IsTest
 private class OptimizerServiceTest {
+
+    @IsTest
+    public static void givenLogRecordsThenCompletedWithWarnings() {
+        
+        // Given
+        LookupRollupSummaryLog__c log1 = new LookupRollupSummaryLog__c(ParentId__c = 'abc');
+        LookupRollupSummaryLog__c log2 = new LookupRollupSummaryLog__c(ParentId__c = 'xyz');
+        insert new List<LookupRollupSummaryLog__c> { log1, log2 };
+        
+        // When
+        OptimizerService.Summary summary = OptimizerService.analyize();
+        
+        // Then 
+        System.assertEquals(OptimizerService.SummaryStatus.CompleteWithWarnings, summary.Status);
+        System.assertEquals(
+            OptimizerService.NotificationStatus.Warning, 
+            summary.Notifications.get(OptimizerService.NotificationReference.LookupRollupSummaryLogsExist).Status);
+    }        
+
+    @IsTest
+    public static void givenNoLogRecordsThenCompleteWithoutWarnings() {
+        
+        // Given
+        // No Logs
+        
+        // When
+        OptimizerService.Summary summary = OptimizerService.analyize();
+        
+        // Then 
+        System.assertEquals(OptimizerService.SummaryStatus.Complete, summary.Status);
+        System.assertEquals(0, summary.Notifications.size());
+    }        
 }

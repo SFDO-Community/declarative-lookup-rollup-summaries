@@ -126,11 +126,16 @@ global with sharing class OptimizerService {
      **/
     public class LookupRollupSummaryLogsExist extends OptimizationCheckRunner {
         public override Notification execute() {
-            Notification notification = new Notification();
-            notification.Id = NotificationReference.LookupRollupSummaryLogsExist;
-            notification.Status = NotificationStatus.Warning;
-            notification.Message = 'Check the Lookup Rollup Summary Log tab for errors updating rollups.';
-            return notification;
+            List<LookupRollupSummaryLog__c> logs = [select Id from LookupRollupSummaryLog__c limit 1];
+            if(logs.size()>0) {
+                Notification notification = new Notification();
+                notification.Id = NotificationReference.LookupRollupSummaryLogsExist;
+                notification.Status = NotificationStatus.Warning;
+                notification.Message = 'Check the Lookup Rollup Summary Log tab for errors updating rollups.';
+                notification.MoreInfoURL = 'https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Warning:-Lookup-Rollup-Summary-Logs-Exist';
+                return notification;    
+            }
+            return null;
         }
     }
 

@@ -5,7 +5,7 @@
         <p class="slds-p-horizontal_small">            
             <ui:message title="{!v.summary.title}" severity="{!v.summary.severity}" closable="false">{!v.summary.message}</ui:message>
             <aura:iteration items="{!v.summary.notifications}" var="notification">
-                <c:optimizerNotification id="{!notification.id}" severity="{!notification.severity}" message="{!notification.message}"/>
+                <c:optimizerNotification id="{!notification.id}" severity="{!notification.severity}" message="{!notification.message}" moreInfoURL="{!notification.moreInfoURL}"/>
             </aura:iteration>
         </p>
     </lightning:card>
