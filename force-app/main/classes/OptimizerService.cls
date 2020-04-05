@@ -140,6 +140,25 @@ global with sharing class OptimizerService {
     }
 
     /**
+     * Notifies the user if they have to perform the post install step to clean out the unused field on LookupRollupSummaryScheduleItems__c
+     */
+    public class LookupRollupSummaryScheduleItemsFieldDeletion extends OptimizationCheckRunner {
+        public override Notification execute() {
+            Map<String, Schema.SObjectField> fieldMap = Schema.SObjectType.LookupRollupSummaryScheduleItems__c.fields.getMap();
+            Schema.SObjectField legacyLookupRollupSummaryField = fieldMap.get('dlrs__LookupRollupSummary__c');        
+            if(legacyLookupRollupSummaryField!=null) {
+                Notification notification = new Notification();
+                notification.Id = NotificationReference.LookupRollupSummaryScheduleItemsFieldDeletion;
+                notification.Status = NotificationStatus.Attention;
+                notification.Message = 'This version of the tool no longer requires the field dlrs__LookupRollupSummary__c on dlrs__LookupRollupSummaryScheduleItems__c. For optimum configuration and performance please delete it after reading the further information provided.';
+                notification.MoreInfoURL = 'https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Attention:-Need-to-delete-unused-field-on-dlrs__LookupRollupSummaryScheduleItems__c';
+                return notification; 
+            }
+            return null;
+        }
+    }
+
+    /**
      * Ability to run a optimization check
      **/
     public abstract class OptimizationCheckRunner {

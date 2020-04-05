@@ -2,6 +2,6 @@
 <CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
     <description>Created by Lightning App Builder</description>
     <flexiPage>LookupRollupSummariesHome</flexiPage>
-    <label>Lookup Rollup Summaries Home</label>
+    <label>Lookup Rollup Summaries Health</label>
     <motif>Custom62: Chalkboard</motif>
 </CustomTab>

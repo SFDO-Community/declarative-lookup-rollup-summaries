@@ -400,10 +400,23 @@ global with sharing class RollupService
 	 **/
 	public static void processScheduleItems(List<LookupRollupSummaryScheduleItems__c> rollupSummaryScheduleItems)
 	{
+		// Legacy dlrs__LookupRollupSummary__c field on LookupRollupSummaryScheduleItems__c present?
+		Map<String, Schema.SObjectField> fieldMap = Schema.SObjectType.LookupRollupSummaryScheduleItems__c.fields.getMap();
+		Schema.SObjectField legacyLookupRollupSummaryField = fieldMap.get('dlrs__LookupRollupSummary__c');
+
 		// Load related Lookup summaries for the scheduled items
 		Set<String> lookupIds = new Set<String>();
 		for(LookupRollupSummaryScheduleItems__c scheduleItem : rollupSummaryScheduleItems) {
-			lookupIds.add(scheduleItem.LookupRollupSummary2__c);
+			// It is possible for some really old scheduled items, LookupRollupSummary2__c is null
+			if(scheduleItem.LookupRollupSummary2__c == null) {
+				// If the legacy dlrs__LookupRollupSummary__c still exists in the org, it will have the corresponding lookup
+				if(legacyLookupRollupSummaryField!=null) {
+					lookupIds.add((String) scheduleItem.get(legacyLookupRollupSummaryField));
+				}
+			} else {
+				// Going forward LookupRollupSummary2__c is the official field to indicate the corresponding lookup
+				lookupIds.add(scheduleItem.LookupRollupSummary2__c);
+			}			
 		}
 		Map<String, RollupSummary> lookups =
 			RollupSummary.toMap(new RollupSummariesSelector().selectById(lookupIds));
@@ -1024,10 +1037,45 @@ global with sharing class RollupService
                 // Filter realtime & Developer lookups in order to generate LRE contexts below
                 runnowLookups.add(lookup);
             }
-        }
-
-        // Add parent Id's to schedule items object
-        upsert scheduledItems QualifiedParentID__c;
+		}
+		
+		if(scheduledItems.size()>0) {
+			// Attempt to populate the legacy LookupRollupSummary__c field (since its a required field) if the admin has not deleted it post install?
+			Map<String, Schema.SObjectField> fieldMap = Schema.SObjectType.LookupRollupSummaryScheduleItems__c.fields.getMap();
+			Schema.SObjectField legacyLookupRollupSummaryField = fieldMap.get('dlrs__LookupRollupSummary__c');
+			if(legacyLookupRollupSummaryField!=null) {
+				// Scan for existing shadow rollup records for the custom metadata based rollups
+				Set<String> uniqueNames = new Set<String>();
+				for(LookupRollupSummaryScheduleItems__c scheduledItem : scheduledItems) {
+					Id rollupId = (Id) scheduledItem.LookupRollupSummary2__c;
+					if(rollupId.getSobjectType() == LookupRollupSummary2__mdt.getSObjectType()) {
+						uniqueNames.add('mdt:' + scheduledItem.LookupRollupSummary2__c);
+					}
+				}
+				Map<String, RollupSummary> shadowRollupsByMdtId = new Map<String, RollupSummary>();
+				for(RollupSummary shadowRollup : new RollupSummariesSelector.CustomObjectSelector(false).selectByUniqueName(uniqueNames)) {
+					String uniqueName = shadowRollup.UniqueName;
+					String mdtRollupId = uniqueName.split(':')[1];
+					shadowRollupsByMdtId.put(mdtRollupId, shadowRollup);
+				}				
+				// Populate the legacy LookupRollupSummary__c if possible
+				for(LookupRollupSummaryScheduleItems__c scheduledItem : scheduledItems) {
+					Id rollupId = (Id) scheduledItem.LookupRollupSummary2__c;
+					if(rollupId.getSobjectType() == LookupRollupSummary__c.getSObjectType()) {
+						scheduledItem.put(legacyLookupRollupSummaryField, rollupId);
+					} else if(rollupId.getSobjectType() == LookupRollupSummary2__mdt.getSObjectType()) {
+						RollupSummary shadowRollup = shadowRollupsByMdtId.get(rollupId);
+						if(shadowRollup!=null) {
+							scheduledItem.put(legacyLookupRollupSummaryField, shadowRollup.Id);
+						} else {
+							throw new RollupService.RollupValidationException('Scheduled rollups are running in legacy mode and are unable to resolve corresponding shadow rollups. Please visit the Lookup Rollup Summary Health tab for more information and steps to resolve.');
+						}
+					}
+				}
+			}
+			// These records drive the work done by the RollupJob Scheduled Apex Class
+			upsert scheduledItems QualifiedParentID__c;
+		}
 
 		// Process each context (parent child relationship) and its associated rollups
 		Map<Id, SObject> masterRecords = new Map<Id, SObject>();
