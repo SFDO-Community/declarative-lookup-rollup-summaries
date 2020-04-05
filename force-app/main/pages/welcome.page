@@ -59,8 +59,8 @@ function createRemoteSite()
 			<input id="createremotesitebtn" type="button" onclick="createRemoteSite();" value="Create/Update Remote Site Setting"/>
 		</apex:outputPanel>
 		<p><b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships using the declarative mode of Force.com, but not between lookup relationships.</p>
-		<p><b>Documentatoin:</b> You can learning more about this tool by reading the documentation <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries#declarative-rollups-for-lookups">here.</a></p>
-		<p><b>Support:</b> This is a community driven open source tool there is no official support. Please post questions to this <a target="_new" href="https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p">community group</a>. Before you post questions please check for past or open issues <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries/issues">here</a> and also review the <b>Lookup Rollup Summary Health</b> tab.</p>
+		<p><b>Documentatoin:</b> You can learn more about this tool by reading the documentation <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries#declarative-rollups-for-lookups">here.</a></p>
+		<p><b>Support:</b> This is a community driven open source tool there is no official support. Please post questions to this <a target="_new" href="https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p">community group</a>. Before you post questions please check for past or open issues <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries/issues">here</a> and also review the <b>Lookup Rollup Summaries Health</b> tab.</p>
 		<apex:outputPanel rendered="{!MetadataConnectionWarning}">
 			<p style="color:gray">DEBUG USE ONLY: {!metadataApiException}</p>
 		</apex:outputPanel>
