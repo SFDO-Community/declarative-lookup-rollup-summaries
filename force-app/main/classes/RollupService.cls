@@ -1079,7 +1079,7 @@ global with sharing class RollupService
 						if(shadowRollup!=null) {
 							scheduledItem.put(legacyLookupRollupSummaryField, shadowRollup.Id);
 						} else {
-							throw new RollupService.RollupValidationException('Scheduled rollups are running in legacy mode and are unable to resolve corresponding shadow rollups. Please visit the Lookup Rollup Summary Health tab for more information and steps to resolve.');
+							throw new RollupService.RollupValidationException('Scheduled rollups are running in legacy mode and are unable to resolve corresponding shadow rollups. Please visit the Lookup Rollup Summary Tools tab for more information and steps to resolve.');
 						}
 					}
 				}

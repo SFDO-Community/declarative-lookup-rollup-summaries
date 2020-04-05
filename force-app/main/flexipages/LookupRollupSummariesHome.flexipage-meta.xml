@@ -15,7 +15,7 @@
         <name>region3</name>
         <type>Region</type>
     </flexiPageRegions>
-    <masterLabel>Lookup Rollup Summaries Home</masterLabel>
+    <masterLabel>Lookup Rollup Summaries Tools</masterLabel>
     <template>
         <name>flexipage:appHomeTemplateHeaderTwoColumnsLeftSidebar</name>
     </template>
