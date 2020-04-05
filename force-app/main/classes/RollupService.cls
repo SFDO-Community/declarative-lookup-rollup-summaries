@@ -426,8 +426,19 @@ global with sharing class RollupService
 		Map<String, Set<Id>> parentIdsByParentType = new Map<String, Set<Id>>();
 		for(LookupRollupSummaryScheduleItems__c scheduleItem : rollupSummaryScheduleItems)
 		{
+			// Resolve lookup associated with this scheduled item
 			Id parentId = scheduleItem.ParentId__c;
-			RollupSummary lookup = lookups.get(scheduleItem.LookupRollupSummary2__c);
+			RollupSummary lookup = null; 
+			if(scheduleItem.LookupRollupSummary2__c == null) {
+				if(legacyLookupRollupSummaryField!=null) {
+					lookup = lookups.get((String)scheduleItem.get(legacyLookupRollupSummaryField));
+				}
+			} else {
+				lookup = lookups.get(scheduleItem.LookupRollupSummary2__c);
+			}			
+			if(lookup==null) {
+				continue;
+			}
 			// The lookup definition could have been changed or due to a historic bug in correctly associated
 			if(parentId.getSobjectType() != gd.get(lookup.ParentObject))
 				continue;

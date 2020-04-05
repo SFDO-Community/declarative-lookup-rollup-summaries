@@ -28,12 +28,21 @@ public class RollupSummaryScheduleItemsSelector extends fflib_SObjectSelector
 {
 	public List<Schema.SObjectField> getSObjectFieldList()
 	{
-		return new List<Schema.SObjectField> {
+		List<Schema.SObjectField> fields = new List<Schema.SObjectField> {
 			LookupRollupSummaryScheduleItems__c.Name,
 			LookupRollupSummaryScheduleItems__c.ParentId__c,
 			LookupRollupSummaryScheduleItems__c.ParentKeyPrefix__c,
 			LookupRollupSummaryScheduleItems__c.LookupRollupSummary2__c
 		};
+
+		// Historically packaged field (now removed from package) but maybe in subscriber orgs
+		Map<String, Schema.SObjectField> fieldMap = Schema.SObjectType.LookupRollupSummaryScheduleItems__c.fields.getMap();
+		Schema.SObjectField legacyLookupRollupSummaryField = fieldMap.get('dlrs__LookupRollupSummary__c');
+		if(legacyLookupRollupSummaryField!=null) {
+			fields.add(legacyLookupRollupSummaryField);
+		}
+
+		return fields;
 	}
 
 	public Schema.SObjectType getSObjectType()
