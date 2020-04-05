@@ -992,7 +992,6 @@ global with sharing class RollupService
         Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
         List<RollupSummary> runnowLookups = new List<RollupSummary>();
         List<LookupRollupSummaryScheduleItems__c> scheduledItems = new List<LookupRollupSummaryScheduleItems__c>();
-        List<LookupRollupSummaryScheduleItems__c> scheduledItemsForMDTs = new List<LookupRollupSummaryScheduleItems__c>();
         for(RollupSummary lookup : lookups)
         {
 			if (BypassHandler.isBypassed(lookup.UniqueName))
@@ -1016,9 +1015,6 @@ global with sharing class RollupService
 	                    scheduledItem.ParentId__c = parentId;
 	                    scheduledItem.QualifiedParentID__c = parentId + '#' + lookup.Id;
 	                    scheduledItems.add(scheduledItem);
-	                    if(lookup.Record instanceof LookupRollupSummary2__mdt) {
-	                 		scheduledItemsForMDTs.add(scheduledItem);
-	                    }
 	                }
                 }
             }
