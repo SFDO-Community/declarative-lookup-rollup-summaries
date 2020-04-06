@@ -267,7 +267,7 @@ public with sharing class RollupController
 						RollupSummary.TestCodeParent + '\n' : 
 						(
 							'        // Force the ' + RollupTriggerName + ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-							'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ChildObject + '());\n')
+							'        ' + (namespace.length() > 0 ? namespace + '.' : '') + 'RollupService.testHandler(new ' + RollupSummary.ParentObject + '());\n')
 						) +
 				'    }\n' +				
 				'}';			
