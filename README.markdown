@@ -12,7 +12,7 @@ Features Summary
 - Supports Realtime, Scheduled and Developer API modes
 - Open source, available in code and managed package form.
 - Managed package has passed Salesforce Security Review and is Aloha enabled
-- **NEW** Supports Custom Metadata, rollups can be included in Change Sets and Packages for easier deployment
+- Supports Custom Metadata, rollups can be included in Change Sets and Packages for easier deployment
 
 Please refer to the blog posts below for more detailed information.
 
