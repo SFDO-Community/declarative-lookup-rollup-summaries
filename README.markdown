@@ -28,6 +28,7 @@ In addition to the [Wiki](https://github.com/afawcett/declarative-lookup-rollup-
 
 **NOTE:** The links are in chronological order, if your new to the tool, read from the bottom upwards
 
+- [Declarative Rollup Summary Tool Update for v2.12](https://andyinthecloud.com/2020/04/05/declarative-rollup-summary-tool-update/)
 - [Salesforce Rollup Summary on Lookup Relationship | DLRS Tutorial](https://www.youtube.com/watch?v=sjRlou2-N6I&feature=youtu.be)
 - [Monitoring your Scheduled Rollups via Report Subscriptions](https://www.dandonin.com/2017/05/24/automated-error-alerts-and-mass-delete-error-records/)
 - [Counting Tasks with DLRS](https://www.dandonin.com/2017/04/21/counting-tasks-with-dlrs/)
@@ -86,6 +87,8 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 - Enhancement - [Avoid Shadow Custom Object Based Rollup Records - Total DLRS Newbie frustration](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/618)
 - Bug - [Master branch has Apex Unit test failures](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/894)
 - Bug - [Clicking Cancel on Full Calculate schedule page goes back to wrong page](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/676)
+
+Also see [Declarative Rollup Summary Tool Update for v2.12](https://andyinthecloud.com/2020/04/05/declarative-rollup-summary-tool-update/).
 
 **Release Version 2.11.1**
 __________________________
