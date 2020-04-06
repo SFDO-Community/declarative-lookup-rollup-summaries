@@ -28,6 +28,7 @@ In addition to the [Wiki](https://github.com/afawcett/declarative-lookup-rollup-
 
 **NOTE:** The links are in chronological order, if your new to the tool, read from the bottom upwards
 
+- [Salesforce Rollup Summary on Lookup Relationship | DLRS Tutorial](https://www.youtube.com/watch?v=sjRlou2-N6I&feature=youtu.be)
 - [Monitoring your Scheduled Rollups via Report Subscriptions](https://www.dandonin.com/2017/05/24/automated-error-alerts-and-mass-delete-error-records/)
 - [Counting Tasks with DLRS](https://www.dandonin.com/2017/04/21/counting-tasks-with-dlrs/)
 - [Getting Started With DLRS](https://www.dandonin.com/2017/03/16/how-to-dlrs/)
