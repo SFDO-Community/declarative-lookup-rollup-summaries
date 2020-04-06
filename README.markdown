@@ -44,11 +44,6 @@ In addition to the [Wiki](https://github.com/afawcett/declarative-lookup-rollup-
 - [New Release: Spring’14 Declarative Rollup Summary Tool](http://andyinthecloud.com/2014/02/09/new-release-spring14-declarative-rollup-summary-tool/) 
 - [New Tool : Declarative Rollups for Lookups!](http://andyinthecloud.com/2013/07/07/new-tool-declarative-rollups-for-lookups/)
 
-There is also an early releaes video demonstration here...
-
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=6BST-TpyHHk" target="_blank"><img src="http://img.youtube.com/vi/6BST-TpyHHk/0.jpg" 
-width="420" height="315" border="10" /></a>
-
 Implementation Considerations
 -----------------------------
 
