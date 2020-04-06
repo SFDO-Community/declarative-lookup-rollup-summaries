@@ -5,7 +5,7 @@
     <aura:attribute name="moreInfoURL" type="string"/>     
     <div class="slds-scoped-notification slds-media slds-media_center" role="status">
         <lightning:icon iconName="{!'utility:'+v.severity}" variant="{!v.severity}" size="small" />
-        <div class="slds-media__body">
+        <div class="slds-media__body slds-p-around_small">
             <p>&nbsp;{!v.message}&nbsp;<a target="_new" href="{!v.moreInfoURL}">More Information</a></p>
         </div>
     </div>
