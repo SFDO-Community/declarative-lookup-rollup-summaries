@@ -74,8 +74,25 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! 
 
-**Latest Release Version 2.11.1**
+**Latest Release Version 2.12**
 _______________________________
+
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN4&isdtp=p1), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN4&isdtp=p1)
+
+- Enhancement - [Avoid need for Remote Site setup](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/925)
+- Enhancement - [Cannot disable DLRS in Apex](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/889)
+- Enhancement - [Update API version of DLRS](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/831)
+- Enhancement - [New "Lookup Rollup Summaries Tools" tab](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/678)
+- Enhancement - [Improved UI messaging to direct users to the Manage Lookup Rollup Summaries tab](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/677)
+- Enhancement - [Minor tweeks to the messaging on the full recalc UI's](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/675)
+- Enhancement - [Route various apex job errors to scheduling/running users email](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/671)
+- Enhancement - [Modify test code for parent object](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/637)
+- Enhancement - [Avoid Shadow Custom Object Based Rollup Records - Total DLRS Newbie frustration](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/618)
+- Bug - [Master branch has Apex Unit test failures](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/894)
+- Bug - [Clicking Cancel on Full Calculate schedule page goes back to wrong page](https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/676)
+
+**Release Version 2.11.1**
+__________________________
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t0N000001E2L5), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t0N000001E2L5)
 
