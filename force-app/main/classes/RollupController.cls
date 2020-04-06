@@ -29,7 +29,7 @@
  **/
 public with sharing class RollupController
 {
-    public static String API_VERSION = '42.0';
+    public static String API_VERSION = '48.0';
     
 	public String ZipData { get; set; }	
 	
