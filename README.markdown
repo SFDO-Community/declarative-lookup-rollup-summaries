@@ -1,5 +1,5 @@
-Declarative Rollups for Lookups!
-================================
+Declarative Rollups for Lookup Field Relationships
+==================================================
 
 [![Build Status](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries.svg)](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries)
 
@@ -16,8 +16,8 @@ Features Summary
 
 Please refer to the blog posts below for more detailed information.
 
-Community
----------
+Community Support
+-----------------
 
 This is a community driven tool, please help support it, share your experiences in this [Chatter group](https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p).
 
