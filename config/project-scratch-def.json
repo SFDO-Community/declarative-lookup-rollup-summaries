@@ -4,6 +4,9 @@
     "settings": {
         "lightningExperienceSettings": {
             "enableS1DesktopEnabled": true
+        },
+        "apexSettings": {
+            "enableDisableParallelApexTesting" : true
         }
     }
 }
