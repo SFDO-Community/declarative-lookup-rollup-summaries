@@ -1,6 +1,7 @@
 Declarative Rollups for Lookup Field Relationships
 ==================================================
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/705147fd541140969437e4a9a60de1d7)](https://app.codacy.com/manual/JimBTek/declarative-lookup-rollup-summaries?utm_source=github.com&utm_medium=referral&utm_content=afawcett/declarative-lookup-rollup-summaries&utm_campaign=Badge_Grade_Dashboard)
 [![Build Status](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries.svg)](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries)
 
 Features Summary
