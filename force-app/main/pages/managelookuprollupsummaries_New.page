@@ -1,6 +1,7 @@
 <apex:page controller="ManageLookupRollupSummariesNewController" lightningStylesheets="true" tabStyle="ManageLookupRollupSummaries__tab" showHeader="true" sidebar="true" action="{!init}">
 
     <apex:form >
+	   	<apex:actionFunction name="updateRField" action="{!updateRField}" reRender="refreshPb" />
         <apex:actionFunction name="updateChildField" action="{!updateChildField}" reRender="refreshPb" />
         <apex:actionFunction name="updateParentField" action="{!updateParentField}" reRender="refreshPb"/>
         <apex:sectionHeader title="Manage Lookup Rollup Summaries"  subtitle="Manage, Deploy, Run and Schedule"/>
@@ -12,6 +13,7 @@
         <apex:outputPanel rendered="{!MetadataConnectionError==false}" id="refreshPb">             
             <apex:pageBlock mode="edit" id="rollupDetailView">
                 <apex:pageBlockButtons >
+                  
                     <apex:commandButton value="Save" action="{!save}"/>
                     <apex:commandButton value="Delete" action="{!deleteX}" rendered="{!LookupRollupSummary.Id!=null}"/>
                     <apex:commandButton value="Full Calculate" action="{!URLFOR($Page.rollupcalculatemdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
@@ -38,14 +40,14 @@
                         </apex:outputPanel>
                     </apex:pageBlockSectionItem>
                 </apex:pageBlockSection>      
-                <apex:outputPanel style="margin-top:15px !important;" >
-                   <apex:pageBlockSection title="Lookup Relationship" columns="2"  id="refreshChildSection" >
+                <apex:outputPanel >
+                   <apex:pageBlockSection title="Lookup Relationship" columns="1"  id="refreshChildSection" >
                     <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.ParentObject__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.ParentObject__c.Label}"/>   
                         <apex:outputPanel >
                             <div class="requiredInput" style="display: flex;">
                                 <div class="requiredBlock" />
-                                <apex:selectList size="1" value="{!selectedParentObject}" style="width:100%;" disabled="{!IF(isParentObjectSelected==true,true,false)}">
+                                <apex:selectList size="1"  value="{!selectedParentObject}" style="width:27%;" disabled="{!IF(isParentObjectSelected==true,true,false)}">
                                     <apex:selectOptions value="{!ParentObjList}"/>
                                 </apex:selectList>
                                 <apex:commandButton status="pStatus" reRender="refreshPb,errorconfirm,refreshPCFields" value="Confirm" action="{!confirmParentObject}" disabled="{!IF(isParentObjectSelected==true,true,false)}"  />
@@ -56,23 +58,15 @@
                                 </apex:actionStatus>
                                 <apex:inputHidden value="{!LookupRollupSummary.ParentObject__c}"/>
                             </div>
+                           
                         </apex:outputPanel>
                     </apex:pageBlockSectionItem>
-                    <apex:pageBlockSectionItem dataStyle="{!IF(isChildObjectSelected, 'visibility:visible;', 'visibility:hidden;')}" helpText="{!IF(isChildObjectSelected, $ObjectType.LookupRollupSummary2__mdt.fields.RelationshipField__c.inlineHelpText,'')}">
-                        <apex:outputLabel style="{!IF(isChildObjectSelected, 'visibility:visible;', 'visibility:hidden;')}" value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipField__c.Label}"/>              
-                        <apex:outputPanel >
-                            <div class="requiredInput">
-                                <div class="requiredBlock"/>                    
-                                <apex:inputText value="{!LookupRollupSummary.RelationshipField__c}" disabled="true"/>   
-                            </div>
-                        </apex:outputPanel>
-                    </apex:pageBlockSectionItem>
-                    <apex:pageBlockSectionItem dataStyle="{!IF(isParentObjectSelected, 'visibility:visible;', 'visibility:hidden;')}" helpText="{!IF(isParentObjectSelected, $ObjectType.LookupRollupSummary2__mdt.fields.ChildObject__c.inlineHelpText,'')}">
-                        <apex:outputLabel style="{!IF(isParentObjectSelected, 'visibility:visible;', 'visibility:hidden;')}" value="{!$ObjectType.LookupRollupSummary2__mdt.fields.ChildObject__c.Label}"/>    
+                    <apex:pageBlockSectionItem rendered="{!isParentObjectSelected}" helpText="{!IF(isParentObjectSelected, $ObjectType.LookupRollupSummary2__mdt.fields.ChildObject__c.inlineHelpText,'')}">
+                        <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.ChildObject__c.Label}"/>    
                         <apex:outputPanel >
                             <div class="requiredInput" style="display: flex;">
                                 <div class="requiredBlock"/> 
-                                <apex:selectList size="1" value="{!selectedChildObject}" style="width:100%;" disabled="{!IF(isChildObjectSelected==true,true,false)}">
+                                <apex:selectList size="1" value="{!selectedChildObject}" style="width:27%;" disabled="{!IF(isChildObjectSelected==true,true,false)}">
                                     <apex:selectOptions value="{!childObjectList}"/>
                                 </apex:selectList> 
                                 <apex:commandButton status="chStatus" reRender="refreshPb,errorconfirm,refreshChildSection,refreshPCFields" value="Confirm" action="{!confirmChildObject}" disabled="{!IF(isChildObjectSelected==true,true,false)}"/>
@@ -84,28 +78,46 @@
                                 <apex:inputHidden value="{!LookupRollupSummary.ChildObject__c}"/>             
                             </div>
                         </apex:outputPanel>
-                        
                     </apex:pageBlockSectionItem>
-                    <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteria__c.inlineHelpText}">
+                    <apex:pageBlockSectionItem rendered="{! (!isMultiSelectRField) && (isChildObjectSelected)}" helpText="{!IF(isChildObjectSelected, $ObjectType.LookupRollupSummary2__mdt.fields.RelationshipField__c.inlineHelpText,'')}">
+                        <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipField__c.Label}"/>              
+                        <apex:outputPanel >
+                            <div class="requiredInput">
+                                <div class="requiredBlock"/>                    
+                                <apex:inputText value="{!LookupRollupSummary.RelationshipField__c}" disabled="true" style="width:26%;"/>   
+                            </div>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem> 
+                          <apex:pageBlockSectionItem rendered="{!isMultiSelectRField}" helpText="{!IF(isChildObjectSelected, $ObjectType.LookupRollupSummary2__mdt.fields.RelationshipField__c.inlineHelpText,'')}">
+                        <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipField__c.Label}"/>              
+                        <apex:outputPanel >
+                            <div class="requiredInput">
+                                <div class="requiredBlock"/>
+                                  <apex:selectList size="1" value="{!selectedRField}" style="width:26%;" onchange="updateRField()">
+                                    <apex:selectOptions value="{!relationshipFields}"  />
+                                </apex:selectList> 
+                            </div>
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem> 
+                    <apex:pageBlockSectionItem rendered="{!(isParentObjectSelected && isChildObjectSelected)}" helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteria__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteria__c.Label}"/>
                         <apex:inputText size="60" value="{!LookupRollupSummary.RelationshipCriteria__c}"/>
                     </apex:pageBlockSectionItem>
-                    <apex:pageBlockSectionItem />
-                    <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteriaFields__c.inlineHelpText}">
+                    <apex:pageBlockSectionItem rendered="{!(isParentObjectSelected && isChildObjectSelected)}"  helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteriaFields__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteriaFields__c.Label}"/>
                         <apex:inputTextArea cols="40" rows="3" value="{!LookupRollupSummary.RelationshipCriteriaFields__c}"/>       
                     </apex:pageBlockSectionItem>
                 </apex:pageBlockSection> 
                 </apex:outputPanel>
                     
-                <apex:pageBlockSection title="Rollup Details" columns="2" id="refreshPCFields">
-                    <apex:pageBlockSectionItem dataStyle="{!IF(isChildObjectSelected, 'visibility:visible;', 'visibility:hidden;')}" helpText="{!IF(isChildObjectSelected, $ObjectType.LookupRollupSummary2__mdt.fields.FieldToAggregate__c.inlineHelpText,'')}">
+                <apex:pageBlockSection rendered="{!(isParentObjectSelected && isChildObjectSelected)}"  title="Rollup Details" columns="2" id="refreshPCFields">
+                    <apex:pageBlockSectionItem helpText="{!IF(isChildObjectSelected, $ObjectType.LookupRollupSummary2__mdt.fields.FieldToAggregate__c.inlineHelpText,'')}">
                         <apex:outputLabel style="{!IF(isChildObjectSelected, 'visibility:visible;', 'visibility:hidden;')}" value="{!$ObjectType.LookupRollupSummary2__mdt.fields.FieldToAggregate__c.Label}"/>
                         <apex:outputPanel >
                             <div class="requiredInput" style="display: flex;">
                                 <div class="requiredBlock"/>   
                                 <apex:selectList size="1" value="{!selectedChildField}" style="width:57%;" onchange="updateChildField()">
-                                    <apex:selectOptions value="{!childObjFields}"/>
+                                    <apex:selectOptions value="{!childObjFields}"  />
                                 </apex:selectList>  
                                 <apex:inputHidden value="{!LookupRollupSummary.FieldToAggregate__c}"/>                    
                             </div>
@@ -152,7 +164,7 @@
                             </div>
                         </apex:outputPanel>
                     </apex:pageBlockSectionItem>
-                    <apex:pageBlockSectionItem datastyle="{!IF(isParentObjectSelected, 'visibility:visible;', 'visibility:hidden;')}" helpText="{!IF(isParentObjectSelected, $ObjectType.LookupRollupSummary2__mdt.fields.AggregateResultField__c.inlineHelpText,'')}">
+                    <apex:pageBlockSectionItem helpText="{!IF(isParentObjectSelected, $ObjectType.LookupRollupSummary2__mdt.fields.AggregateResultField__c.inlineHelpText,'')}">
                         <apex:outputLabel style="{!IF(isParentObjectSelected, 'visibility:visible;', 'visibility:hidden;')}" value="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateResultField__c.Label}"/>           
                         <apex:outputPanel >
                             <div class="requiredInput" style="display: flex;">
@@ -175,19 +187,19 @@
                         <apex:inputText value="{!LookupRollupSummary.RowLimit__c}"/>
                     </apex:pageBlockSectionItem>
                 </apex:pageBlockSection>        
-                <apex:pageBlockSection title="Text Lookups" columns="2">
+                <apex:pageBlockSection rendered="{!(isParentObjectSelected && isChildObjectSelected)}" title="Text Lookups" columns="2">
                     <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.ConcatenateDelimiter__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.ConcatenateDelimiter__c.Label}"/>
                         <apex:inputText value="{!LookupRollupSummary.ConcatenateDelimiter__c}"/>
                     </apex:pageBlockSectionItem>
                 </apex:pageBlockSection>        
-                <apex:pageBlockSection title="Description" columns="2">
+                <apex:pageBlockSection rendered="{!(isParentObjectSelected && isChildObjectSelected)}" title="Description" columns="2">
                     <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.Description__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.Description__c.Label}"/>
                         <apex:inputTextArea cols="80" rows="3" value="{!LookupRollupSummary.Description__c}"/>
                     </apex:pageBlockSectionItem>
                 </apex:pageBlockSection>        
-                <apex:pageBlockSection title="Advanced" columns="1">
+                <apex:pageBlockSection rendered="{!(isParentObjectSelected && isChildObjectSelected)}" title="Advanced" columns="1">
                     <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCode__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCode2__c.Label}"/>
                         <apex:inputTextArea cols="64" rows="5" value="{!LookupRollupSummary.TestCode2__c}"/>

@@ -41,6 +41,7 @@ public class ManageLookupRollupSummariesNew_Test {
         mrl.confirmChildObject();
         mrl.updateChildField();
         mrl.updateParentField();
+        mrl.updateRField();
     }
     static testMethod void myUnitTest2(){
         ManageLookupRollupSummariesNewController mrl = new ManageLookupRollupSummariesNewController();
