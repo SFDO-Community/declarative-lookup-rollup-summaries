@@ -1,13 +1,6 @@
 {
   "packageDirectories": [
     {
-      "path": "force-app/main",
-      "default": true      
-    },
-    {
-      "path": "force-app-test/main"
-    },
-    {
       "path": "force-app/libs/fflib-apexmocks"
     },
     {
@@ -18,6 +11,13 @@
     },
     {
       "path": "force-app/libs/metadataservice"
+    },
+    {
+      "path": "force-app/main",
+      "default": true      
+    },
+    {
+      "path": "force-app-test/main"
     }
   ],
   "namespace": "",
