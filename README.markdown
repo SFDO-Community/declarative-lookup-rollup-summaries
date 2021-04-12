@@ -73,8 +73,18 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! 
 
-**Latest Release Version 2.12**
+**Latest Release Version 2.13**
 _______________________________
+
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN9&isdtp=p1), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN9&isdtp=p1)
+
+- Enhancement - Moved to API 50.0
+- Enhancement - Fixed Remote Site would incorrectly show as created and enhanced the whole Welcome tab 
+- Enhancement - Added new [Wiki page](https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Metadata-API-Connection-Issues-FAQ), linked from Welcome tab relating to various requirements and gotcha's on Metadata API connection issues
+- Bug - Optimizer tab would not show correctly if the user was not an Admin - now works for any user so long as they are assigned the Lookup Rollup Summary Configure permission set.
+
+**Release Version 2.12**
+________________________
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN4&isdtp=p1), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN4&isdtp=p1)
 
