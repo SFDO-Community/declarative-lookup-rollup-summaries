@@ -81,6 +81,7 @@ Package [Production URL](https://login.salesforce.com/packaging/installPackage.a
 - Enhancement - Moved to API 50.0
 - Enhancement - Fixed Remote Site would incorrectly show as created and enhanced the whole Welcome tab 
 - Enhancement - Added new [Wiki page](https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Metadata-API-Connection-Issues-FAQ), linked from Welcome tab relating to various requirements and gotcha's on Metadata API connection issues
+- Bug - Optimizer tab would not show correctly if the user was not an Admin - now works for any user so long as they are assigned the Lookup Rollup Summary Configure permission set.
 
 **Release Version 2.12**
 ________________________
