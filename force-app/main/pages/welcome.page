@@ -21,7 +21,7 @@ function createRemoteSite()
 						'<description>Metadata API Remote Site Setting for Declarative Rollup Tool (DLRS)</description>' + 
 						'<disableProtocolSecurity>false</disableProtocolSecurity>' + 
 						'<isActive>true</isActive>' + 
-						'<url>https://{!Host}</url>' +
+						'<url>{!MetadataAPIUrl}</url>' +
 					'</metadata>' +
 				'</upsertMetadata>' +
 			'</env:Body>' + 
@@ -38,6 +38,9 @@ function createRemoteSite()
 				var messageText = '';
 				for(var errorIdx = 0; errorIdx < errors.length; errorIdx++)
 					messageText+= errors.item(errorIdx).getElementsByTagName('message').item(0).innerHTML + '\n';
+				if(messageText=='') {
+					messageText = doc.getElementsByTagName('faultstring').item(0).innerHTML;
+				}
 				displayMetadataResponse(messageText);
 			} 
 		}
@@ -51,19 +54,25 @@ function createRemoteSite()
 		</apex:actionFunction>
 		<apex:sectionHeader title="Declarative Rollups for Lookups" subtitle="Welcome"/>
 		<apex:pageMessages />
-		<img src="http://andrewfawcett.files.wordpress.com/2013/07/blog_chart1.jpg" width="200" height="200" align="left"/>
+		<table><tr><td>
+			<img src="http://andrewfawcett.files.wordpress.com/2013/07/blog_chart1.jpg" width="200" height="200" align="left"/>
+			<p><b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships using the declarative mode of Force.com, but not between lookup relationships.</p>
+			<p><b>Documentatoin:</b> You can learn more about this tool by reading the documentation <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries#declarative-rollups-for-lookups">here.</a></p>
+			<p><b>Support:</b> This is a community driven open source tool there is no official support. Please post questions to this <a target="_new" href="https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p">community group</a>. Before you post questions please check for past or open issues <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries/issues">here</a> and also review the <b>Lookup Rollup Summaries Tools</b> tab.</p>
+		</td></tr></table>
 		<apex:outputPanel rendered="{!MetadataConnectionWarning}">
 			<h1>Important Post Install Step:</h1> 
-			<p>In order to utilize the features of this tool you need to permit it to access the Salesforce Metadata API of your organization by adding or updating a <a target="_new" href="http://na1.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL <b>https://{!Host}</b></p>
+			<p>In order to <b>configure</b> the features of this tool you need to permit the current user access to the <b>Salesforce Metadata API</b> of your organization. See <a href="https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Metadata-API-Connection-Issues-FAQ">FAQ here for more</a>.</p>
+			<ul>
+			<li>If your Org <b>is using My Domain</b> resolve the errors on screen and refersh this page until no more errors are shown.</li>
+			<li><p>If your Org <b>is not using My Domain</b> a <a target="_new" href="http://na1.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL <b>{!MetadataAPIUrl}</b></p>
 			<p> Click the <b>Create/Update Remote Site Setting</b> button to have the tool perform this step for you.</p>
-			<input id="createremotesitebtn" type="button" onclick="createRemoteSite();" value="Create/Update Remote Site Setting"/>
+			<input id="createremotesitebtn" type="button" onclick="createRemoteSite();" value="Create/Update Remote Site Setting"/></li>
+			</ul>
 		</apex:outputPanel>
-		<p><b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships using the declarative mode of Force.com, but not between lookup relationships.</p>
-		<p><b>Documentatoin:</b> You can learn more about this tool by reading the documentation <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries#declarative-rollups-for-lookups">here.</a></p>
-		<p><b>Support:</b> This is a community driven open source tool there is no official support. Please post questions to this <a target="_new" href="https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p">community group</a>. Before you post questions please check for past or open issues <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries/issues">here</a> and also review the <b>Lookup Rollup Summaries Tools</b> tab.</p>
 		<apex:outputPanel rendered="{!MetadataConnectionWarning}">
 			<p style="color:gray">DEBUG USE ONLY: {!metadataApiException}</p>
-		</apex:outputPanel>
-	</apex:form>
+		</apex:outputPanel>		
+</apex:form>
 </body>
 </apex:page>
