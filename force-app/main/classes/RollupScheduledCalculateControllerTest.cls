@@ -57,7 +57,7 @@ private class RollupScheduledCalculateControllerTest {
 		Test.stopTest();
 
 		// Assert correct Cron job has been inserted
-		CronTrigger cronTrigger = [select Id, CronJobDetail.Name, CronExpression from CronTrigger Limit 1][0];
+		CronTrigger cronTrigger = [select Id, CronJobDetail.Name, CronExpression from CronTrigger where CronJobDetail.JobType = '7' Limit 1][0];
 		System.assertEquals('0 0 2 * * ?', cronTrigger.CronExpression);
 		System.assertEquals('rollup_'+standardController.getId(), cronTrigger.CronJobDetail.Name);
 	}
@@ -93,7 +93,7 @@ private class RollupScheduledCalculateControllerTest {
         Test.stopTest();
 
         // Assert correct Cron job has been inserted
-        CronTrigger cronTrigger = [select Id, CronJobDetail.Name, CronExpression from CronTrigger Limit 1][0];
+        CronTrigger cronTrigger = [select Id, CronJobDetail.Name, CronExpression from CronTrigger  where CronJobDetail.JobType = '7' Limit 1][0];
         System.assertEquals('0 0 2 * * ?', cronTrigger.CronExpression);
         System.assertEquals('rollup_TestRollup (' + standardController.getId() + ')', cronTrigger.CronJobDetail.Name);
     }
@@ -129,7 +129,7 @@ private class RollupScheduledCalculateControllerTest {
 		Test.stopTest();
 
 		// Assert nothing has been scheduled and we got an error
-		System.assertEquals(0, [select Id, CronJobDetail.Name, CronExpression from CronTrigger].size());
+		System.assertEquals(0, [select Id, CronJobDetail.Name, CronExpression from CronTrigger where CronJobDetail.JobType = '7'].size());
 		System.assert(ApexPages.hasMessages(ApexPages.Severity.Error));
 		System.assertEquals('\'?\' can only be specified for Day-of-Month -OR- Day-of-Week.', ApexPages.getMessages()[5].getDetail());
 	}	
@@ -167,7 +167,7 @@ private class RollupScheduledCalculateControllerTest {
 		Test.stopTest();
 
 		// Assert correct Cron job has been inserted
-		CronTrigger cronTrigger = [select Id, CronJobDetail.Name, CronExpression from CronTrigger Limit 1][0];
+		CronTrigger cronTrigger = [select Id, CronJobDetail.Name, CronExpression from CronTrigger where CronJobDetail.JobType = '7' Limit 1][0];
 		System.assertEquals('0 0 4 2 * ?', cronTrigger.CronExpression);
 		System.assertEquals('rollup_'+standardController.getId(), cronTrigger.CronJobDetail.Name);
 	}		
