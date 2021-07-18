@@ -73,8 +73,15 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! 
 
-**Latest Release Version 2.13**
+**Latest Release Version 2.14**
 _______________________________
+
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t5p000000eeZT&isdtp=p1), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t5p000000eeZT&isdtp=p1)
+
+- Enhancement - Moved to API 51.0
+
+**Release Version 2.13**
+________________________
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN9&isdtp=p1), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN9&isdtp=p1)
 
