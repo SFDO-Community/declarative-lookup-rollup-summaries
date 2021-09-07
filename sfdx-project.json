@@ -14,13 +14,13 @@
     },
     {
       "path": "force-app/main",
-      "default": true      
+      "default": true
     },
     {
-      "path": "force-app-test/main"
+      "path": "unpackaged/config/test"
     }
   ],
-  "namespace": "",
+  "namespace": "dlrs",
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "48.0"
 }
