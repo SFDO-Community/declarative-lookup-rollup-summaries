@@ -13,7 +13,10 @@
       "path": "dlrs/libs/metadataservice"
     },
     {
-      "path": "dlrs/main",
+      "path": "dlrs/main"
+    },
+    {
+      "path": "dlrs/default",
       "default": true
     },
     {
