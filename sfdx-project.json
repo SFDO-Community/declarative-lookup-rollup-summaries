@@ -1,19 +1,19 @@
 {
   "packageDirectories": [
     {
-      "path": "force-app/libs/fflib-apexmocks"
+      "path": "dlrs/libs/fflib-apexmocks"
     },
     {
-      "path": "force-app/libs/fflib-common"
+      "path": "dlrs/libs/fflib-common"
     },
     {
-      "path": "force-app/libs/lrengine"
+      "path": "dlrs/libs/lrengine"
     },
     {
-      "path": "force-app/libs/metadataservice"
+      "path": "dlrs/libs/metadataservice"
     },
     {
-      "path": "force-app/main",
+      "path": "dlrs/main",
       "default": true
     },
     {

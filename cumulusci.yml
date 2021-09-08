@@ -46,7 +46,7 @@ flows:
             0:
                 task: dx_convert_from
                 options:
-                    extra: "--sourcepath ./force-app/libs/fflib-apexmocks,./force-app/libs/fflib-common,./force-app/libs/lrengine,./force-app/libs/metadataservice,./force-app/main"
+                    extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
             3.1:
                 task: dx_push
 
@@ -55,4 +55,4 @@ flows:
             0:
                 task: dx_convert_from
                 options:
-                    extra: "--sourcepath ./force-app/libs/fflib-apexmocks,./force-app/libs/fflib-common,./force-app/libs/lrengine,./force-app/libs/metadataservice,./force-app/main"
+                    extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
