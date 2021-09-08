@@ -5,3 +5,10 @@
 package.xml
 **profiles
 **settings
+
+# LWC configuration files
+**/jsconfig.json
+**/.eslintrc.json
+
+# LWC Jest
+**/__tests__/**
