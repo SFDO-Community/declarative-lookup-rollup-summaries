@@ -4,7 +4,7 @@
     },
     "include": [
         "**/*",
-        "../../../../.sfdx/typings/lwc/**/*.d.ts"
+        "../../../.sfdx/typings/lwc/**/*.d.ts"
     ],
     "paths": {
         "c/*": [

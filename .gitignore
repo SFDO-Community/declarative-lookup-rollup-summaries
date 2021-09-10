@@ -30,6 +30,9 @@ node_modules/
 # Eslint cache
 .eslintcache
 
+# Husky
+.husky
+
 # MacOS system files
 .DS_Store
 

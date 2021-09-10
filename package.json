@@ -1,8 +1,8 @@
 {
-  "name": "Declarative Roolup Summary Dev Setup",
+  "name": "DLRS-Local-Dev-Setup",
   "private": true,
   "version": "0.0.1",
-  "description": "Declarative Lookup Rollup Summaries Tool Local Development Project Setup",
+  "description": "Declarative Lookup Rollup Summaries Tool Local Development Setup",
   "scripts": {
     "lint": "npm run lint:lwc && npm run lint:aura",
     "lint:aura": "eslint **/aura/**",
