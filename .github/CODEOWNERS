@@ -1,10 +1,10 @@
 # Python
-*.py                  @SalesforceFoundation/release-engineering-reviewers
+*.py                  @SFDO-Community/sfdo-release-engineers
 
 # CumulusCI
-/cumulusci.yml        @SalesforceFoundation/release-engineering-reviewers
-/tasks/               @SalesforceFoundation/release-engineering-reviewers
+/cumulusci.yml        @SFDO-Community/sfdo-release-engineers
+/tasks/               @SFDO-Community/sfdo-release-engineers
 
 # Actions
-/.github                @SalesforceFoundation/release-engineering-reviewers
-/scripts                @SalesforceFoundation/release-engineering-reviewers
+/.github                @SFDO-Community/sfdo-release-engineers
+/scripts                @SFDO-Community/sfdo-release-engineers
