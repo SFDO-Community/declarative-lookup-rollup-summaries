@@ -6,6 +6,9 @@ project:
         namespace: dlrs
         api_version: '48.0'
     git:
+        repo_url: https://github.com/SFDO-Community/declarative-lookup-rollup-summaries
+        prefix_beta: beta/
+        prefix_release: release/
     source_format: sfdx
 
 tasks:
