@@ -2,3 +2,6 @@
 .vscode
 .DS_Store   
 mdapi_output_dir
+test_results.*
+.cci
+src

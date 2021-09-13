@@ -61,12 +61,15 @@ public with sharing class RollupCalculateJob
 			for(Id recordId : new Map<Id, SObject> (masterRecords).keySet()) {
 				ids.add(recordId);
 			}
-            // Errors are emailed to the user that scheduled this job
+            // Retrieve organization info to put in the email
+	    Organization org = [SELECT Id, Name FROM Organization];
+	    
+	    // Errors are emailed to the user that scheduled this job
             Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
             mail.setToAddresses(new String[] { UserInfo.getUserId() });
-            mail.setSubject(String.format('Apex job {0} failed to update rollups ', new String[] { BC.getJobId() }));
-            mail.setPlainTextBody(String.format('Error: {0}. Parent record Ids {1}', new String[] { e.getMessage(), String.join(ids, ',') } ));
-            Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });			
+            mail.setSubject(String.format('Apex job {0} failed to update rollups in {1} ({2})', new String[] { BC.getJobId(), org.Name, org.Id }));
+            mail.setPlainTextBody(String.format('Error: {0}. Parent record Ids {1}', new String[] { e.getMessage(), String.join(ids, ',') }));
+            Messaging.sendEmail(new Messaging.SingleEmailMessage[] { mail });
 		}
 	}
 	

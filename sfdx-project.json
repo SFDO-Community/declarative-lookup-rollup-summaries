@@ -1,13 +1,6 @@
 {
   "packageDirectories": [
     {
-      "path": "force-app/main",
-      "default": true      
-    },
-    {
-      "path": "force-app-test/main"
-    },
-    {
       "path": "force-app/libs/fflib-apexmocks"
     },
     {
@@ -18,9 +11,16 @@
     },
     {
       "path": "force-app/libs/metadataservice"
+    },
+    {
+      "path": "force-app/main",
+      "default": true
+    },
+    {
+      "path": "unpackaged/config/test"
     }
   ],
-  "namespace": "",
+  "namespace": "dlrs",
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "48.0"
 }
