@@ -42,7 +42,7 @@ flows:
 
     ci_beta:
         steps:
-            3.5:
+            1.5:
                 task: deploy_test_config
 
     deploy_unmanaged:
