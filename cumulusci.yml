@@ -9,6 +9,7 @@ project:
         repo_url: https://github.com/SFDO-Community/declarative-lookup-rollup-summaries
         prefix_beta: beta/
         prefix_release: release/
+        default_branch: main
     source_format: sfdx
 
 tasks:
