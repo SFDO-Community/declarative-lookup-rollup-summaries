@@ -1,0 +1,10 @@
+# Python
+*.py                  @SFDO-Community/sfdo-release-engineers
+
+# CumulusCI
+/cumulusci.yml        @SFDO-Community/sfdo-release-engineers
+/tasks/               @SFDO-Community/sfdo-release-engineers
+
+# Actions
+/.github                @SFDO-Community/sfdo-release-engineers
+/scripts                @SFDO-Community/sfdo-release-engineers

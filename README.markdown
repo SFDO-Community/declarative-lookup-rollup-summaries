@@ -1,8 +1,6 @@
 Declarative Rollups for Lookup Field Relationships
 ==================================================
 
-[![Build Status](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries.svg)](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries)
-
 Features Summary
 ----------------
 
@@ -28,6 +26,7 @@ In addition to the [Wiki](https://github.com/afawcett/declarative-lookup-rollup-
 
 **NOTE:** The links are in chronological order, if your new to the tool, read from the bottom upwards
 
+- [Uninstall Notes](https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Uninstalling-the-Package)
 - [Declarative Rollup Summary Tool Update for v2.12](https://andyinthecloud.com/2020/04/05/declarative-rollup-summary-tool-update/)
 - [Salesforce Rollup Summary on Lookup Relationship | DLRS Tutorial](https://www.youtube.com/watch?v=sjRlou2-N6I&feature=youtu.be)
 - [Monitoring your Scheduled Rollups via Report Subscriptions](https://www.dandonin.com/2017/05/24/automated-error-alerts-and-mass-delete-error-records/)
@@ -51,6 +50,7 @@ Implementation Considerations
 - **Professional Edition**. Professional Edition is supported only when using Process Builder or a [Scheduled Full Recalculation](https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/What-you-need-to-know-about-Scheduling-Rollups). Ignore prompts to setup the Remote Site for Metadata API callouts, as this will not be needed. You can use either the new  Manage Lookup Rollup Summaries tab (recommended) or the older Lookup Rollup Summaries tab. Make to select Calculation Mode as Process Builder when setting up your rollup (this will not require an Apex Trigger deployment). Please note that record deletion is not captured using Process Builder. For more information on using Process Builder with this tool see [here](https://andyinthecloud.com/2015/02/16/declarative-lookup-rollup-summaries-tool-dlrs-spring15-release/).
 - **Check Existings Apex Tests.** This tool dynamically deploys Apex Triggers and Apex tests, please make sure your Sandbox and Production org tests are all fully working before you attempt to use this tool. Otherwise usage of this tool will be blocked until you resolve such errors. If you have an org with triggers on the sObject that will contain the roll up result, installation into sandbox is VERY HIGHLY recommended so that after Lookup Rollup Summary records are added/enabled, you should rerun all testmethods to ensure nothing has broken as your before/after update triggers on the parent sObject will re-execute.
 - **Existing Tests on Parent Objects**. This tool will update the indicated fields on your Parent objects when it senses activity on Child objects. Ensure an Apex Triggers you have written on your Parent objects are written with best practices around bulkification in mind. If in doubt be sure to perform significant testing.
+- **Realtime vs. Scheduled**. This tool can become resource intensive when combined with other declarative and development based automations. It provides several realtime and scheduled options including Scheduled Apex and Process Builder Scheduled Actions. If you are running into platform limitations consider using one of the scheduled options available.
 
 Usage Information and Known Issues
 ----------------------------------
@@ -71,8 +71,25 @@ Packaged Release History
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limatations and known issues above first! 
 
-**Latest Release Version 2.12**
+**Latest Release Version 2.14**
 _______________________________
+
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t5p000000eegF&isdtp=p1), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t5p000000eegF&isdtp=p1)
+
+- Enhancement - Moved to API 51.0
+
+**Release Version 2.13**
+________________________
+
+Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN9&isdtp=p1), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN9&isdtp=p1)
+
+- Enhancement - Moved to API 50.0
+- Enhancement - Fixed Remote Site would incorrectly show as created and enhanced the whole Welcome tab 
+- Enhancement - Added new [Wiki page](https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Metadata-API-Connection-Issues-FAQ), linked from Welcome tab relating to various requirements and gotcha's on Metadata API connection issues
+- Bug - Optimizer tab would not show correctly if the user was not an Admin - now works for any user so long as they are assigned the Lookup Rollup Summary Configure permission set.
+
+**Release Version 2.12**
+________________________
 
 Package [Production URL](https://login.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN4&isdtp=p1), [Sandbox URL](https://test.salesforce.com/packaging/installPackage.apexp?p0=04t0N000000YGN4&isdtp=p1)
 
