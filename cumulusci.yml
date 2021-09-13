@@ -33,6 +33,10 @@ tasks:
         options:
             # Preserve existing code coverage level
             required_org_code_coverage_percent: 87
+            retry_failures:
+                - "unable to obtain exclusive access to this record"
+                - "UNABLE_TO_LOCK_ROW"
+            retry_always: True
 
 flows:
     config_apextest:
