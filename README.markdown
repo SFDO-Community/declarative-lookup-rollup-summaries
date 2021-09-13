@@ -1,8 +1,6 @@
 Declarative Rollups for Lookup Field Relationships
 ==================================================
 
-[![Build Status](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries.svg)](https://travis-ci.org/afawcett/declarative-lookup-rollup-summaries)
-
 Features Summary
 ----------------
 
