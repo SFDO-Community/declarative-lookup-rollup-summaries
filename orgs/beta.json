@@ -1,6 +1,8 @@
 {
   "orgName": "Declarative Lookup Rollup Summaries Tool - Beta Test Org",
   "edition": "Developer",
+  "country": "US",
+  "language": "en_US",
   "settings": {
     "lightningExperienceSettings": {
       "enableS1DesktopEnabled": true
