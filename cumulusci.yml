@@ -64,3 +64,12 @@ flows:
                 task: dx_convert_from
                 options:
                     extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
+
+orgs:
+    scratch:
+        dev_prerelease:
+            config_file: orgs/dev_prerelease.json
+            days: 7
+        beta_prerelease:
+            config_file: orgs/beta_prerelease.json
+            days: 7
