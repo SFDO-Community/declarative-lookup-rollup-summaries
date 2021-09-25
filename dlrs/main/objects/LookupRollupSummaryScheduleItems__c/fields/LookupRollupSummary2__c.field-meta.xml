@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>LookupRollupSummary2__c</fullName>
     <deprecated>false</deprecated>
-    <description>Either the Id (Custom Object) or Name (Custom Metadata) of the rollup summary definition that generated this schedule item.</description>
+    <description
+  >Either the Id (Custom Object) or Name (Custom Metadata) of the rollup summary definition that generated this schedule item.</description>
     <externalId>false</externalId>
     <label>Lookup Rollup Summary 2</label>
     <length>80</length>
