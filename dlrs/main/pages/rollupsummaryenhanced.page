@@ -32,14 +32,15 @@
  **/
 -->
 
-<apex:page standardController="LookupRollupSummary__c" extensions="RollupSummaryEnhancedController" showHeader="true" sidebar="true" lightningStylesheets="true">
+<apex:page standardController="LookupRollupSummary__c" extensions="RollupSummaryEnhancedController" showHeader="true" sidebar="true"
+ lightningStylesheets="true">
 
-	<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'/>
-	<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.12/jquery-ui.min.js'/>
-	<apex:stylesheet value="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css"/>
+	<script src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js' />
+	<script src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.12/jquery-ui.min.js' />
+	<apex:stylesheet value="https://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
 
-	<apex:sectionHeader title="Lookup Rollup Summary" subtitle="Parent Object"/>
-	<apex:pageMessages id="msgs"/>	
+	<apex:sectionHeader title="Lookup Rollup Summary" subtitle="Parent Object" />
+	<apex:pageMessages id="msgs" />
 
 	<apex:form id="rusForm">
 
@@ -50,71 +51,71 @@
 			</apex:pageBlockButtons>
 			<!-- Parent Object -->
 			<apex:pageBlockSection collapsible="false" columns="1" showHeader="true" title="Parent Object" id="parent">
-				<apex:pageBlockSectionItem >
-					<apex:outputLabel value="Name of lookup definition: " for="childFields"/>
+				<apex:pageBlockSectionItem>
+					<apex:outputLabel value="Name of lookup definition: " for="childFields" />
 					<apex:outputPanel styleClass="requiredInput" layout="block">
-					<apex:outputPanel styleClass="requiredBlock" layout="block"/>
-					<apex:inputField value="{!LookupRollupSummary__c.Name}"/>
+						<apex:outputPanel styleClass="requiredBlock" layout="block" />
+						<apex:inputField value="{!LookupRollupSummary__c.Name}" />
 					</apex:outputPanel>
 				</apex:pageBlockSectionItem>
-				<apex:pageBlockSectionItem >
-					<apex:outputLabel value="Parent Object:" for="parentObject"/>
+				<apex:pageBlockSectionItem>
+					<apex:outputLabel value="Parent Object:" for="parentObject" />
 					<apex:outputPanel styleClass="requiredInput" layout="block">
-					<apex:outputPanel styleClass="requiredBlock" layout="block"/>
-					<apex:selectList value="{!LookupRollupSummary__c.ParentObject__c}" id="parentObject" size="1">
-						<apex:selectOptions value="{!parentObjects}"/>
-						<apex:actionSupport event="onchange" rerender="parentFields, childObject"/>
-					</apex:selectList>
+						<apex:outputPanel styleClass="requiredBlock" layout="block" />
+						<apex:selectList value="{!LookupRollupSummary__c.ParentObject__c}" id="parentObject" size="1">
+							<apex:selectOptions value="{!parentObjects}" />
+							<apex:actionSupport event="onchange" rerender="parentFields, childObject" />
+						</apex:selectList>
 					</apex:outputPanel>
 				</apex:pageBlockSectionItem>
-				<apex:pageBlockSectionItem >
-					<apex:outputLabel value="Aggregated Results Field: " for="parentFields"/>
+				<apex:pageBlockSectionItem>
+					<apex:outputLabel value="Aggregated Results Field: " for="parentFields" />
 					<apex:outputPanel styleClass="requiredInput" layout="block">
-					<apex:outputPanel styleClass="requiredBlock" layout="block"/>
-					<apex:selectList value="{!LookupRollupSummary__c.AggregateResultField__c}" id="parentFields" size="1">
-						<apex:selectOptions value="{!parentFields}"/>
-					</apex:selectList>
+						<apex:outputPanel styleClass="requiredBlock" layout="block" />
+						<apex:selectList value="{!LookupRollupSummary__c.AggregateResultField__c}" id="parentFields" size="1">
+							<apex:selectOptions value="{!parentFields}" />
+						</apex:selectList>
 					</apex:outputPanel>
 				</apex:pageBlockSectionItem>
 			</apex:pageBlockSection>
 
 			<!-- child Object -->
 			<apex:pageBlockSection collapsible="false" columns="1" showHeader="true" title="Child Object" id="child">
-				<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary__c.Fields.ChildObject__c.inlineHelpText}" >
-					<apex:outputLabel value="Child Object (Field) : " for="parentFields"/>
+				<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary__c.Fields.ChildObject__c.inlineHelpText}">
+					<apex:outputLabel value="Child Object (Field) : " for="parentFields" />
 					<apex:outputPanel styleClass="requiredInput" layout="block">
-					<apex:outputPanel styleClass="requiredBlock" layout="block"/>
-					<apex:selectList value="{!relationshipField}" id="childObject" size="1">
-						<apex:selectOptions value="{!childObjects}"/>
-						<apex:actionSupport event="onchange" action="{!calculateRelationshipField}" reRender="childFields, output" />
-					</apex:selectList>
+						<apex:outputPanel styleClass="requiredBlock" layout="block" />
+						<apex:selectList value="{!relationshipField}" id="childObject" size="1">
+							<apex:selectOptions value="{!childObjects}" />
+							<apex:actionSupport event="onchange" action="{!calculateRelationshipField}" reRender="childFields, output" />
+						</apex:selectList>
 					</apex:outputPanel>
 				</apex:pageBlockSectionItem>
 				<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary__c.Fields.AggregateOperation__c.inlineHelpText}">
-					<apex:outputLabel value="{!$ObjectType.LookupRollupSummary__c.Fields.AggregateOperation__c.label}" for="childFields"/>
+					<apex:outputLabel value="{!$ObjectType.LookupRollupSummary__c.Fields.AggregateOperation__c.label}" for="childFields" />
 					<apex:outputPanel styleClass="requiredInput" layout="block">
-					<apex:outputPanel styleClass="requiredBlock" layout="block"/>
-					<apex:inputField value="{!LookupRollupSummary__c.AggregateOperation__c}">
-						<apex:actionSupport event="onchange" reRender="child" />
-					</apex:inputField> 
+						<apex:outputPanel styleClass="requiredBlock" layout="block" />
+						<apex:inputField value="{!LookupRollupSummary__c.AggregateOperation__c}">
+							<apex:actionSupport event="onchange" reRender="child" />
+						</apex:inputField>
 					</apex:outputPanel>
 				</apex:pageBlockSectionItem>
 				<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary__c.Fields.FieldToAggregate__c.inlineHelpText}" rendered="{!IF(LookupRollupSummary__c.AggregateOperation__c = 'Count',false,true)}">
-					<apex:outputLabel value="Child field to Aggregate: " for="childFields"/>
+					<apex:outputLabel value="Child field to Aggregate: " for="childFields" />
 					<apex:outputPanel styleClass="requiredInput" layout="block">
-					<apex:outputPanel styleClass="requiredBlock" layout="block"/>
-					<apex:selectList value="{!LookupRollupSummary__c.FieldToAggregate__c}" id="childFields" size="1">
-						<apex:selectOptions value="{!childFields}"/>
-					</apex:selectList>
+						<apex:outputPanel styleClass="requiredBlock" layout="block" />
+						<apex:selectList value="{!LookupRollupSummary__c.FieldToAggregate__c}" id="childFields" size="1">
+							<apex:selectOptions value="{!childFields}" />
+						</apex:selectList>
 					</apex:outputPanel>
 				</apex:pageBlockSectionItem>
 			</apex:pageBlockSection>
 			<apex:pageBlockSection collapsible="false" columns="1" showHeader="true" title="Child Criteria" id="criteria">
-				<apex:inputField style="width:400px;" value="{!LookupRollupSummary__c.RelationshipCriteria__c}"/>
-				<apex:inputField style="width:175px; height:100px;" value="{!LookupRollupSummary__c.RelationshipCriteriaFields__c}"/>
+				<apex:inputField style="width:400px;" value="{!LookupRollupSummary__c.RelationshipCriteria__c}" />
+				<apex:inputField style="width:175px; height:100px;" value="{!LookupRollupSummary__c.RelationshipCriteriaFields__c}" />
 			</apex:pageBlockSection>
 			<apex:pageBlockSection collapsible="false" columns="1" showHeader="true" title="Calculation" id="mode">
-				<apex:inputField value="{!LookupRollupSummary__c.CalculationMode__c}"/>
+				<apex:inputField value="{!LookupRollupSummary__c.CalculationMode__c}" />
 			</apex:pageBlockSection>
 		</apex:pageBlock>
 	</apex:form>

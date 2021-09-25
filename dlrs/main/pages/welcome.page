@@ -1,78 +1,104 @@
-<apex:page controller="WelcomeController" showHeader="{!IF($CurrentPage.Parameters.ShowHeader == '1', true, false)}" sidebar="false" tabStyle="LookupRollupSummary__c" standardStylesheets="true" lightningStylesheets="true" action="{!checkMetadataAPIConnection}">
-<script>
-function createRemoteSite()
-{ 
-	// Disable button 
-	document.getElementById('createremotesitebtn').disabled = true;
-	// Calls the Metdata API from JavaScript to create the Remote Site Setting to permit Apex callouts
-	var binding = new XMLHttpRequest();
-	var request = 
-		'<?xml version="1.0" encoding="utf-8"?>' + 
-		'<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'+
-			'<env:Header>' + 
-				'<urn:SessionHeader xmlns:urn="http://soap.sforce.com/2006/04/metadata">' + 
-					'<urn:sessionId>{!$Api.Session_ID}</urn:sessionId>' + 
-				'</urn:SessionHeader>' + 
-			'</env:Header>' + 
-			'<env:Body>' +
-				'<upsertMetadata xmlns="http://soap.sforce.com/2006/04/metadata">' + 
-					'<metadata xsi:type="RemoteSiteSetting">' + 
-						'<fullName>{!RemoteSiteName}</fullName>' +
-						'<description>Metadata API Remote Site Setting for Declarative Rollup Tool (DLRS)</description>' + 
-						'<disableProtocolSecurity>false</disableProtocolSecurity>' + 
-						'<isActive>true</isActive>' + 
-						'<url>{!MetadataAPIUrl}</url>' +
-					'</metadata>' +
+<apex:page controller="WelcomeController" showHeader="{!IF($CurrentPage.Parameters.ShowHeader == '1', true, false)}" sidebar="false"
+ tabStyle="LookupRollupSummary__c" standardStylesheets="true" lightningStylesheets="true" action="{!checkMetadataAPIConnection}">
+	<script>
+		function createRemoteSite() {
+			// Disable button 
+			document.getElementById('createremotesitebtn').disabled = true;
+			// Calls the Metdata API from JavaScript to create the Remote Site Setting to permit Apex callouts
+			var binding = new XMLHttpRequest();
+			var request =
+				'<?xml version="1.0" encoding="utf-8"?>' +
+				'<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
+				'<env:Header>' +
+				'<urn:SessionHeader xmlns:urn="http://soap.sforce.com/2006/04/metadata">' +
+				'<urn:sessionId>{!$Api.Session_ID}</urn:sessionId>' +
+				'</urn:SessionHeader>' +
+				'</env:Header>' +
+				'<env:Body>' +
+				'<upsertMetadata xmlns="http://soap.sforce.com/2006/04/metadata">' +
+				'<metadata xsi:type="RemoteSiteSetting">' +
+				'<fullName>{!RemoteSiteName}</fullName>' +
+				'<description>Metadata API Remote Site Setting for Declarative Rollup Tool (DLRS)</description>' +
+				'<disableProtocolSecurity>false</disableProtocolSecurity>' +
+				'<isActive>true</isActive>' +
+				'<url>{!MetadataAPIUrl}</url>' +
+				'</metadata>' +
 				'</upsertMetadata>' +
-			'</env:Body>' + 
-		'</env:Envelope>';
-	binding.open('POST', 'https://{!Host}/services/Soap/m/31.0');
-	binding.setRequestHeader('SOAPAction','""');
-	binding.setRequestHeader('Content-Type', 'text/xml');
-	binding.onreadystatechange = 
-		function() { 
-			if(this.readyState==4) {
-				var parser = new DOMParser();
-				var doc  = parser.parseFromString(this.response, 'application/xml');
-				var errors = doc.getElementsByTagName('errors');
-				var messageText = '';
-				for(var errorIdx = 0; errorIdx < errors.length; errorIdx++)
-					messageText+= errors.item(errorIdx).getElementsByTagName('message').item(0).innerHTML + '\n';
-				if(messageText=='') {
-					messageText = doc.getElementsByTagName('faultstring').item(0).innerHTML;
+				'</env:Body>' +
+				'</env:Envelope>';
+			binding.open('POST', 'https://{!Host}/services/Soap/m/31.0');
+			binding.setRequestHeader('SOAPAction', '""');
+			binding.setRequestHeader('Content-Type', 'text/xml');
+			binding.onreadystatechange =
+				function () {
+					if (this.readyState == 4) {
+						var parser = new DOMParser();
+						var doc = parser.parseFromString(this.response, 'application/xml');
+						var errors = doc.getElementsByTagName('errors');
+						var messageText = '';
+						for (var errorIdx = 0; errorIdx < errors.length; errorIdx++)
+							messageText += errors.item(errorIdx).getElementsByTagName('message').item(0).innerHTML + '\n';
+						if (messageText == '') {
+							messageText = doc.getElementsByTagName('faultstring').item(0).innerHTML;
+						}
+						displayMetadataResponse(messageText);
+					}
 				}
-				displayMetadataResponse(messageText);
-			} 
+			binding.send(request);
 		}
-	binding.send(request);
-}
-</script>
-<body class="homeTab">
-	<apex:form id="myForm">
-		<apex:actionFunction name="displayMetadataResponse" action="{!displayMetadataResponse}" rerender="myForm">
-			<apex:param name="metadataResponse" assignTo="{!metadataResponse}" value="{!metadataResponse}"/>
-		</apex:actionFunction>
-		<apex:sectionHeader title="Declarative Rollups for Lookups" subtitle="Welcome"/>
-		<apex:pageMessages />
-		<table><tr><td>
-			<img src="http://andrewfawcett.files.wordpress.com/2013/07/blog_chart1.jpg" width="200" height="200" align="left"/>
-			<p><b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships using the declarative mode of Force.com, but not between lookup relationships.</p>
-			<p><b>Documentatoin:</b> You can learn more about this tool by reading the documentation <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries#declarative-rollups-for-lookups">here.</a></p>
-			<p><b>Support:</b> This is a community driven open source tool there is no official support. Please post questions to this <a target="_new" href="https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p">community group</a>. Before you post questions please check for past or open issues <a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries/issues">here</a> and also review the <b>Lookup Rollup Summaries Tools</b> tab.</p>
-		</td></tr></table>
-		<apex:outputPanel rendered="{!MetadataConnectionWarning}">
-			<h1>Important Post Install Step:</h1> 
-			<p>In order to <b>configure</b> the features of this tool you need to permit the current user access to the <b>Salesforce Metadata API</b> of your organization. See <a href="https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Metadata-API-Connection-Issues-FAQ">FAQ here for more</a>.</p>
-			<ul>
-			<li>If your Org <b>is using My Domain</b> resolve the errors on screen and refersh this page until no more errors are shown.</li>
-			<li><p>If your Org <b>is not using My Domain</b> a <a target="_new" href="http://na1.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL <b>{!MetadataAPIUrl}</b></p>
-			<p> Click the <b>Create/Update Remote Site Setting</b> button to have the tool perform this step for you.</p>
-			<input id="createremotesitebtn" type="button" onclick="createRemoteSite();" value="Create/Update Remote Site Setting"/></li>
-			</ul>
-		</apex:outputPanel>
-		<apex:outputPanel rendered="{!MetadataConnectionWarning}">
-			<p style="color:gray">DEBUG USE ONLY: {!metadataApiException}</p>
-		</apex:outputPanel>		
-</apex:form>
-</body>
+	</script>
+
+	<body class="homeTab">
+		<apex:form id="myForm">
+			<apex:actionFunction name="displayMetadataResponse" action="{!displayMetadataResponse}" rerender="myForm">
+				<apex:param name="metadataResponse" assignTo="{!metadataResponse}" value="{!metadataResponse}" />
+			</apex:actionFunction>
+			<apex:sectionHeader title="Declarative Rollups for Lookups" subtitle="Welcome" />
+			<apex:pageMessages />
+			<table>
+				<tr>
+					<td>
+						<img src="http://andrewfawcett.files.wordpress.com/2013/07/blog_chart1.jpg" width="200" height="200" align="left" />
+						<p>
+							<b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically
+							the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships
+							using the declarative mode of Force.com, but not between lookup relationships.</p>
+						<p>
+							<b>Documentatoin:</b> You can learn more about this tool by reading the documentation
+							<a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries#declarative-rollups-for-lookups">here.</a>
+						</p>
+						<p>
+							<b>Support:</b> This is a community driven open source tool there is no official support. Please post questions to this
+							<a target="_new" href="https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p">community group</a>. Before you post questions please check for past or open issues
+							<a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries/issues">here</a> and also review the
+							<b>Lookup Rollup Summaries Tools</b> tab.</p>
+					</td>
+				</tr>
+			</table>
+			<apex:outputPanel rendered="{!MetadataConnectionWarning}">
+				<h1>Important Post Install Step:</h1>
+				<p>In order to
+					<b>configure</b> the features of this tool you need to permit the current user access to the
+					<b>Salesforce Metadata API</b> of your organization. See
+					<a href="https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Metadata-API-Connection-Issues-FAQ">FAQ here for more</a>.</p>
+				<ul>
+					<li>If your Org
+						<b>is using My Domain</b> resolve the errors on screen and refersh this page until no more errors are shown.</li>
+					<li>
+						<p>If your Org
+							<b>is not using My Domain</b> a
+							<a target="_new" href="http://na1.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL
+							<b>{!MetadataAPIUrl}</b>
+						</p>
+						<p> Click the
+							<b>Create/Update Remote Site Setting</b> button to have the tool perform this step for you.</p>
+						<input id="createremotesitebtn" type="button" onclick="createRemoteSite();" value="Create/Update Remote Site Setting" />
+					</li>
+				</ul>
+			</apex:outputPanel>
+			<apex:outputPanel rendered="{!MetadataConnectionWarning}">
+				<p style="color:gray">DEBUG USE ONLY: {!metadataApiException}</p>
+			</apex:outputPanel>
+		</apex:form>
+	</body>
 </apex:page>
