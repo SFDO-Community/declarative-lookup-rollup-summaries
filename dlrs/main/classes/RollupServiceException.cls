@@ -22,50 +22,67 @@
  *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**/
+ **/
 
 /**
  * Generic exception class used by methods on the RollupService
  **/
-public class RollupServiceException extends Exception
-{
-	/**
-	 * Generic exception when aspects of the rollup summary definition are found to be in error at runtime
-	 **/
-	public static RollupServiceException invalidRollup(RollupSummary lookup, String configInvalid)
-	{
-		return new RollupServiceException('Lookup Rollup Summary  \'' + lookup.Name + '\' is invalid, your org configuration may have changed (' + configInvalid + ').');
-	}
+public class RollupServiceException extends Exception {
+  /**
+   * Generic exception when aspects of the rollup summary definition are found to be in error at runtime
+   **/
+  public static RollupServiceException invalidRollup(
+    RollupSummary lookup,
+    String configInvalid
+  ) {
+    return new RollupServiceException(
+      'Lookup Rollup Summary  \'' +
+      lookup.Name +
+      '\' is invalid, your org configuration may have changed (' +
+      configInvalid +
+      ').'
+    );
+  }
 
-	/**
-	 * Unable to find the given lookup
-	 **/
-	public static RollupServiceException rollupNotFound(Id lookupId)
-	{
-		return new RollupServiceException('Invalid rollup ' + lookupId + ' not found.');
-	}
+  /**
+   * Unable to find the given lookup
+   **/
+  public static RollupServiceException rollupNotFound(Id lookupId) {
+    return new RollupServiceException(
+      'Invalid rollup ' +
+      lookupId +
+      ' not found.'
+    );
+  }
 
-	/**
-	 * Job alraedy executed to recalculate rollup
-	 **/
-	public static RollupServiceException jobAlreadyRunning(String name)
-	{
-		return new RollupServiceException('A calculate job for rollup \'' + name + '\' is already executing. If you suspect it is not aleady running try clearing the applicable record from the Lookup Rollup Calculate Jobs tab and try again.');
-	}
+  /**
+   * Job alraedy executed to recalculate rollup
+   **/
+  public static RollupServiceException jobAlreadyRunning(String name) {
+    return new RollupServiceException(
+      'A calculate job for rollup \'' +
+      name +
+      '\' is already executing. If you suspect it is not aleady running try clearing the applicable record from the Lookup Rollup Calculate Jobs tab and try again.'
+    );
+  }
 
-	/**
-	 * Jobs executing
-	 **/
-	public static RollupServiceException jobsExecuting(String className)
-	{
-		return new RollupServiceException('A previous Declarative Rollup Summary scheduled job \'' + className + '\' is still running, this scheduled execution will not occur.');
-	}
+  /**
+   * Jobs executing
+   **/
+  public static RollupServiceException jobsExecuting(String className) {
+    return new RollupServiceException(
+      'A previous Declarative Rollup Summary scheduled job \'' +
+      className +
+      '\' is still running, this scheduled execution will not occur.'
+    );
+  }
 
-	/**
-	 * Missing space for rollup record
-	 **/
-	public static RollupServiceException missingStorageForJobRecord()
-	{
-		return new RollupServiceException('Your organization has run out of space for the rollup job record to be inserted. Please clean up some space before running the calculate job.');
-	}
+  /**
+   * Missing space for rollup record
+   **/
+  public static RollupServiceException missingStorageForJobRecord() {
+    return new RollupServiceException(
+      'Your organization has run out of space for the rollup job record to be inserted. Please clean up some space before running the calculate job.'
+    );
+  }
 }
