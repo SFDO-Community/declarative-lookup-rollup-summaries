@@ -23,14 +23,13 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface fflib_IMatcher
-{
-	/**
-	 * Whether or not the supplied argument is a match.
-	 * Any supplementary information (e.g. boundary conditions, objects to match to etc)
-	 * should be cached by the matcher constructor.
-	 * @param arg The argument value supplied to the method
-	 * @return Boolean True if the argument value is a match, false otherwise.
-	 */
-	Boolean matches(Object arg);
+public interface fflib_IMatcher {
+  /**
+   * Whether or not the supplied argument is a match.
+   * Any supplementary information (e.g. boundary conditions, objects to match to etc)
+   * should be cached by the matcher constructor.
+   * @param arg The argument value supplied to the method
+   * @return Boolean True if the argument value is a match, false otherwise.
+   */
+  Boolean matches(Object arg);
 }

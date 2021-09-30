@@ -23,48 +23,45 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public with sharing class fflib_MethodArgValues
-{
-	public List<Object> argValues;
-	
-	/**
-	 * Wrapper object which encapsulates the argument values
-	 * supplied during a given method call.
-	 * @param argValues The
-	 * @return fflib_MethodArgValues The method argument wrapper object
-	 */
-	public fflib_MethodArgValues(List<Object> argValues)
-	{
-		this.argValues = argValues;
-	}
-	
-	/**
-	 * Standard equals override.
-	 * @param other The object whose equality we are verifying
-	 * @return Boolean True if meaningfully equivalent, false otherwise.
-	 */
-	public Boolean equals(Object other)
-	{
-		if (this === other)
-		{
-			return true;
-		}
-		
-		fflib_MethodArgValues that = other instanceof fflib_MethodArgValues ? (fflib_MethodArgValues)other : null;
-		return that != null && this.argValues == that.argValues;
-	}
-	
-	/**
-	 * Standard hashCode override.
-	 * @return Integer The generated hashCode
-	 */
-	public Integer hashCode()
-	{
-		Integer prime = 31;
-		Integer result = 1;
-		
-		result = prime * result + ((argValues == null) ? 0 : argValues.hashCode());
-		
-		return result;
-	}
+public with sharing class fflib_MethodArgValues {
+  public List<Object> argValues;
+
+  /**
+   * Wrapper object which encapsulates the argument values
+   * supplied during a given method call.
+   * @param argValues The
+   * @return fflib_MethodArgValues The method argument wrapper object
+   */
+  public fflib_MethodArgValues(List<Object> argValues) {
+    this.argValues = argValues;
+  }
+
+  /**
+   * Standard equals override.
+   * @param other The object whose equality we are verifying
+   * @return Boolean True if meaningfully equivalent, false otherwise.
+   */
+  public Boolean equals(Object other) {
+    if (this === other) {
+      return true;
+    }
+
+    fflib_MethodArgValues that = other instanceof fflib_MethodArgValues
+      ? (fflib_MethodArgValues) other
+      : null;
+    return that != null && this.argValues == that.argValues;
+  }
+
+  /**
+   * Standard hashCode override.
+   * @return Integer The generated hashCode
+   */
+  public Integer hashCode() {
+    Integer prime = 31;
+    Integer result = 1;
+
+    result = prime * result + ((argValues == null) ? 0 : argValues.hashCode());
+
+    return result;
+  }
 }
