@@ -1,66 +1,66 @@
-minimum_cumulusci_version: '3.41.0'
+minimum_cumulusci_version: "3.41.0"
 project:
-    name: DLRS
-    package:
-        name: Declarative Lookup Rollup Summaries Tool
-        namespace: dlrs
-        api_version: '48.0'
-    git:
-        repo_url: https://github.com/SFDO-Community/declarative-lookup-rollup-summaries
-        prefix_beta: beta/
-        prefix_release: release/
-        default_branch: main
-    source_format: sfdx
+  name: DLRS
+  package:
+    name: Declarative Lookup Rollup Summaries Tool
+    namespace: dlrs
+    api_version: "48.0"
+  git:
+    repo_url: https://github.com/SFDO-Community/declarative-lookup-rollup-summaries
+    prefix_beta: beta/
+    prefix_release: release/
+    default_branch: main
+  source_format: sfdx
 
 tasks:
-    deploy_test_config:
-        class_path: cumulusci.tasks.salesforce.Deploy
-        options:
-            path: unpackaged/config/test
+  deploy_test_config:
+    class_path: cumulusci.tasks.salesforce.Deploy
+    options:
+      path: unpackaged/config/test
 
-    robot:
-        options:
-            suites: robot/DLRS/tests
-            options:
-                outputdir: robot/DLRS/results
+  robot:
+    options:
+      suites: robot/DLRS/tests
+      options:
+        outputdir: robot/DLRS/results
 
-    robot_testdoc:
-        options:
-            path: robot/DLRS/tests
-            output: robot/DLRS/doc/DLRS_tests.html
+  robot_testdoc:
+    options:
+      path: robot/DLRS/tests
+      output: robot/DLRS/doc/DLRS_tests.html
 
-    run_tests:
-        options:
-            # Preserve existing code coverage level
-            required_org_code_coverage_percent: 87
-            retry_failures:
-                - "unable to obtain exclusive access to this record"
-                - "UNABLE_TO_LOCK_ROW"
-            retry_always: True
+  run_tests:
+    options:
+      # Preserve existing code coverage level
+      required_org_code_coverage_percent: 87
+      retry_failures:
+        - "unable to obtain exclusive access to this record"
+        - "UNABLE_TO_LOCK_ROW"
+      retry_always: True
 
 flows:
-    config_apextest:
-        steps:
-            3:
-                task: deploy_test_config
+  config_apextest:
+    steps:
+      3:
+        task: deploy_test_config
 
-    ci_beta:
-        steps:
-            1.5:
-                task: deploy_test_config
+  ci_beta:
+    steps:
+      1.5:
+        task: deploy_test_config
 
-    deploy_unmanaged:
-        steps:
-            0:
-                task: dx_convert_from
-                options:
-                    extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
-            3.1:
-                task: dx_push
+  deploy_unmanaged:
+    steps:
+      0:
+        task: dx_convert_from
+        options:
+          extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
+      3.1:
+        task: dx_push
 
-    deploy_packaging:
-        steps:
-            0:
-                task: dx_convert_from
-                options:
-                    extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
+  deploy_packaging:
+    steps:
+      0:
+        task: dx_convert_from
+        options:
+          extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"

@@ -24,63 +24,65 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @isTest
-public class fflib_ApexMocksUtilsTest
-{
-	public static Schema.FieldSet findAnyFieldSet()
-	{
-		for (Schema.SObjectType objectType : Schema.getGlobalDescribe().values())
-		{
-			for (Schema.FieldSet fs : objectType.getDescribe().FieldSets.getMap().values())
-			{
-				return fs;
-			}
-		}
+public class fflib_ApexMocksUtilsTest {
+  public static Schema.FieldSet findAnyFieldSet() {
+    for (Schema.SObjectType objectType : Schema.getGlobalDescribe().values()) {
+      for (
+        Schema.FieldSet fs : objectType.getDescribe()
+          .FieldSets.getMap()
+          .values()
+      ) {
+        return fs;
+      }
+    }
 
-		return null;
-	}
+    return null;
+  }
 
-	@isTest
-	private static void makeRelationship_returnsObjectsWithRelationFieldSet()
-	{
-		//Given
-		Account acc = new Account(
-			Id = fflib_IDGenerator.generate(Account.SObjectType),
-			Name = 'AccName',
-			NumberOfEmployees = 7
-		);
+  @isTest
+  private static void makeRelationship_returnsObjectsWithRelationFieldSet() {
+    //Given
+    Account acc = new Account(
+      Id = fflib_IDGenerator.generate(Account.SObjectType),
+      Name = 'AccName',
+      NumberOfEmployees = 7
+    );
 
-		Contact contact1 = new Contact(
-			Id = fflib_IDGenerator.generate(Contact.SObjectType),
-			DoNotCall = true
-		);
+    Contact contact1 = new Contact(
+      Id = fflib_IDGenerator.generate(Contact.SObjectType),
+      DoNotCall = true
+    );
 
-		Contact contact2 = new Contact(
-			Id = fflib_IDGenerator.generate(Contact.SObjectType),
-			DoNotCall = false
-		);
+    Contact contact2 = new Contact(
+      Id = fflib_IDGenerator.generate(Contact.SObjectType),
+      DoNotCall = false
+    );
 
-		//When
-		Account accWithRelationships = ((List<Account>)fflib_ApexMocksUtils.makeRelationship(
-			List<Account>.class,
-			new List<Account> { acc },
-			Contact.AccountId,
-			new List<List<Contact>> { new List<Contact> { contact1, contact2 }}
-		))[0];
+    //When
+    Account accWithRelationships = ((List<Account>) fflib_ApexMocksUtils.makeRelationship(
+      List<Account>.class,
+      new List<Account>{ acc },
+      Contact.AccountId,
+      new List<List<Contact>>{ new List<Contact>{ contact1, contact2 } }
+    ))[0];
 
-		//Then
-		System.assertEquals(acc.Id, accWithRelationships.Id);
-		System.assertEquals(acc.Name, accWithRelationships.Name);
-		System.assertEquals(acc.NumberOfEmployees, accWithRelationships.NumberOfEmployees);
-		
-		//Assert relationship fields
-		List<Contact> contacts = accWithRelationships.Contacts;
-		System.assertNotEquals(null, contacts);
-		System.assertEquals(2, contacts.size());
+    //Then
+    System.assertEquals(acc.Id, accWithRelationships.Id);
+    System.assertEquals(acc.Name, accWithRelationships.Name);
+    System.assertEquals(
+      acc.NumberOfEmployees,
+      accWithRelationships.NumberOfEmployees
+    );
 
-		System.assertEquals(contact1.Id, contacts[0].Id);
-		System.assertEquals(contact1.DoNotCall, contacts[0].DoNotCall);
+    //Assert relationship fields
+    List<Contact> contacts = accWithRelationships.Contacts;
+    System.assertNotEquals(null, contacts);
+    System.assertEquals(2, contacts.size());
 
-		System.assertEquals(contact2.Id, contacts[1].Id);
-		System.assertEquals(contact2.DoNotCall, contacts[1].DoNotCall);
-	}
+    System.assertEquals(contact1.Id, contacts[0].Id);
+    System.assertEquals(contact1.DoNotCall, contacts[0].DoNotCall);
+
+    System.assertEquals(contact2.Id, contacts[1].Id);
+    System.assertEquals(contact2.DoNotCall, contacts[1].DoNotCall);
+  }
 }
