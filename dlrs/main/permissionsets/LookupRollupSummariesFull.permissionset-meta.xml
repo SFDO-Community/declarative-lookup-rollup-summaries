@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
     <applicationVisibilities>
         <application>DeclarativeLookupRollupSummaries</application>
@@ -24,7 +24,8 @@
         <enabled>true</enabled>
         <name>LookupRollupSummary2__mdt</name>
     </customMetadataTypeAccesses>
-    <description>Provides full configuration access to the rollup summaries. This enabled Author Apex and API access to enable it to deploy the necessary Triggers via the Manage Child Trigger button.</description>
+    <description
+  >Provides full configuration access to the rollup summaries. This enabled Author Apex and API access to enable it to deploy the necessary Triggers via the Manage Child Trigger button.</description>
     <fieldPermissions>
         <editable>true</editable>
         <field>LookupRollupSummaryLog__c.ErrorMessage__c</field>
@@ -42,7 +43,8 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>LookupRollupSummaryScheduleItems__c.LookupRollupSummary2__c</field>
+        <field
+    >LookupRollupSummaryScheduleItems__c.LookupRollupSummary2__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>

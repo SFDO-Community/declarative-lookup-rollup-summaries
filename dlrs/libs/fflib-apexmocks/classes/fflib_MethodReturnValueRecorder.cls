@@ -27,95 +27,106 @@
 /**
  * @group Core
  */
-public with sharing class fflib_MethodReturnValueRecorder
-{
-	public Boolean Stubbing { get; set; }
+public with sharing class fflib_MethodReturnValueRecorder {
+  public Boolean Stubbing { get; set; }
 
-	public List<Exception> DoThrowWhenExceptions { get; set; }
+  public List<Exception> DoThrowWhenExceptions { get; set; }
 
-	/**
-	 * Map of matchers by method.
-	 *
-	 * Key: qualifiedMethod
-	 * Object: map of method return values by method.
-	 */
+  /**
+   * Map of matchers by method.
+   *
+   * Key: qualifiedMethod
+   * Object: map of method return values by method.
+   */
 
-	private Map<fflib_QualifiedMethod, List<fflib_MatchersReturnValue>> matcherReturnValuesByMethod;
+  private Map<fflib_QualifiedMethod, List<fflib_MatchersReturnValue>> matcherReturnValuesByMethod;
 
-	public fflib_MethodReturnValue MethodReturnValue { get; private set; }
+  public fflib_MethodReturnValue MethodReturnValue { get; private set; }
 
-	public fflib_MethodReturnValueRecorder()
-	{
-		matcherReturnValuesByMethod = new Map<fflib_QualifiedMethod, List<fflib_MatchersReturnValue>>();
+  public fflib_MethodReturnValueRecorder() {
+    matcherReturnValuesByMethod = new Map<fflib_QualifiedMethod, List<fflib_MatchersReturnValue>>();
 
-		MethodReturnValue = null;
-	}
+    MethodReturnValue = null;
+  }
 
-	/**
-	 * Prepare a stubbed method return value.
-	 * @param invocation The object holding all the data of the invocation, like the method and arguments and the mock instance.
-	 * @return The MethodReturnValue instance.
-	 */
-	public fflib_MethodReturnValue prepareMethodReturnValue(fflib_InvocationOnMock invocation)
-	{
-		MethodReturnValue = new fflib_MethodReturnValue();
+  /**
+   * Prepare a stubbed method return value.
+   * @param invocation The object holding all the data of the invocation, like the method and arguments and the mock instance.
+   * @return The MethodReturnValue instance.
+   */
+  public fflib_MethodReturnValue prepareMethodReturnValue(
+    fflib_InvocationOnMock invocation
+  ) {
+    MethodReturnValue = new fflib_MethodReturnValue();
 
-		List<fflib_MatchersReturnValue> matcherReturnValues = matcherReturnValuesByMethod.get(invocation.getMethod());
-		if (matcherReturnValues == null)
-		{
-			matcherReturnValues = new List<fflib_MatchersReturnValue>();
-			matcherReturnValuesByMethod.put(invocation.getMethod(), matcherReturnValues);
-		}
+    List<fflib_MatchersReturnValue> matcherReturnValues = matcherReturnValuesByMethod.get(
+      invocation.getMethod()
+    );
+    if (matcherReturnValues == null) {
+      matcherReturnValues = new List<fflib_MatchersReturnValue>();
+      matcherReturnValuesByMethod.put(
+        invocation.getMethod(),
+        matcherReturnValues
+      );
+    }
 
-		List<Object> argValues = invocation.getMethodArgValues().argValues;
+    List<Object> argValues = invocation.getMethodArgValues().argValues;
 
-		//Register explicit arg values as 'equals' matchers, to preserve old behaviour
-		if (!fflib_Match.Matching)
-		{
-			for (Object arg : argValues)
-			{
-				if (arg == null)
-					fflib_Match.isNull();
-				else
-					fflib_Match.eq(arg);
-			}
-		}
+    //Register explicit arg values as 'equals' matchers, to preserve old behaviour
+    if (!fflib_Match.Matching) {
+      for (Object arg : argValues) {
+        if (arg == null)
+          fflib_Match.isNull();
+        else
+          fflib_Match.eq(arg);
+      }
+    }
 
-		List<fflib_IMatcher> matchers = fflib_Match.getAndClearMatchers(argValues.size());
-		matcherReturnValues.add(new fflib_MatchersReturnValue(matchers, MethodReturnValue));
+    List<fflib_IMatcher> matchers = fflib_Match.getAndClearMatchers(
+      argValues.size()
+    );
+    matcherReturnValues.add(
+      new fflib_MatchersReturnValue(matchers, MethodReturnValue)
+    );
 
-		return MethodReturnValue;
-	}
+    return MethodReturnValue;
+  }
 
-	/**
-	 * Get the method return value for the given method call.
-	 * @param invocation The object holding all the data of the invocation, like the method and arguments and the mock instance.
-	 * @return The MethodReturnValue instance.
-	 */
-	public fflib_MethodReturnValue getMethodReturnValue(fflib_InvocationOnMock invocation)
-	{
-		List<fflib_MatchersReturnValue> matchersForMethods = matcherReturnValuesByMethod.get(invocation.getMethod());
-		if (matchersForMethods != null)
-		{
-			for (Integer i = matchersForMethods.size() - 1; i >= 0; i--)
-			{
-				fflib_MatchersReturnValue matchersReturnValue = (fflib_MatchersReturnValue)matchersForMethods.get(i);
-				if (fflib_Match.matchesAllArgs(invocation.getMethodArgValues(), matchersReturnValue.matchers))
-				{
-					return matchersReturnValue.ReturnValue;
-				}
-			}
-		}
+  /**
+   * Get the method return value for the given method call.
+   * @param invocation The object holding all the data of the invocation, like the method and arguments and the mock instance.
+   * @return The MethodReturnValue instance.
+   */
+  public fflib_MethodReturnValue getMethodReturnValue(
+    fflib_InvocationOnMock invocation
+  ) {
+    List<fflib_MatchersReturnValue> matchersForMethods = matcherReturnValuesByMethod.get(
+      invocation.getMethod()
+    );
+    if (matchersForMethods != null) {
+      for (Integer i = matchersForMethods.size() - 1; i >= 0; i--) {
+        fflib_MatchersReturnValue matchersReturnValue = (fflib_MatchersReturnValue) matchersForMethods.get(
+          i
+        );
+        if (
+          fflib_Match.matchesAllArgs(
+            invocation.getMethodArgValues(),
+            matchersReturnValue.matchers
+          )
+        ) {
+          return matchersReturnValue.ReturnValue;
+        }
+      }
+    }
 
-		return null;
-	}
+    return null;
+  }
 
-	/**
-	 * Prepare a stubbed exceptions for a void method.
-	 * @param exps The list of exception to throw.
-	 */
-	public void prepareDoThrowWhenExceptions(List<Exception> exps)
-	{
-		DoThrowWhenExceptions = exps;
-	}
+  /**
+   * Prepare a stubbed exceptions for a void method.
+   * @param exps The list of exception to throw.
+   */
+  public void prepareDoThrowWhenExceptions(List<Exception> exps) {
+    DoThrowWhenExceptions = exps;
+  }
 }

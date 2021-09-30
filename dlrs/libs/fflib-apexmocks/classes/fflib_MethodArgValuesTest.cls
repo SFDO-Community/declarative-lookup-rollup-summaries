@@ -24,85 +24,98 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @isTest
-public with sharing class fflib_MethodArgValuesTest
-{
-	@isTest
-	private static void equalsReturnsExpectedResults()
-	{
-		//Given
-		fflib_MethodArgValues qm1 = new fflib_MethodArgValues(new List<Object>{ 'hello' });
-		fflib_MethodArgValues qm2 = new fflib_MethodArgValues(new List<Object>{ 'hello' });
-		fflib_MethodArgValues qm3 = new fflib_MethodArgValues(new List<Object>{ 'hi' });
-		fflib_MethodArgValues qm4 = new fflib_MethodArgValues(new List<Object>{ 'hello', 'hello', 'hello' });
-		fflib_MethodArgValues qm5 = new fflib_MethodArgValues(new List<Object>());
-		fflib_MethodArgValues qm6 = new fflib_MethodArgValues(null);
+public with sharing class fflib_MethodArgValuesTest {
+  @isTest
+  private static void equalsReturnsExpectedResults() {
+    //Given
+    fflib_MethodArgValues qm1 = new fflib_MethodArgValues(
+      new List<Object>{ 'hello' }
+    );
+    fflib_MethodArgValues qm2 = new fflib_MethodArgValues(
+      new List<Object>{ 'hello' }
+    );
+    fflib_MethodArgValues qm3 = new fflib_MethodArgValues(
+      new List<Object>{ 'hi' }
+    );
+    fflib_MethodArgValues qm4 = new fflib_MethodArgValues(
+      new List<Object>{ 'hello', 'hello', 'hello' }
+    );
+    fflib_MethodArgValues qm5 = new fflib_MethodArgValues(new List<Object>());
+    fflib_MethodArgValues qm6 = new fflib_MethodArgValues(null);
 
-		//When/thens
-		System.assertEquals(qm1, qm1);
-		System.assertEquals(qm1, qm2);
-		System.assertNotEquals(qm1, qm3);
-		System.assertNotEquals(qm1, qm4);
-		System.assertNotEquals(qm1, qm5);
-		System.assertNotEquals(qm1, qm6);
+    //When/thens
+    System.assertEquals(qm1, qm1);
+    System.assertEquals(qm1, qm2);
+    System.assertNotEquals(qm1, qm3);
+    System.assertNotEquals(qm1, qm4);
+    System.assertNotEquals(qm1, qm5);
+    System.assertNotEquals(qm1, qm6);
 
-		System.assertEquals(qm2, qm2);
-		System.assertNotEquals(qm2, qm3);
-		System.assertNotEquals(qm2, qm4);
-		System.assertNotEquals(qm2, qm5);
-		System.assertNotEquals(qm2, qm6);
+    System.assertEquals(qm2, qm2);
+    System.assertNotEquals(qm2, qm3);
+    System.assertNotEquals(qm2, qm4);
+    System.assertNotEquals(qm2, qm5);
+    System.assertNotEquals(qm2, qm6);
 
-		System.assertEquals(qm3, qm3);
-		System.assertNotEquals(qm3, qm4);
-		System.assertNotEquals(qm3, qm5);
-		System.assertNotEquals(qm3, qm6);
+    System.assertEquals(qm3, qm3);
+    System.assertNotEquals(qm3, qm4);
+    System.assertNotEquals(qm3, qm5);
+    System.assertNotEquals(qm3, qm6);
 
-		System.assertEquals(qm4, qm4);
-		System.assertNotEquals(qm4, qm5);
-		System.assertNotEquals(qm4, qm6);
+    System.assertEquals(qm4, qm4);
+    System.assertNotEquals(qm4, qm5);
+    System.assertNotEquals(qm4, qm6);
 
-		System.assertEquals(qm5, qm5);
-		System.assertNotEquals(qm5, qm6);
+    System.assertEquals(qm5, qm5);
+    System.assertNotEquals(qm5, qm6);
 
-		System.assertEquals(qm6, qm6);
-	}
+    System.assertEquals(qm6, qm6);
+  }
 
-	@isTest
-	private static void hashCodeReturnsExpectedResults()
-	{
-		//Given
-		fflib_MethodArgValues qm1 = new fflib_MethodArgValues(new List<Object>{ 'hello' });
-		fflib_MethodArgValues qm2 = new fflib_MethodArgValues(new List<Object>{ 'hello' });
-		fflib_MethodArgValues qm3 = new fflib_MethodArgValues(new List<Object>{ 'hi' });
-		fflib_MethodArgValues qm4 = new fflib_MethodArgValues(new List<Object>{ 'hello', 'hello', 'hello' });
-		fflib_MethodArgValues qm5 = new fflib_MethodArgValues(new List<Object>());
-		fflib_MethodArgValues qm6 = new fflib_MethodArgValues(null);
+  @isTest
+  private static void hashCodeReturnsExpectedResults() {
+    //Given
+    fflib_MethodArgValues qm1 = new fflib_MethodArgValues(
+      new List<Object>{ 'hello' }
+    );
+    fflib_MethodArgValues qm2 = new fflib_MethodArgValues(
+      new List<Object>{ 'hello' }
+    );
+    fflib_MethodArgValues qm3 = new fflib_MethodArgValues(
+      new List<Object>{ 'hi' }
+    );
+    fflib_MethodArgValues qm4 = new fflib_MethodArgValues(
+      new List<Object>{ 'hello', 'hello', 'hello' }
+    );
+    fflib_MethodArgValues qm5 = new fflib_MethodArgValues(new List<Object>());
+    fflib_MethodArgValues qm6 = new fflib_MethodArgValues(null);
 
-		//When/thens
-		System.assertEquals(qm1.hashCode(), qm1.hashCode());
-		System.assertEquals(qm1.hashCode(), qm2.hashCode());
-		System.assertNotEquals(qm1.hashCode(), qm3.hashCode());
-		System.assertNotEquals(qm1.hashCode(), qm4.hashCode());
-		System.assertNotEquals(qm1.hashCode(), qm5.hashCode());
-		System.assertNotEquals(qm1.hashCode(), qm6.hashCode());
+    //When/thens
+    System.assertEquals(qm1.hashCode(), qm1.hashCode());
+    System.assertEquals(qm1.hashCode(), qm2.hashCode());
+    System.assertNotEquals(qm1.hashCode(), qm3.hashCode());
+    System.assertNotEquals(qm1.hashCode(), qm4.hashCode());
+    System.assertNotEquals(qm1.hashCode(), qm5.hashCode());
+    System.assertNotEquals(qm1.hashCode(), qm6.hashCode());
 
-		System.assertEquals(qm2.hashCode(), qm2.hashCode());
-		System.assertNotEquals(qm2.hashCode(), qm3.hashCode());
-		System.assertNotEquals(qm2.hashCode(), qm4.hashCode());
-		System.assertNotEquals(qm2.hashCode(), qm5.hashCode());
-		System.assertNotEquals(qm2.hashCode(), qm6.hashCode());
+    System.assertEquals(qm2.hashCode(), qm2.hashCode());
+    System.assertNotEquals(qm2.hashCode(), qm3.hashCode());
+    System.assertNotEquals(qm2.hashCode(), qm4.hashCode());
+    System.assertNotEquals(qm2.hashCode(), qm5.hashCode());
+    System.assertNotEquals(qm2.hashCode(), qm6.hashCode());
 
-		System.assertEquals(qm3.hashCode(), qm3.hashCode());
-		System.assertNotEquals(qm3.hashCode(), qm4.hashCode());
-		System.assertNotEquals(qm3.hashCode(), qm5.hashCode());
-		System.assertNotEquals(qm3.hashCode(), qm6.hashCode());
+    System.assertEquals(qm3.hashCode(), qm3.hashCode());
+    System.assertNotEquals(qm3.hashCode(), qm4.hashCode());
+    System.assertNotEquals(qm3.hashCode(), qm5.hashCode());
+    System.assertNotEquals(qm3.hashCode(), qm6.hashCode());
 
-		System.assertEquals(qm4.hashCode(), qm4.hashCode());
-		System.assertNotEquals(qm4.hashCode(), qm5.hashCode());
-		System.assertNotEquals(qm4.hashCode(), qm6.hashCode());
+    System.assertEquals(qm4.hashCode(), qm4.hashCode());
+    System.assertNotEquals(qm4.hashCode(), qm5.hashCode());
+    System.assertNotEquals(qm4.hashCode(), qm6.hashCode());
 
-		System.assertEquals(qm5.hashCode(), qm5.hashCode());
-		System.assertNotEquals(qm5.hashCode(), qm6.hashCode());
+    System.assertEquals(qm5.hashCode(), qm5.hashCode());
+    System.assertNotEquals(qm5.hashCode(), qm6.hashCode());
 
-		System.assertEquals(qm6.hashCode(), qm6.hashCode());
-	}
+    System.assertEquals(qm6.hashCode(), qm6.hashCode());
+  }
 }

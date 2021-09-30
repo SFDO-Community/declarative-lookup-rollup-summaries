@@ -24,33 +24,31 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 @isTest
-private class fflib_IDGeneratorTest
-{
-	@isTest
-	static void itShouldGenerateValidIDs()
-	{
-		String id1 = fflib_IDGenerator.generate(Account.SObjectType);
-		String id2 = fflib_IDGenerator.generate(Account.SObjectType);
-		String id3 = fflib_IDGenerator.generate(Account.SObjectType);
-		String id4 = fflib_IDGenerator.generate(Account.SObjectType);
-		String id5 = fflib_IDGenerator.generate(Account.SObjectType);
-		String id6 = fflib_IDGenerator.generate(Account.SObjectType);
-		String id7 = fflib_IDGenerator.generate(Account.SObjectType);
-		String id8 = fflib_IDGenerator.generate(Account.SObjectType);
-		String id9 = fflib_IDGenerator.generate(Account.SObjectType);
-		String id10 = fflib_IDGenerator.generate(Account.SObjectType);
-		String id11 = fflib_IDGenerator.generate(Account.SObjectType);
+private class fflib_IDGeneratorTest {
+  @isTest
+  static void itShouldGenerateValidIDs() {
+    String id1 = fflib_IDGenerator.generate(Account.SObjectType);
+    String id2 = fflib_IDGenerator.generate(Account.SObjectType);
+    String id3 = fflib_IDGenerator.generate(Account.SObjectType);
+    String id4 = fflib_IDGenerator.generate(Account.SObjectType);
+    String id5 = fflib_IDGenerator.generate(Account.SObjectType);
+    String id6 = fflib_IDGenerator.generate(Account.SObjectType);
+    String id7 = fflib_IDGenerator.generate(Account.SObjectType);
+    String id8 = fflib_IDGenerator.generate(Account.SObjectType);
+    String id9 = fflib_IDGenerator.generate(Account.SObjectType);
+    String id10 = fflib_IDGenerator.generate(Account.SObjectType);
+    String id11 = fflib_IDGenerator.generate(Account.SObjectType);
 
-		System.assertEquals('001000000000001AAA', id1);
-		System.assertEquals('001000000000002AAA', id2);
-		System.assertEquals('001000000000003AAA', id3);
-		System.assertEquals('001000000000004AAA', id4);
-		System.assertEquals('001000000000005AAA', id5);
-		System.assertEquals('001000000000006AAA', id6);
-		System.assertEquals('001000000000007AAA', id7);
-		System.assertEquals('001000000000008AAA', id8);
-		System.assertEquals('001000000000009AAA', id9);
-		System.assertEquals('001000000000010AAA', id10);
-		System.assertEquals('001000000000011AAA', id11);
-	}
+    System.assertEquals('001000000000001AAA', id1);
+    System.assertEquals('001000000000002AAA', id2);
+    System.assertEquals('001000000000003AAA', id3);
+    System.assertEquals('001000000000004AAA', id4);
+    System.assertEquals('001000000000005AAA', id5);
+    System.assertEquals('001000000000006AAA', id6);
+    System.assertEquals('001000000000007AAA', id7);
+    System.assertEquals('001000000000008AAA', id8);
+    System.assertEquals('001000000000009AAA', id9);
+    System.assertEquals('001000000000010AAA', id10);
+    System.assertEquals('001000000000011AAA', id11);
+  }
 }

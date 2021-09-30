@@ -1,39 +1,49 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
     <labels>
-        <fullName>fflib_QueryFactory_crossobject_fieldsets_not_allowed_error</fullName>
+        <fullName
+    >fflib_QueryFactory_crossobject_fieldsets_not_allowed_error</fullName>
         <language>en_US</language>
         <protected>false</protected>
-        <shortDescription>Error when selecting a cross-object fieldsset is not allowed and attempted.</shortDescription>
-        <value>Cross-object fields not allowed and field &quot;{0}&quot; is a cross-object field.</value>
+        <shortDescription
+    >Error when selecting a cross-object fieldsset is not allowed and attempted.</shortDescription>
+        <value
+    >Cross-object fields not allowed and field &quot;{0}&quot; is a cross-object field.</value>
     </labels>
     <labels>
         <fullName>fflib_QueryFactory_fieldset_wrong_sobject_error</fullName>
         <language>en_US</language>
         <protected>false</protected>
-        <shortDescription>Error when selecting a field set for a different sobject type.</shortDescription>
-        <value>Field set &quot;{0}&quot; is not for SObject type &quot;{1}&quot;</value>
+        <shortDescription
+    >Error when selecting a field set for a different sobject type.</shortDescription>
+        <value
+    >Field set &quot;{0}&quot; is not for SObject type &quot;{1}&quot;</value>
     </labels>
     <labels>
         <fullName>fflib_QueryFactory_recursive_subquery_error</fullName>
         <language>en_US</language>
         <protected>false</protected>
-        <shortDescription>Presented when attempting to nest subqueries.</shortDescription>
-        <value>Invalid call to subselectQuery.  You may not add a subselect query to a subselect query.</value>
+        <shortDescription
+    >Presented when attempting to nest subqueries.</shortDescription>
+        <value
+    >Invalid call to subselectQuery.  You may not add a subselect query to a subselect query.</value>
     </labels>
     <labels>
         <fullName>fflib_QueryFactory_subquery_invalid_relationship</fullName>
         <language>en_US</language>
         <protected>false</protected>
-        <shortDescription>Presented when attempting to create a subquery from an invalid relationship.</shortDescription>
-        <value>Invalid call to subselectQuery.  Invalid relationship for table.</value>
+        <shortDescription
+    >Presented when attempting to create a subquery from an invalid relationship.</shortDescription>
+        <value
+    >Invalid call to subselectQuery.  Invalid relationship for table.</value>
     </labels>
     <labels>
         <fullName>fflib_security_error_field_not_insertable</fullName>
         <categories>security,error</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>fflib_security_error_field_not_insertable</shortDescription>
+        <shortDescription
+    >fflib_security_error_field_not_insertable</shortDescription>
         <value>You do not have permission to insert field {1} on {0}</value>
     </labels>
     <labels>
@@ -41,7 +51,8 @@
         <categories>security,error</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>fflib_security_error_field_not_readable</shortDescription>
+        <shortDescription
+    >fflib_security_error_field_not_readable</shortDescription>
         <value>You do not have permission to read the field {1} on {0}</value>
     </labels>
     <labels>
@@ -49,14 +60,16 @@
         <categories>security,error</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>fflib_security_error_field_not_updateable</shortDescription>
+        <shortDescription
+    >fflib_security_error_field_not_updateable</shortDescription>
         <value>You do not have permission to update the field {1} on {0}</value>
     </labels>
     <labels>
         <fullName>fflib_security_error_object_not_deletable</fullName>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>fflib_security_error_object_not_deletable</shortDescription>
+        <shortDescription
+    >fflib_security_error_object_not_deletable</shortDescription>
         <value>You do not have permission to delete {0}</value>
     </labels>
     <labels>
@@ -64,7 +77,8 @@
         <categories>security,error</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>fflib_security_error_object_not_insertable</shortDescription>
+        <shortDescription
+    >fflib_security_error_object_not_insertable</shortDescription>
         <value>You do not have permission to insert {0}</value>
     </labels>
     <labels>
@@ -72,7 +86,8 @@
         <categories>security,error</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>fflib_security_error_object_not_readable</shortDescription>
+        <shortDescription
+    >fflib_security_error_object_not_readable</shortDescription>
         <value>You do not have permission to read {0}</value>
     </labels>
     <labels>
@@ -80,7 +95,8 @@
         <categories>security,error</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>fflib_security_error_object_not_updateable</shortDescription>
+        <shortDescription
+    >fflib_security_error_object_not_updateable</shortDescription>
         <value>You do not have permission to update {0}</value>
     </labels>
 </CustomLabels>
