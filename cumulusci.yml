@@ -59,11 +59,11 @@ flows:
         task: dx_push
 
   deploy_packaging:
-      steps:
-          0:
-              task: dx_convert_from
-              options:
-                  extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
+    steps:
+        0:
+            task: dx_convert_from
+            options:
+                extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
 
 orgs:
     scratch:
