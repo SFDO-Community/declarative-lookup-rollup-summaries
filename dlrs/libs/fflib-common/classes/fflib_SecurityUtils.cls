@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, FinancialForce.com, inc
+ * Copyright (c), FinancialForce.com, inc
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -29,7 +29,7 @@
  * user does not have the proper security granted.
  **/
 public class fflib_SecurityUtils {
-  @testVisible
+  @TestVisible
   private enum OperationType {
     CREATE,
     READ,
@@ -39,7 +39,7 @@ public class fflib_SecurityUtils {
 
   /**
    * SecurityException is never be thrown directly by fflib_SecurityUtils, instead all
-   * forms of CRUD and FLD violations throw subclasses of it. It is provided as a conveneience
+   * forms of CRUD and FLD violations throw subclasses of it. It is provided as a convenience
    * in the event you wish to handle CRUD and FLS violations the same way (e.g. die and display an error)
    **/
   public virtual class SecurityException extends Exception {
@@ -119,7 +119,7 @@ public class fflib_SecurityUtils {
    * FLS and CRUD checks exists and is enabled.
    * Per security best practices setting BYPASS should be an a opt-in, and not the default behavior.
    **/
-  public static boolean BYPASS_INTERNAL_FLS_AND_CRUD = false;
+  public static Boolean BYPASS_INTERNAL_FLS_AND_CRUD = false;
 
   /**
    * Check{Insert,Read,Update} methods check both FLS and CRUD
@@ -345,7 +345,7 @@ public class fflib_SecurityUtils {
 
   /**
    * Checks insert CRUD for the specified object type.
-   * @exception CrudException if the running uder does not have insert rights to the {@code objType} SObject.
+   * @exception CrudException if the running user does not have insert rights to the {@code objType} SObject.
    **/
   public static void checkObjectIsInsertable(SObjectType objType) {
     if (BYPASS_INTERNAL_FLS_AND_CRUD)
@@ -357,7 +357,7 @@ public class fflib_SecurityUtils {
 
   /**
    * Checks read CRUD for the specified object type.
-   * @exception CrudException if the running uder does not have read rights to the {@code objType} SObject.
+   * @exception CrudException if the running user does not have read rights to the {@code objType} SObject.
    **/
   public static void checkObjectIsReadable(SObjectType objType) {
     if (BYPASS_INTERNAL_FLS_AND_CRUD)
@@ -368,7 +368,7 @@ public class fflib_SecurityUtils {
 
   /**
    * Checks update CRUD for the specified object type.
-   * @exception CrudException if the running uder does not have update rights to the {@code objType} SObject.
+   * @exception CrudException if the running user does not have update rights to the {@code objType} SObject.
    **/
   public static void checkObjectIsUpdateable(SObjectType objType) {
     if (BYPASS_INTERNAL_FLS_AND_CRUD)
@@ -379,7 +379,7 @@ public class fflib_SecurityUtils {
 
   /**
    * Checks delete CRUD for the specified object type.
-   * @exception CrudException if the running uder does not have delete rights to the {@code objType} SObject.
+   * @exception CrudException if the running user does not have delete rights to the {@code objType} SObject.
    **/
   public static void checkObjectIsDeletable(SObjectType objType) {
     if (BYPASS_INTERNAL_FLS_AND_CRUD)
