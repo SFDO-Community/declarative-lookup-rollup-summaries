@@ -39,14 +39,14 @@ tasks:
       retry_always: True
 
 flows:
-  config_apextest:
-    steps:
-      3:
-        task: deploy_test_config
-
   ci_beta:
     steps:
       1.5:
+        task: deploy_test_config
+
+  config_apextest:
+    steps:
+      3:
         task: deploy_test_config
 
   deploy_unmanaged:
@@ -66,10 +66,10 @@ flows:
           extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
 
 orgs:
-    scratch:
-        dev_prerelease:
-            config_file: orgs/dev_prerelease.json
-            days: 7
-        beta_prerelease:
-            config_file: orgs/beta_prerelease.json
-            days: 7
+  scratch:
+    dev_prerelease:
+      config_file: orgs/dev_prerelease.json
+      days: 7
+    beta_prerelease:
+      config_file: orgs/beta_prerelease.json
+      days: 7
