@@ -49,6 +49,13 @@ flows:
       3:
         task: deploy_test_config
 
+  customer_org:
+    steps:
+      1:
+        task: install_managed
+        options:
+          security_type: NONE
+
   deploy_unmanaged:
     steps:
       0:
