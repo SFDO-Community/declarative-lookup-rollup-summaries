@@ -185,6 +185,7 @@ public class RollupSummariesSelector {
       for (RollupSummaries.CalculationMode calculationMode : calculationModes)
         calculationModeNames.add(calculationMode.name());
       return RollupSummary.toList(
+        //TODO: use custom metadata getAll() insetad
         Database.query(
           newQueryFactory()
             .setCondition(
@@ -210,6 +211,7 @@ public class RollupSummariesSelector {
       Set<String> uniqueNames
     ) {
       return RollupSummary.toList(
+        //TODO: use custom metadata getAll() insetad
         Database.query(
           newQueryFactory()
             .setCondition('UniqueName__c in :uniqueNames and Active__c = true')
@@ -231,6 +233,7 @@ public class RollupSummariesSelector {
      **/
     public List<RollupSummary> selectByUniqueName(Set<String> uniqueNames) {
       return RollupSummary.toList(
+        //TODO: use custom metadata getAll() insetad
         Database.query(
           newQueryFactory()
             .setCondition('UniqueName__c in :uniqueNames')
@@ -300,6 +303,7 @@ public class RollupSummariesSelector {
 
     public List<RollupSummary> selectById(Set<String> idSet) {
       return RollupSummary.toList(
+        //TODO: use custom metadata getAll() insetad
         Database.query(newQueryFactory().setCondition('id in :idSet').toSOQL())
       );
     }
@@ -307,6 +311,7 @@ public class RollupSummariesSelector {
     public List<RollupSummary> selectByDeveloperName(Set<String> idSet) {
       String developerName = new List<String>(idSet)[0];
       return RollupSummary.toList(
+        //TODO: use custom metadata getAll() insetad
         Database.query(
           newQueryFactory()
             .setCondition('DeveloperName = :developerName')
@@ -339,6 +344,7 @@ public class RollupSummariesSelector {
       for (RollupSummaries.CalculationMode calculationMode : calculationModes)
         calculationModeNames.add(calculationMode.name());
       return RollupSummary.toList(
+        //TODO: use custom metadata getAll() insetad
         Database.query(
           newQueryFactory()
             .setCondition(
@@ -364,6 +370,7 @@ public class RollupSummariesSelector {
       Set<String> uniqueNames
     ) {
       return RollupSummary.toList(
+        //TODO: use custom metadata getAll() insetad
         Database.query(
           newQueryFactory()
             .setCondition('DeveloperName in :uniqueNames and Active__c = true')
@@ -384,16 +391,22 @@ public class RollupSummariesSelector {
      * Select all
      **/
     public List<RollupSummary> selectAll() {
-      return RollupSummary.toList(
-        Database.query(
-          newQueryFactory()
-            .addOrdering(
-              LookupRollupSummary2__mdt.Label,
-              fflib_QueryFactory.SortOrder.ASCENDING
-            )
-            .toSOQL()
-        )
-      );
+      if(this.forEdit) {
+        return RollupSummary.toList(
+          Database.query(
+            newQueryFactory()
+              .addOrdering(
+                LookupRollupSummary2__mdt.Label,
+                fflib_QueryFactory.SortOrder.ASCENDING
+              )
+              .toSOQL()
+          )
+        );
+      } else {
+        return RollupSummary.toList(
+          LookupRollupSummary2__mdt.getAll().values()
+        );
+      }
     }
   }
 }
