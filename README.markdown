@@ -18,6 +18,8 @@ Please refer to the blog posts below for more detailed information.
 
 This is a community driven tool, please help support it, share your experiences in this [Chatter group](https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p).
 
+This project is in part contributed to as part of the Salesforce.org Open Source Commons community sprint events. This [GitHub repo]  (https://github.com/SFDO-Community-Sprints/DLRS-Community-Sprints) tracks the current work being done for Documentation and UX improvement efforts.
+
 ## Documentation
 
 In addition to the [Wiki](https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki) the tool has been featured in a number of blog entries as it has evolved...
