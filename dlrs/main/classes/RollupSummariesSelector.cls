@@ -303,22 +303,44 @@ public class RollupSummariesSelector {
     }
 
     public List<RollupSummary> selectById(Set<String> idSet) {
-      return RollupSummary.toList(
-        //TODO: use custom metadata getAll() insetad
-        Database.query(newQueryFactory().setCondition('id in :idSet').toSOQL())
-      );
+      if(this.forEdit) {
+        return RollupSummary.toList(
+          this.getLookupRollupSummaries(
+            newQueryFactory().setCondition('id in :idSet').toSOQL(),
+            new List<Object>{ idSet }
+          )
+        );
+      } else {
+        List<RollupSummary> summaries = new List<RollupSummary>();
+        List<SObject> records = new List<SObject>();
+        for (String idVal : idSet ) {
+          SObject record = this.getLookupRollupSummaryByDeveloperNameOrId(idVal);
+          records.add(record);
+        }
+
+        return RollupSummary.toList(records);
+      }
     }
 
-    public List<RollupSummary> selectByDeveloperName(Set<String> idSet) {
-      String developerName = new List<String>(idSet)[0];
-      return RollupSummary.toList(
-        //TODO: use custom metadata getAll() insetad
-        Database.query(
-          newQueryFactory()
-            .setCondition('DeveloperName = :developerName')
-            .toSOQL()
-        )
-      );
+    public List<RollupSummary> selectByDeveloperName(Set<String> developerNames) {
+      String developerName = new List<String>(developerNames)[0];
+      if(this.forEdit) {
+        return RollupSummary.toList(
+          this.getLookupRollupSummaries(
+            newQueryFactory()
+              .setCondition('DeveloperName = :developerName')
+              .toSOQL(),
+            new List<Object>{ developerName }
+          )
+        );
+      } else {
+        List<RollupSummary> summaries = new List<RollupSummary>();
+        List<SObject> records = new List<SObject>();
+        records.add(
+          this.getLookupRollupSummaryByDeveloperNameOrId(developerName)
+        );
+        return RollupSummary.toList(records);
+      }
     }
 
     /**
@@ -344,24 +366,46 @@ public class RollupSummariesSelector {
       List<String> calculationModeNames = new List<String>();
       for (RollupSummaries.CalculationMode calculationMode : calculationModes)
         calculationModeNames.add(calculationMode.name());
-      return RollupSummary.toList(
-        //TODO: use custom metadata getAll() insetad
-        Database.query(
-          newQueryFactory()
-            .setCondition(
-              'CalculationMode__c in :calculationModeNames and ChildObject__c in :childObjectNames and Active__c = true'
-            )
-            .addOrdering(
-              LookupRollupSummary2__mdt.ParentObject__c,
-              fflib_QueryFactory.SortOrder.ASCENDING
-            )
-            .addOrdering(
-              LookupRollupSummary2__mdt.RelationshipField__c,
-              fflib_QueryFactory.SortOrder.ASCENDING
-            )
-            .toSOQL()
-        )
-      );
+      if(this.forEdit) {
+        return RollupSummary.toList(
+          this.getLookupRollupSummaries(
+            newQueryFactory()
+              .setCondition(
+                'CalculationMode__c in :calculationModeNames and ChildObject__c in :childObjectNames and Active__c = true'
+              )
+              .addOrdering(
+                LookupRollupSummary2__mdt.ParentObject__c,
+                fflib_QueryFactory.SortOrder.ASCENDING
+              )
+              .addOrdering(
+                LookupRollupSummary2__mdt.RelationshipField__c,
+                fflib_QueryFactory.SortOrder.ASCENDING
+              )
+              .toSOQL(),
+            new List<Object>{calculationModeNames, childObjectNames}
+          )
+        );
+      } else {
+        List<RollupSummary> summaries = RollupSummary.toList(
+          this.getLookupRollupSummaries()
+        );
+
+        List<RollupSummary> filteredSummaries = new List<RollupSummary>();
+
+        for (RollupSummary summary : summaries ) {
+          SObject record = summary.Record;
+          if(
+            record != null
+            && (Boolean)record.get('Active__c')
+            && calculationModeNames.contains((String)record.get('CalculationMode__c'))
+            && childObjectNames.contains((String)record.get('ChildObject__c'))
+          ) {
+            filteredSummaries.add(summary);
+          }
+        }
+
+        return sortSummaries(filteredSummaries, 'ParentObject__c', 'RelationshipField__c');
+      }
     }
 
     /**
@@ -394,7 +438,7 @@ public class RollupSummariesSelector {
         List<RollupSummary> summaries = new List<RollupSummary>();
         List<SObject> records = new List<SObject>();
         for (String uniqueName : uniqueNames ) {
-          SObject record = getLookupRollupSummaryByDeveloperName(uniqueName);
+          SObject record = getLookupRollupSummaryByDeveloperNameOrId(uniqueName);
           if(record != null && (Boolean)record.get('Active__c')) {
             records.add(record);
           }
@@ -441,8 +485,8 @@ public class RollupSummariesSelector {
       return LookupRollupSummary2__mdt.getAll().values();
     }
 
-    protected virtual SObject getLookupRollupSummaryByDeveloperName(String developerName) {
-      return LookupRollupSummary2__mdt.getInstance(developerName);
+    protected virtual SObject getLookupRollupSummaryByDeveloperNameOrId(String developerNameOrId) {
+      return LookupRollupSummary2__mdt.getInstance(developerNameOrId);
     }
 
     private List<RollupSummary> sortSummaries(List<RollupSummary> summaries, String sortField, String sortFieldSecondary) {
