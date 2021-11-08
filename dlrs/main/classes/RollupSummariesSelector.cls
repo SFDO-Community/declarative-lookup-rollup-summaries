@@ -303,7 +303,7 @@ public class RollupSummariesSelector {
     }
 
     public List<RollupSummary> selectById(Set<String> idSet) {
-      if(this.forEdit) {
+      if (this.forEdit) {
         return RollupSummary.toList(
           this.getLookupRollupSummaries(
             newQueryFactory().setCondition('id in :idSet').toSOQL(),
@@ -313,8 +313,10 @@ public class RollupSummariesSelector {
       } else {
         List<RollupSummary> summaries = new List<RollupSummary>();
         List<SObject> records = new List<SObject>();
-        for (String idVal : idSet ) {
-          SObject record = this.getLookupRollupSummaryByDeveloperNameOrId(idVal);
+        for (String idVal : idSet) {
+          SObject record = this.getLookupRollupSummaryByDeveloperNameOrId(
+            idVal
+          );
           records.add(record);
         }
 
@@ -322,9 +324,11 @@ public class RollupSummariesSelector {
       }
     }
 
-    public List<RollupSummary> selectByDeveloperName(Set<String> developerNames) {
+    public List<RollupSummary> selectByDeveloperName(
+      Set<String> developerNames
+    ) {
       String developerName = new List<String>(developerNames)[0];
-      if(this.forEdit) {
+      if (this.forEdit) {
         return RollupSummary.toList(
           this.getLookupRollupSummaries(
             newQueryFactory()
@@ -366,7 +370,7 @@ public class RollupSummariesSelector {
       List<String> calculationModeNames = new List<String>();
       for (RollupSummaries.CalculationMode calculationMode : calculationModes)
         calculationModeNames.add(calculationMode.name());
-      if(this.forEdit) {
+      if (this.forEdit) {
         return RollupSummary.toList(
           this.getLookupRollupSummaries(
             newQueryFactory()
@@ -382,7 +386,7 @@ public class RollupSummariesSelector {
                 fflib_QueryFactory.SortOrder.ASCENDING
               )
               .toSOQL(),
-            new List<Object>{calculationModeNames, childObjectNames}
+            new List<Object>{ calculationModeNames, childObjectNames }
           )
         );
       } else {
@@ -392,19 +396,25 @@ public class RollupSummariesSelector {
 
         List<RollupSummary> filteredSummaries = new List<RollupSummary>();
 
-        for (RollupSummary summary : summaries ) {
+        for (RollupSummary summary : summaries) {
           SObject record = summary.Record;
-          if(
-            record != null
-            && (Boolean)record.get('Active__c')
-            && calculationModeNames.contains((String)record.get('CalculationMode__c'))
-            && childObjectNames.contains((String)record.get('ChildObject__c'))
+          if (
+            record != null &&
+            (Boolean) record.get('Active__c') &&
+            calculationModeNames.contains(
+              (String) record.get('CalculationMode__c')
+            ) &&
+            childObjectNames.contains((String) record.get('ChildObject__c'))
           ) {
             filteredSummaries.add(summary);
           }
         }
 
-        return sortSummaries(filteredSummaries, 'ParentObject__c', 'RelationshipField__c');
+        return sortSummaries(
+          filteredSummaries,
+          'ParentObject__c',
+          'RelationshipField__c'
+        );
       }
     }
 
@@ -414,8 +424,7 @@ public class RollupSummariesSelector {
     public List<RollupSummary> selectActiveByUniqueName(
       Set<String> uniqueNames
     ) {
-
-      if(this.forEdit) {
+      if (this.forEdit) {
         return RollupSummary.toList(
           this.getLookupRollupSummaries(
             newQueryFactory()
@@ -429,23 +438,26 @@ public class RollupSummariesSelector {
                 fflib_QueryFactory.SortOrder.ASCENDING
               )
               .toSOQL(),
-            new List<Object> {
-              uniqueNames
-            }
+            new List<Object>{ uniqueNames }
           )
         );
       } else {
         List<RollupSummary> summaries = new List<RollupSummary>();
         List<SObject> records = new List<SObject>();
-        for (String uniqueName : uniqueNames ) {
-          SObject record = getLookupRollupSummaryByDeveloperNameOrId(uniqueName);
-          if(record != null && (Boolean)record.get('Active__c')) {
+        for (String uniqueName : uniqueNames) {
+          SObject record = getLookupRollupSummaryByDeveloperNameOrId(
+            uniqueName
+          );
+          if (record != null && (Boolean) record.get('Active__c')) {
             records.add(record);
           }
         }
-        
 
-        return sortSummaries(RollupSummary.toList(records), 'ParentObject__c', 'RelationshipField__c');
+        return sortSummaries(
+          RollupSummary.toList(records),
+          'ParentObject__c',
+          'RelationshipField__c'
+        );
       }
     }
 
@@ -453,7 +465,7 @@ public class RollupSummariesSelector {
      * Select all
      **/
     public List<RollupSummary> selectAll() {
-      if(this.forEdit) {
+      if (this.forEdit) {
         return RollupSummary.toList(
           this.getLookupRollupSummaries(
             newQueryFactory()
@@ -474,7 +486,10 @@ public class RollupSummariesSelector {
       }
     }
 
-    protected virtual List<SObject> getLookupRollupSummaries(String queryString, List<Object> tmpVars) {
+    protected virtual List<SObject> getLookupRollupSummaries(
+      String queryString,
+      List<Object> tmpVars
+    ) {
       Object tmpVar1 = tmpVars.size() > 0 ? tmpVars[0] : null;
       Object tmpVar2 = tmpVars.size() > 1 ? tmpVars[1] : null;
 
@@ -485,21 +500,29 @@ public class RollupSummariesSelector {
       return LookupRollupSummary2__mdt.getAll().values();
     }
 
-    protected virtual SObject getLookupRollupSummaryByDeveloperNameOrId(String developerNameOrId) {
+    protected virtual SObject getLookupRollupSummaryByDeveloperNameOrId(
+      String developerNameOrId
+    ) {
       return LookupRollupSummary2__mdt.getInstance(developerNameOrId);
     }
 
-    private List<RollupSummary> sortSummaries(List<RollupSummary> summaries, String sortField, String sortFieldSecondary) {
+    private List<RollupSummary> sortSummaries(
+      List<RollupSummary> summaries,
+      String sortField,
+      String sortFieldSecondary
+    ) {
       List<RollupSummaryComparable> rollupSummaryComparables = new List<RollupSummaryComparable>();
-      for(RollupSummary summary : summaries) {
-        rollupSummaryComparables.add(new RollupSummaryComparable(summary, sortField, sortFieldSecondary));
+      for (RollupSummary summary : summaries) {
+        rollupSummaryComparables.add(
+          new RollupSummaryComparable(summary, sortField, sortFieldSecondary)
+        );
       }
 
       rollupSummaryComparables.sort();
 
       List<RollupSummary> sortedSummaries = new List<RollupSummary>();
-      
-      for(RollupSummaryComparable comparable : rollupSummaryComparables) {
+
+      for (RollupSummaryComparable comparable : rollupSummaryComparables) {
         sortedSummaries.add(comparable.summary);
       }
 
@@ -513,32 +536,52 @@ public class RollupSummariesSelector {
     private String sortOrder;
     private String fieldToSortOnSecondary;
 
-    private RollupSummaryComparable(RollupSummary summary, String fieldToSortOn, String fieldToSortOnSecondary) {
-        this.summary = summary;
-        this.fieldToSortOn = fieldToSortOn;
-        this.fieldToSortOnSecondary = fieldToSortOnSecondary;
+    private RollupSummaryComparable(
+      RollupSummary summary,
+      String fieldToSortOn,
+      String fieldToSortOnSecondary
+    ) {
+      this.summary = summary;
+      this.fieldToSortOn = fieldToSortOn;
+      this.fieldToSortOnSecondary = fieldToSortOnSecondary;
     }
 
     public Integer compareTo(Object compareTo) {
-        RollupSummaryComparable compareToSummary = (RollupSummaryComparable)compareTo;
-        
-        // The return value of 0 indicates that both elements are equal.
-        Integer returnValue = 0;
-        if (String.valueOf(this.summary.record.get(this.fieldToSortOn)) > String.valueOf(compareToSummary.summary.record.get(this.fieldToSortOn))) {
-            // Set return value to a positive value.
-            returnValue = 1;
-        } else if (String.valueOf(this.summary.record.get(this.fieldToSortOn)) < String.valueOf(compareToSummary.summary.record.get(this.fieldToSortOn))) {
-            // Set return value to a negative value.
-            returnValue = -1;
-        } else if (this.fieldToSortOnSecondary != null) {
-          // First value the same, consider second value
-          if (String.valueOf(this.summary.record.get(this.fieldToSortOnSecondary)) > String.valueOf(compareToSummary.summary.record.get(this.fieldToSortOnSecondary))) {
-              return 1;
-          } else if (String.valueOf(this.summary.record.get(this.fieldToSortOnSecondary)) < String.valueOf(compareToSummary.summary.record.get(this.fieldToSortOnSecondary))) {
-              return -1;
-          }
+      RollupSummaryComparable compareToSummary = (RollupSummaryComparable) compareTo;
+
+      // The return value of 0 indicates that both elements are equal.
+      Integer returnValue = 0;
+      if (
+        String.valueOf(this.summary.record.get(this.fieldToSortOn)) >
+        String.valueOf(compareToSummary.summary.record.get(this.fieldToSortOn))
+      ) {
+        // Set return value to a positive value.
+        returnValue = 1;
+      } else if (
+        String.valueOf(this.summary.record.get(this.fieldToSortOn)) <
+        String.valueOf(compareToSummary.summary.record.get(this.fieldToSortOn))
+      ) {
+        // Set return value to a negative value.
+        returnValue = -1;
+      } else if (this.fieldToSortOnSecondary != null) {
+        // First value the same, consider second value
+        if (
+          String.valueOf(this.summary.record.get(this.fieldToSortOnSecondary)) >
+          String.valueOf(
+            compareToSummary.summary.record.get(this.fieldToSortOnSecondary)
+          )
+        ) {
+          return 1;
+        } else if (
+          String.valueOf(this.summary.record.get(this.fieldToSortOnSecondary)) <
+          String.valueOf(
+            compareToSummary.summary.record.get(this.fieldToSortOnSecondary)
+          )
+        ) {
+          return -1;
         }
-        return returnValue;
+      }
+      return returnValue;
     }
   }
 }
