@@ -153,12 +153,17 @@ public with sharing class ManageLookupRollupSummariesNewController {
         return options;
     }
     Public List<Selectoption> getParentObjList(){
-        List<Schema.SObjectType> ParentObjList = Schema.getGlobalDescribe().Values();     
+        List<Schema.SObjectType> ParentObjList = Schema.getGlobalDescribe().Values();
         List<SelectOption> objNames = new List<SelectOption>();
         objNames.add(new SelectOption('','-- Select --'));
+        Integer i = 0;
         for(Schema.SObjectType obj : ParentObjList)
         {
+            i++;
             objNames.add(new SelectOption(obj.getDescribe().getName(),obj.getDescribe().getLabel()+' ('+obj.getDescribe().getName()+')'));
+            if (i >= 999) {
+                break;
+            }
         }
         objNames.sort();
         return objNames;
