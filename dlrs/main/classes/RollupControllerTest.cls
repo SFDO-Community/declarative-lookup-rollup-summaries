@@ -31,7 +31,7 @@ private class RollupControllerTest {
     if (!TestContext.isSupported())
       return;
 
-    System.runAs(setupTestUser('Read Only')) {
+    System.runAs(setupTestUser()) {
       // Metadata API web Service mock implementation for tests
       Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
 
@@ -167,7 +167,7 @@ private class RollupControllerTest {
     if (!TestContext.isSupported())
       return;
 
-    System.runAs(setupTestUser('Read Only')) {
+    System.runAs(setupTestUser()) {
       // Metadata API web Service mock implementation for tests
       Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
 
@@ -299,7 +299,7 @@ private class RollupControllerTest {
     if (!TestContext.isSupported())
       return;
 
-    System.runAs(setupTestUser('Read Only')) {
+    System.runAs(setupTestUser()) {
       // Metadata API web Service mock implementation for tests
       Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
 
@@ -351,7 +351,7 @@ private class RollupControllerTest {
     if (!TestContext.isSupported())
       return;
 
-    System.runAs(setupTestUser('Read Only')) {
+    System.runAs(setupTestUser()) {
       // Metadata API web Service mock implementation for tests
       Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
 
@@ -501,16 +501,27 @@ private class RollupControllerTest {
     }
   }
 
-  static User setupTestUser(String profileName) {
+  static User setupTestUser() {
     //username global uniqueness is still enforced in tests
     //make sure we get something unique to avoid issues with parallel tests
     String uniqueness = DateTime.now() + ':' + Math.random();
-    try {
-      throw new NullPointerException();
-    } catch (Exception e) {
-      uniqueness += e.getStackTraceString(); //includes the top level test method name without having to pass it
-    }
-    Profile p = [SELECT id, Name FROM Profile WHERE Name = :profileName];
+    uniqueness += new NullPointerException().getStackTraceString(); //includes the top level test method name without having to pass it
+
+    // officially, there is no Read Only Profile anymore; 
+    // its present for packaging org and scratch org support 
+    List<Profile> profiles = [
+      SELECT id, Name
+      FROM Profile
+      WHERE
+        Name = 'Read Only'
+        OR Name = 'ReadOnly'
+        OR Name = 'Standard User'
+      ORDER BY Name ASC
+    ];
+    system.assert(
+      profiles.size() > 0,
+      'setupTestUser() requires either Read Only or Standard User Profile'
+    );
     User result = new User(
       username = UserInfo.getUserId() +
         '.' +
@@ -524,7 +535,7 @@ private class RollupControllerTest {
       lastname = 'Testing',
       languagelocalekey = 'en_US',
       localesidkey = 'en_US',
-      profileid = p.Id,
+      profileid = profiles[0].Id,
       timezonesidkey = 'America/Los_Angeles'
     );
     insert result;
