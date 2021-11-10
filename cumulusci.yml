@@ -80,3 +80,16 @@ orgs:
     beta_prerelease:
       config_file: orgs/beta_prerelease.json
       days: 7
+
+plans:
+    install:
+        slug: install
+        title: Install Declarative Lookup Rollup Summaries (DLRS)
+        tier: primary
+        is_listed: True
+        preflight_message: "This will install Declarative Lookup Rollup Summaries (DLRS) in your org."
+        post_install_message: "Thanks for installing Declarative Lookup Rollup Summaries (DLRS). Please visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion) for any questions about DLRS."
+        error_message: "To get help with this error, visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion)."
+        steps:
+            1:
+                flow: customer_org
