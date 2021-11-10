@@ -17,6 +17,7 @@
 				<apex:actionSupport event="onchange" action="{!load}" reRender="rollupDetailView" />
 				<apex:selectOptions value="{!Lookups}" />
 			</apex:selectList>
+			<apex:commandButton value="Try Our New Wizard" action="{!newWizard}" style="margin-left: 20px;" />
 			<p/>
 			<apex:pageBlock mode="edit" id="rollupDetailView">
 				<apex:pageBlockButtons>

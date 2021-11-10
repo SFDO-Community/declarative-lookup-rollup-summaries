@@ -194,4 +194,16 @@ public with sharing class ManageLookupRollupSummariesController {
     }
     return options;
   }
+
+  public PageReference newWizard() {
+    try {
+      PageReference newPage = Page.managelookuprollupsummaries_New;
+      newPage.setRedirect(true);
+      return newPage;
+    }
+    catch (Exception e) {
+      ApexPages.addMessages(e);
+    }
+    return null;
+  }
 }
