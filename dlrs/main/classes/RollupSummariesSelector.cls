@@ -185,7 +185,6 @@ public class RollupSummariesSelector {
       for (RollupSummaries.CalculationMode calculationMode : calculationModes)
         calculationModeNames.add(calculationMode.name());
       return RollupSummary.toList(
-        //TODO: use custom metadata getAll() insetad
         Database.query(
           newQueryFactory()
             .setCondition(
@@ -211,7 +210,6 @@ public class RollupSummariesSelector {
       Set<String> uniqueNames
     ) {
       return RollupSummary.toList(
-        //TODO: use custom metadata getAll() insetad
         Database.query(
           newQueryFactory()
             .setCondition('UniqueName__c in :uniqueNames and Active__c = true')
@@ -233,7 +231,6 @@ public class RollupSummariesSelector {
      **/
     public List<RollupSummary> selectByUniqueName(Set<String> uniqueNames) {
       return RollupSummary.toList(
-        //TODO: use custom metadata getAll() insetad
         Database.query(
           newQueryFactory()
             .setCondition('UniqueName__c in :uniqueNames')
