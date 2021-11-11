@@ -317,7 +317,9 @@ public class RollupSummariesSelector {
           SObject record = this.getLookupRollupSummaryByDeveloperNameOrId(
             idVal
           );
-          records.add(record);
+          if(record != null) {
+            records.add(record);
+          }
         }
 
         return RollupSummary.toList(records);
@@ -340,9 +342,12 @@ public class RollupSummariesSelector {
       } else {
         List<RollupSummary> summaries = new List<RollupSummary>();
         List<SObject> records = new List<SObject>();
-        records.add(
-          this.getLookupRollupSummaryByDeveloperNameOrId(developerName)
-        );
+        SObject record = this.getLookupRollupSummaryByDeveloperNameOrId(developerName);
+        if(record != null) {
+          records.add(
+            this.getLookupRollupSummaryByDeveloperNameOrId(developerName)
+          );
+        }
         return RollupSummary.toList(records);
       }
     }
