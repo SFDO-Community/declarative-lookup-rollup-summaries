@@ -306,7 +306,7 @@ public class RollupSummariesSelector {
       if (this.forEdit) {
         return RollupSummary.toList(
           this.getLookupRollupSummaries(
-            newQueryFactory().setCondition('id in :idSet').toSOQL(),
+            newQueryFactory().setCondition('id in :tmpVar1').toSOQL(),
             new List<Object>{ idSet }
           )
         );
@@ -332,7 +332,7 @@ public class RollupSummariesSelector {
         return RollupSummary.toList(
           this.getLookupRollupSummaries(
             newQueryFactory()
-              .setCondition('DeveloperName = :developerName')
+              .setCondition('DeveloperName = :tmpVar1')
               .toSOQL(),
             new List<Object>{ developerName }
           )
@@ -375,7 +375,7 @@ public class RollupSummariesSelector {
           this.getLookupRollupSummaries(
             newQueryFactory()
               .setCondition(
-                'CalculationMode__c in :calculationModeNames and ChildObject__c in :childObjectNames and Active__c = true'
+                'CalculationMode__c in :tmpVar1 and ChildObject__c in :tmpVar2 and Active__c = true'
               )
               .addOrdering(
                 LookupRollupSummary2__mdt.ParentObject__c,

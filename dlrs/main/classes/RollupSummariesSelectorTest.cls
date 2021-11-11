@@ -40,6 +40,31 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
+  private static void selectAll_ForEdit_queryValidation() {
+    RollupSummariesSelector.CustomMetadataSelector metadataSelector = new RollupSummariesSelector.CustomMetadataSelector(
+      false,
+      true
+    );
+
+    System.QueryException unexpectedEx;
+    Test.startTest();
+
+    try {
+      metadataSelector.selectAll();
+    } catch(System.QueryException ex) {
+      unexpectedEx = ex;
+    }
+
+    Test.stopTest();
+
+    System.assertEquals(
+      null,
+      unexpectedEx,
+      'SOQL query should not throw an exception'
+    );
+  }
+
+  @isTest
   private static void selectAll_NotForEdit_SortOrder() {
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = new MockedCustomMetadataSelector(
       false
@@ -221,6 +246,34 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
+  private static void selectActiveByChildObject_ForEdit_queryValidation() {
+    RollupSummariesSelector.CustomMetadataSelector metadataSelector = new RollupSummariesSelector.CustomMetadataSelector(
+      false,
+      true
+    );
+
+    System.QueryException unexpectedEx;
+    Test.startTest();
+
+    try {
+      metadataSelector.selectActiveByChildObject(
+        RollupSummaries.CalculationMode.Realtime,
+        new Set<String>()
+      );
+    } catch(System.QueryException ex) {
+      unexpectedEx = ex;
+    }
+
+    Test.stopTest();
+
+    System.assertEquals(
+      null,
+      unexpectedEx,
+      'SOQL query should not throw an exception'
+    );
+  }
+
+  @isTest
   private static void selectActiveByChildObject_NotForEdit_SortOrder() {
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = new MockedCustomMetadataSelector(
       false
@@ -320,6 +373,33 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
+  private static void selectByDeveloperName_ForEdit_queryValidation() {
+    RollupSummariesSelector.CustomMetadataSelector metadataSelector = new RollupSummariesSelector.CustomMetadataSelector(
+      false,
+      true
+    );
+
+    System.QueryException unexpectedEx;
+    Test.startTest();
+
+    try {
+      metadataSelector.selectByDeveloperName(
+        new Set<String>{ 'A_Summary' }
+      );
+    } catch(System.QueryException ex) {
+      unexpectedEx = ex;
+    }
+
+    Test.stopTest();
+
+    System.assertEquals(
+      null,
+      unexpectedEx,
+      'SOQL query should not throw an exception'
+    );
+  }
+
+  @isTest
   private static void selectById_notForEdit() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
@@ -368,6 +448,34 @@ private with sharing class RollupSummariesSelectorTest {
       'SOQL queries should have been used'
     );
   }
+
+  @isTest
+  private static void selectById_ForEdit_queryValidation() {
+    RollupSummariesSelector.CustomMetadataSelector metadataSelector = new RollupSummariesSelector.CustomMetadataSelector(
+      false,
+      true
+    );
+
+    System.QueryException unexpectedEx;
+    Test.startTest();
+
+    try {
+      metadataSelector.selectById(
+        new Set<String>{ '00X00000000000000D' }
+      );
+    } catch(System.QueryException ex) {
+      unexpectedEx = ex;
+    }
+
+    Test.stopTest();
+
+    System.assertEquals(
+      null,
+      unexpectedEx,
+      'SOQL query should not throw an exception'
+    );
+  }
+
 
   private class MockedCustomMetadataSelector extends RollupSummariesSelector.CustomMetadataSelector {
     Boolean getLookupRollupSummariesForEditCalled = false;
