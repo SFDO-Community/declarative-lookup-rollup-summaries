@@ -66,7 +66,9 @@ Please feel free to raise feedback and issues via the **Github Issues** page [he
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limitations and known issues above first!
 
-**Latest Release Version 2.14**
+**Latest Release Version 2.15**
+
+Install the latest version of DLRS [here](https://install.salesforce.org/products/dlrs/latest).
 
 ---
 
