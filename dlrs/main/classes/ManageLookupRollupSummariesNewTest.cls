@@ -199,6 +199,9 @@ public class ManageLookupRollupSummariesNewTest {
 
         ManageLookupRollupSummariesNewController controller = new ManageLookupRollupSummariesNewController();
         controller.LookupRollupSummary = rollupSummary;
+        controller.selectedParentObject = 'Account';
+        controller.getParentObjList();
+        controller.confirmParentObject();
         controller.selectedChildObject = 'Task';
 
         Test.startTest();
@@ -206,6 +209,7 @@ public class ManageLookupRollupSummariesNewTest {
         Test.stopTest();
 
         System.assertEquals(true, controller.isMultiSelectRField, 'The Multiple relationship flag should be set');
+        // can't really be more specific than >1, in case Salesforce ever add another relationship between Account & Task
         System.assertEquals(true, controller.relationshipFields.size() > 1, 'Multiple relationship fields should exist');
     }
 }
