@@ -1,5 +1,9 @@
 # Declarative Rollups for Lookup Field Relationships
 
+## Installation
+
+Install the latest version of DLRS into your production, sandbox, or scratch org via [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest).
+
 ## Features Summary
 
 - Rollup information between Lookup relationships not previously possible without writing Apex Triggers
@@ -16,7 +20,7 @@ Please refer to the blog posts below for more detailed information.
 
 This is a community driven tool, please help support it, share your experiences in this [Chatter group](https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p). If you want to contribute as a developer, see [below](#contributing-to-declarative-rollup-summary-tools)
 
-This project is in part contributed to as part of the Salesforce.org Open Source Commons community sprint events. This [GitHub repo]  (https://github.com/SFDO-Community-Sprints/DLRS-Community-Sprints) tracks the current work being done for Documentation and UX improvement efforts.
+This project is in part contributed to as part of the Salesforce.org Open Source Commons community sprint events. This [GitHub repo](https://github.com/SFDO-Community-Sprints/DLRS-Community-Sprints) tracks the current work being done for Documentation and UX improvement efforts.
 
 ## Documentation
 
@@ -66,7 +70,13 @@ Please feel free to raise feedback and issues via the **Github Issues** page [he
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limitations and known issues above first!
 
-**Latest Release Version 2.14**
+**Latest Release Version 2.15**
+
+---
+
+Install DLRS 2.15 into your production, sandbox, or scratch org via [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest).
+
+**Version 2.14**
 
 ---
 
