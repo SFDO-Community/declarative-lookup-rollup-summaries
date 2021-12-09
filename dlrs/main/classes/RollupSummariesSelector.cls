@@ -28,8 +28,10 @@
  * Various queries for the Lookup Rollup Summary custom object and cusotm metadata object
  **/
 public class RollupSummariesSelector {
+  @TestVisible
   private CustomObjectSelector m_customObjectSelector;
 
+  @TestVisible
   private CustomMetadataSelector m_customMetadataSelector;
 
   public RollupSummariesSelector() {
@@ -302,7 +304,7 @@ public class RollupSummariesSelector {
     public List<RollupSummary> selectById(Set<String> idSet) {
       if (this.forEdit) {
         return RollupSummary.toList(
-          this.getLookupRollupSummaries(
+          this.getLookupRollupSummariesWithParameters(
             newQueryFactory().setCondition('id in :tmpVar1').toSOQL(),
             new List<Object>{ idSet }
           )
@@ -329,7 +331,7 @@ public class RollupSummariesSelector {
       String developerName = new List<String>(developerNames)[0];
       if (this.forEdit) {
         return RollupSummary.toList(
-          this.getLookupRollupSummaries(
+          this.getLookupRollupSummariesWithParameters(
             newQueryFactory()
               .setCondition('DeveloperName = :tmpVar1')
               .toSOQL(),
@@ -374,7 +376,7 @@ public class RollupSummariesSelector {
         calculationModeNames.add(calculationMode.name());
       if (this.forEdit) {
         return RollupSummary.toList(
-          this.getLookupRollupSummaries(
+          this.getLookupRollupSummariesWithParameters(
             newQueryFactory()
               .setCondition(
                 'CalculationMode__c in :tmpVar1 and ChildObject__c in :tmpVar2 and Active__c = true'
@@ -399,14 +401,13 @@ public class RollupSummariesSelector {
         List<RollupSummary> filteredSummaries = new List<RollupSummary>();
 
         for (RollupSummary summary : summaries) {
-          SObject record = summary.Record;
           if (
-            record != null &&
-            (Boolean) record.get('Active__c') &&
+            summary != null &&
+            summary.Active &&
             calculationModeNames.contains(
-              (String) record.get('CalculationMode__c')
+              summary.CalculationMode
             ) &&
-            childObjectNames.contains((String) record.get('ChildObject__c'))
+            childObjectNames.contains(summary.ChildObject)
           ) {
             filteredSummaries.add(summary);
           }
@@ -428,7 +429,7 @@ public class RollupSummariesSelector {
     ) {
       if (this.forEdit) {
         return RollupSummary.toList(
-          this.getLookupRollupSummaries(
+          this.getLookupRollupSummariesWithParameters(
             newQueryFactory()
               .setCondition('DeveloperName in :tmpVar1 and Active__c = true')
               .addOrdering(
@@ -469,7 +470,7 @@ public class RollupSummariesSelector {
     public List<RollupSummary> selectAll() {
       if (this.forEdit) {
         return RollupSummary.toList(
-          this.getLookupRollupSummaries(
+          this.getLookupRollupSummariesWithParameters(
             newQueryFactory()
               .addOrdering(
                 LookupRollupSummary2__mdt.Label,
@@ -488,10 +489,13 @@ public class RollupSummariesSelector {
       }
     }
 
-    protected virtual List<SObject> getLookupRollupSummaries(
+    protected virtual List<SObject> getLookupRollupSummariesWithParameters(
       String queryString,
       List<Object> tmpVars
     ) {
+      //Executing dynamic SOQL requires any variable binding to be in the same
+      //scope. We only ever use 2 variables in this class, so just hard coding
+      //two temporary variables for the dynamic SOQL to run
       Object tmpVar1 = tmpVars.size() > 0 ? tmpVars[0] : null;
       Object tmpVar2 = tmpVars.size() > 1 ? tmpVars[1] : null;
 

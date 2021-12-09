@@ -1,7 +1,7 @@
 @isTest
 private with sharing class RollupSummariesSelectorTest {
   @isTest
-  private static void selectAll_notForEdit() {
+  private static void selectAll_notForEdit_MDT() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
 
@@ -19,7 +19,7 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectAll_ForEdit() {
+  private static void selectAll_ForEdit_MDT() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(
       false,
       true
@@ -40,7 +40,7 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectAll_ForEdit_queryValidation() {
+  private static void selectAll_ForEdit_queryValidation_MDT() {
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = new RollupSummariesSelector.CustomMetadataSelector(
       false,
       true
@@ -65,7 +65,7 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectAll_NotForEdit_SortOrder() {
+  private static void selectAll_NotForEdit_SortOrder_MDT() {
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = new MockedCustomMetadataSelector(
       false
     );
@@ -108,13 +108,16 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectActiveByUniqueName_notForEdit() {
+  private static void selectActiveByUniqueName_notForEdit_MDT() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
 
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, false);
+    rollupSelector.m_customMetadataSelector = mock;
+
     Test.startTest();
 
-    List<RollupSummary> summaries = metadataSelector.selectActiveByUniqueName(
+    List<RollupSummary> summaries = rollupSelector.selectActiveByUniqueName(
       new Set<String>{ 'A_Summary' }
     );
 
@@ -128,17 +131,17 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectActiveByUniqueName_ForEdit() {
-    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(
-      false,
-      true
-    );
+  private static void selectActiveByUniqueName_ForEdit_MDT() {
+    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false, true);
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
+
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, true);
+    rollupSelector.m_customMetadataSelector = mock;
 
     Test.startTest();
 
     //There are no records in the database, just use an empty Set to check against query limits
-    List<RollupSummary> summaries = metadataSelector.selectActiveByUniqueName(
+    List<RollupSummary> summaries = rollupSelector.selectActiveByUniqueName(
       new Set<String>()
     );
 
@@ -153,9 +156,11 @@ private with sharing class RollupSummariesSelectorTest {
 
   @isTest
   private static void selectActiveByUniqueName_NotForEdit_SortOrder() {
-    RollupSummariesSelector.CustomMetadataSelector metadataSelector = new MockedCustomMetadataSelector(
-      false
-    );
+    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
+    RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
+
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, false);
+    rollupSelector.m_customMetadataSelector = mock;
 
     Set<String> uniqueNames = new Set<String>{
       'A_Summary',
@@ -166,7 +171,7 @@ private with sharing class RollupSummariesSelectorTest {
     };
 
     Test.startTest();
-    List<RollupSummary> summaries = metadataSelector.selectActiveByUniqueName(
+    List<RollupSummary> summaries = rollupSelector.selectActiveByUniqueName(
       uniqueNames
     );
     Test.stopTest();
@@ -200,13 +205,16 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectActiveByChildObject_notForEdit() {
+  private static void selectActiveByChildObject_notForEdit_MDT() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
 
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, false);
+    rollupSelector.m_customMetadataSelector = mock;
+
     Test.startTest();
 
-    List<RollupSummary> summaries = metadataSelector.selectActiveByChildObject(
+    List<RollupSummary> summaries = rollupSelector.selectActiveByChildObject(
       RollupSummaries.CalculationMode.Realtime,
       new Set<String>()
     );
@@ -221,17 +229,17 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectActiveByChildObject_ForEdit() {
-    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(
-      false,
-      true
-    );
+  private static void selectActiveByChildObject_ForEdit_MDT() {
+    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false, true);
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
+
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, true);
+    rollupSelector.m_customMetadataSelector = mock;
 
     Test.startTest();
 
     //There are no records in the database, just use an empty Set to check against query limits
-    List<RollupSummary> summaries = metadataSelector.selectActiveByChildObject(
+    List<RollupSummary> summaries = rollupSelector.selectActiveByChildObject(
       RollupSummaries.CalculationMode.Realtime,
       new Set<String>()
     );
@@ -246,7 +254,7 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectActiveByChildObject_ForEdit_queryValidation() {
+  private static void selectActiveByChildObject_ForEdit_queryValidation_MDT() {
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = new RollupSummariesSelector.CustomMetadataSelector(
       false,
       true
@@ -274,10 +282,12 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectActiveByChildObject_NotForEdit_SortOrder() {
-    RollupSummariesSelector.CustomMetadataSelector metadataSelector = new MockedCustomMetadataSelector(
-      false
-    );
+  private static void selectActiveByChildObject_NotForEdit_SortOrder_MDT() {
+    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
+    RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
+
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, false);
+    rollupSelector.m_customMetadataSelector = mock;
 
     Set<String> uniqueNames = new Set<String>{
       'A_Summary',
@@ -324,7 +334,7 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectByDeveloperName_notForEdit() {
+  private static void selectByDeveloperName_notForEdit_MDT() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
 
@@ -349,7 +359,7 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectByDeveloperName_ForEdit() {
+  private static void selectByDeveloperName_ForEdit_MDT() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(
       false,
       true
@@ -373,7 +383,7 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectByDeveloperName_ForEdit_queryValidation() {
+  private static void selectByDeveloperName_ForEdit_queryValidation_MDT() {
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = new RollupSummariesSelector.CustomMetadataSelector(
       false,
       true
@@ -400,14 +410,17 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectById_notForEdit() {
+  private static void selectById_notForEdit_MDT() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
+
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, false);
+    rollupSelector.m_customMetadataSelector = mock;
     String idVal = mock.summariesByDeveloperName.get('D_Summary').Id;
 
     Test.startTest();
 
-    List<RollupSummary> summaries = metadataSelector.selectById(
+    List<RollupSummary> summaries = rollupSelector.selectById(
       new Set<String>{ idVal }
     );
 
@@ -426,17 +439,17 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectById_ForEdit() {
-    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(
-      false,
-      true
-    );
+  private static void selectById_ForEdit_MDT() {
+    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false, true);
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
+
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, true);
+    rollupSelector.m_customMetadataSelector = mock;
 
     Test.startTest();
 
     //There are no records in the database, just use an empty Set to check against query limits
-    List<RollupSummary> summaries = metadataSelector.selectById(
+    List<RollupSummary> summaries = rollupSelector.selectById(
       new Set<String>{ '00X00000000000000D' }
     );
 
@@ -450,7 +463,7 @@ private with sharing class RollupSummariesSelectorTest {
   }
 
   @isTest
-  private static void selectById_ForEdit_queryValidation() {
+  private static void selectById_ForEdit_queryValidation_MDT() {
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = new RollupSummariesSelector.CustomMetadataSelector(
       false,
       true
@@ -560,7 +573,7 @@ private with sharing class RollupSummariesSelectorTest {
       super(enforceSecurity, forEdit);
     }
 
-    protected override List<SObject> getLookupRollupSummaries(
+    protected override List<SObject> getLookupRollupSummariesWithParameters(
       String query,
       List<Object> tmpVars
     ) {
