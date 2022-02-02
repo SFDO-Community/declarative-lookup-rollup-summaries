@@ -19,6 +19,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
     public Map<String, List<String>> PnameWithRField {get;set;}
     public List<SelectOption> relationshipFields {get;set;}
     public Map<String,String> ChildObjectsDuplicates {get;set;}
+    public Boolean fieldToOrderByNeeded { get; private set; }
 
     private Map<String, Schema.SObjectType> objectDescription;
 
@@ -26,7 +27,10 @@ public with sharing class ManageLookupRollupSummariesNewController {
         isParentObjectSelected = false;
         isChildObjectSelected = false;
         isMultiSelectRField = false;
-        LookupRollupSummary = new LookupRollupSummary2__mdt();
+        LookupRollupSummary = new LookupRollupSummary2__mdt(
+            CalculationSharingMode__c = 'System',
+            CalculationMode__c = 'Scheduled'
+        );
         //objectWithRelationshipField = new Map<String,String>();
 
         objectDescription = new Map<String, Schema.SObjectType>();
@@ -196,13 +200,13 @@ public with sharing class ManageLookupRollupSummariesNewController {
                 //AJB 18/11/21: changed to use a map to avoid string splitting and comparison later on
                 PnameWithRField = new Map<String, List<String>>();
                 for (Schema.ChildRelationship cr: parentObjectDescribe.getChildRelationships()) 
-                {                    
+                {
                     Schema.DescribeSObjectResult dr = (cr.getChildSObject()).getDescribe(SObjectDescribeOptions.DEFERRED);
                     String childObjectName = dr.getName();
                     String relFieldName = String.valueOf(cr.getField());
 
                     // AJB 16/11/21 it's actually slightly quicker to check if the map contains the key first rather than just overwriting
-                    if (!ChildObjectsDuplicates.containsKey(childObjectName)) {
+                    if (!ChildObjectsDuplicates.containsKey(childObjectName) && !String.isBlank(dr.getKeyPrefix())) {
                         ChildObjectsDuplicates.put(childObjectName, String.valueOf(dr.getLabel())+' ('+ childObjectName +')');
                     }
 
@@ -318,7 +322,24 @@ public with sharing class ManageLookupRollupSummariesNewController {
             LookupRollupSummary.RelationshipField__c = selectedRField;
         }catch(exception ex){
             ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage()));
+        }
+    }
+    public void updateAggregateField() {
+        try {
+            if (LookupRollupSummary.AggregateOperation__c == 'Concatenate' 
+                || LookupRollupSummary.AggregateOperation__c == 'Concatenate Distinct') {
+                    fieldToOrderByNeeded = true;
+            }
+            else if (LookupRollupSummary.AggregateOperation__c == 'First'
+                || LookupRollupSummary.AggregateOperation__c == 'Last') {
+                fieldToOrderByNeeded = true;
+            }
+            else {
+                fieldToOrderByNeeded = false;
+            }
 
+        }catch(exception ex){
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage()));
         }
     }
 }

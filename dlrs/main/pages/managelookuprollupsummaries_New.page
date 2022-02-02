@@ -1,9 +1,32 @@
 <apex:page controller="ManageLookupRollupSummariesNewController" lightningStylesheets="true" tabStyle="ManageLookupRollupSummaries__tab" showHeader="true" sidebar="true" action="{!init}">
+    <style type="text/css">
+        .imgclass {
+            background-image: url(/img/help/helpOrbs.gif);
+            background-repeat: no-repeat;
+            width: 20px;
+            height: 15px;
+        }
+
+        .imgclass:hover {
+            background-image: url(/img/help/helpOrbs.gif);
+            background-repeat: no-repeat;
+            background-position: right;
+            width: 20px;
+            height: 15px;
+        }
+
+        td.pbTitle {
+            width: 100% !important;
+            text-align: center;
+            colspan: 2;
+        }
+    </style>
 
     <apex:form >
 	   	<apex:actionFunction name="updateRField" action="{!updateRField}" reRender="refreshPb" />
         <apex:actionFunction name="updateChildField" action="{!updateChildField}" reRender="refreshPb" />
         <apex:actionFunction name="updateParentField" action="{!updateParentField}" reRender="refreshPb"/>
+        <apex:actionFunction name="updateAggregateField" action="{!updateAggregateField}" reRender="refreshPCFields"/>
         <apex:sectionHeader title="Manage Lookup Rollup Summaries"  subtitle="Manage, Deploy, Run and Schedule"/>
         <apex:pageMessage rendered="{!$Setup.DeclarativeLookupRollupSummaries__c.HideManageLookupRollupSummariesInfo__c==false}" strength="1" escape="false" severity="Info" summary="This tab provides the ability to store rollup definitions as <b>Custom Metadata</b>. Allowing your rollups to be added to <b>Change Sets</b> and <b>Packages</b> and are also now automatically cloned during a <b>Sandbox</b> refresh. Note that you can also change configuration entered here under the <b>Setup</b> menu <b>Custom Metadata Types</b> page, however it is recommended you utilise this page as it provides added validation and features."><a href="{!URLFOR($Action.LookupRollupSummary__c.Tab,$ObjectType.LookupRollupSummary__c)}">It maybe that your org has rollups defined under the older Lookup Rollup Summaries tab here, it is recommended you move them over.</a>&nbsp;<apex:commandLink action="{!hideMessage}" value="Hide this message"/></apex:pageMessage>
         <apex:pageMessages id="errorconfirm"/>
@@ -11,15 +34,22 @@
             <apex:outputLink value="{!$Page.welcometab}">Return to the Welcome page</apex:outputLink>
         </apex:outputPanel>
         <apex:outputPanel rendered="{!MetadataConnectionError==false}" id="refreshPb">             
-            <apex:pageBlock mode="edit" id="rollupDetailView">
+            <apex:pageBlock mode="edit" id="rollupDetailView" title="Lookup Rollup Summary Creation Wizard">
                 <apex:pageBlockButtons >
 
                     <apex:commandButton value="Save" action="{!save}"/>
-                    <apex:commandButton value="Delete" action="{!deleteX}" rendered="{!LookupRollupSummary.Id!=null}"/>
+                    <!--<apex:commandButton value="Delete" action="{!deleteX}" rendered="{!LookupRollupSummary.Id!=null}"/>
                     <apex:commandButton value="Full Calculate" action="{!URLFOR($Page.rollupcalculatemdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
                     <apex:commandButton value="Schedule Full Calculate" action="{!URLFOR($Page.rollupscheduledcalculatemdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
-                    <apex:commandButton value="Manage Child Trigger" action="{!URLFOR($Page.managetriggermdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>
+                    <apex:commandButton value="Manage Child Trigger" action="{!URLFOR($Page.managetriggermdt, null, ['id'=LookupRollupSummary.id])}" rendered="{!LookupRollupSummary.Id!=null}"/>-->
                 </apex:pageBlockButtons>
+
+                <apex:pageBlockSection>
+                    <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.Description__c.inlineHelpText}">
+                        <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.Description__c.Label}"/>
+                        <apex:inputTextArea cols="80" rows="3" value="{!LookupRollupSummary.Description__c}"/>
+                    </apex:pageBlockSectionItem>
+                </apex:pageBlockSection>       
                 <apex:pageBlockSection title="Information" columns="2">
                     <apex:pageBlockSectionItem >
                         <apex:outputLabel value="Lookup Rollup Summary Name"/>
@@ -35,8 +65,10 @@
                         <apex:outputPanel >
                             <div class="requiredInput">
                                 <div class="requiredBlock"/>
-                                <apex:inputText size="32" value="{!LookupRollupSummary.DeveloperName}" disabled="{!LookupRollupSummary.Id!=null}"/>                 
-                            </div>
+                                <apex:inputText size="32" value="{!LookupRollupSummary.DeveloperName}" disabled="{!LookupRollupSummary.Id!=null}"/>
+                                &nbsp;
+                                <img src="/s.gif" class="imgclass" title="{!$ObjectType.LookupRollupSummary2__mdt.Fields.DeveloperName.inlineHelpText}" />
+                            </div>                            
                         </apex:outputPanel>
                     </apex:pageBlockSectionItem>
                 </apex:pageBlockSection>      
@@ -50,10 +82,10 @@
                                 <apex:selectList size="1"  value="{!selectedParentObject}" style="width:27%;" disabled="{!IF(isParentObjectSelected==true,true,false)}">
                                     <apex:selectOptions value="{!ParentObjList}"/>
                                 </apex:selectList>
-                                <apex:commandButton status="pStatus" reRender="refreshPb,errorconfirm,refreshPCFields" value="Confirm" action="{!confirmParentObject}" disabled="{!IF(isParentObjectSelected==true,true,false)}"  />
+                                <apex:commandButton status="pStatus" reRender="refreshPb,errorconfirm,,refreshTextLookups" value="Confirm" action="{!confirmParentObject}" disabled="{!IF(isParentObjectSelected==true,true,false)}"  />
                                 <apex:actionStatus id="pStatus" >
                                     <apex:facet name="start" >
-                                        <img src="/img/loading.gif" />                    
+                                        <img src="/img/loading.gif" />
                                     </apex:facet>
                                 </apex:actionStatus>
                                 <apex:inputHidden value="{!LookupRollupSummary.ParentObject__c}"/>
@@ -69,7 +101,7 @@
                                 <apex:selectList size="1" value="{!selectedChildObject}" style="width:27%;" disabled="{!IF(isChildObjectSelected==true,true,false)}">
                                     <apex:selectOptions value="{!childObjectList}"/>
                                 </apex:selectList> 
-                                <apex:commandButton status="chStatus" reRender="refreshPb,errorconfirm,refreshChildSection,refreshPCFields" value="Confirm" action="{!confirmChildObject}" disabled="{!IF(isChildObjectSelected==true,true,false)}"/>
+                                <apex:commandButton status="chStatus" reRender="refreshPb,errorconfirm,refreshChildSection,refreshPCFields,refreshTextLookups" value="Confirm" action="{!confirmChildObject}" disabled="{!IF(isChildObjectSelected==true,true,false)}"/>
                                 <apex:actionStatus id="chStatus" >
                                     <apex:facet name="start" >
                                         <img src="/img/loading.gif"  />                    
@@ -101,11 +133,17 @@
                     </apex:pageBlockSectionItem> 
                     <apex:pageBlockSectionItem rendered="{!(isParentObjectSelected && isChildObjectSelected)}" helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteria__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteria__c.Label}"/>
-                        <apex:inputText size="60" value="{!LookupRollupSummary.RelationshipCriteria__c}"/>
+                        <apex:inputTextArea cols="40" rows="3" value="{!LookupRollupSummary.RelationshipCriteria__c}"/>
                     </apex:pageBlockSectionItem>
                     <apex:pageBlockSectionItem rendered="{!(isParentObjectSelected && isChildObjectSelected)}"  helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteriaFields__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RelationshipCriteriaFields__c.Label}"/>
-                        <apex:inputTextArea cols="40" rows="3" value="{!LookupRollupSummary.RelationshipCriteriaFields__c}"/>       
+                        <apex:outputPanel>
+                            <div>
+                                <apex:inputTextArea cols="40" rows="3" value="{!LookupRollupSummary.RelationshipCriteriaFields__c}"/>
+                                &nbsp;
+                                <img src="/s.gif" class="imgclass" title="{!$ObjectType.LookupRollupSummary2__mdt.Fields.RelationshipCriteriaFields__c.inlineHelpText}" />
+                            </div>
+                        </apex:outputPanel>
                     </apex:pageBlockSectionItem>
                 </apex:pageBlockSection> 
                 </apex:outputPanel>
@@ -119,7 +157,9 @@
                                 <apex:selectList size="1" value="{!selectedChildField}" style="width:57%;" onchange="updateChildField()">
                                     <apex:selectOptions value="{!childObjFields}"  />
                                 </apex:selectList>  
-                                <apex:inputHidden value="{!LookupRollupSummary.FieldToAggregate__c}"/>                    
+                                <apex:inputHidden value="{!LookupRollupSummary.FieldToAggregate__c}"/>
+                                &nbsp;
+                                <img src="/s.gif" class="imgclass" title="{!$ObjectType.LookupRollupSummary2__mdt.Fields.FieldToAggregate__c.inlineHelpText}" />               
                             </div>
                         </apex:outputPanel>
                     </apex:pageBlockSectionItem>
@@ -127,9 +167,16 @@
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.Active__c.Label}"/>             
                         <apex:inputCheckbox value="{!LookupRollupSummary.Active__c}"/>
                     </apex:pageBlockSectionItem>
-                    <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.FieldToOrderBy__c.inlineHelpText}">
-                        <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.FieldToOrderBy__c.Label}"/>             
-                        <apex:inputText value="{!LookupRollupSummary.FieldToOrderBy__c}"/>              
+                    <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateOperation__c.inlineHelpText}">
+                        <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateOperation__c.Label}"/>
+                        <apex:outputPanel >
+                            <div class="requiredInput">
+                                <div class="requiredBlock"/>    
+                                <apex:selectList value="{!LookupRollupSummary.AggregateOperation__c}" size="1" style="width:57%" onchange="updateAggregateField()">
+                                    <apex:selectOptions value="{!AggregateOperations}"/>
+                                </apex:selectList>                          
+                            </div>
+                        </apex:outputPanel>
                     </apex:pageBlockSectionItem>
                     <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.CalculationMode__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.CalculationMode__c.Label}"/>                
@@ -142,17 +189,16 @@
                             </div>
                         </apex:outputPanel>
                     </apex:pageBlockSectionItem>
-                    <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateOperation__c.inlineHelpText}">
-                        <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.AggregateOperation__c.Label}"/>
-                        <apex:outputPanel >
-                            <div class="requiredInput">
-                                <div class="requiredBlock"/>    
-                                <apex:selectList value="{!LookupRollupSummary.AggregateOperation__c}" size="1" style="width:57%">
-                                    <apex:selectOptions value="{!AggregateOperations}"/>
-                                </apex:selectList>                          
-                            </div>
+                    <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.FieldToOrderBy__c.inlineHelpText}" rendered="{!fieldToOrderByNeeded}">
+                        <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.FieldToOrderBy__c.Label}"/>
+                        <apex:outputPanel>
+                            <apex:inputText value="{!LookupRollupSummary.FieldToOrderBy__c}"/>
+                            &nbsp;
+                            <img src="/s.gif" class="imgclass" title="{!$ObjectType.LookupRollupSummary2__mdt.Fields.FieldToOrderBy__c.inlineHelpText}" />
                         </apex:outputPanel>
                     </apex:pageBlockSectionItem>
+                    <!-- below section item added to ensure consistent placement when hidden fields are displayed -->
+                    <apex:pageBlockSectionItem rendered="{!NOT(fieldToOrderByNeeded)}"/>
                     <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.CalculationSharingMode__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.CalculationSharingMode__c.Label}"/>
                         <apex:outputPanel >
@@ -184,21 +230,23 @@
                     <apex:pageBlockSectionItem />
                     <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RowLimit__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RowLimit__c.Label}"/>           
-                        <apex:inputText value="{!LookupRollupSummary.RowLimit__c}"/>
+                        <apex:outputPanel>
+                            <apex:inputText value="{!LookupRollupSummary.RowLimit__c}"/>
+                            &nbsp;
+                            <img src="/s.gif" class="imgclass" title="{!$ObjectType.LookupRollupSummary2__mdt.Fields.RowLimit__c.inlineHelpText}" />
+                        </apex:outputPanel>
                     </apex:pageBlockSectionItem>
                 </apex:pageBlockSection>        
                 <apex:pageBlockSection rendered="{!(isParentObjectSelected && isChildObjectSelected)}" title="Text Lookups" columns="2">
                     <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.ConcatenateDelimiter__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.ConcatenateDelimiter__c.Label}"/>
-                        <apex:inputText value="{!LookupRollupSummary.ConcatenateDelimiter__c}"/>
+                        <apex:outputPanel>
+                            <apex:inputText value="{!LookupRollupSummary.ConcatenateDelimiter__c}"/>
+                            &nbsp;
+                            <img src="/s.gif" class="imgclass" title="{!$ObjectType.LookupRollupSummary2__mdt.Fields.ConcatenateDelimiter__c.inlineHelpText}" />
+                        </apex:outputPanel>
                     </apex:pageBlockSectionItem>
-                </apex:pageBlockSection>        
-                <apex:pageBlockSection rendered="{!(isParentObjectSelected && isChildObjectSelected)}" title="Description" columns="2">
-                    <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.Description__c.inlineHelpText}">
-                        <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.Description__c.Label}"/>
-                        <apex:inputTextArea cols="80" rows="3" value="{!LookupRollupSummary.Description__c}"/>
-                    </apex:pageBlockSectionItem>
-                </apex:pageBlockSection>        
+                </apex:pageBlockSection>         
                 <apex:pageBlockSection rendered="{!(isParentObjectSelected && isChildObjectSelected)}" title="Advanced" columns="1">
                     <apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCode__c.inlineHelpText}">
                         <apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.TestCode2__c.Label}"/>
