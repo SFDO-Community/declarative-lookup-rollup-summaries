@@ -20,6 +20,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
     public List<SelectOption> relationshipFields {get;set;}
     public Map<String,String> ChildObjectsDuplicates {get;set;}
     public Boolean fieldToOrderByNeeded { get; private set; }
+    public Boolean realtimeSelected { get; private set; }
 
     private Map<String, Schema.SObjectType> objectDescription;
 
@@ -339,6 +340,19 @@ public with sharing class ManageLookupRollupSummariesNewController {
             }
 
         }catch(exception ex){
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage()));
+        }
+    }
+    public void updateCalcMode() {
+        try {
+            if (LookupRollupSummary.CalculationMode__c == 'Realtime') {
+                realtimeSelected = true;
+                LookupRollupSummary.Active__c = false;
+            }
+            else {
+                realtimeSelected = false;
+            }
+        } catch(exception ex){
             ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage()));
         }
     }
