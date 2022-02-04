@@ -290,10 +290,15 @@ public with sharing class ManageLookupRollupSummariesNewController {
                         relationshipFields.add( new SelectOption(fieldName, fieldName));
                     }
                 }
-                else{
+                else if (rFields.size() == 1) {
                     for(String fieldName : rFields){
-                        LookupRollupSummary.RelationshipField__c = fieldName;
+                        LookupRollupSummary.RelationshipField__c = fieldName;                        
                     }
+                }
+                else {
+                    isParentObjectSelected = false;
+                    isChildObjectSelected = false;
+                    ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.WARNING, 'No appropriate relationship found between these objects'));
                 }
             }
         }catch(exception ex){
