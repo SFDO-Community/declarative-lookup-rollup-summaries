@@ -18,33 +18,12 @@ jobs:
           sfdx plugins:install @salesforce/sfdx-scanner
       - name: Run Analysis
         run: |
-          sfdx scanner:run -t force-app -e pmd -f junit -s 2 > results.xml
+          sfdx scanner:run -t dlrs -e pmd -f junit -s 2 > results.xml
       - name: Store Test Results
         uses: actions/upload-artifact@v1
         with:
           name: sfdx-source-scanner-results.xml
           path: results.xml
-  jest:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v2-beta
-        with:
-          node-version: "14"
-      - name: Determine Node Version
-        id: node-version
-        run: |
-          echo "::set-output name=ver::$(node --version)"
-      - uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-${{ steps.node-version.outputs.ver }}-${{ hashFiles('package.json', 'package-lock.json') }}
-      - name: Install Packages
-        run: |
-          npm install
-      - name: Run Jest Tests
-        run: |
-          npx sfdx-lwc-jest --coverage -- --passWithNoTests
   formatting:
     runs-on: ubuntu-latest
     steps:
