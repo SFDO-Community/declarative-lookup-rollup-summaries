@@ -146,7 +146,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
         for(Schema.Picklistentry picklistEntry : LookupRollupSummary__c.fields.CalculationMode__c.getDescribe().getPickListValues()) {
             options.add(new SelectOption(picklistEntry.getValue(), picklistEntry.getLabel()));
         }
-        return sortSelectOptions(options);
+        return sortSelectOptionsByLabel(options);
     }           
 
     public List<SelectOption> getAggregateOperations(){
@@ -154,7 +154,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
         for(Schema.Picklistentry picklistEntry : LookupRollupSummary__c.fields.AggregateOperation__c.getDescribe().getPickListValues()) {
             options.add(new SelectOption(picklistEntry.getValue(), picklistEntry.getLabel()));
         }
-        return sortSelectOptions(options);
+        return sortSelectOptionsByLabel(options);
     }           
 
     public List<SelectOption> getCalculationSharingModes(){
@@ -162,14 +162,31 @@ public with sharing class ManageLookupRollupSummariesNewController {
         for(Schema.Picklistentry picklistEntry : LookupRollupSummary__c.fields.CalculationSharingMode__c.getDescribe().getPickListValues()) {
             options.add(new SelectOption(picklistEntry.getValue(), picklistEntry.getLabel()));
         }
-        return sortSelectOptions(options);
+        return sortSelectOptionsByLabel(options);
     }
 
-    private List<SelectOption> sortSelectOptions(List<SelectOption> selectOptions) {
-        List<SelectOption> sortedList = new List<SelectOption>();
-        selectOptions.sort();
-        sortedList = selectOptions;
-        return sortedList;
+    private List<SelectOption> sortSelectOptionsByLabel(List<SelectOption> selectOptions) {
+        if (selectOptions == null || selectOptions.size() <= 1) {
+            return selectOptions;
+        }
+        List<SelectOption> lessSelectOption = new List<SelectOption>();
+        List<SelectOption> greaterSelectOption = new List<SelectOption>();
+        Integer pivot = selectOptions.size() / 2;
+
+        SelectOption pivotValue = selectOptions[pivot];
+        selectOptions.remove(pivot);
+        for (SelectOption so : selectOptions) {
+            if (so.getLabel() <= pivotValue.getLabel()) {
+                lessSelectOption.add(so);
+            } else if (so.getLabel() > pivotValue.getLabel()) {
+                greaterSelectOption.add(so);
+            }
+        }
+        List<SelectOption> sortedSelectOptions = new List<SelectOption>();
+        sortedSelectOptions.addAll(sortSelectOptionsByLabel(lessSelectOption));
+        sortedSelectOptions.add(pivotValue);
+        sortedSelectOptions.addAll(sortSelectOptionsByLabel(greaterSelectOption));
+        return sortedSelectOptions;
     }
 
     public List<Selectoption> getParentObjList(){
@@ -236,6 +253,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
                     childObjectList.add(new SelectOption(key, ChildObjectsDuplicates.get(key)));
                 }
                 Map<String, schema.SObjectField> MapOfFields = parentObjectDescribe.fields.getMap();
+                List<SelectOption> sortedSelectOptions = new List<SelectOption>();
                 for(Schema.SObjectField field : MapOfFields.values())
                 {
                     Schema.DescribeFieldResult fr = field.getDescribe();
@@ -243,9 +261,11 @@ public with sharing class ManageLookupRollupSummariesNewController {
                     //if(dType == 'DOUBLE' || dType == 'INTEGER' || dType == 'CURRENCY' || dType == 'DATE' || dType == 'DATETIME' || dType == 'STRING'){
 
                     String fieldName = fr.getName();
-                    parentObjFields.add( new SelectOption(fieldName, String.valueof(fr.getLabel())+' ('+ fieldName +')'));
+                    sortedSelectOptions.add( new SelectOption(fieldName, String.valueof(fr.getLabel())+' ('+ fieldName +')'));
+                    sortedSelectOptions = sortSelectOptionsByLabel(sortedSelectOptions);
                     //}
-                } 
+                }
+                parentObjFields.addAll(sortedSelectOptions);
             }            
         }catch(exception ex){
             ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage()));
@@ -263,14 +283,16 @@ public with sharing class ManageLookupRollupSummariesNewController {
                 isChildObjectSelected = true;
                 LookupRollupSummary.ChildObject__c = selectedChildObject;
                 Map<String, schema.SObjectField> mapOfFields = objectDescription.get(selectedChildObject).getDescribe().fields.getMap();
-                childObjFields.add(new SelectOption('','-- Select --')); 
+                childObjFields.add(new SelectOption('','-- Select --'));
+                List<SelectOption> sortedSelectOptions = new List<SelectOption>();
                 for(Schema.SObjectField field : mapOfFields.values())
                 {
                     Schema.DescribeFieldResult fr = field.getDescribe();
                     String fieldName = fr.getName();
                     //String dType = String.valueof(fr.getType());
                     // if(dType == 'DOUBLE' || dType == 'INTEGER' || dType == 'CURRENCY' || dType == 'DATE' || dType == 'DATETIME'){
-                    childObjFields.add( new SelectOption(fieldName, String.valueof(fr.getLabel()) +' (' + fieldName + ')'));
+                    sortedSelectOptions.add( new SelectOption(fieldName, String.valueof(fr.getLabel()) +' (' + fieldName + ')'));
+                    sortedSelectOptions = sortSelectOptionsByLabel(sortedSelectOptions);
                     //}
                 // AJB 16/11/21: don't think we really need to loop over the map values twice
                 /*
@@ -289,6 +311,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
                     }
 
                 }
+                childObjFields.addAll(sortedSelectOptions);
                 relationshipFields = new List<SelectOption>();
                 relationshipFields.add(new SelectOption('','-- Select --'));
                 if(rFields.size()>1){
