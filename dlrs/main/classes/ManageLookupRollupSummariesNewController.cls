@@ -146,7 +146,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
         for(Schema.Picklistentry picklistEntry : LookupRollupSummary__c.fields.CalculationMode__c.getDescribe().getPickListValues()) {
             options.add(new SelectOption(picklistEntry.getValue(), picklistEntry.getLabel()));
         }
-        return options;
+        return sortSelectOptions(options);
     }           
 
     public List<SelectOption> getAggregateOperations(){
@@ -154,7 +154,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
         for(Schema.Picklistentry picklistEntry : LookupRollupSummary__c.fields.AggregateOperation__c.getDescribe().getPickListValues()) {
             options.add(new SelectOption(picklistEntry.getValue(), picklistEntry.getLabel()));
         }
-        return options;
+        return sortSelectOptions(options);
     }           
 
     public List<SelectOption> getCalculationSharingModes(){
@@ -162,7 +162,14 @@ public with sharing class ManageLookupRollupSummariesNewController {
         for(Schema.Picklistentry picklistEntry : LookupRollupSummary__c.fields.CalculationSharingMode__c.getDescribe().getPickListValues()) {
             options.add(new SelectOption(picklistEntry.getValue(), picklistEntry.getLabel()));
         }
-        return options;
+        return sortSelectOptions(options);
+    }
+
+    private List<SelectOption> sortSelectOptions(List<SelectOption> selectOptions) {
+        List<SelectOption> sortedList = new List<SelectOption>();
+        selectOptions.sort();
+        sortedList = selectOptions;
+        return sortedList;
     }
 
     public List<Selectoption> getParentObjList(){
