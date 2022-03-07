@@ -1,3 +1,8 @@
-<apex:page showHeader="true" sidebar="false" tabStyle="Welcome__tab" lightningStylesheets="true">
-	<apex:include pageName="{!$Page.welcome}" />
+<apex:page
+  showHeader="true"
+  sidebar="false"
+  tabStyle="Welcome__tab"
+  lightningStylesheets="true"
+>
+  <apex:include pageName="{!$Page.welcome}" />
 </apex:page>

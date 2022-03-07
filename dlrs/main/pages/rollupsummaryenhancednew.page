@@ -1,2 +1,5 @@
-<apex:page standardController="LookupRollupSummary__c" recordSetVar="records" action="{!URLFOR($Page.rollupsummaryenhanced)}"
+<apex:page
+  standardController="LookupRollupSummary__c"
+  recordSetVar="records"
+  action="{!URLFOR($Page.rollupsummaryenhanced)}"
 />

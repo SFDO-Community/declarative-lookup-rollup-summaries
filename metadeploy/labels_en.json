@@ -1,40 +1,40 @@
 {
-    "product": {
-        "title": {
-            "message": "Declarative Lookup Rollup Summaries (DLRS)",
-            "description": "name of product"
-        },
-        "short_description": {
-            "message": "Admin-friendly interface to generate and manage cross-object rollup summaries in your Salesforce org.",
-            "description": "tagline of product"
-        },
-        "description": {
-            "message": "Declarative Rollup Lookup Summaries (DLRS) is a sustainable open source community application that provides an admin-friendly declarative interface to generate and manage cross-object rollup summaries in your Salesforce org.\r\n\r\nFeatures:\r\n\r\n- Rollup information between Lookup relationships, not previously possible without writing Apex Triggers.\r\n- Define rollups using standard declarative UI, no coding required.\r\n- Define filter criteria on rollups, like rolling up Closed Won Opportunity Amount onto Account.\r\n- Run rollups in Realtime, Scheduled and Developer API modes.\r\n\r\nResources:\r\n\r\n- [Open source GitHub repository](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries) - with links to current install and configuration documentation.\r\n- Learn more and get support: [Trailblazer Community Group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion). Maintainers of this application and Salesforce.org Open Source Program team members actively monitor every post.\r\n\r\n<img src=\"https://raw.githubusercontent.com/SFDO-Community/declarative-lookup-rollup-summaries/main/images/DLRS%20OSC%20Badge.png\">",
-            "description": "shown on product detail page (markdown)"
-        }
+  "product": {
+    "title": {
+      "message": "Declarative Lookup Rollup Summaries (DLRS)",
+      "description": "name of product"
     },
-    "plan:install": {
-        "title": {
-            "message": "Install Declarative Lookup Rollup Summaries (DLRS)",
-            "description": "title of installation plan"
-        },
-        "preflight_message": {
-            "message": "This will install Declarative Lookup Rollup Summaries (DLRS) in your org.",
-            "description": "shown before user starts installation (markdown)"
-        },
-        "post_install_message": {
-            "message": "Thanks for installing Declarative Lookup Rollup Summaries (DLRS). Please visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion) for any questions about DLRS.",
-            "description": "shown after successful installation (markdown)"
-        },
-        "error_message": {
-            "message": "To get help with this error, visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion).",
-            "description": "shown after failed installation (markdown)"
-        }
+    "short_description": {
+      "message": "Admin-friendly interface to generate and manage cross-object rollup summaries in your Salesforce org.",
+      "description": "tagline of product"
     },
-    "steps": {
-        "Install {product} {version}": {
-            "message": "Install {product} {version}",
-            "description": "title of installation step"
-        }
+    "description": {
+      "message": "Declarative Rollup Lookup Summaries (DLRS) is a sustainable open source community application that provides an admin-friendly declarative interface to generate and manage cross-object rollup summaries in your Salesforce org.\r\n\r\nFeatures:\r\n\r\n- Rollup information between Lookup relationships, not previously possible without writing Apex Triggers.\r\n- Define rollups using standard declarative UI, no coding required.\r\n- Define filter criteria on rollups, like rolling up Closed Won Opportunity Amount onto Account.\r\n- Run rollups in Realtime, Scheduled and Developer API modes.\r\n\r\nResources:\r\n\r\n- [Open source GitHub repository](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries) - with links to current install and configuration documentation.\r\n- Learn more and get support: [Trailblazer Community Group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion). Maintainers of this application and Salesforce.org Open Source Program team members actively monitor every post.\r\n\r\n<img src=\"https://raw.githubusercontent.com/SFDO-Community/declarative-lookup-rollup-summaries/main/images/DLRS%20OSC%20Badge.png\">",
+      "description": "shown on product detail page (markdown)"
     }
+  },
+  "plan:install": {
+    "title": {
+      "message": "Install Declarative Lookup Rollup Summaries (DLRS)",
+      "description": "title of installation plan"
+    },
+    "preflight_message": {
+      "message": "This will install Declarative Lookup Rollup Summaries (DLRS) in your org.",
+      "description": "shown before user starts installation (markdown)"
+    },
+    "post_install_message": {
+      "message": "Thanks for installing Declarative Lookup Rollup Summaries (DLRS). Please visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion) for any questions about DLRS.",
+      "description": "shown after successful installation (markdown)"
+    },
+    "error_message": {
+      "message": "To get help with this error, visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion).",
+      "description": "shown after failed installation (markdown)"
+    }
+  },
+  "steps": {
+    "Install {product} {version}": {
+      "message": "Install {product} {version}",
+      "description": "title of installation step"
+    }
+  }
 }

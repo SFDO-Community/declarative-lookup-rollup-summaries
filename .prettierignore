@@ -6,5 +6,10 @@
 .localdevserver
 .sfdx
 .vscode
+.cci
 
+node_modules
+venv
 coverage/
+
+test_results.*

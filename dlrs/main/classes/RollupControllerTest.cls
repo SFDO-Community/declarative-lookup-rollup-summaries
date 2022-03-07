@@ -507,15 +507,12 @@ private class RollupControllerTest {
     String uniqueness = DateTime.now() + ':' + Math.random();
     uniqueness += new NullPointerException().getStackTraceString(); //includes the top level test method name without having to pass it
 
-    // officially, there is no Read Only Profile anymore; 
-    // its present for packaging org and scratch org support 
+    // officially, there is no Read Only Profile anymore;
+    // its present for packaging org and scratch org support
     List<Profile> profiles = [
       SELECT id, Name
       FROM Profile
-      WHERE
-        Name = 'Read Only'
-        OR Name = 'ReadOnly'
-        OR Name = 'Standard User'
+      WHERE Name = 'Read Only' OR Name = 'ReadOnly' OR Name = 'Standard User'
       ORDER BY Name ASC
     ];
     system.assert(

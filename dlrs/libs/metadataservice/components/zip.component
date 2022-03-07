@@ -25,22 +25,30 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 -->
-<apex:component >
-	<apex:attribute name="oncomplete" type="string" description="Javascript executed once all files have been zipped"/>
-	<apex:attribute name="name" type="string" description="Name of the Javascript function generated to zip files"/>
-	<script>
-		// Create JSZip (currently global) instance to receive files 
-		zipFile = new JSZip();
-	</script>
-	<!--  Output children, typically <c:zipEntry> components -->
-	<apex:componentBody />
-	<script>
-		// Function to be called from the page to start the zip generation process
-		function {!Name}()
-		{
-			// Execute given Javascript to handle completion of zip generation 
-			var data = zipFile.generate();
-			eval('{!oncomplete}');
-		}
-	</script>
+<apex:component>
+  <apex:attribute
+    name="oncomplete"
+    type="string"
+    description="Javascript executed once all files have been zipped"
+  />
+  <apex:attribute
+    name="name"
+    type="string"
+    description="Name of the Javascript function generated to zip files"
+  />
+  <script>
+    // Create JSZip (currently global) instance to receive files
+    zipFile = new JSZip();
+  </script>
+  <!--  Output children, typically <c:zipEntry> components -->
+  <apex:componentBody />
+  <script>
+    // Function to be called from the page to start the zip generation process
+    function {!Name}()
+    {
+    	// Execute given Javascript to handle completion of zip generation
+    	var data = zipFile.generate();
+    	eval('{!oncomplete}');
+    }
+  </script>
 </apex:component>
