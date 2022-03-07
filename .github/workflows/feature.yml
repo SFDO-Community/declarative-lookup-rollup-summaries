@@ -5,29 +5,29 @@ on:
       - feature/**
       - main
 jobs:
-  sfdx_scanner:
-    name: "Run SFDX Scanner PMD"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install sfdx
-        run: |
-          mkdir sfdx
-          wget -qO- https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz | tar xJ -C sfdx --strip-components 1
-          ./sfdx/install
-          sfdx plugins:install @salesforce/sfdx-scanner
-      - name: Run Analysis
-        run: |
-          sfdx scanner:run -t dlrs -e pmd -f junit -s 2 > results.xml
-      - name: Store Test Results
-        uses: actions/upload-artifact@v1
-        with:
-          name: sfdx-source-scanner-results.xml
-          path: results.xml
+  #sfdx_scanner:
+  #  name: "Run SFDX Scanner PMD"
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - uses: actions/checkout@v2
+  #    - name: Install sfdx
+  #      run: |
+  #        mkdir sfdx
+  #        wget -qO- https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz | tar xJ -C sfdx --strip-components 1
+  #        ./sfdx/install
+  #        sfdx plugins:install @salesforce/sfdx-scanner
+  #    - name: Run Analysis
+  #      run: |
+  #        sfdx scanner:run -t dlrs -e pmd -f junit -s 2 > results.xml
+  #    - name: Store Test Results
+  #      uses: actions/upload-artifact@v1
+  #      with:
+  #        name: sfdx-source-scanner-results.xml
+  #        path: results.xml
   formatting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v2-beta
         with:
           node-version: "14"
