@@ -43,7 +43,7 @@ public with sharing class  RefController {
     
     public List<ScheduleObject> getMerge(){
         
-		List<LookupRollupSummary2__mdt> mdt = getRollupRecords();
+        List<LookupRollupSummary2__mdt> mdt = getRollupRecords();
         List<CronTrigger> ct = getScheduledApex();
         List<ScheduleObject> so = new List<ScheduleObject>{};
          
@@ -57,36 +57,23 @@ public with sharing class  RefController {
             tempSO.ScheduledTime = null;
             tempSO.JobFiredCount = null;
             tempSO.RecordId = mdt[i].id;
-            so.add(tempSO);
-                   
+            so.add(tempSO);            
         }
-      
-        
+   
         //Inefficient loop.
-        //Substring match might not work on all.
-        //Is there a common id between the apex scheduled job and 
-        //the Custom metadata record?
+        //Apex job name contains 15 character record id, Record returns 18 char record id
         for(ScheduleObject soTemp : so){  
             for(integer i = 0; i < ct.size(); i++){
-                String str1 = ct[i].CronJobDetail.Name;
-                String str2 = str1.substringBetween('_', ' ' );
-                System.debug('Comparison String: ' + str2);
-                if(soTemp.Label == str2){
+                String shortID = soTemp.RecordId.substring(0,15);
+                if(ct[i].CronJobDetail.Name.contains(shortID)){
                     soTemp.apexJobName = ct[i].CronJobDetail.Name;
                     soTemp.ScheduledTime = ct[i].CronExpression;
                     soTemp.JobFiredCount = ct[i].TimesTriggered;
-
-                }
-                System.debug('New object record id: ' +soTemp.RecordId);
+				}
             }
         }
-        
-        for(integer i = 0; i < so.size(); i++){
-            System.debug(so[i]);
-        }   
-        return so;
-            
-            
+ 
+        return so;    
     }
 
 }

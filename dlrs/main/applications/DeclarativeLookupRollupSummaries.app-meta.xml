@@ -1,8 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
     <defaultLandingTab>Welcome</defaultLandingTab>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
     <label>Declarative Lookup Rollup Summaries</label>
     <tabs>Welcome</tabs>
     <tabs>ManageLookupRollupSummaries</tabs>
     <tabs>LookupRollupSummaryLog__c</tabs>
+    <tabs>Lookup_Rollup_List_View</tabs>
 </CustomApplication>
