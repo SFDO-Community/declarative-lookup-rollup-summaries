@@ -581,7 +581,7 @@ It's easy:
 0. Have VS Code with [Salesforce DX Extended](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode-expanded) setup and running
 
 1. Clone this repo
-2. run `npm install` - this will ensure our code formatting rules apply (via Prettier)
+2. run `npm ci` - this will ensure our code formatting rules apply (via Prettier), and installs packages from the package-lock.json file
 3. create a _new branch_ from `main`, all branches must start with `feature/`, e.g. `feature/newSetupUX`(use a descriptive name)
 4. Deploy code to a Scratch Org via CCI or DX
 5. Work on it
