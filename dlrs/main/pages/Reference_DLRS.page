@@ -1,4 +1,4 @@
-<apex:page controller="RefController" lightningStylesheets="true" tabStyle="Rollup_and_Scheduled_Apex__tab" showHeader="true" sidebar="true">
+<apex:page controller="RefController" lightningStylesheets="true" showHeader="true" sidebar="true">
   
     <apex:pageBlock title="List View - Rollups With Scheduled Apex Jobs">
         <apex:pageBlockTable value="{!Merge }" var="m" >
