@@ -1,9 +1,35 @@
 public with sharing class  RefController {
     
+
+    //Todo: Send user to wizard when they click record ID
+    public pagereference redirect(){      
+        return null;
+    }
+
+    public List<ViewerObject> getView(){
+        
+        list<RollupSummary> rs = new RollupSummariesSelector.CustomMetadataSelector(false,false).selectAll();
+        List<CronTrigger> ct = [SELECT CronJobDetail.Name, CronExpression, OwnerId , NextFireTime , TimesTriggered
+         FROM CronTrigger  
+         WHERE CronJobDetail.JobType = '7' 
+         WITH SECURITY_ENFORCED];
+        Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
+        
+        //If org has no rollups return empty list, avoids null pointer exception
+        if(rs.isEmpty()){
+            return null;
+        }
+        
+        viewerMap = setRollupSummaryToMap (rs) ;
+        viewerMap = setCronTriggerToMap (ct , viewerMap) ;
+
+        return viewerMap.values();    
+    }
     
-    //inner class to store joined object - MDT and Apex schulded job
-    //Can add more fields if users want more options for default view
-    class ScheduleObject {
+
+ 
+    //ToDo: Add support for all fields
+    class ViewerObject {
         
         public string label {get; set;}
         public string calcMode {get; set;}
@@ -11,76 +37,46 @@ public with sharing class  RefController {
         public string scheduledTime {get; set;}
         public Integer jobFiredCount {get; set;}
         public string recordId {get; set;}
-        
-    }
-    
-    //Todo: Send user to new wizard when they click record ID
-    public pagereference redirect(){      
-        return null;
-    }
-    
-    //soql query to return schedukled apex job.
-    //governor limit of 100
-    //ToDo: use selector class to get
-    public List<CronTrigger> getScheduledApex(){
-        
-        List<CronTrigger> ct = [SELECT CronJobDetail.Name, CronExpression, OwnerId , NextFireTime , TimesTriggered
-                                FROM CronTrigger 
-                                WHERE CronJobDetail.JobType = '7' AND CronJobDetail.Name LIKE '%rollup%'
-                                LIMIT 100];
-        return ct;
-    }
-    
-    //SOQL query to return metadata rollup records.
-    //limit to 500 until properly tested
-    //ToDo: Use selector class to get
-    public List<LookupRollupSummary2__mdt> getRollupRecords(){
-        
-        List<LookupRollupSummary2__mdt> mdt = [select CalculationMode__c, DeveloperName
-                                               from LookupRollupSummary2__mdt 
-                                               LIMIT 500];
-        
-        return mdt;      
-    }
-    
-    public List<ScheduleObject> getMerge(){
-        
-        List<LookupRollupSummary2__mdt> mdt = getRollupRecords();
-        List<CronTrigger> ct = getScheduledApex();
-        List<ScheduleObject> so = new List<ScheduleObject>{};
-            
-        //return empty object if there are more scheduled jobs than rollups    
-        if(mdt.size() < ct.size()){
-             return so;
-         }    
-        
-        //mdt will always be larger or equal to scheduled apex job list?
-        //initialize fields with null and override in next loop    
-        for(integer i = 0; i < mdt.size(); i++){
-            ScheduleObject tempSO = new ScheduleObject();
-            tempSO.label = mdt[i].DeveloperName;
-            tempSO.calcMode = mdt[i].CalculationMode__c;
-            tempSO.apexJobName = null;
-            tempSO.ScheduledTime = null;
-            tempSO.JobFiredCount = null;
-            tempSO.RecordId = mdt[i].id;
-            so.add(tempSO);            
+        public Datetime endtime {get; set;}
+    } 
+
+    //toDo: Add all fields from Rollup Summary metadata object
+    public Map<String, ViewerObject> setRollupSummaryToMap( list<RollupSummary> rs ) {
+
+        Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
+
+        //can add support for more fields
+        for(integer i = 0; i < rs.size(); i++){
+            ViewerObject viewObj = new ViewerObject();
+            viewObj.label = rs[i].UniqueName;
+            viewObj.calcMode = rs[i].CalculationMode;
+            viewObj.RecordId = rs[i].id;
+
+            //id reference between both queries needs to be 15 characters.
+            viewerMap.put(rs[i].id.substring(0,15) , viewObj);
+
         }
-        
-        //Inefficient loop.
-        //Apex job name contains 15 character record id, Record returns 18 char record id
-        for(ScheduleObject soTemp : so){  
-            for(integer i = 0; i < ct.size(); i++){
-                String shortID = soTemp.RecordId.substring(0,15);
-                if(ct[i].CronJobDetail.Name.contains(shortID)){
-                    soTemp.apexJobName = ct[i].CronJobDetail.Name;
-                    soTemp.ScheduledTime = ct[i].CronExpression;
-                    soTemp.JobFiredCount = ct[i].TimesTriggered;
-                }
+        return viewerMap;     
+    }
+
+
+     public Map<String, ViewerObject> setCronTriggerToMap( list<CronTrigger> ct , Map<String, ViewerObject> viewerMap) {
+
+        for( CronTrigger c : ct){
+            //isolate 15 character id from cronjob name. 
+            String id = c.CronJobDetail.Name.substringBetween( '(' , ')' );
+            if (viewerMap.containsKey(id)){
+                viewerMap.get(id).apexJobName = c.CronJobDetail.Name;
+                viewerMap.get(id).scheduledTime = c.CronExpression;
+                viewerMap.get(id).jobFiredCount = c.TimesTriggered;
             }
         }
-        
-        return so;    
-    }
+
+        return viewerMap;
+
+     }
+
+
     
+
 }
