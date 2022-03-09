@@ -44,3 +44,4 @@ $RECYCLE.BIN/
 
 # Local environment variables
 .env
+Scripts/Apex/Hello.apex

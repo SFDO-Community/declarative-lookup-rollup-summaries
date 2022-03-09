@@ -3,7 +3,7 @@
     <apex:pageBlock title="List View - Rollups With Scheduled Apex Jobs">
         <apex:pageBlockTable value="{!Merge }" var="m" >
             <apex:column headerValue="Rollup Label" value="{! m.label }"/>
-            <apex:column headerValue="Calculation Mode" value="{! m.calcMode }"/>
+                    <apex:column headerValue="Calculation Mode" value="{! m.calcMode }"/>
             <apex:column headerValue="Scheduled Apex Job name" value="{! m.apexJobName }"/>
             <apex:column headerValue="Scheduled to run Time" value="{! m.ScheduledTime }"/>
             <apex:column headerValue="Job Fired Count" value="{! m.JobFiredCount }"/>
