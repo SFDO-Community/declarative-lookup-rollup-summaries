@@ -1,5 +1,6 @@
 public with sharing class  ViewLookupRollupList {
 
+    //redirects user to edit page when they click record id
     public pagereference redirect(){   
         PageReference newPage = Page.managelookuprollupsummaries;
         String redirectID = Apexpages.currentPage().getParameters().get('newid').escapeHtml4();
@@ -8,6 +9,8 @@ public with sharing class  ViewLookupRollupList {
 
         return newPage;
     }
+
+    //returns view object for visualforce page 
     public List<ViewerObject> getView(){
         
         Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
@@ -24,6 +27,7 @@ public with sharing class  ViewLookupRollupList {
         return viewerMap.values();    
     }
     
+    //Holds SOQL results from rollupsummary and cronjob queries
     private class ViewerObject {
         
         //RollupSummary Fields
@@ -37,7 +41,6 @@ public with sharing class  ViewLookupRollupList {
         public Datetime endtime {get; set;}
         public string apexJobName {get; set;}
     } 
-
 
     //Utility Method to set Map with RollupSummary Data 
     private Map<String, ViewerObject> setRollupSummaryToMap( List<RollupSummary> rs) {

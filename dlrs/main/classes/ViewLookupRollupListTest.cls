@@ -6,6 +6,5 @@ private class ViewLookupRollupListTest {
         ViewLookupRollupList vlrl = new ViewLookupRollupList();
         vlrl.getView();
         
-
     }
 }
