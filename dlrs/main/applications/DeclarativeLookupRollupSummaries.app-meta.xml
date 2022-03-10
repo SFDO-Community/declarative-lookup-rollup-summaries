@@ -7,5 +7,5 @@
     <tabs>Welcome</tabs>
     <tabs>ManageLookupRollupSummaries</tabs>
     <tabs>LookupRollupSummaryLog__c</tabs>
-    <tabs>Lookup_Rollup_List_View</tabs>
+    <tabs>LookupRollupListView</tabs>
 </CustomApplication>
