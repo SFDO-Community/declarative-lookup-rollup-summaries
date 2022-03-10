@@ -8,7 +8,11 @@
             <apex:column headerValue="Scheduled to run Time" value="{! v.ScheduledTime }"/>
             <apex:column headerValue="Job Fired Count" value="{! v.JobFiredCount }"/>
             <apex:column headerValue="Record ID" >
-                <apex:outputLink value="/{! v.recordID }" target="_blank">{! v.recordID }</apex:outputLink>
+                <apex:form>
+                    <apex:commandLink action="{!redirect}" value="{! v.recordID }" >
+                        <apex:param name="newid" value="{! v.recordID}" />     
+                    </apex:commandLink>             
+                </apex:form>
             </apex:column>
             
         </apex:pageBlockTable>

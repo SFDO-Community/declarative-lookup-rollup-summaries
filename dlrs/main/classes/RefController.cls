@@ -1,9 +1,12 @@
 public with sharing class  RefController {
     
+    public pagereference redirect(){   
+        PageReference newPage = Page.managelookuprollupsummaries;
+        String redirectID = Apexpages.currentPage().getParameters().get('newid').escapeHtml4();
+        newPage.setRedirect(true);
+        newpage.getParameters().put('id' , redirectID);
 
-    //Todo: Send user to wizard when they click record ID
-    public pagereference redirect(){      
-        return null;
+        return newPage;
     }
 
     public List<ViewerObject> getView(){
