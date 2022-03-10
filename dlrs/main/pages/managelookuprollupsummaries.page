@@ -21,7 +21,7 @@
 			<apex:pageBlock mode="edit" id="rollupDetailView">
 				<apex:pageBlockButtons>
 					<apex:commandButton value="Save" action="{!save}" />
-					<apex:commandButton value="Clonex" action="{!clonex}" rendered="{!LookupRollupSummary.Id!=null}" />
+					<apex:commandButton value="Clone" action="{!clonex}" rendered="{!LookupRollupSummary.Id!=null}" />
 					<apex:commandButton value="Delete" action="{!deleteX}" rendered="{!LookupRollupSummary.Id!=null}" />
 					<apex:commandButton value="Full Calculate" action="{!URLFOR($Page.rollupcalculatemdt, null, ['id'=LookupRollupSummary.id])}"
 					 rendered="{!LookupRollupSummary.Id!=null}" />
@@ -36,7 +36,7 @@
 						<apex:outputPanel>
 							<div class="requiredInput">
 								<div class="requiredBlock" />
-								<apex:inputText size="32" value="{!LookupRollupSummary.Label}" />
+								<apex:inputText size="32" value="{!LookupRollupSummary.Label}"  />
 							</div>
 						</apex:outputPanel>
 					</apex:pageBlockSectionItem>
