@@ -178,6 +178,8 @@ public with sharing class ManageLookupRollupSummariesController {
 
     if(ApexPages.currentPage().getParameters().get('id') != null){
       newPage.getParameters().put('cloneID', ApexPages.currentPage().getParameters().get('id').escapeHtml4());
+    }else {
+      Apexpages.currentPage().getParameters().put('id', LookupRollupSummary.id);
     }
         
     return newPage;
