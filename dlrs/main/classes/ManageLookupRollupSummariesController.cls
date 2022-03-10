@@ -29,8 +29,6 @@ public with sharing class ManageLookupRollupSummariesController {
 
   public String selectedLookup { get; set; }
 
-  public String cloneLookup { get; set; }
-
   public Boolean MetadataConnectionError { get; set; }
 
   public ManageLookupRollupSummariesController() {
@@ -67,11 +65,6 @@ public with sharing class ManageLookupRollupSummariesController {
 
     // URL parameter?
     selectedLookup = (Id) ApexPages.currentPage().getParameters().get('id');
-    cloneLookup = (Id) ApexPages.currentPage().getParameters().get('cloneID');
-
-    if (cloneLookup != null) {
-      cloneRollupSummary();
-    }
     if (selectedLookup != null) {
       LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
             false,
@@ -156,30 +149,14 @@ public with sharing class ManageLookupRollupSummariesController {
     return null;
   }
 
-  public void cloneRollupSummary(){
+  public PageReference clonex() {
 
-    LookupRollupSummary2__mdt cloneSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
-      false,
-      true
-    )
-    .selectById(new Set<String>{ cloneLookup })[0]
-  .Record;
-
-    cloneSummary.label = '';
-    cloneSummary.developerName = '';
-    cloneSummary.id = null;
-    LookupRollupSummary = cloneSummary;
-
-  }
-
-  public Pagereference clonex() {
     PageReference newPage = Page.managelookuprollupsummaries;
     newPage.setRedirect(true);
 
-    if(ApexPages.currentPage().getParameters().get('id') != null){
-      newPage.getParameters().put('cloneID', ApexPages.currentPage().getParameters().get('id').escapeHtml4());
-    }
-        
+    LookupRollupSummary.Label = newpage.getParameters().get('label');
+    
+
     return newPage;
 
   }
