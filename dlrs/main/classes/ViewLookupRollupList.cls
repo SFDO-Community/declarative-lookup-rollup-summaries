@@ -1,5 +1,5 @@
-public with sharing class  RefController {
-    
+public with sharing class  ViewLookupRollupList {
+
     public pagereference redirect(){   
         PageReference newPage = Page.managelookuprollupsummaries;
         String redirectID = Apexpages.currentPage().getParameters().get('newid').escapeHtml4();
@@ -8,7 +8,6 @@ public with sharing class  RefController {
 
         return newPage;
     }
-
     public List<ViewerObject> getView(){
         
         Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();

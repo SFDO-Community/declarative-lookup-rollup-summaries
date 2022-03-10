@@ -1,4 +1,4 @@
-<apex:page controller="RefController" lightningStylesheets="true" showHeader="true" sidebar="true">
+<apex:page controller="ViewLookupRollupList" lightningStylesheets="true" showHeader="true" sidebar="true">
     
     <apex:pageBlock title="List View - Rollups With Scheduled Apex Jobs">
         <apex:pageBlockTable value="{!view }" var="v" >
@@ -14,7 +14,6 @@
                     </apex:commandLink>             
                 </apex:form>
             </apex:column>
-            
         </apex:pageBlockTable>
     </apex:pageBlock>
     
