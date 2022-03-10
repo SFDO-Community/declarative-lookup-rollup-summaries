@@ -149,6 +149,14 @@ public with sharing class ManageLookupRollupSummariesController {
     return null;
   }
 
+  public PageReference clone() {
+    PageReference newPage = Page.managelookuprollupsummaries;
+    newPage.setRedirect(true);
+    if (selectedLookup != '[new]')
+      newPage.getParameters().put('id', selectedLookup);
+    return newPage;
+  }
+
   public PageReference hideMessage() {
     DeclarativeLookupRollupSummaries__c settings = DeclarativeLookupRollupSummaries__c.getOrgDefaults();
     settings.HideManageLookupRollupSummariesInfo__c = true;
