@@ -29,6 +29,7 @@ public with sharing class ManageLookupRollupSummariesController {
 
   public String selectedLookup { get; set; }
 
+  //is needed?
   public String cloneLookup { get; set; }
 
   public Boolean MetadataConnectionError { get; set; }
@@ -69,6 +70,7 @@ public with sharing class ManageLookupRollupSummariesController {
     selectedLookup = (Id) ApexPages.currentPage().getParameters().get('id');
     cloneLookup = (Id) ApexPages.currentPage().getParameters().get('cloneID');
 
+    //reset clone id to null after update, set ...
     if (cloneLookup != null) {
       cloneRollupSummary();
     }
@@ -156,6 +158,8 @@ public with sharing class ManageLookupRollupSummariesController {
     return null;
   }
 
+  //TO cloneRollupSummary, we query the database for the rollup summary with passed cloneLookup,
+  //then set clonesummary with empty values on known values to edit.
   public void cloneRollupSummary(){
 
     LookupRollupSummary2__mdt cloneSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
@@ -172,6 +176,7 @@ public with sharing class ManageLookupRollupSummariesController {
 
   }
 
+  //TO clonex, we check if page has record id, if so return create[new] page with cloned record to save.
   public Pagereference clonex() {
     PageReference newPage = Page.managelookuprollupsummaries;
     newPage.setRedirect(true);
