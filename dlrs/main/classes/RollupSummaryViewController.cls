@@ -1,16 +1,17 @@
-public with sharing class  ViewLookupRollupList {
+//Rename to be in line with conventions
+public with sharing class  RollupSummaryViewController {
 
-    //redirects user to edit page when they click record id
+    //To redirect, we set page to Lookup id page
     public pagereference redirect(){   
-        PageReference newPage = Page.managelookuprollupsummaries;
-        String redirectID = Apexpages.currentPage().getParameters().get('newid').escapeHtml4();
-        newPage.setRedirect(true);
-        newpage.getParameters().put('id' , redirectID);
+        PageReference lookupPage = Page.managelookuprollupsummaries;
+        lookupPage.setRedirect(true);
+        lookupPage.getParameters().put('id' , Apexpages.currentPage().getParameters().get('newid').escapeHtml4());
 
-        return newPage;
+        return lookupPage;
     }
 
-    //returns view object for visualforce page 
+    //To getView, we check if rollupSummary is empty, then we set rollup summary to map, then we set cron Trigger to map,
+    //then we return the Viewermap values
     public List<ViewerObject> getView(){
         
         Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
@@ -27,7 +28,7 @@ public with sharing class  ViewLookupRollupList {
         return viewerMap.values();    
     }
     
-    //Holds SOQL results from rollupsummary and cronjob queries
+    //Joins SOQL results from rollupsummary and cronjob queries
     private class ViewerObject {
         
         //RollupSummary Fields
