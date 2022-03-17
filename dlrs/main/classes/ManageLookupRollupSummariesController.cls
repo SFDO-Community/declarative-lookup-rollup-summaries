@@ -160,20 +160,18 @@ public with sharing class ManageLookupRollupSummariesController {
 
   //TO cloneRollupSummary, we query the database for the rollup summary with passed cloneLookup,
   //then set clonesummary with empty values on known values to edit.
-  public void cloneRollupSummary(){
-
+  public void cloneRollupSummary() {
     LookupRollupSummary2__mdt cloneSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
-      false,
-      true
-    )
-    .selectById(new Set<String>{ cloneLookup })[0]
-  .Record;
+          false,
+          true
+        )
+        .selectById(new Set<String>{ cloneLookup })[0]
+      .Record;
 
     cloneSummary.label = '';
     cloneSummary.developerName = '';
     cloneSummary.id = null;
     LookupRollupSummary = cloneSummary;
-
   }
 
   //TO clonex, we check if page has record id, if so return create[new] page with cloned record to save.
@@ -181,14 +179,17 @@ public with sharing class ManageLookupRollupSummariesController {
     PageReference newPage = Page.managelookuprollupsummaries;
     newPage.setRedirect(true);
 
-    if(ApexPages.currentPage().getParameters().get('id') != null){
-      newPage.getParameters().put('cloneID', ApexPages.currentPage().getParameters().get('id').escapeHtml4());
-    }else {
+    if (ApexPages.currentPage().getParameters().get('id') != null) {
+      newPage.getParameters()
+        .put(
+          'cloneID',
+          ApexPages.currentPage().getParameters().get('id').escapeHtml4()
+        );
+    } else {
       Apexpages.currentPage().getParameters().put('id', LookupRollupSummary.id);
     }
-        
-    return newPage;
 
+    return newPage;
   }
 
   public PageReference hideMessage() {
