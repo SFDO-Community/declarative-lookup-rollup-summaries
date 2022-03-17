@@ -1,0 +1,15 @@
+<template>
+    <template if:true={notOnLatestRelease}>
+        <div class="slds-notify slds-notify_alert slds-alert_warning" role="alert">
+            <span class="slds-assistive-text">warning</span>
+            <span class="slds-icon_container slds-icon-utility-warning slds-m-right_x-small">
+              <svg class="slds-icon slds-icon_x-small" aria-hidden="true">
+                <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#warning"></use>
+              </svg>
+            </span>
+            <h2>{labels.latestReleaseWarning}&nbsp;
+                <a href="https://install.salesforce.org/products/dlrs/latest">{labels.latestReleaseLink}</a>
+            </h2>
+        </div>
+    </template>
+</template>
