@@ -1,6 +1,4 @@
-//Rename to be in line with conventions
 public with sharing class RollupSummaryViewController {
-  //To redirect, we set page with new record id, then redirect
   public pagereference redirect() {
     PageReference redirectPageWithId = Page.managelookuprollupsummaries;
     redirectPageWithId.setRedirect(true);
@@ -13,8 +11,6 @@ public with sharing class RollupSummaryViewController {
     return redirectPageWithId;
   }
 
-  //To getView, we check if rollupSummary is empty, then we set rollup summary to map, then we set cron Trigger to map,
-  //then we return the Viewermap values
   public List<ViewerObject> getView() {
     Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
     list<RollupSummary> rs = new RollupSummariesSelector.CustomMetadataSelector(
@@ -23,7 +19,6 @@ public with sharing class RollupSummaryViewController {
       )
       .selectAll();
 
-    //If org has no rollups return empty list, avoids null pointer exception
     if (rs.isEmpty()) {
       return null;
     }
@@ -34,13 +29,11 @@ public with sharing class RollupSummaryViewController {
     return viewerMap.values();
   }
 
-  //Utility Method to set Map with RollupSummary Data
   private Map<String, ViewerObject> setRollupSummaryToMap(
     List<RollupSummary> rs
   ) {
     Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
 
-    //can add support for more fields
     for (integer i = 0; i < rs.size(); i++) {
       ViewerObject viewObj = new ViewerObject();
       viewObj.label = rs[i].UniqueName;
@@ -51,7 +44,6 @@ public with sharing class RollupSummaryViewController {
     return viewerMap;
   }
 
-  //Utility Method to set map with CronTrigger data
   private Map<String, ViewerObject> setCronTriggerToMap(
     Map<String, ViewerObject> viewerMap
   ) {
@@ -78,14 +70,11 @@ public with sharing class RollupSummaryViewController {
     return viewerMap;
   }
 
-  //Joins SOQL results from rollupsummary and cronjob queries
   private class ViewerObject {
-    //RollupSummary Fields
     public string recordId { get; set; }
     public string label { get; set; }
     public string calcMode { get; set; }
 
-    //Scheduled Apex Job Fields
     public string scheduledTime { get; set; }
     public Integer jobFiredCount { get; set; }
     public Datetime endtime { get; set; }

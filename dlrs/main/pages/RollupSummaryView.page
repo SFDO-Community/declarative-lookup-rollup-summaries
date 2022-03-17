@@ -1,5 +1,4 @@
 <apex:page controller="RollupSummaryViewController" lightningStylesheets="true" showHeader="true" sidebar="true">
-
     <apex:pageBlock title="List View - Rollups With Scheduled Apex Jobs">
         <apex:pageBlockTable value="{!view }" var="v">
             <apex:column headerValue="Rollup Label" value="{! v.label }" />
@@ -16,5 +15,4 @@
             </apex:column>
         </apex:pageBlockTable>
     </apex:pageBlock>
-
 </apex:page>
