@@ -9,8 +9,8 @@
             <apex:column headerValue="Job Fired Count" value="{! v.JobFiredCount }" />
             <apex:column headerValue="Record ID">
                 <apex:form>
-                    <apex:commandLink action="{!redirect}" value="{! v.recordID }">
-                        <apex:param name="newid" value="ADD LABEL - {! v.recordID}" />
+                    <apex:commandLink action="{!redirect}" value="{! v.label } [{! v.recordID }]">
+                        <apex:param name="newid" value="{! v.recordID}" />
                     </apex:commandLink>
                 </apex:form>
             </apex:column>

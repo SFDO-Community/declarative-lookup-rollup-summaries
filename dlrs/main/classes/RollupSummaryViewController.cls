@@ -18,7 +18,7 @@ public with sharing class  RollupSummaryViewController {
         list<RollupSummary> rs = new RollupSummariesSelector.CustomMetadataSelector(false,false).selectAll();
 
         //If org has no rollups return empty list, avoids null pointer exception
-        if(rs.isEmpty()){
+                if(rs.isEmpty()){
             return null;
         }
         
