@@ -1,13 +1,13 @@
 //Rename to be in line with conventions
 public with sharing class  RollupSummaryViewController {
 
-    //To redirect, we set page to Lookup id page
+    //To redirect, we set page with new record id, then redirect
     public pagereference redirect(){   
-        PageReference lookupPage = Page.managelookuprollupsummaries;
-        lookupPage.setRedirect(true);
-        lookupPage.getParameters().put('id' , Apexpages.currentPage().getParameters().get('newid').escapeHtml4());
+        PageReference redirectPageWithId = Page.managelookuprollupsummaries;
+        redirectPageWithId.setRedirect(true);
+        redirectPageWithId.getParameters().put('id' , Apexpages.currentPage().getParameters().get('newid').escapeHtml4());
 
-        return lookupPage;
+        return redirectPageWithId;
     }
 
     //To getView, we check if rollupSummary is empty, then we set rollup summary to map, then we set cron Trigger to map,
@@ -27,6 +27,42 @@ public with sharing class  RollupSummaryViewController {
 
         return viewerMap.values();    
     }
+
+        //Utility Method to set Map with RollupSummary Data 
+    private Map<String, ViewerObject> setRollupSummaryToMap( List<RollupSummary> rs) {
+
+            Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
+    
+            //can add support for more fields
+            for(integer i = 0; i < rs.size(); i++){
+                ViewerObject viewObj = new ViewerObject();
+                viewObj.label = rs[i].UniqueName;
+                viewObj.calcMode = rs[i].CalculationMode;
+                viewObj.RecordId = rs[i].id;
+                viewerMap.put(rs[i].id.substring(0,15) , viewObj);
+    
+            }
+            return viewerMap;     
+        }
+    
+        //Utility Method to set map with CronTrigger data
+    private Map<String, ViewerObject> setCronTriggerToMap(Map<String, ViewerObject> viewerMap) {
+    
+            List<CronTrigger> ct = [SELECT CronJobDetail.Name, CronExpression, OwnerId , NextFireTime , TimesTriggered
+             FROM CronTrigger  
+             WHERE CronJobDetail.JobType = '7' 
+             WITH SECURITY_ENFORCED];
+    
+            for( CronTrigger c : ct){
+                String id = c.CronJobDetail.Name.substringBetween( '(' , ')' );
+                if (viewerMap.containsKey(id)){
+                    viewerMap.get(id).apexJobName = c.CronJobDetail.Name;
+                    viewerMap.get(id).scheduledTime = c.CronExpression;
+                    viewerMap.get(id).jobFiredCount = c.TimesTriggered;
+                }
+            }
+            return viewerMap;
+         }
     
     //Joins SOQL results from rollupsummary and cronjob queries
     private class ViewerObject {
@@ -43,39 +79,5 @@ public with sharing class  RollupSummaryViewController {
         public string apexJobName {get; set;}
     } 
 
-    //Utility Method to set Map with RollupSummary Data 
-    private Map<String, ViewerObject> setRollupSummaryToMap( List<RollupSummary> rs) {
 
-        Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
-
-        //can add support for more fields
-        for(integer i = 0; i < rs.size(); i++){
-            ViewerObject viewObj = new ViewerObject();
-            viewObj.label = rs[i].UniqueName;
-            viewObj.calcMode = rs[i].CalculationMode;
-            viewObj.RecordId = rs[i].id;
-            viewerMap.put(rs[i].id.substring(0,15) , viewObj);
-
-        }
-        return viewerMap;     
-    }
-
-    //Utility Method to set map with CronTrigger data
-     private Map<String, ViewerObject> setCronTriggerToMap(Map<String, ViewerObject> viewerMap) {
-
-        List<CronTrigger> ct = [SELECT CronJobDetail.Name, CronExpression, OwnerId , NextFireTime , TimesTriggered
-         FROM CronTrigger  
-         WHERE CronJobDetail.JobType = '7' 
-         WITH SECURITY_ENFORCED];
-
-        for( CronTrigger c : ct){
-            String id = c.CronJobDetail.Name.substringBetween( '(' , ')' );
-            if (viewerMap.containsKey(id)){
-                viewerMap.get(id).apexJobName = c.CronJobDetail.Name;
-                viewerMap.get(id).scheduledTime = c.CronExpression;
-                viewerMap.get(id).jobFiredCount = c.TimesTriggered;
-            }
-        }
-        return viewerMap;
-     }
 }
