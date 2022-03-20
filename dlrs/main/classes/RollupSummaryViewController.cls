@@ -70,6 +70,7 @@ public with sharing class RollupSummaryViewController {
     return viewerMap;
   }
 
+  //data structure
   private class ViewerObject {
     public string recordId { get; set; }
     public string label { get; set; }
