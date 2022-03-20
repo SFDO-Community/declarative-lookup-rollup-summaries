@@ -215,8 +215,7 @@ public with sharing class RollupController {
           : ('        // Force the ' +
             RollupTriggerName +
             ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-            '        Callable npspApi = (System.Callable)Type.forName(\'npsp\', \'Callable_API\').newInstance();\n' +
-            '        Boolean isNpspTriggerDisabled = (Boolean)npspApi.call(\'TDTM.DisableAllTriggers\', new Map<String, Object>());\n' +
+            '        RollupService.disableNpspTdtm();\n' +
             '        ' +
             (namespace.length() > 0 ? namespace + '.' : '') +
             'RollupService.testHandler(new ' +
