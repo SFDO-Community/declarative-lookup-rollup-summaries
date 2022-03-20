@@ -6,17 +6,21 @@ private class RollupSummaryViewControllerTest {
     testController.getView();
   }
 
-  //Test if redirect is given bad id value
+  private static void setup(){
+    //insert 2 mdt, acct, opp
 
-  //test getview if RollupSummary returns empty list [soql]
-  //test getview if contrigger returns empty list [soql]
-  
-  //assert 3 records with 3 crontriggers and 3 rollupsummaires
-  //assert 3 records with 3 rollup summaires
-  //assert no records with 3 crontriggers - impossible
-  //
+  }
 
+  @IsTest
+  private static void redirectWithBadID(){
+      //Test if redirect is given bad id value
 
+  }
 
+  @IsTest
+  private static void getViewIfRollupSummaryIsEmptyList(){
+      //test getview if RollupSummary returns empty list [soql]
+
+  }
 
 }

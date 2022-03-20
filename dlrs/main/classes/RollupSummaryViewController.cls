@@ -70,7 +70,7 @@ public with sharing class RollupSummaryViewController {
     return viewerMap;
   }
 
-  //data structure
+  //Getter and Setter required for Visualforce page 
   private class ViewerObject {
     public string recordId { get; set; }
     public string label { get; set; }
