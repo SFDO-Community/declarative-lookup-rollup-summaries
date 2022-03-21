@@ -58,13 +58,15 @@
 			<table>
 				<tr>
 					<td>
-						<img src="http://andrewfawcett.files.wordpress.com/2013/07/blog_chart1.jpg" width="200" height="200" align="left" />
+						<apex:image url="{!$Resource.DLRS_Logo}" width="200" height="200"/>
+					</td>
+					<td>
 						<p>
 							<b>Overview:</b> This is a tool that helps address a current platform limitation around rollup summaries. Specifically
 							the inability to do rollup summaries between lookup relationships. This is possible between master detail relationships
 							using the declarative mode of Force.com, but not between lookup relationships.</p>
 						<p>
-							<b>Documentatoin:</b> You can learn more about this tool by reading the documentation
+							<b>Documentation:</b> You can learn more about this tool by reading the documentation
 							<a target="_new" href="https://github.com/afawcett/declarative-lookup-rollup-summaries#declarative-rollups-for-lookups">here.</a>
 						</p>
 						<p>
