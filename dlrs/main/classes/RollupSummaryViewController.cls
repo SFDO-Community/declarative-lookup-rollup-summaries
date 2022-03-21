@@ -34,14 +34,16 @@ public with sharing class RollupSummaryViewController {
   ) {
     Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
 
+    
     //change to for loop with iterator
-    for (integer i = 0; i < rs.size(); i++) {
+    for (RollupSummary rollup : rs) {
       ViewerObject viewObj = new ViewerObject();
-      viewObj.label = rs[i].UniqueName;
-      viewObj.calcMode = rs[i].CalculationMode;
-      viewObj.RecordId = rs[i].id;
-      viewerMap.put(rs[i].id.substring(0, 15), viewObj);
+      viewObj.label = rollup.UniqueName;
+      viewObj.calcMode = rollup.CalculationMode;
+      viewObj.RecordId = rollup.id;
+      viewerMap.put(rollup.id.substring(0, 15), viewObj);
     }
+
     return viewerMap;
   }
 
