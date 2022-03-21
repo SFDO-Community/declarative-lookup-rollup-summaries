@@ -34,6 +34,7 @@ public with sharing class RollupSummaryViewController {
   ) {
     Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
 
+    //change to for loop with iterator
     for (integer i = 0; i < rs.size(); i++) {
       ViewerObject viewObj = new ViewerObject();
       viewObj.label = rs[i].UniqueName;
