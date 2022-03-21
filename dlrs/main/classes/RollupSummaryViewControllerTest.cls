@@ -16,10 +16,14 @@ private class RollupSummaryViewControllerTest {
   @IsTest
   private static void getViewIfRollupSummaryIsEmptyList() {
     //test getview if RollupSummary returns empty list [soql]
+
   }
 
-
+  @IsTest
   private static void setup() {
+
+    //Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+
     LookupRollupSummary2__mdt rollupSummaryA = new LookupRollupSummary2__mdt();
     LookupRollupSummary2__mdt rollupSummaryB = new LookupRollupSummary2__mdt();
     LookupRollupSummary2__mdt rollupSummaryC = new LookupRollupSummary2__mdt();
