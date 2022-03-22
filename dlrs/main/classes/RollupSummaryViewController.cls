@@ -1,3 +1,4 @@
+//depends  
 public with sharing class RollupSummaryViewController {
   public pagereference redirect() {
     PageReference redirectPageWithId = Page.managelookuprollupsummaries;
@@ -34,7 +35,7 @@ public with sharing class RollupSummaryViewController {
   ) {
     Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
 
-    
+
     //change to for loop with iterator
     for (RollupSummary rollup : rs) {
       ViewerObject viewObj = new ViewerObject();

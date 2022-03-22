@@ -29,6 +29,7 @@ private class RollupSummaryViewControllerTest {
     LookupRollupSummary2__mdt rollupSummaryC = new LookupRollupSummary2__mdt();
 
 
+    //all this data is required for rollupservice.create if one field is missing it will throw an impossible to understand exception.
     rollupSummaryA.Label = 'test10';
     rollupSummaryA.DeveloperName = 'test10';
     rollupSummaryA.ParentObject__c = 'Account';
@@ -52,8 +53,8 @@ private class RollupSummaryViewControllerTest {
     rollupSummaryC.Label = 'test12';
     rollupSummaryC.developerName = 'test12';
 
-
-    RollupService.create(new List<SObject>{ rollupSummaryA , rollupSummaryB, rollupSummaryC });
+    //Http callout error. Must create mdt object in memory. Learn how to mock test data!
+    //RollupService.create(new List<SObject>{ rollupSummaryA , rollupSummaryB, rollupSummaryC });
   }
 
   
