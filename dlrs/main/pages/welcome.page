@@ -53,7 +53,7 @@
 			<apex:actionFunction name="displayMetadataResponse" action="{!displayMetadataResponse}" rerender="myForm">
 				<apex:param name="metadataResponse" assignTo="{!metadataResponse}" value="{!metadataResponse}" />
 			</apex:actionFunction>
-			<apex:sectionHeader title="Declarative Rollups for Lookups" subtitle="Welcome" />
+			<apex:sectionHeader title="Declarative Lookup Rollup Summaries" subtitle="Welcome" />
 			<apex:pageMessages />
 			<table>
 				<tr>
