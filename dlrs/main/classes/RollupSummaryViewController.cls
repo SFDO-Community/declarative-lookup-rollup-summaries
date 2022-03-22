@@ -1,5 +1,18 @@
 //depends  
 public with sharing class RollupSummaryViewController {
+
+  private RollupSummary selectorLayer;
+
+  public rollupSummaryViewController(){
+    this(new RollupSummary(new LookupRollupSummary2__mdt()));
+
+  }
+  @TestVisible
+  private RollupSummaryViewController(RollupSummary selectorLayer){
+      this.selectorLayer = selectorLayer;
+
+  }
+
   public pagereference redirect() {
     PageReference redirectPageWithId = Page.managelookuprollupsummaries;
     redirectPageWithId.setRedirect(true);

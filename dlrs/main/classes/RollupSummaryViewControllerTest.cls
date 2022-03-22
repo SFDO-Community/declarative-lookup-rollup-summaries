@@ -15,6 +15,14 @@ private class RollupSummaryViewControllerTest {
 
   @IsTest
   private static void getViewIfRollupSummaryIsEmptyList() {
+    fflib_ApexMocks mocks = new fflib_ApexMocks();
+    RollupSummariesSelector.CustomMetadataSelector mockRollupSummariesSelector = (RollupSummariesSelector.CustomMetadataSelector) mocks.mock(RollupSummariesSelector.CustomMetadataSelector.class);
+
+    mocks.startStubbing();
+    //mocks.when(mockRollupSummariesSelector.)
+
+
+    mocks.startStubbing();
     //test getview if RollupSummary returns empty list [soql]
 
   }
@@ -52,6 +60,12 @@ private class RollupSummaryViewControllerTest {
     rollupSummaryc = rollupSummaryA;
     rollupSummaryC.Label = 'test12';
     rollupSummaryC.developerName = 'test12';
+
+    //empty list
+    list<RollupSummary> rollupEmpty = RollupSummary.toList(new List<SObject>{});
+
+    //3 item list
+    list<RollupSummary> rollupThreeRecords = RollupSummary.toList(new List<SObject>{rollupSummaryA, rollupSummaryB, rollupSummaryC});
 
     //Http callout error. Must create mdt object in memory. Learn how to mock test data!
     //RollupService.create(new List<SObject>{ rollupSummaryA , rollupSummaryB, rollupSummaryC });
