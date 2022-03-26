@@ -19,9 +19,11 @@ public with sharing class CronTriggersSelector extends fflib_SObjectSelector {
             return CronTrigger.sObjectType;
           }
 
-        public List<CronTrigger> selectAll(){
-            List<CronTrigger> ct = new List<CronTrigger>{};
-
+        public List<CronTrigger> selectAllScheduledApex(){
+            List<CronTrigger> ct = Database.query(newQueryFactory().
+            selectfield('CronJobDetail.Name').
+            setCondition('CronJobDetail.JobType = \'7\'').
+            tosoql());
 
             return ct;
         }

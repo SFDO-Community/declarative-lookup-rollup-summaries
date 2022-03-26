@@ -27,11 +27,7 @@ public with sharing class RollupSummaryViewController {
 
   public List<ViewerObject> getView() {
     Map<String, ViewerObject> viewerMap = new Map<String, ViewerObject>();
-    list<RollupSummary> rs = new RollupSummariesSelector.CustomMetadataSelector(
-        false,
-        false
-      )
-      .selectAll();
+    list<RollupSummary> rs = new RollupSummariesSelector.CustomMetadataSelector(false,false).selectAll();
 
     if (rs.isEmpty()) {
       return null;
@@ -64,17 +60,8 @@ public with sharing class RollupSummaryViewController {
   private Map<String, ViewerObject> setCronTriggerToMap(
     Map<String, ViewerObject> viewerMap
   ) {
-    List<CronTrigger> ct = [
-      SELECT
-        CronJobDetail.Name,
-        CronExpression,
-        OwnerId,
-        NextFireTime,
-        TimesTriggered
-      FROM CronTrigger
-      WHERE CronJobDetail.JobType = '7'
-      WITH SECURITY_ENFORCED
-    ];
+
+    List<CronTrigger> ct = new CronTriggersSelector().selectAllScheduledApex();
 
     for (CronTrigger c : ct) {
       String id = c.CronJobDetail.Name.substringBetween('(', ')');
