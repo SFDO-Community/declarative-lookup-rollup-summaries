@@ -5,18 +5,35 @@ public with sharing class RollupSummaryViewController {
   private List<RollupSummary> rollupRecords;
   private List<CronTrigger> cronRecords;
 
+
+  public RollupSummaryViewController(){
+    setupData();
+
+  }
+
+  @TestVisible
+  private RollupSummaryViewController(List<RollupSummary> rs, List<CronTrigger> ct){
+    this.viewerRecords = new Map<String, ViewerObject>();
+    this.rollupRecords = rs;
+    this.cronRecords = ct;
+
+  }
+
   //Visualforce page needs access to this method
   public pagereference redirect() {
+    try {
     PageReference redirectPageWithId = Page.managelookuprollupsummaries;
     redirectPageWithId.setRedirect(true);
     redirectPageWithId.getParameters().put('id', Apexpages.currentPage().getParameters().get('newid').escapeHtml4() );
-
     return redirectPageWithId;
+    }
+    catch(Exception e){
+      return Page.RollupSummaryView;
+    }
   }
 
   //visualforce page needs access to this method
   public List<ViewerObject> getView() {
-    setupData();
     //if no rollups then impossible to have scheduled jobs attached to them.    
     if (rollupRecords.isEmpty()) {
       return null;

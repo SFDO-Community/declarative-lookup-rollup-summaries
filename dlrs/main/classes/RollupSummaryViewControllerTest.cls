@@ -2,6 +2,56 @@
 private class RollupSummaryViewControllerTest {
 
 
+  @IsTest
+  private static void testRollupSummaryEmpty(){
+    RollupSummaryViewController controller = new RollupSummaryViewController(new List<RollupSummary>(), testCronTriggerData());
+
+    Test.startTest();
+    List<RollupSummaryViewController.ViewerObject> viewer = controller.getView();
+    Test.stopTest();
+
+    System.assertEquals(null, viewer, 'Empty RollupSummary should return null value');
+  }
+
+  @IsTest
+  private static void testRollupSummaryWithData(){
+    RollupSummaryViewController controller = new RollupSummaryViewController(testRollupData(), testCronTriggerData());
+
+    Test.startTest();
+    List<RollupSummaryViewController.ViewerObject> viewer = controller.getView();
+    Test.stopTest();
+
+    System.assert(viewer.size() == 2, 'Test that viewer list contains two records');
+
+  }
+  @IsTest
+  private static void testCronTriggerEmpty(){
+    RollupSummaryViewController controller = new RollupSummaryViewController(testRollupData(), new List<CronTrigger>());
+
+    Test.startTest();
+    List<RollupSummaryViewController.ViewerObject> viewer = controller.getView();
+    Test.stopTest();
+
+    for (RollupSummaryViewController.ViewerObject vo : viewer) {
+      System.assertEquals(null, vo.scheduledTime, 'scheduledTime should be null');
+      System.assertEquals(null, vo.jobFiredCount, 'jobFiredCount should be null');
+      System.assertEquals(null, vo.endtime, 'endtime should be null');
+      System.assertEquals(null, vo.apexJobName, 'apexJobName should be null');
+    }
+  }
+
+  @IsTest
+  private static void testRedirectBadId(){
+    RollupSummaryViewController controller = new RollupSummaryViewController(testRollupData(), new List<CronTrigger>());
+
+
+    Test.startTest();
+    List<RollupSummaryViewController.ViewerObject> viewer = controller.getView();
+    Test.stopTest();
+
+    
+  }
+
   private static List<RollupSummary> testRollupData(){
 
     LookupRollupSummary2__mdt rollupSummaryA = new LookupRollupSummary2__mdt();
@@ -49,13 +99,9 @@ private class RollupSummaryViewControllerTest {
   }
 
   //figure out how to serialize crontrigger for testing
-  private List<CronTrigger> testCronTriggerData(){
+  private static List<CronTrigger> testCronTriggerData(){
 
     CronTrigger ct1 = new CronTrigger();
-    CronTrigger ct2 = new CronTrigger();
-
-    ID id1 = fflib_IDGenerator.generate(CronTrigger.SobjectType);
-    ID id2 = fflib_IDGenerator.generate(CronTrigger.SobjectType);
 
 
     return new List<CronTrigger>();
