@@ -4,72 +4,28 @@ private class RollupSummaryViewControllerTest {
   private static void testCoverage() {
     RollupSummaryViewController testController = new RollupSummaryViewController();
     testController.getView();
-  }
-
-
-
-  @IsTest
-  private static void redirectWithBadID() {
-    //Test if redirect is given bad id value
+    //testController.redirect();
   }
 
   @IsTest
-  private static void getViewIfRollupSummaryIsEmptyList() {
-    fflib_ApexMocks mocks = new fflib_ApexMocks();
-    RollupSummariesSelector.CustomMetadataSelector mockRollupSummariesSelector = (RollupSummariesSelector.CustomMetadataSelector) mocks.mock(RollupSummariesSelector.CustomMetadataSelector.class);
+  private static void cronTriggerIsEmptyUnitTest() {
+
+		fflib_ApexMocks mocks = new fflib_ApexMocks();
+    CronTriggersSelector mockSelector = (CronTriggersSelector) mocks.mock(CronTriggersSelector.class);
 
     mocks.startStubbing();
-    //mocks.when(mockRollupSummariesSelector.)
+    mocks.when(mockSelector.selectAllScheduledApex()).thenReturn(new List<CronTrigger>{});
+    mocks.stopStubbing();
+
+    Test.startTest();
+    List<RollupSummaryViewController.ViewerObject> viewer = new RollupSummaryViewController(mockSelector).getView();
+    Test.stopTest();
+
+    System.debug(viewer);
+    System.assertEquals('' , viewer[0].scheduledTime, 'If CronTrigger is empty then all viewerobject fields associated with CronTrigger should return empty values');
 
 
-    mocks.startStubbing();
-    //test getview if RollupSummary returns empty list [soql]
+
 
   }
-
-  @IsTest
-  private static void setup() {
-
-    //Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-
-    LookupRollupSummary2__mdt rollupSummaryA = new LookupRollupSummary2__mdt();
-    LookupRollupSummary2__mdt rollupSummaryB = new LookupRollupSummary2__mdt();
-    LookupRollupSummary2__mdt rollupSummaryC = new LookupRollupSummary2__mdt();
-
-
-    //all this data is required for rollupservice.create if one field is missing it will throw an impossible to understand exception.
-    rollupSummaryA.Label = 'test10';
-    rollupSummaryA.DeveloperName = 'test10';
-    rollupSummaryA.ParentObject__c = 'Account';
-    rollupSummaryA.ChildObject__c = 'Opportunity';
-    rollupSummaryA.RelationShipField__c = 'AccountId';
-    rollupSummaryA.FieldToAggregate__c = 'Amount';
-    rollupSummaryA.AggregateOperation__c = 'Sum';
-    rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-    rollupSummaryA.CalculationMode__c = 'Realtime';
-    rollupSummaryA.CalculationSharingMode__c = 'User';
-    rollupSummaryA.RowLimit__c = 0;
-    rollupSummaryA.AggregateAllRows__c = false;
-    rollupSummaryA.Active__c = false;
-    rollupSummaryA.TestCodeSeeAllData__c = false;
-
-    rollupSummaryB = rollupSummaryA;
-    rollupSummaryB.Label = 'test11';
-    rollupSummaryB.developerName = 'test11';
-
-    rollupSummaryc = rollupSummaryA;
-    rollupSummaryC.Label = 'test12';
-    rollupSummaryC.developerName = 'test12';
-
-    //empty list
-    list<RollupSummary> rollupEmpty = RollupSummary.toList(new List<SObject>{});
-
-    //3 item list
-    list<RollupSummary> rollupThreeRecords = RollupSummary.toList(new List<SObject>{rollupSummaryA, rollupSummaryB, rollupSummaryC});
-
-    //Http callout error. Must create mdt object in memory. Learn how to mock test data!
-    //RollupService.create(new List<SObject>{ rollupSummaryA , rollupSummaryB, rollupSummaryC });
-  }
-
-  
 }

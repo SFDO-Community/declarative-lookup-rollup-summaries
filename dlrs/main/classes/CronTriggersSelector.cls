@@ -1,6 +1,6 @@
 public with sharing class CronTriggersSelector extends fflib_SObjectSelector {
 
-    List<Schema.SObjectField> getSObjectFieldList() {
+        public List<Schema.SObjectField> getSObjectFieldList() {
         return new List<Schema.SObjectField>{
           CronTrigger.CronExpression,
           CronTrigger.CronJobDetailId,
