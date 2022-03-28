@@ -43,13 +43,26 @@ private class RollupSummaryViewControllerTest {
   @IsTest
   private static void testRedirectBadId(){
     RollupSummaryViewController controller = new RollupSummaryViewController(testRollupData(), new List<CronTrigger>());
+    PageReference redirectPageWithId = Page.managelookuprollupsummaries;
 
 
     Test.startTest();
-    List<RollupSummaryViewController.ViewerObject> viewer = controller.getView();
+    Pagereference page = Page.RollupSummaryView;
+    Test.setCurrentPage(page);
+    Pagereference redirectPage = controller.redirect();
     Test.stopTest();
 
+    //String realval = redirectPageWithId.getParameters().put('id', '');
+    //System.assertEquals(redirectPage, realval, 'Redirect should send to new page');
+
     
+  }
+
+  @IsTest
+  private static void testConstructor(){
+    RollupSummaryViewController controller = new RollupSummaryViewController();
+    controller.getView();
+
   }
 
   private static List<RollupSummary> testRollupData(){
@@ -102,6 +115,7 @@ private class RollupSummaryViewControllerTest {
   private static List<CronTrigger> testCronTriggerData(){
 
     CronTrigger ct1 = new CronTrigger();
+    ct1 = (CronTrigger) JSON.deserializeStrict('{"id":"08e7A00000SlgHHQAZ", "CronJobDetailId":"08a7A00000SlsJYQAZ", "CronExpression":"0 3 2 * * ?"}', CronTrigger.class);
 
 
     return new List<CronTrigger>();
