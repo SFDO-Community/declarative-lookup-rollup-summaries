@@ -1562,6 +1562,27 @@ global with sharing class RollupService {
   }
 
   /**
+   * Check if npsp is installed and TDTM can be disabled with Callable_API
+   **/
+  private static Boolean npspInstalled() {
+    if (Type.forName('npsp', 'Callable_API') != null) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * If possible, disable npsp tdtm triggers with Callable_API
+   **/
+  public static void disableNpspTdtm() {
+    if (!npspInstalled()) {
+      return;
+    }
+    Callable npspApi = (System.Callable) Type.forName('npsp', 'Callable_API').newInstance();
+    npspApi.call('TDTM.DisableAllTriggers', new Map<String, Object>());
+  }
+
+  /**
    * Wrapper around DML allowing with or without sharing to be applied and all or nothing exception handling
    **/
   private static List<Database.Saveresult> updateRecords(
