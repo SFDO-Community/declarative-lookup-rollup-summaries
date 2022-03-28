@@ -7,14 +7,18 @@ public with sharing class RollupSummaryViewController {
 
   private CronTriggersSelector selectorLayerClass;
 
-
   public RollupSummaryViewController() {
-    this(new CronTriggersSelector());
+    this.selectorLayerClass = new CronTriggersSelector();
+    setupData();
+
   }
 
   @TestVisible
-  private RollupSummaryViewController(CronTriggersSelector cronSelector){
-    this.selectorLayerClass = cronSelector;
+  //Dependecy Injection for unit testing
+  private RollupSummaryViewController(CronTriggersSelector cronSelector, List<RollupSummary> rollupSelector){
+    this.selectorLayerClass = cronSelector;   
+    setupData();
+    this.rollupRecords = rollupSelector;
 
   }
 
@@ -28,9 +32,7 @@ public with sharing class RollupSummaryViewController {
   }
 
   //visualforce page needs access to this method
-  //defers data initialization until method is called in VF page
   public List<ViewerObject> getView() {
-    setupData();
     //if no rollups then impossible to have scheduled jobs attached to them.
     if (rollupRecords.isEmpty()) {
       return null;
@@ -70,6 +72,7 @@ public with sharing class RollupSummaryViewController {
       }
     }
   }
+
 
   //Getter and Setter required for Visualforce page 
   //Can add more fields as a feature expansion
