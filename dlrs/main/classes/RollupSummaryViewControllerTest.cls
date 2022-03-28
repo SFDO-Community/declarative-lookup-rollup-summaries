@@ -1,35 +1,5 @@
 @IsTest
 private class RollupSummaryViewControllerTest {
-  @IsTest
-  private static void testCoverage() {
-    RollupSummaryViewController testController = new RollupSummaryViewController();
-    testController.getView();
-    //testController.redirect();
-  }
-
-  @IsTest
-  private static void cronTriggerIsEmptyUnitTest() {
-
-		fflib_ApexMocks mocks = new fflib_ApexMocks();
-    CronTriggersSelector mockSelector = (CronTriggersSelector) mocks.mock(CronTriggersSelector.class);
-
-    mocks.startStubbing();
-    mocks.when(mockSelector.selectAllScheduledApex()).thenReturn(new List<CronTrigger>{});
-    mocks.stopStubbing();
-
-    Test.startTest();
-    List<RollupSummaryViewController.ViewerObject> viewer = new RollupSummaryViewController(mockSelector, testRollupData()).getView();
-    Test.stopTest();
-
-    for(RollupSummaryViewController.ViewerObject v : viewer){
-      System.assertEquals(null , v.scheduledTime, 'If CronTrigger is empty then viewerObject scheduledTime must be null');
-      System.assertEquals(null , v.jobFiredCount, 'If CronTrigger is empty then viewerObject jobFiredCount must be null');
-      System.assertEquals(null , v.endtime, 'If CronTrigger is empty then viewerObject endtime must be null');
-      System.assertEquals(null , v.apexJobName, 'If CronTrigger is empty then viewerObject apexJobName must be null');
-      
-
-    }
-  }
 
 
   private static List<RollupSummary> testRollupData(){
@@ -56,7 +26,7 @@ private class RollupSummaryViewControllerTest {
     rollupSummaryA.Active__c = false;
     rollupSummaryA.TestCodeSeeAllData__c = false;
 
-    rollupSummaryA.id = id2;
+    rollupSummaryB.id = id2;
     rollupSummaryB.Label = 'test11';
     rollupSummaryB.DeveloperName = 'test11';
     rollupSummaryB.ParentObject__c = 'Account';
@@ -78,9 +48,14 @@ private class RollupSummaryViewControllerTest {
     return rollups;
   }
 
+  //figure out how to serialize crontrigger for testing
   private List<CronTrigger> testCronTriggerData(){
 
+    CronTrigger ct1 = new CronTrigger();
+    CronTrigger ct2 = new CronTrigger();
 
+    ID id1 = fflib_IDGenerator.generate(CronTrigger.SobjectType);
+    ID id2 = fflib_IDGenerator.generate(CronTrigger.SobjectType);
 
 
     return new List<CronTrigger>();

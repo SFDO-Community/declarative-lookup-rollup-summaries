@@ -5,23 +5,6 @@ public with sharing class RollupSummaryViewController {
   private List<RollupSummary> rollupRecords;
   private List<CronTrigger> cronRecords;
 
-  private CronTriggersSelector selectorLayerClass;
-
-  public RollupSummaryViewController() {
-    this.selectorLayerClass = new CronTriggersSelector();
-    setupData();
-
-  }
-
-  @TestVisible
-  //Dependecy Injection for unit testing
-  private RollupSummaryViewController(CronTriggersSelector cronSelector, List<RollupSummary> rollupSelector){
-    this.selectorLayerClass = cronSelector;   
-    setupData();
-    this.rollupRecords = rollupSelector;
-
-  }
-
   //Visualforce page needs access to this method
   public pagereference redirect() {
     PageReference redirectPageWithId = Page.managelookuprollupsummaries;
@@ -33,7 +16,8 @@ public with sharing class RollupSummaryViewController {
 
   //visualforce page needs access to this method
   public List<ViewerObject> getView() {
-    //if no rollups then impossible to have scheduled jobs attached to them.
+    setupData();
+    //if no rollups then impossible to have scheduled jobs attached to them.    
     if (rollupRecords.isEmpty()) {
       return null;
     }
@@ -45,7 +29,7 @@ public with sharing class RollupSummaryViewController {
   //setup instance varaibles with SOQL data
   private void setupData(){
     rollupRecords = new RollupSummariesSelector.CustomMetadataSelector(false,false).selectAll();
-    CronRecords = selectorLayerClass.selectAllScheduledApex();
+    CronRecords = new CronTriggersSelector().selectAllScheduledApex();
     viewerRecords = new Map<String, ViewerObject>();
 
   }
@@ -69,10 +53,10 @@ public with sharing class RollupSummaryViewController {
         viewerRecords.get(id).apexJobName = c.CronJobDetail.Name;
         viewerRecords.get(id).scheduledTime = c.CronExpression;
         viewerRecords.get(id).jobFiredCount = c.TimesTriggered;
+
       }
     }
   }
-
 
   //Getter and Setter required for Visualforce page 
   //Can add more fields as a feature expansion
