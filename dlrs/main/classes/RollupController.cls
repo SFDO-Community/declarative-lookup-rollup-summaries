@@ -215,6 +215,7 @@ public with sharing class RollupController {
           : ('        // Force the ' +
             RollupTriggerName +
             ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
+            '        RollupService.disableNpspTdtm();\n' +
             '        ' +
             (namespace.length() > 0 ? namespace + '.' : '') +
             'RollupService.testHandler(new ' +
