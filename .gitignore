@@ -44,3 +44,7 @@ $RECYCLE.BIN/
 
 # Local environment variables
 .env
+
+# Should only be committed in deliberate updates
+package-lock.json
+package.json
