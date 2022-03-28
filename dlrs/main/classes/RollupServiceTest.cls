@@ -963,6 +963,9 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
+    // If NPSP is present, disable NPSP TDTM triggers. They distort the limit counts.
+    RollupService.disableNpspTdtm();
+
     // Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
     TestContext.AccountTestTriggerEnabled = false;
 
@@ -1081,6 +1084,9 @@ private with sharing class RollupServiceTest {
     // Test supported?
     if (!TestContext.isSupported())
       return;
+
+    // If NPSP is present, disable NPSP TDTM triggers. They distort the limit counts.
+    RollupService.disableNpspTdtm();
 
     // Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
     TestContext.AccountTestTriggerEnabled = false;
