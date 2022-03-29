@@ -71,16 +71,20 @@ private class RollupSummaryViewControllerTest {
   @IsTest
   private static void testRedirectGoodId(){
     RollupSummaryViewController controller = new RollupSummaryViewController();
+    String recordID = 'm007A0000000Ua6QAE';
+
     Pagereference listView = Page.RollupSummaryView;
-    listView.getParameters().put('newid', '123456');
+    listView.getParameters().put('newid', recordID);
 
     Test.startTest();
     Test.setCurrentPage(listView);
     Pagereference redirectPage = controller.redirect();
     Test.stopTest();
 
-    
-    System.assertEquals(redirectPage.getURL(), redirectPage.getURL(), redirectPage.getURL());
+    String namespace = Utilities.namespace();
+    String expectedURL = '/apex/' + (namespace.length() > 0 ? namespace + '__' : '') + 'managelookuprollupsummaries' + '?id=' + recordID;
+    System.assertEquals(expectedURL, redirectPage.getURL(), 'If newID is valid then it puts id in parameters of VF page of managelookuprollupsummaries'); 
+
 
   }
 

@@ -84,7 +84,6 @@ public with sharing class RollupSummaryViewController {
 
     public string scheduledTime { get; set; }
     public Integer jobFiredCount { get; set; }
-    //public Datetime endtime { get; set; }
     public string apexJobName { get; set; }
   }
 }
