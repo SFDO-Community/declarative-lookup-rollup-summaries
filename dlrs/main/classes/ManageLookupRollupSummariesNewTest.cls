@@ -80,7 +80,9 @@ public class ManageLookupRollupSummariesNewTest {
         PageReference nextPage = controller.save();
         Test.stopTest();
 
-        System.assertEquals(true, nextPage.getUrl().startsWith('/apex/managelookuprollupsummaries'), 'The redirect went to the wrong place');
+        String namespace = Utilities.namespace();
+        String expectedUrl = '/apex/'+ (namespace.length() > 0 ? namespace + '__' : '') + 'managelookuprollupsummaries';
+        System.assertEquals(true, nextPage.getUrl().startsWith(expectedUrl), 'The redirect went to the wrong place');
         System.assertEquals('AccountRollup', nextPage.getParameters().get('developerName'), 'The parameter was not set correctly');
     }
 
