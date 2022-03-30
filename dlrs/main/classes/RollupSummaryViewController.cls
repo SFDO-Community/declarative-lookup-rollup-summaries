@@ -47,11 +47,7 @@ public with sharing class RollupSummaryViewController {
 
   //setup instance varaibles with SOQL data
   private void setupData() {
-    rollupRecords = new RollupSummariesSelector.CustomMetadataSelector(
-        false,
-        false
-      )
-      .selectAll();
+    rollupRecords = new RollupSummariesSelector().selectAll();
     CronRecords = new CronTriggersSelector().selectAllScheduledApex();
     viewerRecords = new Map<String, ViewerObject>();
   }

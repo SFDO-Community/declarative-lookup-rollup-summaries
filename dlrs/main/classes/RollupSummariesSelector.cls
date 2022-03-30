@@ -116,6 +116,17 @@ public class RollupSummariesSelector {
     return records;
   }
 
+    /**
+   * Returns lookup rollup summary definitions for all fields 
+   **/
+  public List<RollupSummary> selectAll() {
+    List<RollupSummary> records = new List<RollupSummary>();
+    records = m_customMetadataSelector.selectAll();
+    records.addAll(m_customObjectSelector.selectAll());
+
+    return records;
+  }
+
   /**
    * Queries Custom Object store for rollups
    **/
@@ -248,6 +259,19 @@ public class RollupSummariesSelector {
         )
       );
     }
+
+    /**
+     * Select all
+     **/
+    public List<RollupSummary> selectAll() {
+      return RollupSummary.toList(
+        Database.query(
+          newQueryFactory()
+          .toSOQL()
+        )
+      );
+    }
+
   }
 
   /**
