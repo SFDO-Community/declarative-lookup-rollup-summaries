@@ -302,6 +302,7 @@ global with sharing class RollupService {
    **/
   global static void testHandler(SObject dummyChildRecord) {
     try {
+      disableNpspTdtm();
       insert dummyChildRecord;
     } catch (Exception e) {
       // If the auto generated trigger was invoked this test served its purpose (code coverage wise) ignore this error
@@ -1572,7 +1573,8 @@ global with sharing class RollupService {
   /**
    * If possible, disable npsp tdtm triggers with Callable_API
    **/
-  public static void disableNpspTdtm() {
+  @TestVisible
+  private static void disableNpspTdtm() {
     if (!npspInstalled()) {
       return;
     }
