@@ -227,7 +227,9 @@ private class RollupControllerTest {
         '        // Force the ' +
         controller.RollupTriggerName +
         ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-        '        RollupService.disableNpspTdtm();\n' +
+        '        ' +
+        Utilities.classPrefix() +
+        'RollupService.disableNpspTdtm();\n' +
         '        ' +
         Utilities.classPrefix() +
         'RollupService.testHandler(new ' +
