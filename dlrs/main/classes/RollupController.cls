@@ -193,8 +193,6 @@ public with sharing class RollupController {
       // Display currently deployed code for confirmation
       return RollupTriggerTest.Body;
     else {
-      // Namespace?
-      String namespace = Utilities.namespace();
       // Deploy generated code
       return '/**\n' +
         ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
@@ -216,7 +214,7 @@ public with sharing class RollupController {
             RollupTriggerName +
             ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
             '        ' +
-            (namespace.length() > 0 ? namespace + '.' : '') +
+            Utilities.classPrefix() +
             'RollupService.testHandler(new ' +
             RollupSummary.ChildObject +
             '());\n')) +

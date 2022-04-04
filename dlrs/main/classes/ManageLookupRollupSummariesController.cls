@@ -200,8 +200,7 @@ public with sharing class ManageLookupRollupSummariesController {
       PageReference newPage = Page.managelookuprollupsummaries_New;
       newPage.setRedirect(true);
       return newPage;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       ApexPages.addMessages(e);
     }
     return null;

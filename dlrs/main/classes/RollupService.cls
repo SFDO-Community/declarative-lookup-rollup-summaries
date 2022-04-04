@@ -302,6 +302,7 @@ global with sharing class RollupService {
    **/
   global static void testHandler(SObject dummyChildRecord) {
     try {
+      disableNpspTdtm();
       insert dummyChildRecord;
     } catch (Exception e) {
       // If the auto generated trigger was invoked this test served its purpose (code coverage wise) ignore this error
@@ -1548,6 +1549,8 @@ global with sharing class RollupService {
     // Unable to lower RelationShipCriteria__c because of field value case-(in)sensitivity configuration
     return (lookupWrapper.Lookup.ParentObject.toLowerCase() +
     '#' +
+    lookupWrapper.Lookup.ChildObject.toLowerCase() +
+    '#' +
     lookupWrapper.Lookup.RelationshipField.toLowerCase() +
     '#' +
     lookupWrapper.Lookup.RelationShipCriteria +
@@ -1557,6 +1560,28 @@ global with sharing class RollupService {
     lookupWrapper.SharingMode +
     '#' +
     lookupWrapper.AggregateAllRows);
+  }
+
+  /**
+   * Check if npsp is installed and TDTM can be disabled with Callable_API
+   **/
+  private static Boolean npspInstalled() {
+    if (Type.forName('npsp', 'Callable_API') != null) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * If possible, disable npsp tdtm triggers with Callable_API
+   **/
+  @TestVisible
+  private static void disableNpspTdtm() {
+    if (!npspInstalled()) {
+      return;
+    }
+    Callable npspApi = (System.Callable) Type.forName('npsp', 'Callable_API').newInstance();
+    npspApi.call('TDTM.DisableAllTriggers', new Map<String, Object>());
   }
 
   /**
