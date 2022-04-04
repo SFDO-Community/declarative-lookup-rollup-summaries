@@ -1,7 +1,7 @@
 public with sharing class ManageLookupRollupSummariesNewController {
   public LookupRollupSummary2__mdt LookupRollupSummary { get; set; }
   Set<String> rFields { get; set; }
-  public boolean isMultiSelectRField { get; set; }
+  public Boolean isMultiSelectRField { get; set; }
   public String selectedRelationFieldName { get; set; }
   public String selectedLookup { get; set; }
   public Boolean MetadataConnectionError { get; set; }
@@ -13,8 +13,8 @@ public with sharing class ManageLookupRollupSummariesNewController {
   public List<SelectOption> parentObjFields { get; set; }
   public List<SelectOption> childObjectList { get; set; }
   public List<SelectOption> childObjFields { get; set; }
-  public boolean isParentObjectSelected { get; set; }
-  public boolean isChildObjectSelected { get; set; }
+  public Boolean isParentObjectSelected { get; set; }
+  public Boolean isChildObjectSelected { get; set; }
   //public Map<String,String> objectWithRelationshipField {get;set;}
   public Map<String, List<String>> PnameWithRField { get; set; }
   public List<SelectOption> relationshipFields { get; set; }
@@ -53,7 +53,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
     if (MetadataConnectionError) {
       ApexPages.addMessage(
         new ApexPages.Message(
-          ApexPages.Severity.Error,
+          ApexPages.Severity.ERROR,
           'Salesforce Metadata API connection failure, click the link below to configure.'
         )
       );
@@ -82,15 +82,17 @@ public with sharing class ManageLookupRollupSummariesNewController {
     // Reload the page
     PageReference newPage = Page.managelookuprollupsummaries;
     newPage.setRedirect(true);
-    if (selectedLookup != '[new]')
+    if (selectedLookup != '[new]') {
       newPage.getParameters().put('id', selectedLookup);
+    }
     return newPage;
   }
   public PageReference save() {
     try {
       // Insert / Update the rollup custom metadata
-      if (LookupRollupSummary.Id == null)
+      if (LookupRollupSummary.Id == null) {
         RollupService.create(new List<SObject>{ LookupRollupSummary });
+      }
       /* AJB 18/11/21: no update functionality so this just reduces code coverage at the moment
             else        
                 RollupService.update_x(new List<SObject> { LookupRollupSummary }); */
@@ -107,24 +109,24 @@ public with sharing class ManageLookupRollupSummariesNewController {
       ) {
         if (recordError.Error != null) {
           ApexPages.addMessage(
-            new ApexPages.Message(ApexPages.Severity.Error, recordError.Error)
+            new ApexPages.Message(ApexPages.Severity.ERROR, recordError.Error)
           );
         }
         for (String fieldError : recordError.FieldErrors) {
           ApexPages.addMessage(
-            new ApexPages.Message(ApexPages.Severity.Error, fieldError)
+            new ApexPages.Message(ApexPages.Severity.ERROR, fieldError)
           );
         }
       }
     } catch (Exception e) {
-      string errormessage = e.getmessage();
+      String errormessage = e.getMessage();
       if (
         selectedChildObject == null &&
         errormessage.contains('Attempt to de-reference a null object')
       ) {
         ApexPages.addMessage(
           new ApexPages.Message(
-            ApexPages.Severity.Error,
+            ApexPages.Severity.ERROR,
             'Please Select the Child Object'
           )
         );
@@ -134,7 +136,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
       ) {
         ApexPages.addMessage(
           new ApexPages.Message(
-            ApexPages.Severity.Error,
+            ApexPages.Severity.ERROR,
             'Please Select the Relationship Field'
           )
         );
@@ -170,47 +172,89 @@ public with sharing class ManageLookupRollupSummariesNewController {
   public List<SelectOption> getCalculationModes() {
     List<SelectOption> options = new List<SelectOption>();
     for (
-      Schema.Picklistentry picklistEntry : LookupRollupSummary__c.fields.CalculationMode__c.getDescribe()
-        .getPickListValues()
+      Schema.PicklistEntry picklistEntry : LookupRollupSummary__c.fields.CalculationMode__c.getDescribe()
+        .getPicklistValues()
     ) {
       options.add(
         new SelectOption(picklistEntry.getValue(), picklistEntry.getLabel())
       );
     }
-    return options;
+    return sortSelectOptionsByLabel(options);
   }
 
   public List<SelectOption> getAggregateOperations() {
     List<SelectOption> options = new List<SelectOption>();
     for (
-      Schema.Picklistentry picklistEntry : LookupRollupSummary__c.fields.AggregateOperation__c.getDescribe()
-        .getPickListValues()
+      Schema.PicklistEntry picklistEntry : LookupRollupSummary__c.fields.AggregateOperation__c.getDescribe()
+        .getPicklistValues()
     ) {
       options.add(
         new SelectOption(picklistEntry.getValue(), picklistEntry.getLabel())
       );
     }
-    return options;
+    return sortSelectOptionsByLabel(options);
   }
 
   public List<SelectOption> getCalculationSharingModes() {
     List<SelectOption> options = new List<SelectOption>();
     for (
-      Schema.Picklistentry picklistEntry : LookupRollupSummary__c.fields.CalculationSharingMode__c.getDescribe()
-        .getPickListValues()
+      Schema.PicklistEntry picklistEntry : LookupRollupSummary__c.fields.CalculationSharingMode__c.getDescribe()
+        .getPicklistValues()
     ) {
       options.add(
         new SelectOption(picklistEntry.getValue(), picklistEntry.getLabel())
       );
     }
-    return options;
+    return sortSelectOptionsByLabel(options);
   }
 
-  public List<Selectoption> getParentObjList() {
+  private List<SelectOption> sortSelectOptionsByLabel(
+    List<SelectOption> selectOptions
+  ) {
+    if (selectOptions == null || selectOptions.size() <= 1) {
+      return selectOptions;
+    }
+    List<SelectOption> lessSelectOption = new List<SelectOption>();
+    List<SelectOption> greaterSelectOption = new List<SelectOption>();
+    Integer pivot = selectOptions.size() / 2;
+
+    SelectOption pivotValue = selectOptions[pivot];
+    selectOptions.remove(pivot);
+    for (SelectOption so : selectOptions) {
+      if (so.getLabel() <= pivotValue.getLabel()) {
+        lessSelectOption.add(so);
+      } else if (so.getLabel() > pivotValue.getLabel()) {
+        greaterSelectOption.add(so);
+      }
+    }
+    List<SelectOption> sortedSelectOptions = new List<SelectOption>();
+    sortedSelectOptions.addAll(sortSelectOptionsByLabel(lessSelectOption));
+    sortedSelectOptions.add(pivotValue);
+    sortedSelectOptions.addAll(sortSelectOptionsByLabel(greaterSelectOption));
+    return sortedSelectOptions;
+  }
+
+  private List<SelectOption> addEmptyValueSelectOption(
+    List<SelectOption> selectOptions,
+    String emptyValueSelectOptionLabel,
+    Integer position
+  ) {
+    if (selectOptions == null || selectOptions.size() <= 1 || position < 0) {
+      return selectOptions;
+    }
+
+    selectOptions.add(
+      position,
+      new SelectOption('', emptyValueSelectOptionLabel)
+    );
+
+    return selectOptions;
+  }
+
+  public List<SelectOption> getParentObjList() {
     objectDescription = Schema.getGlobalDescribe();
-    List<Schema.SObjectType> parentObjList = objectDescription.Values();
+    List<Schema.SObjectType> parentObjList = objectDescription.values();
     List<SelectOption> objNames = new List<SelectOption>();
-    objNames.add(new SelectOption('', '-- Select --'));
     for (Schema.SObjectType obj : parentObjList) {
       Schema.DescribeSObjectResult description = obj.getDescribe(
         SObjectDescribeOptions.DEFERRED
@@ -230,8 +274,11 @@ public with sharing class ManageLookupRollupSummariesNewController {
         );
       }
     }
-    objNames.sort();
-    return objNames;
+    return addEmptyValueSelectOption(
+      sortSelectOptionsByLabel(objNames),
+      '-- Select --',
+      0
+    );
   }
 
   public void confirmParentObject() {
@@ -239,7 +286,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
       if (selectedParentObject == null || selectedParentObject == '') {
         ApexPages.addMessage(
           new ApexPages.Message(
-            ApexPages.Severity.Error,
+            ApexPages.Severity.ERROR,
             'Please Select the Parent Object'
           )
         );
@@ -249,8 +296,6 @@ public with sharing class ManageLookupRollupSummariesNewController {
         parentObjFields = new List<SelectOption>();
         ChildObjectsDuplicates = new Map<String, String>();
         isParentObjectSelected = true;
-        childObjectList.add(new SelectOption('', '-- Select --'));
-        parentObjFields.add(new SelectOption('', '-- Select --'));
         Schema.SObjectType parentObject = objectDescription.get(
           selectedParentObject
         );
@@ -292,12 +337,17 @@ public with sharing class ManageLookupRollupSummariesNewController {
           PnameWithRField.put(childObjectName, childRelationshipFields);
           //objectWithRelationshipField.put(childObjectName + '.'+ relFieldName, relFieldName);
         }
-        for (String key : ChildObjectsDuplicates.keyset()) {
+        for (String key : ChildObjectsDuplicates.keySet()) {
           childObjectList.add(
             new SelectOption(key, ChildObjectsDuplicates.get(key))
           );
         }
-        Map<String, schema.SObjectField> MapOfFields = parentObjectDescribe.fields.getMap();
+        childObjectList = addEmptyValueSelectOption(
+          sortSelectOptionsByLabel(childObjectList),
+          '-- Select --',
+          0
+        );
+        Map<String, Schema.SObjectField> MapOfFields = parentObjectDescribe.fields.getMap();
         for (Schema.SObjectField field : MapOfFields.values()) {
           Schema.DescribeFieldResult fr = field.getDescribe();
           //String dType = String.valueof(fr.getType());
@@ -307,7 +357,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
           parentObjFields.add(
             new SelectOption(
               fieldName,
-              String.valueof(fr.getLabel()) +
+              String.valueOf(fr.getLabel()) +
               ' (' +
               fieldName +
               ')'
@@ -315,10 +365,15 @@ public with sharing class ManageLookupRollupSummariesNewController {
           );
           //}
         }
+        parentObjFields = addEmptyValueSelectOption(
+          sortSelectOptionsByLabel(parentObjFields),
+          '-- Select --',
+          0
+        );
       }
-    } catch (exception ex) {
+    } catch (Exception ex) {
       ApexPages.addMessage(
-        new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage())
+        new ApexPages.Message(ApexPages.Severity.ERROR, ex.getMessage())
       );
     }
   }
@@ -327,7 +382,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
       if (selectedChildObject == null || selectedChildObject == '') {
         ApexPages.addMessage(
           new ApexPages.Message(
-            ApexPages.Severity.Error,
+            ApexPages.Severity.ERROR,
             'Please Select the Child Object'
           )
         );
@@ -337,12 +392,11 @@ public with sharing class ManageLookupRollupSummariesNewController {
         rFields = new Set<String>();
         isChildObjectSelected = true;
         LookupRollupSummary.ChildObject__c = selectedChildObject;
-        Map<String, schema.SObjectField> mapOfFields = objectDescription.get(
+        Map<String, Schema.SObjectField> mapOfFields = objectDescription.get(
             selectedChildObject
           )
           .getDescribe()
           .fields.getMap();
-        childObjFields.add(new SelectOption('', '-- Select --'));
         for (Schema.SObjectField field : mapOfFields.values()) {
           Schema.DescribeFieldResult fr = field.getDescribe();
           String fieldName = fr.getName();
@@ -351,7 +405,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
           childObjFields.add(
             new SelectOption(
               fieldName,
-              String.valueof(fr.getLabel()) +
+              String.valueOf(fr.getLabel()) +
               ' (' +
               fieldName +
               ')'
@@ -360,10 +414,10 @@ public with sharing class ManageLookupRollupSummariesNewController {
           //}
           // AJB 16/11/21: don't think we really need to loop over the map values twice
           /*
-                } 
+                    }
 
-                for(Schema.SobjectField strFld: mapOfFields.values())
-                {*/
+                    for(Schema.SobjectField strFld: mapOfFields.values())
+                    {*/
           if (fr.getType() == Schema.DisplayType.REFERENCE) {
             if (
               String.valueOf(fr.getReferenceTo()) ==
@@ -378,13 +432,22 @@ public with sharing class ManageLookupRollupSummariesNewController {
             }
           }
         }
+        childObjFields = addEmptyValueSelectOption(
+          sortSelectOptionsByLabel(childObjFields),
+          '-- Select --',
+          0
+        );
         relationshipFields = new List<SelectOption>();
-        relationshipFields.add(new SelectOption('', '-- Select --'));
         if (rFields.size() > 1) {
           isMultiSelectRField = true;
           for (String fieldName : rFields) {
             relationshipFields.add(new SelectOption(fieldName, fieldName));
           }
+          relationshipFields = addEmptyValueSelectOption(
+            sortSelectOptionsByLabel(relationshipFields),
+            '-- Select --',
+            0
+          );
         } else if (rFields.size() == 1) {
           for (String fieldName : rFields) {
             LookupRollupSummary.RelationshipField__c = fieldName;
@@ -400,9 +463,9 @@ public with sharing class ManageLookupRollupSummariesNewController {
           );
         }
       }
-    } catch (exception ex) {
+    } catch (Exception ex) {
       ApexPages.addMessage(
-        new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage())
+        new ApexPages.Message(ApexPages.Severity.ERROR, ex.getMessage())
       );
     }
   }
@@ -410,27 +473,27 @@ public with sharing class ManageLookupRollupSummariesNewController {
   public void updateChildField() {
     try {
       LookupRollupSummary.FieldToAggregate__c = selectedChildField;
-    } catch (exception ex) {
+    } catch (Exception ex) {
       ApexPages.addMessage(
-        new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage())
+        new ApexPages.Message(ApexPages.Severity.ERROR, ex.getMessage())
       );
     }
   }
   public void updateParentField() {
     try {
       LookupRollupSummary.AggregateResultField__c = selectedParentField;
-    } catch (exception ex) {
+    } catch (Exception ex) {
       ApexPages.addMessage(
-        new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage())
+        new ApexPages.Message(ApexPages.Severity.ERROR, ex.getMessage())
       );
     }
   }
   public void updateRField() {
     try {
       LookupRollupSummary.RelationshipField__c = selectedRField;
-    } catch (exception ex) {
+    } catch (Exception ex) {
       ApexPages.addMessage(
-        new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage())
+        new ApexPages.Message(ApexPages.Severity.ERROR, ex.getMessage())
       );
     }
   }
@@ -449,9 +512,9 @@ public with sharing class ManageLookupRollupSummariesNewController {
       } else {
         fieldToOrderByNeeded = false;
       }
-    } catch (exception ex) {
+    } catch (Exception ex) {
       ApexPages.addMessage(
-        new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage())
+        new ApexPages.Message(ApexPages.Severity.ERROR, ex.getMessage())
       );
     }
   }
@@ -463,9 +526,9 @@ public with sharing class ManageLookupRollupSummariesNewController {
       } else {
         realtimeSelected = false;
       }
-    } catch (exception ex) {
+    } catch (Exception ex) {
       ApexPages.addMessage(
-        new ApexPages.Message(ApexPages.Severity.Error, ex.getmessage())
+        new ApexPages.Message(ApexPages.Severity.ERROR, ex.getMessage())
       );
     }
   }
