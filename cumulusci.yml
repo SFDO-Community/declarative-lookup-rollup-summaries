@@ -80,7 +80,10 @@ orgs:
     beta_prerelease:
       config_file: orgs/beta_prerelease.json
       days: 7
-
+    dev_namespaced:
+      config_file: orgs/dev.json
+      namespaced: True
+      days: 7
 plans:
     install:
         slug: install
