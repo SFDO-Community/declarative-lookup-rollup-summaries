@@ -1,0 +1,18 @@
+<apex:page controller="RollupSummaryViewController" lightningStylesheets="true" showHeader="true" sidebar="true">
+    <apex:pageBlock title="List View - Rollups With Scheduled Apex Jobs">
+        <apex:pageBlockTable value="{!view }" var="v">
+            <apex:column headerValue="Rollup Label" value="{! v.label }" />
+            <apex:column headerValue="Calculation Mode" value="{! v.calcMode }" />
+            <apex:column headerValue="Scheduled Apex Job name (Empty = none)" value="{! v.apexJobName }" />
+            <apex:column headerValue="Scheduled to run Time" value="{! v.ScheduledTime }" />
+            <apex:column headerValue="Job Fired Count" value="{! v.JobFiredCount }" />
+            <apex:column headerValue="Record ID">
+                <apex:form>
+                    <apex:commandLink action="{!redirect}" value="{! v.label } [{! v.recordID }]">
+                        <apex:param name="newid" value="{! v.recordID}" />
+                    </apex:commandLink>
+                </apex:form>
+            </apex:column>
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+</apex:page>
