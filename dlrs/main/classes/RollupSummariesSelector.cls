@@ -117,6 +117,17 @@ public class RollupSummariesSelector {
   }
 
   /**
+   * Returns lookup rollup summary definitions for all fields
+   **/
+  public List<RollupSummary> selectAll() {
+    List<RollupSummary> records = new List<RollupSummary>();
+    records = m_customMetadataSelector.selectAll();
+    records.addAll(m_customObjectSelector.selectAll());
+
+    return records;
+  }
+
+  /**
    * Queries Custom Object store for rollups
    **/
   public class CustomObjectSelector extends fflib_SObjectSelector {
@@ -248,6 +259,13 @@ public class RollupSummariesSelector {
         )
       );
     }
+
+    /**
+     * Select all
+     **/
+    public List<RollupSummary> selectAll() {
+      return RollupSummary.toList(Database.query(newQueryFactory().toSOQL()));
+    }
   }
 
   /**
@@ -316,7 +334,7 @@ public class RollupSummariesSelector {
           SObject record = this.getLookupRollupSummaryByDeveloperNameOrId(
             idVal
           );
-          if(record != null) {
+          if (record != null) {
             records.add(record);
           }
         }
@@ -332,17 +350,17 @@ public class RollupSummariesSelector {
       if (this.forEdit) {
         return RollupSummary.toList(
           this.getLookupRollupSummariesWithParameters(
-            newQueryFactory()
-              .setCondition('DeveloperName = :tmpVar1')
-              .toSOQL(),
+            newQueryFactory().setCondition('DeveloperName = :tmpVar1').toSOQL(),
             new List<Object>{ developerName }
           )
         );
       } else {
         List<RollupSummary> summaries = new List<RollupSummary>();
         List<SObject> records = new List<SObject>();
-        SObject record = this.getLookupRollupSummaryByDeveloperNameOrId(developerName);
-        if(record != null) {
+        SObject record = this.getLookupRollupSummaryByDeveloperNameOrId(
+          developerName
+        );
+        if (record != null) {
           records.add(
             this.getLookupRollupSummaryByDeveloperNameOrId(developerName)
           );
@@ -404,9 +422,7 @@ public class RollupSummariesSelector {
           if (
             summary != null &&
             summary.Active &&
-            calculationModeNames.contains(
-              summary.CalculationMode
-            ) &&
+            calculationModeNames.contains(summary.CalculationMode) &&
             childObjectNames.contains(summary.ChildObject)
           ) {
             filteredSummaries.add(summary);
