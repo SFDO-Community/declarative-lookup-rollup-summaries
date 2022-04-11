@@ -190,10 +190,7 @@ public with sharing class ManageLookupRollupSummariesController {
           LookupRollupSummary.Id
         );
     }
-    else {
-      Apexpages.currentPage().getParameters().put('id', LookupRollupSummary.id);
-    }
-
+  
     return newPage;
   }
 
