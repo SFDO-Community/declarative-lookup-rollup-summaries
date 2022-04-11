@@ -156,17 +156,21 @@ public with sharing class ManageLookupRollupSummariesController {
     return null;
   }
 
-    //TO cloneRollupSummary, we query the database for the rollup summary with passed cloneLookup,
+  //TO cloneRollupSummary, we query the database for the rollup summary with passed cloneLookup,
   //then set clonesummary with empty values on known values to edit.
   public void cloneRollupSummary() {
     //LookupRollupSummary2__mdt cloneSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(false,true).selectById(new Set<String>{ cloneLookup })[0].Record;
-    LookupRollupSummary2__mdt cloneSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector(false,true).selectById(new Set<String>{ cloneLookup })[0].Record;
+    LookupRollupSummary2__mdt cloneSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector(
+          false,
+          true
+        )
+        .selectById(new Set<String>{ cloneLookup })[0]
+      .Record;
 
     cloneSummary.label = '';
     cloneSummary.developerName = '';
     cloneSummary.id = null;
     LookupRollupSummary = cloneSummary;
-
   }
 
   //TO clonex, we check if page has record id, if so return create[new] page with cloned record to save.
@@ -181,16 +185,12 @@ public with sharing class ManageLookupRollupSummariesController {
           'cloneID',
           ApexPages.currentPage().getParameters().get('id').escapeHtml4()
         );
-    } 
+    }
     //if developername is not null, then there is a rollup in memory we can key off of
     if (ApexPages.currentPage().getParameters().get('developerName') != null) {
-      newPage.getParameters()
-        .put(
-          'cloneID',
-          LookupRollupSummary.Id
-        );
+      newPage.getParameters().put('cloneID', LookupRollupSummary.Id);
     }
-  
+
     return newPage;
   }
 
