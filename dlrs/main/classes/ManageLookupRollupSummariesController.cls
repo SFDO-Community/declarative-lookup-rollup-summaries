@@ -159,7 +159,6 @@ public with sharing class ManageLookupRollupSummariesController {
   //TO cloneRollupSummary, we query the database for the rollup summary with passed cloneLookup,
   //then set clonesummary with empty values on known values to edit.
   public void cloneRollupSummary() {
-    //LookupRollupSummary2__mdt cloneSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(false,true).selectById(new Set<String>{ cloneLookup })[0].Record;
     LookupRollupSummary2__mdt cloneSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector(
           false,
           true
