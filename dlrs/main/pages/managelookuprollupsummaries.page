@@ -22,6 +22,7 @@
 			<apex:pageBlock mode="edit" id="rollupDetailView">
 				<apex:pageBlockButtons>
 					<apex:commandButton value="Save" action="{!save}" />
+					<apex:commandButton value="Clone" action="{!clonex}"  rendered="{!LookupRollupSummary.Id!=null}" />
 					<apex:commandButton value="Delete" action="{!deleteX}" rendered="{!LookupRollupSummary.Id!=null}" />
 					<apex:commandButton value="Full Calculate" action="{!URLFOR($Page.rollupcalculatemdt, null, ['id'=LookupRollupSummary.id])}"
 					 rendered="{!LookupRollupSummary.Id!=null}" />
