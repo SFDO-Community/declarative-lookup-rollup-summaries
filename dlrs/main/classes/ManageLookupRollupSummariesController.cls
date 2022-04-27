@@ -31,6 +31,8 @@ public with sharing class ManageLookupRollupSummariesController {
 
   public Boolean MetadataConnectionError { get; set; }
 
+  public String cloneLookup { get; set; }
+
   public ManageLookupRollupSummariesController() {
     LookupRollupSummary = new LookupRollupSummary2__mdt();
   }
@@ -65,6 +67,11 @@ public with sharing class ManageLookupRollupSummariesController {
 
     // URL parameter?
     selectedLookup = (Id) ApexPages.currentPage().getParameters().get('id');
+    cloneLookup = (Id) ApexPages.currentPage().getParameters().get('cloneID');
+
+    if (cloneLookup != null) {
+      cloneRollupSummary();
+    }
     if (selectedLookup != null) {
       LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
             false,
@@ -147,6 +154,43 @@ public with sharing class ManageLookupRollupSummariesController {
       ApexPages.addMessages(e);
     }
     return null;
+  }
+
+  //TO cloneRollupSummary, we query the database for the rollup summary with passed cloneLookup,
+  //then set clonesummary with empty values on known values to edit.
+  public void cloneRollupSummary() {
+    LookupRollupSummary2__mdt cloneSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector(
+          false,
+          true
+        )
+        .selectById(new Set<String>{ cloneLookup })[0]
+      .Record;
+
+    cloneSummary.label = '';
+    cloneSummary.developerName = '';
+    cloneSummary.id = null;
+    LookupRollupSummary = cloneSummary;
+  }
+
+  //TO clonex, we check if page has record id, if so return create[new] page with cloned record to save.
+  public Pagereference cloneX() {
+    PageReference newPage = Page.managelookuprollupsummaries;
+    newPage.setRedirect(true);
+
+    //Checks against lookup from options list on first entry
+    if (ApexPages.currentPage().getParameters().get('id') != null) {
+      newPage.getParameters()
+        .put(
+          'cloneID',
+          ApexPages.currentPage().getParameters().get('id').escapeHtml4()
+        );
+    }
+    //if developername is not null, then there is a rollup in memory we can key off of
+    if (ApexPages.currentPage().getParameters().get('developerName') != null) {
+      newPage.getParameters().put('cloneID', LookupRollupSummary.Id);
+    }
+
+    return newPage;
   }
 
   public PageReference hideMessage() {
