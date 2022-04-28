@@ -130,7 +130,7 @@ public with sharing class ManageLookupRollupSummariesController {
           );
         }
         for (String fieldError : recordError.FieldErrors) {
-          if (fieldError.contains(' has not been deployed')) {
+          if (fieldError.contains('Active')) {
             ApexPages.addMessage(
               new ApexPages.Message(ApexPages.Severity.ERROR, fieldError)
             );
@@ -199,7 +199,7 @@ public with sharing class ManageLookupRollupSummariesController {
           when 1 {
             Apexpages.addMessage(
               new Apexpages.Message(
-                Apexpages.severity.warning,
+                Apexpages.severity.WARNING,
                 'Rollup has only one trigger deployed. Cannot activate'
               )
             );
@@ -207,7 +207,7 @@ public with sharing class ManageLookupRollupSummariesController {
           when else {
             Apexpages.addMessage(
               new Apexpages.Message(
-                Apexpages.severity.fatal,
+                Apexpages.severity.FATAL,
                 'Rollup does not have any triggers deployed. Cannot activate'
               )
             );

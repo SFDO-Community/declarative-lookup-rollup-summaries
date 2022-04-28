@@ -1,6 +1,58 @@
 @IsTest
 public with sharing class MLRSControllerTest {
   @IsTest
+  public static void has_both_triggers_present() {
+    if (!TestContext.isSupported()) {
+      return;
+    }
+    ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
+    controller.LookupRollupSummary = testRollupData();
+    controller.hasChildTriggers();
+    System.assertEquals(
+      'Rollup has child and parent triggers deployed. Can activate',
+      Apexpages.getMessages()[0].getSummary(),
+      'Should return message indicating parent and child trigger are deployed'
+    );
+  }
+
+  @IsTest
+  public static void has_one_trigger_present() {
+    if (!TestContext.isSupported()) {
+      return;
+    }
+    ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
+    LookupRollupSummary2__mdt noParent = testRollupData();
+    noParent.ParentObject__c = 'objectNotInDatabase';
+    controller.LookupRollupSummary = noParent;
+    controller.hasChildTriggers();
+
+    System.assertEquals(
+      'Rollup has only one trigger deployed. Cannot activate',
+      Apexpages.getMessages()[0].getSummary(),
+      'Should return message indicating only one trigger is deployed'
+    );
+  }
+
+  @IsTest
+  public static void has_no_trigger_present() {
+    if (!TestContext.isSupported()) {
+      return;
+    }
+    ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
+    LookupRollupSummary2__mdt noTrigger = testRollupData();
+    noTrigger.ParentObject__c = 'objectNotInDatabase';
+    noTrigger.ChildObject__c = 'ChildObjectNotInDatabase';
+    controller.LookupRollupSummary = noTrigger;
+    controller.hasChildTriggers();
+
+    System.assertEquals(
+      'Rollup does not have any triggers deployed. Cannot activate',
+      Apexpages.getMessages()[0].getSummary(),
+      'Should return message indicating no triggers are deployed'
+    );
+  }
+
+  @IsTest
   public static void clone_on_id_parameter() {
     ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
     Pagereference currentPage = Page.managelookuprollupsummaries;
