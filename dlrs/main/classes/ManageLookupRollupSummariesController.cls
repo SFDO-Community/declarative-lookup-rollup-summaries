@@ -175,11 +175,10 @@ public with sharing class ManageLookupRollupSummariesController {
   }
 
   public void hasChildTriggers() {
-
-    if (LookupRollupSummary == null){
+    if (LookupRollupSummary == null) {
       return;
-    }else {
-    try {
+    } else {
+      try {
         RollupSummary rs = new RollupSummary(LookupRollupSummary);
         String childTrigger = RollupSummaries.makeTriggerName(rs);
         String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
@@ -214,9 +213,9 @@ public with sharing class ManageLookupRollupSummariesController {
             );
           }
         }
-      
-    } catch (Exception e) { } 
-  }
+      } catch (Exception e) {
+      }
+    }
   }
 
   //TO cloneRollupSummary, we query the database for the rollup summary with passed cloneLookup,
