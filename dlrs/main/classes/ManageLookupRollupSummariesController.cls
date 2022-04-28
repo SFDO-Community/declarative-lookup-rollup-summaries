@@ -79,7 +79,6 @@ public with sharing class ManageLookupRollupSummariesController {
           )
           .selectById(new Set<String>{ selectedLookup })[0]
         .Record;
-      hasChildTriggers();
     } else {
       selectedLookup = ApexPages.currentPage()
         .getParameters()
@@ -92,9 +91,9 @@ public with sharing class ManageLookupRollupSummariesController {
             .selectByDeveloperName(new Set<String>{ selectedLookup })[0]
           .Record;
         selectedLookup = LookupRollupSummary.Id;
-        hasChildTriggers();
       }
     }
+    hasChildTriggers();
     return null;
   }
 
@@ -176,8 +175,11 @@ public with sharing class ManageLookupRollupSummariesController {
   }
 
   public void hasChildTriggers() {
+
+    if (LookupRollupSummary == null){
+      return;
+    }else {
     try {
-      if (LookupRollupSummary != null) {
         RollupSummary rs = new RollupSummary(LookupRollupSummary);
         String childTrigger = RollupSummaries.makeTriggerName(rs);
         String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
@@ -212,13 +214,9 @@ public with sharing class ManageLookupRollupSummariesController {
             );
           }
         }
-      }
-    } catch (Exception e) {
-      //ultimately if there is an error it should not effect the rollup summary functionality. Probably better to fail silently.
-      Apexpages.addMessage(
-        new Apexpages.Message(Apexpages.severity.info, e.getMessage())
-      );
-    }
+      
+    } catch (Exception e) { } 
+  }
   }
 
   //TO cloneRollupSummary, we query the database for the rollup summary with passed cloneLookup,
