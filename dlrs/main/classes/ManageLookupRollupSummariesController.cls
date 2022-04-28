@@ -79,6 +79,7 @@ public with sharing class ManageLookupRollupSummariesController {
           )
           .selectById(new Set<String>{ selectedLookup })[0]
         .Record;
+        hasChildTriggers();
     } else {
       selectedLookup = ApexPages.currentPage()
         .getParameters()
@@ -91,6 +92,7 @@ public with sharing class ManageLookupRollupSummariesController {
             .selectByDeveloperName(new Set<String>{ selectedLookup })[0]
           .Record;
         selectedLookup = LookupRollupSummary.Id;
+        hasChildTriggers();
       }
     }
     return null;
@@ -129,6 +131,11 @@ public with sharing class ManageLookupRollupSummariesController {
           );
         }
         for (String fieldError : recordError.FieldErrors) {
+          if (fieldError.contains(' has not been deployed')){
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, fieldError));
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.WARNING, 'You must deploy \'Child Triggers\' before activating Rollup Summary. Uncheck \'Active\' and save again. '));
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.WARNING, 'Once page reloads click \'Manage Child Triggers\' to deploy triggers. Then return to this page and check \'Active\' box. '));
+          }
           ApexPages.addMessage(
             new ApexPages.Message(ApexPages.Severity.Error, fieldError)
           );
