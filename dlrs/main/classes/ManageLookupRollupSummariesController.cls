@@ -156,6 +156,28 @@ public with sharing class ManageLookupRollupSummariesController {
     return null;
   }
 
+  public void hasChildTriggers(){
+    if (LookupRollupSummary != null){
+      RollupSummary rs = new RollupSummary(LookupRollupSummary);
+      String childTrigger = RollupSummaries.makeTriggerName(rs);
+      String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
+      ApexTriggersSelector selector = new ApexTriggersSelector();
+      Map<String, ApexTrigger> loadTriggers = selector.selectByName(new Set<String>{ChildTrigger, ParentTrigger});
+
+      switch on loadTriggers.size() {
+        when 2{
+          Apexpages.addMessage(new Apexpages.Message(Apexpages.severity.CONFIRM, 'Rollup has child and parent triggers deployed. Can activate'));
+        }
+        when 1{
+          Apexpages.addMessage(new Apexpages.Message(Apexpages.severity.warning, 'Rollup has only one trigger deployed. Cannot activate'));
+        }
+        when else{
+          Apexpages.addMessage(new Apexpages.Message(Apexpages.severity.fatal, 'Rollup does not have any triggers deployed. Cannot activate'));
+        }
+      }
+    }
+  }
+
   //TO cloneRollupSummary, we query the database for the rollup summary with passed cloneLookup,
   //then set clonesummary with empty values on known values to edit.
   public void cloneRollupSummary() {
