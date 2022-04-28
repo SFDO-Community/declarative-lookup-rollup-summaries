@@ -79,7 +79,7 @@ public with sharing class ManageLookupRollupSummariesController {
           )
           .selectById(new Set<String>{ selectedLookup })[0]
         .Record;
-        hasChildTriggers();
+      hasChildTriggers();
     } else {
       selectedLookup = ApexPages.currentPage()
         .getParameters()
@@ -131,10 +131,22 @@ public with sharing class ManageLookupRollupSummariesController {
           );
         }
         for (String fieldError : recordError.FieldErrors) {
-          if (fieldError.contains(' has not been deployed')){
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR, fieldError));
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.WARNING, 'You must deploy \'Child Triggers\' before activating Rollup Summary. Uncheck \'Active\' and save again. '));
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.WARNING, 'Once page reloads click \'Manage Child Triggers\' to deploy triggers. Then return to this page and check \'Active\' box. '));
+          if (fieldError.contains(' has not been deployed')) {
+            ApexPages.addMessage(
+              new ApexPages.Message(ApexPages.Severity.ERROR, fieldError)
+            );
+            ApexPages.addMessage(
+              new ApexPages.Message(
+                ApexPages.Severity.WARNING,
+                'You must deploy \'Child Triggers\' before activating Rollup Summary. Uncheck \'Active\' and save again. '
+              )
+            );
+            ApexPages.addMessage(
+              new ApexPages.Message(
+                ApexPages.Severity.WARNING,
+                'Once page reloads click \'Manage Child Triggers\' to deploy triggers. Then return to this page and check \'Active\' box. '
+              )
+            );
           }
           ApexPages.addMessage(
             new ApexPages.Message(ApexPages.Severity.Error, fieldError)
@@ -163,30 +175,49 @@ public with sharing class ManageLookupRollupSummariesController {
     return null;
   }
 
-  public void hasChildTriggers(){
-    try{
-    if (LookupRollupSummary != null){
-      RollupSummary rs = new RollupSummary(LookupRollupSummary);
-      String childTrigger = RollupSummaries.makeTriggerName(rs);
-      String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
-      ApexTriggersSelector selector = new ApexTriggersSelector();
-      Map<String, ApexTrigger> loadTriggers = selector.selectByName(new Set<String>{ChildTrigger, ParentTrigger});
+  public void hasChildTriggers() {
+    try {
+      if (LookupRollupSummary != null) {
+        RollupSummary rs = new RollupSummary(LookupRollupSummary);
+        String childTrigger = RollupSummaries.makeTriggerName(rs);
+        String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
+        ApexTriggersSelector selector = new ApexTriggersSelector();
+        Map<String, ApexTrigger> loadTriggers = selector.selectByName(
+          new Set<String>{ ChildTrigger, ParentTrigger }
+        );
 
-      switch on loadTriggers.size() {
-        when 2{
-          Apexpages.addMessage(new Apexpages.Message(Apexpages.severity.CONFIRM, 'Rollup has child and parent triggers deployed. Can activate'));
-        }
-        when 1{
-          Apexpages.addMessage(new Apexpages.Message(Apexpages.severity.warning, 'Rollup has only one trigger deployed. Cannot activate'));
-        }
-        when else{
-          Apexpages.addMessage(new Apexpages.Message(Apexpages.severity.fatal, 'Rollup does not have any triggers deployed. Cannot activate'));
+        switch on loadTriggers.size() {
+          when 2 {
+            Apexpages.addMessage(
+              new Apexpages.Message(
+                Apexpages.severity.CONFIRM,
+                'Rollup has child and parent triggers deployed. Can activate'
+              )
+            );
+          }
+          when 1 {
+            Apexpages.addMessage(
+              new Apexpages.Message(
+                Apexpages.severity.warning,
+                'Rollup has only one trigger deployed. Cannot activate'
+              )
+            );
+          }
+          when else {
+            Apexpages.addMessage(
+              new Apexpages.Message(
+                Apexpages.severity.fatal,
+                'Rollup does not have any triggers deployed. Cannot activate'
+              )
+            );
+          }
         }
       }
-    }
-    }catch(Exception e){
-      //ultimately if there is an error it should not effect the rollup summary functionality. Probably better to fail silently. 
-      Apexpages.addMessage(new Apexpages.Message(Apexpages.severity.info, e.getMessage()));
+    } catch (Exception e) {
+      //ultimately if there is an error it should not effect the rollup summary functionality. Probably better to fail silently.
+      Apexpages.addMessage(
+        new Apexpages.Message(Apexpages.severity.info, e.getMessage())
+      );
     }
   }
 
