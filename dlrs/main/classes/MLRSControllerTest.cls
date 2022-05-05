@@ -1,6 +1,47 @@
 @IsTest
 public with sharing class MLRSControllerTest {
   @IsTest
+  public static void get_next_scheduled_time() {
+    ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
+    String sch = '20 30 8 10 2 ?';
+    String expectedDate = '2/10/2023, 8:30 AM';
+    Id scheduleID = 'm007A0000000Ua6QAE';
+    System.schedule(scheduleID.to15(), sch, new mockSchedule());
+    controller.LookupRollupSummary = testrollupdata();
+
+    Test.startTest();
+    String resultDate = controller.getRollupSchedule();
+    Test.stopTest();
+
+    system.assertEquals(
+      resultDate,
+      expectedDate,
+      'Should correctly pull schedule from string'
+    );
+  }
+
+  @IsTest
+  public static void get_schedule_if_null_id() {
+    ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
+    System.assertEquals(
+      'No Schedule for Rollup - id null',
+      controller.getRollupSchedule(),
+      'Null lookupRollupSummary id should return string'
+    );
+  }
+
+  @IsTest
+  public static void get_schedule_if_empty_query_return() {
+    ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
+    controller.LookupRollupSummary = testRollupData();
+
+    System.assertEquals(
+      'No Schedule for Rollup',
+      controller.getRollupSchedule(),
+      'Empty SOQL query lookupRollupSummary should return string'
+    );
+  }
+  @IsTest
   public static void has_both_triggers_present() {
     if (!TestContext.isSupported()) {
       return;
@@ -138,5 +179,11 @@ public with sharing class MLRSControllerTest {
     rollupSummaryA.TestCodeSeeAllData__c = false;
 
     return rollupSummaryA;
+  }
+
+  public class MockSchedule implements Schedulable {
+    public void execute(SchedulableContext sc) {
+      String test = 'nothingToExecute';
+    }
   }
 }

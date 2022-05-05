@@ -22,7 +22,7 @@
 			<apex:pageBlock mode="edit" id="rollupDetailView">
 				<apex:pageBlockButtons>
 					<apex:commandButton value="Save" action="{!save}" />
-					<apex:commandButton value="Clone" action="{!clonex}"  rendered="{!LookupRollupSummary.Id!=null}" />
+					<apex:commandButton value="Clone" action="{!clonex}" rendered="{!LookupRollupSummary.Id!=null}" />
 					<apex:commandButton value="Delete" action="{!deleteX}" rendered="{!LookupRollupSummary.Id!=null}" />
 					<apex:commandButton value="Full Calculate" action="{!URLFOR($Page.rollupcalculatemdt, null, ['id'=LookupRollupSummary.id])}"
 					 rendered="{!LookupRollupSummary.Id!=null}" />
@@ -160,6 +160,13 @@
 						<apex:inputText value="{!LookupRollupSummary.RowLimit__c}" />
 					</apex:pageBlockSectionItem>
 				</apex:pageBlockSection>
+				<apex:pageBlockSectionItem rendered="{!LookupRollupSummary.Id!=null}">
+					<apex:outputLabel value="Scheduled Apex - Next Trigger Date:" />
+					<apex:outputPanel>
+						<apex:outputText style="font-style:italic;color:green" value="{!RollupSchedule}" rendered="{!LookupRollupSummary.Id!=null}">
+						</apex:outputText>
+					</apex:outputPanel>
+				</apex:pageBlockSectionItem>
 				<apex:pageBlockSection title="Text Lookups" columns="2">
 					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.ConcatenateDelimiter__c.inlineHelpText}">
 						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.ConcatenateDelimiter__c.Label}" />

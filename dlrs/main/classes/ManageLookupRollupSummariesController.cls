@@ -219,6 +219,33 @@ public with sharing class ManageLookupRollupSummariesController {
     }
   }
 
+  public String getRollupSchedule() {
+    if (LookupRollupSummary.id == null) {
+      return 'No Schedule for Rollup - id null';
+    } else {
+      try {
+        String id = (LookupRollupSummary.id).to15();
+        id = '%' + id + '%';
+
+        List<CronTrigger> ct = [
+          SELECT CronJobDetail.Name, NextFireTime
+          FROM CronTrigger
+          WHERE CronJobDetail.Name LIKE :id
+          WITH SECURITY_ENFORCED
+          LIMIT 1
+        ];
+
+        if (ct.isEmpty()) {
+          return 'No Schedule for Rollup';
+        } else {
+          return ct[0].NextFireTime.format();
+        }
+      } catch (Exception e) {
+        return 'Cannot Find Apex Scheduled Job';
+      }
+    }
+  }
+
   //TO cloneRollupSummary, we query the database for the rollup summary with passed cloneLookup,
   //then set clonesummary with empty values on known values to edit.
   public void cloneRollupSummary() {
