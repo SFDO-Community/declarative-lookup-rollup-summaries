@@ -159,12 +159,12 @@
 						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RowLimit__c.Label}" />
 						<apex:inputText value="{!LookupRollupSummary.RowLimit__c}" />
 					</apex:pageBlockSectionItem>
-				</apex:pageBlockSection>
-				<apex:pageBlockSection>
-					<apex:pageBlockSectionItem rendered="{!LookupRollupSummary.Id!=null}">
-						<apex:outputLabel value="Scheduled Apex - Next Trigger Date:" />
-						<apex:outputPanel>
-							<apex:outputText style="font-style:italic;color:green" value="{!RollupSchedule}" rendered="{!LookupRollupSummary.Id!=null}">
+					<apex:pageBlockSectionItem>
+						<apex:outputPanel style="font-weight: bold; margin-left: 150px; ">
+							<apex:outputLabel value="Scheduled Full Calculate - Next Date:" rendered="{!LookupRollupSummary.Id!=null}" />
+							<apex:outputText style="color:red" value="{!RollupSchedule}" rendered="{!LookupRollupSummary.Id!=null && RollupSchedule='No Schedule for Rollup'}">
+							</apex:outputText>
+							<apex:outputText style="color:green" value="{!RollupSchedule}" rendered="{!LookupRollupSummary.Id!=null && RollupSchedule !='No Schedule for Rollup'}">
 							</apex:outputText>
 						</apex:outputPanel>
 					</apex:pageBlockSectionItem>
