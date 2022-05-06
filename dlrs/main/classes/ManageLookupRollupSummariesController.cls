@@ -221,7 +221,7 @@ public with sharing class ManageLookupRollupSummariesController {
 
   public String getRollupSchedule() {
     if (LookupRollupSummary.id == null) {
-      return 'No Schedule for Rollup - id null';
+      return 'No Schedule for Rollup';
     } else {
       try {
         String id = (LookupRollupSummary.id).to15();
@@ -241,7 +241,7 @@ public with sharing class ManageLookupRollupSummariesController {
           return ct[0].NextFireTime.format();
         }
       } catch (Exception e) {
-        return 'Cannot Find Apex Scheduled Job';
+        return 'No Schedule for Rollup';
       }
     }
   }
