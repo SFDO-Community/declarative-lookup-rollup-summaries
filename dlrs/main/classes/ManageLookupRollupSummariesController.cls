@@ -219,7 +219,6 @@ public with sharing class ManageLookupRollupSummariesController {
     }
   }
 
-  //add contrigger to selector layer
   public String getRollupSchedule() {
     if (LookupRollupSummary.id == null) {
       return 'No Schedule for Rollup';
