@@ -34,7 +34,6 @@ public with sharing class MLRSControllerTest {
   public static void get_schedule_if_empty_query_return() {
     ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
     controller.LookupRollupSummary = testRollupData();
-
     System.assertEquals(
       'No Schedule for Rollup',
       controller.getRollupSchedule(),
