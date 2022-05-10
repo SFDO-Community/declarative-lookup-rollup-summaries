@@ -219,30 +219,24 @@ public with sharing class ManageLookupRollupSummariesController {
     }
   }
 
+  //add contrigger to selector layer
   public String getRollupSchedule() {
     if (LookupRollupSummary.id == null) {
       return 'No Schedule for Rollup';
-    } else {
-      try {
-        String id = (LookupRollupSummary.id).to15();
-        id = '%' + id + '%';
+    }
 
-        List<CronTrigger> ct = [
-          SELECT CronJobDetail.Name, NextFireTime
-          FROM CronTrigger
-          WHERE CronJobDetail.Name LIKE :id
-          WITH SECURITY_ENFORCED
-          LIMIT 1
-        ];
+    try {
+      String id = (LookupRollupSummary.id).to15();
+      List<CronTrigger> ct = new CronTriggersSelector()
+        .selectScheduledApexById(id);
 
-        if (ct.isEmpty()) {
-          return 'No Schedule for Rollup';
-        } else {
-          return ct[0].NextFireTime.format();
-        }
-      } catch (Exception e) {
+      if (ct.isEmpty()) {
         return 'No Schedule for Rollup';
+      } else {
+        return ct[0].NextFireTime.format();
       }
+    } catch (Exception e) {
+      return 'No Schedule for Rollup';
     }
   }
 

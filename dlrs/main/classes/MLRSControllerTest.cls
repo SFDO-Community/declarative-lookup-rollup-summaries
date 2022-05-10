@@ -24,9 +24,9 @@ public with sharing class MLRSControllerTest {
   public static void get_schedule_if_null_id() {
     ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
     System.assertEquals(
-      'No Schedule for Rollup - id null',
+      'No Schedule for Rollup',
       controller.getRollupSchedule(),
-      'Null lookupRollupSummary id should return string'
+      'Null lookupRollupSummary id should return string: No Schedule for Rollup'
     );
   }
 
@@ -38,9 +38,27 @@ public with sharing class MLRSControllerTest {
     System.assertEquals(
       'No Schedule for Rollup',
       controller.getRollupSchedule(),
-      'Empty SOQL query lookupRollupSummary should return string'
+      'Empty SOQL query lookupRollupSummary should return string: No Schedule for Rollup'
     );
   }
+
+  @IsTest
+  public static void get_schedule_if_caught_error() {
+    ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
+    controller.LookupRollupSummary = testRollupData();
+
+    try {
+      controller.LookupRollupSummary.id = 'BadRecordID';
+      controller.getRollupSchedule();
+    } catch (Exception e) {
+      System.assertEquals(
+        'No Schedule for Rollup',
+        controller.getRollupSchedule(),
+        'should return string on error: No Schedule for Rollup'
+      );
+    }
+  }
+
   @IsTest
   public static void has_both_triggers_present() {
     if (!TestContext.isSupported()) {
