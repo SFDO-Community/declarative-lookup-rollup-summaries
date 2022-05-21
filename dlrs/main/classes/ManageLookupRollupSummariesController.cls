@@ -219,6 +219,26 @@ public with sharing class ManageLookupRollupSummariesController {
     }
   }
 
+  public String getRollupSchedule() {
+    if (LookupRollupSummary.id == null) {
+      return 'No Schedule for Rollup';
+    }
+
+    try {
+      String id = (LookupRollupSummary.id).to15();
+      List<CronTrigger> ct = new CronTriggersSelector()
+        .selectScheduledApexById(id);
+
+      if (ct.isEmpty()) {
+        return 'No Schedule for Rollup';
+      } else {
+        return ct[0].NextFireTime.format();
+      }
+    } catch (Exception e) {
+      return 'No Schedule for Rollup';
+    }
+  }
+
   //TO cloneRollupSummary, we query the database for the rollup summary with passed cloneLookup,
   //then set clonesummary with empty values on known values to edit.
   public void cloneRollupSummary() {
