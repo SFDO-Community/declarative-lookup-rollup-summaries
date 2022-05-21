@@ -22,7 +22,7 @@
 			<apex:pageBlock mode="edit" id="rollupDetailView">
 				<apex:pageBlockButtons>
 					<apex:commandButton value="Save" action="{!save}" />
-					<apex:commandButton value="Clone" action="{!clonex}"  rendered="{!LookupRollupSummary.Id!=null}" />
+					<apex:commandButton value="Clone" action="{!clonex}" rendered="{!LookupRollupSummary.Id!=null}" />
 					<apex:commandButton value="Delete" action="{!deleteX}" rendered="{!LookupRollupSummary.Id!=null}" />
 					<apex:commandButton value="Full Calculate" action="{!URLFOR($Page.rollupcalculatemdt, null, ['id'=LookupRollupSummary.id])}"
 					 rendered="{!LookupRollupSummary.Id!=null}" />
@@ -158,6 +158,15 @@
 					<apex:pageBlockSectionItem helpText="{!$ObjectType.LookupRollupSummary2__mdt.fields.RowLimit__c.inlineHelpText}">
 						<apex:outputLabel value="{!$ObjectType.LookupRollupSummary2__mdt.fields.RowLimit__c.Label}" />
 						<apex:inputText value="{!LookupRollupSummary.RowLimit__c}" />
+					</apex:pageBlockSectionItem>
+					<apex:pageBlockSectionItem>
+						<apex:outputPanel style="font-weight: bold; margin-left: 150px; ">
+							<apex:outputLabel value="Scheduled Full Calculate - Next Date:" rendered="{!LookupRollupSummary.Id!=null}" />
+							<apex:outputText style="color:red" value="{!RollupSchedule}" rendered="{!LookupRollupSummary.Id!=null && RollupSchedule='No Schedule for Rollup'}">
+							</apex:outputText>
+							<apex:outputText style="color:green" value="{!RollupSchedule}" rendered="{!LookupRollupSummary.Id!=null && RollupSchedule !='No Schedule for Rollup'}">
+							</apex:outputText>
+						</apex:outputPanel>
 					</apex:pageBlockSectionItem>
 				</apex:pageBlockSection>
 				<apex:pageBlockSection title="Text Lookups" columns="2">

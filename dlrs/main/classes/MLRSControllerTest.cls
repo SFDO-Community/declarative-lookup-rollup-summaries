@@ -1,6 +1,64 @@
 @IsTest
 public with sharing class MLRSControllerTest {
   @IsTest
+  public static void get_next_scheduled_time() {
+    ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
+    String sch = '20 30 8 10 2 ?';
+    String expectedMinuteValue = '30';
+    Id scheduleID = 'm007A0000000Ua6QAE';
+    System.schedule(scheduleID.to15(), sch, new mockSchedule());
+    controller.LookupRollupSummary = testrollupdata();
+
+    Test.startTest();
+    String resultDate = controller.getRollupSchedule();
+    Test.stopTest();
+
+    system.assertEquals(
+      true,
+      resultDate.contains(expectedMinuteValue),
+      'Should correctly pull schedule from string; string is checked against minute part of configuration to avoid formatting issues and date issue'
+    );
+  }
+
+  @IsTest
+  public static void get_schedule_if_null_id() {
+    ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
+    System.assertEquals(
+      'No Schedule for Rollup',
+      controller.getRollupSchedule(),
+      'Null lookupRollupSummary id should return string: No Schedule for Rollup'
+    );
+  }
+
+  @IsTest
+  public static void get_schedule_if_empty_query_return() {
+    ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
+    controller.LookupRollupSummary = testRollupData();
+    System.assertEquals(
+      'No Schedule for Rollup',
+      controller.getRollupSchedule(),
+      'Empty SOQL query lookupRollupSummary should return string: No Schedule for Rollup'
+    );
+  }
+
+  @IsTest
+  public static void get_schedule_if_caught_error() {
+    ManageLookupRollupSummariesController controller = new ManageLookupRollupSummariesController();
+    controller.LookupRollupSummary = testRollupData();
+
+    try {
+      controller.LookupRollupSummary.id = 'BadRecordID';
+      controller.getRollupSchedule();
+    } catch (Exception e) {
+      System.assertEquals(
+        'No Schedule for Rollup',
+        controller.getRollupSchedule(),
+        'should return string on error: No Schedule for Rollup'
+      );
+    }
+  }
+
+  @IsTest
   public static void has_both_triggers_present() {
     if (!TestContext.isSupported()) {
       return;
@@ -138,5 +196,11 @@ public with sharing class MLRSControllerTest {
     rollupSummaryA.TestCodeSeeAllData__c = false;
 
     return rollupSummaryA;
+  }
+
+  public class MockSchedule implements Schedulable {
+    public void execute(SchedulableContext sc) {
+      String test = 'nothingToExecute';
+    }
   }
 }
