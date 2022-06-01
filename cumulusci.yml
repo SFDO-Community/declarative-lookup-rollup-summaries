@@ -49,6 +49,14 @@ flows:
       3:
         task: deploy_test_config
 
+  qa_org:
+    steps:
+      4:
+        task: load_dataset
+        options:
+          mapping: datasets/qa/mapping.yml
+          sql_path: datasets/qa/qa_data.sql
+
   customer_org:
     steps:
       1:
