@@ -1,0 +1,16 @@
+on:
+  push:
+    branches:
+      - feature/**
+
+jobs:
+  feature-test:
+    name: "Feature Test"
+    uses: "SFDO-Community/standard-workflows/.github/workflows/feature.yml@main"
+    secrets:
+      dev-hub-auth-url: "${{ secrets.DEV_HUB_AUTH_URL }}"
+  feature-test-namespaced:
+    name: "Feature Test - Namespaced"
+    uses: "SFDO-Community/standard-workflows/.github/workflows/feature-namespaced.yml@main"
+    secrets:
+      dev-hub-auth-url: "${{ secrets.DEV_HUB_AUTH_URL }}"
