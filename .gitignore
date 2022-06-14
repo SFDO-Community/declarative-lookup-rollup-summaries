@@ -1,7 +1,6 @@
 # Salesforce DX and LWC local dev server cache
 .sfdx/
 .localdevserver/
-.sf/*
 
 # DevOps
 mdapi_output_dir
