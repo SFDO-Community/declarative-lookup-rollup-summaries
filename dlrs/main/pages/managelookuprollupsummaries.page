@@ -162,7 +162,7 @@
 					<apex:pageBlockSectionItem>
 						<apex:outputPanel style="font-weight: bold; margin-left: 150px; ">
 							<apex:outputLabel value="Scheduled Full Calculate - Next Date:" rendered="{!LookupRollupSummary.Id!=null}" />
-							<apex:outputText style="color:red" value="{!RollupSchedule}" rendered="{!LookupRollupSummary.Id!=null && RollupSchedule='No Schedule for Rollup'}">
+							<apex:outputText style="color:rgba(255, 166, 0, 0.589)" value="{!RollupSchedule}" rendered="{!LookupRollupSummary.Id!=null && RollupSchedule='No Schedule for Rollup'}">
 							</apex:outputText>
 							<apex:outputText style="color:green" value="{!RollupSchedule}" rendered="{!LookupRollupSummary.Id!=null && RollupSchedule !='No Schedule for Rollup'}">
 							</apex:outputText>
