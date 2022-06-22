@@ -180,8 +180,8 @@ private class RollupSummaryViewControllerTest {
   }
 
   private static List<CronTrigger> testCronTriggerData() {
-    String jsonCronTrigger1 = '{ "CronTrigger" : { "id": "08e7A00000SlgHHQAZ", "TimesTriggered" : 0, "State":"WAITING", "CronJobDetailId": "08a7A00000SlsJYQAZ", "CronExpression": "0 3 2 * * ?", "CronJobDetail" : {"Id":"08a7A00000SlsJYQAZ","Name":"rollup_test10 (m007A0000000Ua6)"} } }';
-    String jsonCronTrigger2 = '{ "CronTrigger" : { "id": "08e7A00000SlgBnQAJ", "TimesTriggered" : 0, "State":"WAITING", "CronJobDetailId": "08a7A00000SlsE4QAJ", "CronExpression": "0 3 2 * * ?", "CronJobDetail" : {"Id":"08a7A00000SlsE4QAJ","Name":"rollup_test11 (m007A0000000UaB)"} } }';
+    String jsonCronTrigger1 = '{ "CronTrigger" : { "id": "08e7A00000SlgHHQAZ", "TimesTriggered" : 0, "State":"WAITING", "NextFireTime": "2030-10-30T15:27:02.000Z", "CronExpression": "0 3 2 * * ?", "CronJobDetail" : {"Id":"08a7A00000SlsJYQAZ","Name":"rollup_test10 (m007A0000000Ua6)"} } }';
+    String jsonCronTrigger2 = '{ "CronTrigger" : { "id": "08e7A00000SlgBnQAJ", "TimesTriggered" : 0, "State":"WAITING", "NextFireTime": "2030-10-30T15:27:02.000Z", "CronExpression": "0 3 2 * * ?", "CronJobDetail" : {"Id":"08a7A00000SlsE4QAJ","Name":"rollup_test11 (m007A0000000UaB)"} } }';
 
     CronTrigger ct1 = (CronTrigger) JSON.deserialize(
       jsonCronTrigger1,
