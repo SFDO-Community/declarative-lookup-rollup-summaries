@@ -1,10 +1,10 @@
 <apex:page controller="RollupSummaryViewController" lightningStylesheets="true" showHeader="true" sidebar="true">
-    <apex:pageBlock title="List View - Rollups With Scheduled Apex Jobs">
+    <apex:pageBlock title="List View - All Rollup Lookup Summaries">
         <apex:pageBlockTable value="{!view }" var="v">
             <apex:column headerValue="Rollup Label" value="{! v.label }" />
             <apex:column headerValue="Calculation Mode" value="{! v.calcMode }" />
             <apex:column headerValue="Scheduled Apex Job name (Empty = none)" value="{! v.apexJobName }" />
-            <apex:column headerValue="Scheduled to run Time" value="{! v.ScheduledTime }" />
+            <apex:column headerValue="Scheduled Full Calculate - Next Date" value="{! v.ScheduledTime }" />
             <apex:column headerValue="Job Fired Count" value="{! v.JobFiredCount }" />
             <apex:column headerValue="Record ID">
                 <apex:form>
