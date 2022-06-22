@@ -67,7 +67,7 @@ public with sharing class RollupSummaryViewController {
       String id = c.CronJobDetail.Name.substringBetween('(', ')');
       if (viewerRecords.containsKey(id)) {
         viewerRecords.get(id).apexJobName = c.CronJobDetail.Name;
-        viewerRecords.get(id).scheduledTime = c.CronExpression;
+        viewerRecords.get(id).scheduledTime = c.NextFireTime.format();
         viewerRecords.get(id).jobFiredCount = c.TimesTriggered;
       }
     }
