@@ -1,5 +1,5 @@
 <apex:page controller="RollupSummaryViewController" lightningStylesheets="true" showHeader="true" sidebar="true">
-    <apex:pageBlock title="List View - All Rollup Lookup Summaries">
+    <apex:pageBlock title="List View - All Lookup Rollup Summaries">
         <apex:pageBlockTable value="{!view }" var="v">
             <apex:column headerValue="Rollup Label" value="{! v.label }" />
             <apex:column headerValue="Calculation Mode" value="{! v.calcMode }" />
