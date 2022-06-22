@@ -67,7 +67,7 @@ public with sharing class MLRSControllerTest {
     controller.LookupRollupSummary = testRollupData();
     controller.hasChildTriggers();
     System.assertEquals(
-      'Rollup has child and parent triggers deployed. Can activate',
+      'Rollup has child and parent triggers deployed.',
       Apexpages.getMessages()[0].getSummary(),
       'Should return message indicating parent and child trigger are deployed'
     );
@@ -85,7 +85,7 @@ public with sharing class MLRSControllerTest {
     controller.hasChildTriggers();
 
     System.assertEquals(
-      'Rollup has only one trigger deployed. Cannot activate',
+      'Rollup has only one trigger deployed.',
       Apexpages.getMessages()[0].getSummary(),
       'Should return message indicating only one trigger is deployed'
     );
@@ -104,7 +104,7 @@ public with sharing class MLRSControllerTest {
     controller.hasChildTriggers();
 
     System.assertEquals(
-      'Rollup does not have any triggers deployed. Cannot activate',
+      'Rollup does not have any triggers deployed.',
       Apexpages.getMessages()[0].getSummary(),
       'Should return message indicating no triggers are deployed'
     );
