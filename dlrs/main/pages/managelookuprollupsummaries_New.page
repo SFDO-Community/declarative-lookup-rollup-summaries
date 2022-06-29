@@ -34,9 +34,9 @@
         <apex:actionFunction name="updateCalcMode" action="{!updateCalcMode}" reRender="refreshPCFields" />
         <apex:sectionHeader title="Manage Lookup Rollup Summaries" subtitle="Manage, Deploy, Run and Schedule" />
         <apex:pageMessage rendered="{!$Setup.DeclarativeLookupRollupSummaries__c.HideManageLookupRollupSummariesInfo__c==false}"
-            strength="1" escape="false" severity="Info" summary="This tab provides the ability to store rollup definitions as <b>Custom Metadata</b>. Allowing your rollups to be added to <b>Change Sets</b> and <b>Packages</b> and are also now automatically cloned during a <b>Sandbox</b> refresh. Note that you can also change configuration entered here under the <b>Setup</b> menu <b>Custom Metadata Types</b> page, however it is recommended you utilise this page as it provides added validation and features.">
-            <a href="{!URLFOR($Action.LookupRollupSummary__c.Tab,$ObjectType.LookupRollupSummary__c)}">It maybe that your org has rollups defined under the older Lookup Rollup Summaries tab here, it is recommended
-                you move them over.</a>&nbsp;
+            strength="1" escape="false" severity="Info" summary="This tab provides the ability to store rollup definitions as <b>Custom Metadata</b>. This allows your rollups to be added to <b>Change Sets</b> and <b>Packages</b> and automatically cloned during a <b>Sandbox</b> refresh. Note that you can also change the configuration entered here under the <b>Setup</b> menu <b>Custom Metadata Types</b> page. However, using this page is recommended as it provides added validation and features">
+            It maybe that your org has rollups defined under the <a href="{!URLFOR($Action.LookupRollupSummary__c.Tab,$ObjectType.LookupRollupSummary__c)}">older Lookup Rollup Summaries tab</a>. It is recommended
+                you move them over.&nbsp;
             <apex:commandLink action="{!hideMessage}" value="Hide this message" /></apex:pageMessage>
         <apex:pageMessages id="errorconfirm" />
         <apex:outputPanel rendered="{!MetadataConnectionError==true}">
