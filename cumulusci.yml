@@ -44,6 +44,11 @@ flows:
       1.5:
         task: deploy_test_config
 
+  ci_release:
+    steps:
+      1.5:
+        task: deploy_test_config
+ 
   config_apextest:
     steps:
       3:
