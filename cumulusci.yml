@@ -18,6 +18,11 @@ tasks:
     options:
       path: unpackaged/config/test
 
+  deploy_qa_config:
+    class_path: cumulusci.tasks.salesforce.Deploy
+    options:
+      path: unpackaged/config/qa
+
   robot:
     options:
       suites: robot/DLRS/tests
@@ -53,6 +58,16 @@ flows:
     steps:
       3:
         task: deploy_test_config
+
+  qa_org:
+    steps:
+      4:
+        task: load_dataset
+        options:
+          mapping: datasets/qa/mapping.yml
+          sql_path: datasets/qa/qa_data.sql
+      5:
+        task: deploy_qa_config
 
   customer_org:
     steps:
