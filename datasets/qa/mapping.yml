@@ -1,0 +1,37 @@
+Insert Accounts:
+  sf_object: Account
+  table: Account
+  fields:
+    Name: Name
+    Description: Description
+    BillingStreet: BillingStreet
+    BillingCity: BillingCity
+    BillingState: BillingState
+    BillingPostalCode: BillingPostalCode
+    BillingCountry: BillingCountry
+    ShippingStreet: ShippingStreet
+    ShippingCity: ShippingCity
+    ShippingState: ShippingState
+    ShippingPostalCode: ShippingPostalCode
+    ShippingCountry: ShippingCountry
+    Phone: Phone
+    Fax: Fax
+    Website: Website
+    NumberOfEmployees: NumberOfEmployees
+    AccountNumber: AccountNumber
+    Site: Site
+    Type: Type
+
+Insert Opportunities:
+    sf_object: Opportunity
+    table: Opportunity
+    fields:
+        Name: Name
+        StageName: StageName
+        Amount: Amount
+        CloseDate: CloseDate
+        Probability: Probability
+        LeadSource: LeadSource 
+    lookups:
+        AccountId:
+            table: Account
