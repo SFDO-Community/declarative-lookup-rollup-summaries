@@ -38,6 +38,9 @@
             <a href="{!URLFOR($Action.LookupRollupSummary__c.Tab,$ObjectType.LookupRollupSummary__c)}">It maybe that your org has rollups defined under the older Lookup Rollup Summaries tab here, it is recommended
                 you move them over.</a>&nbsp;
             <apex:commandLink action="{!hideMessage}" value="Hide this message" /></apex:pageMessage>
+        <apex:pageMessage rendered="{!hasTooManyObjects == true}"
+            strength="1" escape="false" severity="Error" summary="{!$Label.Too_Many_SObjects_Error}">
+        </apex:pageMessage>
         <apex:pageMessages id="errorconfirm" />
         <apex:outputPanel rendered="{!MetadataConnectionError==true}">
             <apex:outputLink value="{!$Page.welcometab}">Return to the Welcome page</apex:outputLink>
