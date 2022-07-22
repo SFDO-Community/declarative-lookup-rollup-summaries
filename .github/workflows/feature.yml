@@ -1,3 +1,4 @@
+name: "Feature Test"
 on:
   push:
     branches:
