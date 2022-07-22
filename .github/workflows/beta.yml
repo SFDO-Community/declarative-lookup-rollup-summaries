@@ -1,0 +1,11 @@
+name: Upload Beta Release (1GP)
+on:
+  push:
+    branches:    
+      - 'main'
+jobs:
+  upload-beta:
+    uses: SFDO-Community/standard-workflows/.github/workflows/beta-1gp.yml@main
+    secrets:
+      packaging-org-auth-url: '${{ secrets.PACKAGING_ORG_AUTH_URL }}'
+      dev-hub-auth-url: '${{ secrets.DEV_HUB_AUTH_URL }}'
