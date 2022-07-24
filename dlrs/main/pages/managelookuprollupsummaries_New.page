@@ -39,7 +39,7 @@
                 you move them over.</a>&nbsp;
             <apex:commandLink action="{!hideMessage}" value="Hide this message" /></apex:pageMessage>
         <apex:pageMessage rendered="{!hasTooManyObjects == true}"
-            strength="1" escape="false" severity="Error" summary="{!$Label.Too_Many_SObjects_Error}">
+            strength="1" escape="false" severity="Error" summary="Your org has too many sObjects, please use the legacy Manage Lookup Rollup Summaries page">
         </apex:pageMessage>
         <apex:pageMessages id="errorconfirm" />
         <apex:outputPanel rendered="{!MetadataConnectionError==true}">
