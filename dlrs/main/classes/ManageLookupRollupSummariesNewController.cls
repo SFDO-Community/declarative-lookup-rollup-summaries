@@ -21,8 +21,16 @@ public with sharing class ManageLookupRollupSummariesNewController {
   public Map<String, String> ChildObjectsDuplicates { get; set; }
   public Boolean fieldToOrderByNeeded { get; private set; }
   public Boolean realtimeSelected { get; private set; }
+  public Boolean hasTooManyObjects { get { return objectDescription.size() > 1000; }}
 
-  private Map<String, Schema.SObjectType> objectDescription;
+  private Map<String, Schema.SObjectType> objectDescription {
+    get {
+      if(objectDescription.isEmpty()) {
+        objectDescription = Schema.getGlobalDescribe();
+      }
+      return objectDescription;
+    } private set;
+  }
 
   public ManageLookupRollupSummariesNewController() {
     isParentObjectSelected = false;
@@ -252,8 +260,10 @@ public with sharing class ManageLookupRollupSummariesNewController {
   }
 
   public List<SelectOption> getParentObjList() {
-    objectDescription = Schema.getGlobalDescribe();
     List<Schema.SObjectType> parentObjList = objectDescription.values();
+    if(objectDescription.size() > 1000) {
+      return new List<SelectOption>();
+    }
     List<SelectOption> objNames = new List<SelectOption>();
     for (Schema.SObjectType obj : parentObjList) {
       Schema.DescribeSObjectResult description = obj.getDescribe(
