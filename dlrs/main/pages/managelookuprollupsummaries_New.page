@@ -38,6 +38,9 @@
              It may be that your org has rollups defined under the <a href="{!URLFOR($Action.LookupRollupSummary__c.Tab,$ObjectType.LookupRollupSummary__c)}">older Lookup Rollup Summaries tab</a>. It is recommended
                  you move them over.&nbsp;
             <apex:commandLink action="{!hideMessage}" value="Hide this message" /></apex:pageMessage>
+        <apex:pageMessage rendered="{!hasTooManyObjects == true}"
+            strength="1" escape="false" severity="Error" summary="Your org has too many sObjects, please use the legacy Manage Lookup Rollup Summaries page">
+        </apex:pageMessage>
         <apex:pageMessages id="errorconfirm" />
         <apex:outputPanel rendered="{!MetadataConnectionError==true}">
             <apex:outputLink value="{!$Page.welcometab}">Return to the Welcome page</apex:outputLink>
