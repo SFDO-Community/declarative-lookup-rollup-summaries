@@ -21,7 +21,29 @@ public with sharing class ManageLookupRollupSummariesNewController {
   public Map<String, String> ChildObjectsDuplicates { get; set; }
   public Boolean fieldToOrderByNeeded { get; private set; }
   public Boolean realtimeSelected { get; private set; }
-  public Boolean hasTooManyObjects { get { return objectDescription.size() > 1000; }}
+  public Boolean hasTooManyObjects { get { return rollupableSObjectsNames.size() > 1000; } }
+
+  private Set<String> rollupableSObjectsNames {
+    get {
+      if(rollupableSObjectsNames == null) {
+        rollupableSObjectsNames = new Set<String>();
+
+        List<EntityDefinition> entityDefinitions = [
+          SELECT QualifiedApiName FROM EntityDefinition
+          WHERE IsCustomSetting = false
+          AND IsCustomizable = true
+          AND isApexTriggerable = true
+        ];
+
+        for(EntityDefinition entDef : entityDefinitions) {
+          rollupableSObjectsNames.add(entDef.QualifiedApiName);
+        }
+      }
+
+      return rollupableSObjectsNames;
+    }
+    set;
+  }
 
   private Map<String, Schema.SObjectType> objectDescription {
     get {
@@ -261,7 +283,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
 
   public List<SelectOption> getParentObjList() {
     List<Schema.SObjectType> parentObjList = objectDescription.values();
-    if(objectDescription.size() > 1000) {
+    if(hasTooManyObjects) {
       return new List<SelectOption>();
     }
     List<SelectOption> objNames = new List<SelectOption>();
@@ -269,6 +291,12 @@ public with sharing class ManageLookupRollupSummariesNewController {
       Schema.DescribeSObjectResult description = obj.getDescribe(
         SObjectDescribeOptions.DEFERRED
       );
+
+      //Filter out sObjects that can't be rolled up to avoid >1000 collection limit
+      if(!rollupableSObjectsNames.contains(description.getName())) {
+        continue;
+      }
+
       String prefix = description.getKeyPrefix();
 
       if (!String.isEmpty(prefix)) {
@@ -348,6 +376,11 @@ public with sharing class ManageLookupRollupSummariesNewController {
           //objectWithRelationshipField.put(childObjectName + '.'+ relFieldName, relFieldName);
         }
         for (String key : ChildObjectsDuplicates.keySet()) {
+          //Filter out sObjects that can't be rolled up to avoid >1000 collection limit
+          if(!rollupableSObjectsNames.contains(key)) {
+            continue;
+          }
+
           childObjectList.add(
             new SelectOption(key, ChildObjectsDuplicates.get(key))
           );
