@@ -33,6 +33,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
           WHERE IsCustomSetting = false
           AND IsCustomizable = true
           AND isApexTriggerable = true
+          WITH SECURITY_ENFORCED
         ];
 
         for(EntityDefinition entDef : entityDefinitions) {
