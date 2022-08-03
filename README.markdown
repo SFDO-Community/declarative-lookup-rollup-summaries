@@ -95,7 +95,7 @@ Install DLRS 2.17 into your production, sandbox, or scratch org via [Salesforce.
 - Bug - Fixed issue preventing scheduled rollups from working if different child objects and the same parent object.
 - Bug - Fixed broken image link on app homepage.
 - Bug - Fixed missing namespace in trigger test code.
-- Bug - • Add global access modifier for NPSP.
+- Bug - Add global access modifier for NPSP.
 
 **Release Version 2.15**
 
