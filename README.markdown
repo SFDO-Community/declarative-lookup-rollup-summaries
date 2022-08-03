@@ -76,7 +76,7 @@ You can install a packaged version of the tool into your production org (sandbox
 
 Install DLRS 2.17 into your production, sandbox, or scratch org via [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest).
 
-- Bug - [New Wizard throwing error if picklist exceeds 1000 objects](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1227)
+- Bug - [New Wizard throwing error if picklist exceeds 1000 objects](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1223)
 
 **Version 2.16**
 
@@ -84,18 +84,18 @@ Install DLRS 2.17 into your production, sandbox, or scratch org via [Salesforce.
 
 Install DLRS 2.16 into your production, sandbox, or scratch org via [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest).
 
-- Feature - New creation wizard – Custom UI for creation of Lookup Rollup Summaries.
-- Feature - List view for Rollup records within lightning app – Shows all rollups including information to quickly see if a rollup is scheduled and the schedule date.
-- Feature - Integrate NPSP and TDTM with Declarative Lookup Rollup Summaries.
-- Performance - Reduced number of SOQL queries made by using Custom metadata methods for Rollup Summaries Selector.
-- Enhancement - Added `Clone` Button on main Rollup creation page to quickly copy lookup rollup summaries.
-- Enhancement - Added `Schedule` Full Calculate field to rollup creation page – Adds ability to track next scheduled full calculate on rollup.
-- Enhancement - Added error and informational messages to guide user through rollup activation.
-- Enhancement - Added ability to sort fields by label instead of API name in New Wizard.
-- Bug - Fixed issue preventing scheduled rollups from working if different child objects and the same parent object.
-- Bug - Fixed broken image link on app homepage.
-- Bug - Fixed missing namespace in trigger test code.
-- Bug - Add global access modifier for NPSP.
+- Feature - [New creation wizard: Custom UI for creation of Lookup Rollup Summaries]().
+- Feature - [List view for Rollup records within lightning app: Shows all rollups including information to quickly see if a rollup is scheduled and the schedule date]().
+- Feature - [Integrate NPSP and TDTM with Declarative Lookup Rollup Summaries]().
+- Performance - [Reduced number of SOQL queries made by using Custom metadata methods for Rollup Summaries Selector]().
+- Enhancement - [Added `Clone` Button on main Rollup creation page to quickly copy lookup rollup summaries]().
+- Enhancement - [Added `Schedule` Full Calculate field to rollup creation page – Adds ability to track next scheduled full calculate on rollup]().
+- Enhancement - [Added error and informational messages to guide user through rollup activation]().
+- Enhancement - [Added ability to sort fields by label instead of API name in New Wizard]().
+- Bug - [Fixed issue preventing scheduled rollups from working if different child objects and the same parent object]().
+- Bug - [Fixed broken image link on app homepage]().
+- Bug - [Fixed missing namespace in trigger test code]().
+- Bug - [Add global access modifier for NPSP]().
 
 **Release Version 2.15**
 
