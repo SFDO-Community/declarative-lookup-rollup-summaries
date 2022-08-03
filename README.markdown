@@ -82,7 +82,7 @@ Install DLRS 2.17 into your production, sandbox, or scratch org via [Salesforce.
 
 ---
 
-Install DLRS 2.17 into your production, sandbox, or scratch org via [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest).
+Install DLRS 2.16 into your production, sandbox, or scratch org via [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest).
 
 - Feature - New creation wizard – Custom UI for creation of Lookup Rollup Summaries.
 - Feature - List view for Rollup records within lightning app – Shows all rollups including information to quickly see if a rollup is scheduled and the schedule date.
