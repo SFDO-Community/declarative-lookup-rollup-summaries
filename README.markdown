@@ -72,13 +72,15 @@ You can install a packaged version of the tool into your production org (sandbox
 
 **Latest Release Version 2.17**
 
+---
+
 Install DLRS 2.15 into your production, sandbox, or scratch org via [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest).
 
 - Bug [New Wizard throwing error if picklist exceeds 1000 objects]()
 
----
-
 **Version 2.16**
+
+---
 
 - Feature -
 - Feature -
@@ -94,8 +96,6 @@ Install DLRS 2.15 into your production, sandbox, or scratch org via [Salesforce.
 - Bug -
 - Bug -
 - Bug -
-
----
 
 **Release Version 2.15**
 
