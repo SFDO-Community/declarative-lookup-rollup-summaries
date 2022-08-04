@@ -1,0 +1,31 @@
+title: "DLRS Documentation"
+description: "Information about Declarative Lookup Rollup Summaries"
+remote_theme: just-the-docs/just-the-docs
+color_scheme: "light"
+
+# Aux links for the upper right navigation
+aux_links:
+  "Declarative Lookup Rollup Summaries on GitHub":
+    - "//github.com/SFDO-Community/declarative-lookup-rollup-summaries"
+aux_links_new_tab: true
+
+# Heading anchor links appear on hover over h1-h6 tags in page content
+# allowing users to deep link to a particular heading on a page.
+# Supports true (default) or false
+heading_anchors: true
+
+#Footer
+footer_content: "Declarative Lookup Roll-Up Summaries is a tool built and maintained by a community of volunteers through the Open Source Commons program. This is not a Salesforce-owned product. If you need support, go to the Trailblazer Community Group. "
+
+# Search Settings
+search_enabled: true
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+########################################################
+
+# Replaces title if used
+# logo: "/assets/images/dlrs-badge.png"
+
+# "favicon.ico" used to change default favicon
