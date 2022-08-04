@@ -70,7 +70,35 @@ Please feel free to raise feedback and issues via the **Github Issues** page [he
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limitations and known issues above first!
 
-**Latest Release Version 2.15**
+**Latest Release Version 2.17**
+
+---
+
+Install DLRS 2.17 into your production, sandbox, or scratch org via [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest).
+
+- Feature - [New creation wizard: Custom UI for creation of Lookup Rollup Summaries](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1113).
+- Feature - [List view for Rollup records within lightning app: Shows all rollups including information to quickly see if a rollup is scheduled and the schedule date](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1131).
+- Feature - [Integrate NPSP and TDTM with Declarative Lookup Rollup Summaries](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1112).
+- Performance - [Reduced number of SOQL queries made by using custom metadata methods for Rollup Summaries Selector](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1049).
+- Enhancement - [Added `Clone` Button on main Rollup creation page to quickly copy lookup rollup summaries](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1121).
+- Enhancement - [Added `Schedule` Full Calculate field to rollup creation page – Adds ability to track next scheduled full calculate on rollup](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1126).
+- Enhancement - [Added error and informational messages to guide user through rollup activation](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1123).
+- Enhancement - [Added ability to sort fields by label instead of API name in New Wizard](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1130).
+- Bug - [Fixed issue preventing scheduled rollups from working if different child objects and the same parent object](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/802).
+- Bug - [Fixed broken image link on app homepage](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1170).
+- Bug - [Fixed missing namespace in trigger test code](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1177).
+- Bug - [Add global access modifier for NPSP](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1180).
+- Bug - [New Wizard throwing error if picklist exceeds 1000 objects](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1223)
+
+**Version 2.16**
+
+---
+
+Install DLRS 2.16 into your production, sandbox, or scratch org via [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest).
+
+- Internal release
+
+**Release Version 2.15**
 
 ---
 
@@ -581,13 +609,13 @@ It's easy:
 0. Have VS Code with [Salesforce DX Extended](https://marketplace.visualstudio.com/items?itemName=salesforce.salesforcedx-vscode-expanded) setup and running
 
 1. Clone this repo
-  A. If using windows: LF normalize "MetadataService.cls","MetadataServiceTest.cls"
-      Ex: In VS code you can change the file from "CRLF" to "LF" within the program settings.
+   A. If using windows: LF normalize "MetadataService.cls","MetadataServiceTest.cls"
+   Ex: In VS code you can change the file from "CRLF" to "LF" within the program settings.
 2. run `npm ci` - this will ensure our code formatting rules apply (via Prettier), and installs packages from the package-lock.json file
 3. create a _new branch_ from `main`, all branches must start with `feature/`, e.g. `feature/newSetupUX`(use a descriptive name)
 4. Deploy code to a Scratch Org via CCI or DX
-  A. If using SFDX: append the scratch org creation command with "--nonamespace" 
-      Ex: sfdx force:org:create -f orgs/feature.json --nonamespace -a myTestOrgAlias
+   A. If using SFDX: append the scratch org creation command with "--nonamespace"
+   Ex: sfdx force:org:create -f orgs/feature.json --nonamespace -a myTestOrgAlias
 5. Work on it
 
 When done:
