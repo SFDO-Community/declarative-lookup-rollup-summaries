@@ -70,11 +70,15 @@ Please feel free to raise feedback and issues via the **Github Issues** page [he
 
 You can install a packaged version of the tool into your production org (sandbox testing as always recommended). Check the limitations and known issues above first!
 
-**Latest Release Version 2.17**
+Current release 2.15: [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest)
+
+**SOON TO BE RELEASED - Version 2.17**
 
 ---
 
+<!---
 Install DLRS 2.17 into your production, sandbox, or scratch org via [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest).
+--->
 
 - Feature - [New creation wizard: Custom UI for creation of Lookup Rollup Summaries](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1113).
 - Feature - [List view for Rollup records within lightning app: Shows all rollups including information to quickly see if a rollup is scheduled and the schedule date](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1131).
@@ -90,11 +94,9 @@ Install DLRS 2.17 into your production, sandbox, or scratch org via [Salesforce.
 - Bug - [Add global access modifier for NPSP](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1180).
 - Bug - [New Wizard throwing error if picklist exceeds 1000 objects](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1223)
 
-**Version 2.16**
+**Non-release Version 2.16**
 
 ---
-
-Install DLRS 2.16 into your production, sandbox, or scratch org via [Salesforce.org MetaDeploy](https://install.salesforce.org/products/dlrs/latest).
 
 - Internal release
 
