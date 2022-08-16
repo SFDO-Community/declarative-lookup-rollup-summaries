@@ -13,7 +13,7 @@ Just like a “kitchen” cookbook, we’ve laid out the ingredients and the ste
 
 The introduction below explains how the recipes are laid out, and the examples are grouped in sections around similar issues - see the links in the navigation sidebar. We hope you’ll find these helpful for your work!
 
-The DLRS Cookbook was started at an Open Source Community Sprint in October 2021 by a group of seasoned DLRS users who wanted to share examples of rollups that have worked well for them. This is just the beginning of the collection: please help us to expand the range of examples by contributing a recipe of your own, using this form (link to Google Form or contribution page).
+The DLRS Cookbook was started at an Open Source Community Sprint in October 2021 by a group of seasoned DLRS users who wanted to share examples of rollups that have worked well for them. This is just the beginning of the collection: please help us to expand the range of examples by contributing a recipe of your own, using this [form](https://docs.google.com/forms/d/e/1FAIpQLSc3DN1YwA0fTHTlWbF2xjy4sd_e3cuy_6vyoZoLOv586EQwfA/viewform).
 
 ## Read the whole recipe
 

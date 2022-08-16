@@ -11,4 +11,4 @@ Needs Content
 # Knowledge articles about DLRS Architecture
 
 <br/>
-Each subpage contains knowledge articles about DLRS architecure.
+Each page contains knowledge articles about DLRS architecture.
