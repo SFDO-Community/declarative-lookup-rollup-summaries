@@ -6,7 +6,7 @@ parent: Issues/FAQ
 has_children: false
 ---
 
-[Join the DLRS Trailblaizer Community - Today!](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE){: .btn .btn-green }
+[Join the DLRS Trailblazer Community - Today!](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE){: .btn .btn-green }
 
 # Issues and Bug Reporting
 
