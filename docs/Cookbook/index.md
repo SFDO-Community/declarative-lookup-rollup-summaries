@@ -39,7 +39,7 @@ We provide examples of SOQL queries with our recipes to give you a starting poin
 
 ## Consider schedules and triggers to determine “doneness”
 
-It’s important to understand the different Calculation Modes and the use of the DLRS Full Calculate Scheduler (see [this link](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/wiki/Understanding-When-DLRS-Calculates))
+It’s important to understand the different Calculation Modes and the use of the DLRS Full Calculate Scheduler (see [this link](http://sfdo-community.github.io/declarative-lookup-rollup-summaries/Architecture/calculates.html#understanding-when-dlrs-calculates))
 
 - The Calculation Mode picklist offers Realtime, Scheduled, Process Builder, and Developer modes.
   - “Realtime”: this setting requires deployment of the child trigger and will run your rollups whenever a child record is saved.
