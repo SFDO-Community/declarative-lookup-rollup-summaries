@@ -18,7 +18,7 @@ Install DLRS 2.17 into your production, sandbox, or scratch org via [Salesforce.
 
 - Feature - [New creation wizard: Custom UI for creation of Lookup Rollup Summaries](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1113).
 - Feature - [List view for Rollup records within lightning app: Shows all rollups including information to quickly see if a rollup is scheduled and the schedule date](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1131).
-- Feature - [Detect NPSP/TDTM during depployment of DLRS test code](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1171).
+- Feature - [Detect NPSP/TDTM during deployment of DLRS test code](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/pull/1171).
 - Performance - [Reduced number of SOQL queries made by using custom metadata methods for Rollup Summaries Selector](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1049).
 - Enhancement - [Added `Clone` Button on main Rollup creation page to quickly copy lookup rollup summaries](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1121).
 - Enhancement - [Added `Schedule` Full Calculate field to rollup creation page – Adds ability to track next scheduled full calculate on rollup](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/issues/1126).
