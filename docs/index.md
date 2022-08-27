@@ -31,10 +31,10 @@ Additionally - the metrics available with RUS fields - are limited to sum, minim
 
 ## DLRS Misconceptions
 
-- Real-time trigger - Set Lookup Rollup to `Realtime` Calculation Mode. [Info](https://sfenton3.github.io/DLRS-Github-Pages/Architecture/calculates.html)
-- Invocable from Flow or Process Builder - This is what allows DLRS to run in Professional Edition. [Info](https://sfenton3.github.io/DLRS-Github-Pages/Installation/configuration.html#implementation-considerations)
-- Scheduled full calculations - There is a button to schedule full calculations. [Info](https://sfenton3.github.io/DLRS-Github-Pages/Architecture/calculates.html)
-- Async trigger based calculations - This is a feature of `Scheduled` Calculation Mode. [Info](https://sfenton3.github.io/DLRS-Github-Pages/Architecture/calculates.html)
+- Real-time trigger - Set Lookup Rollup to `Realtime` Calculation Mode. [Info](https://sfdo-community.github.io/declarative-lookup-rollup-summaries/Architecture/calculates.html)
+- Invocable from Flow or Process Builder - This is what allows DLRS to run in Professional Edition. [Info](https://sfdo-community.github.io/declarative-lookup-rollup-summaries/Installation/configuration.html#implementation-considerations)
+- Scheduled full calculations - There is a button to schedule full calculations. [Info](https://sfdo-community.github.io/declarative-lookup-rollup-summaries/Architecture/calculates.html)
+- Async trigger based calculations - This is a feature of `Scheduled` Calculation Mode. [Info](https://sfdo-community.github.io/declarative-lookup-rollup-summaries/Architecture/calculates.html)
 
 ## Follow the DLRS Journey
 
