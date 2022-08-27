@@ -39,7 +39,7 @@ We provide examples of SOQL queries with our recipes to give you a starting poin
 
 ## Consider schedules and triggers to determine “doneness”
 
-It’s important to understand the different Calculation Modes and the use of the DLRS Full Calculate Scheduler (see [this link](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/wiki/Understanding-When-DLRS-Calculates))
+It’s important to understand the different Calculation Modes and the use of the DLRS Full Calculate Scheduler (see [this link](http://sfdo-community.github.io/declarative-lookup-rollup-summaries/Architecture/calculates.html#understanding-when-dlrs-calculates))
 
 - The Calculation Mode picklist offers Realtime, Scheduled, Process Builder, and Developer modes.
   - “Realtime”: this setting requires deployment of the child trigger and will run your rollups whenever a child record is saved.
@@ -53,7 +53,7 @@ Often rollup summaries come in pairs, or groups: for example, if you calculate t
 
 ## Share your results!
 
-Please share your culinary creations! We hope to keep adding to this resource, so please send us your feedback and let us know if you have new [recipe ideas](https://sfenton3.github.io/DLRS-Github-Pages/About%20Us%20&%20Contribution/cookbook). You’ll find us in the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion).
+Please share your culinary creations! We hope to keep adding to this resource, so please send us your feedback and let us know if you have new [recipe ideas](https://sfdo-community.github.io/declarative-lookup-rollup-summaries/About%20Us%20&%20Contribution/cookbook.html). You’ll find us in the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion).
 
 # How to Read our Template
 
