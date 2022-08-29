@@ -118,3 +118,7 @@ Using Scheduled Incremental Calculation or using Process Builder with a Schedule
   - Uses the child trigger to immediately calculate rollups
 - Developer
   - Allows you to call DLRS from your own apex without using the DLRS trigger
+
+### Calculation Sharing Mode
+
+Calculation Sharing Mode determines whether Salesforce sharing configurations should be taken into account when the rollup calculates. **User** mode will calculate all records visible to the user who triggered the rollup calculation. **System** mode will calculate all records regardless of the current User’s access.
