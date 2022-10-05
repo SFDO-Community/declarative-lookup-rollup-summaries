@@ -55,14 +55,17 @@ global with sharing class RollupJob implements Schedulable, Database.Batchable<s
       ) {
         ids.add(recordId);
       }
+      // Retrieve organization info to put in the email
+      Organization org = [SELECT Id, Name FROM Organization];
+
       // Errors are emailed to the user that scheduled this job
       //  (note parent record update errors are routed via Lookup Rollup Summmary Log via the service code)
       Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
       mail.setToAddresses(new List<String>{ UserInfo.getUserId() });
       mail.setSubject(
         String.format(
-          'Apex job id {0} failed to update rollups ',
-          new List<String>{ BC.getJobId() }
+          'Scheduled Apex job {0} failed to update rollups in {1} ({2})',
+          new List<String>{ BC.getJobId(), org.Name, org.Id }
         )
       );
       mail.setPlainTextBody(
