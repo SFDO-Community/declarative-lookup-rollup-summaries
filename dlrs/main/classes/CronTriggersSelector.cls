@@ -19,10 +19,12 @@ public with sharing class CronTriggersSelector extends fflib_SObjectSelector {
   }
 
   public List<CronTrigger> selectAllScheduledApex() {
+    List<String> omittedStates = new List<String>{'DELETED'};
+
     List<CronTrigger> ct = Database.query(
       newQueryFactory()
         .selectfield('CronJobDetail.Name')
-        .setCondition('CronJobDetail.JobType = \'7\'')
+        .setCondition('CronJobDetail.JobType = \'7\' AND State NOT IN :omittedStates')
         .tosoql()
     );
 
@@ -35,8 +37,7 @@ public with sharing class CronTriggersSelector extends fflib_SObjectSelector {
     List<CronTrigger> ct = Database.query(
       newQueryFactory()
         .selectfield('CronJobDetail.Name')
-        .setCondition('CronJobDetail.JobType = \'7\'')
-        .setCondition('CronJobDetail.Name LIKE :id')
+        .setCondition('CronJobDetail.JobType = \'7\' AND CronJobDetail.Name LIKE :id')
         .setLimit(1)
         .tosoql()
     );
