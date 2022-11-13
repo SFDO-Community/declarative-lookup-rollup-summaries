@@ -128,6 +128,7 @@ global with sharing class OptimizerService {
     LookupRollupSummaryLogsExist,
     LookupRollupSummaryScheduleItemsInError,
     LookupShadowRecordsNeedDeleting,
+    LookupRollupSummaryScheduleItemsCount,
     LookupRollupSummaryScheduleItemsFieldDeletion,
     LookupRollupSummaryScheduleItemsWithFullCalcScheduleJob
   }
@@ -169,6 +170,26 @@ global with sharing class OptimizerService {
         notification.Status = NotificationStatus.Attention;
         notification.Message = 'This version of the tool no longer requires the field dlrs__LookupRollupSummary__c on dlrs__LookupRollupSummaryScheduleItems__c. For optimum configuration and performance please delete it after reading the further information provided.';
         notification.MoreInfoURL = 'https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Attention:-Need-to-delete-unused-field-on-dlrs__LookupRollupSummaryScheduleItems__c';
+        return notification;
+      }
+      return null;
+    }
+  }
+
+    public class LookupRollupSummaryScheduleItemsCount extends OptimizationCheckRunner {
+    public override Notification execute() {
+      //Count() aggregate where does not hit Row limit but might hit CPU limit
+      Integer count = [
+        SELECT count()
+        FROM LookupRollupSummaryScheduleItems__c
+        LIMIT 200000
+      ];
+      if (count > 50000) {
+        Notification notification = new Notification();
+        notification.Id = NotificationReference.LookupRollupSummaryScheduleItemsCount;
+        notification.Status = NotificationStatus.Warning;
+        notification.Message = 'Clear or Schedule the Lookup Rollup Summary Schedule Items. You are using ' + count*2 + 'kb of data storage';
+        notification.MoreInfoURL = 'https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Warning:-Lookup-Rollup-Summary-Logs-Exist';
         return notification;
       }
       return null;
