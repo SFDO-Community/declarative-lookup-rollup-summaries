@@ -581,4 +581,102 @@ private class RollupServiceTest6 {
       .Description
     );
   }
+
+  @IsTest
+  static void testRollupPreventUnecessaryParentDmlRealtime() {
+    // Test supported?
+    if (!TestContext.isSupported())
+      return;
+
+    LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+    rollupSummaryA.Name = 'Test Rollup';
+    rollupSummaryA.ParentObject__c = 'Account';
+    rollupSummaryA.ChildObject__c = 'Account';
+    rollupSummaryA.RelationShipField__c = 'ParentId';
+    rollupSummaryA.FieldToAggregate__c = 'NumberOfEmployees';
+    rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+    rollupSummaryA.AggregateResultField__c = 'NumberOfEmployees';
+    rollupSummaryA.Active__c = true;
+    rollupSummaryA.CalculationMode__c = 'Realtime';
+    insert rollupSummaryA;
+
+    // Setup parent test records
+    Account accountParent = new Account();
+    accountParent.Name = 'Test Account Parent';
+    accountParent.NumberOfEmployees = 1;
+    insert accountParent;
+
+    Test.startTest();
+    Account accountChild = new Account();
+    accountChild.Name = 'Test Account Child';
+    accountChild.NumberOfEmployees = 1;
+    accountChild.ParentId = accountParent.Id;
+    insert accountChild;
+    // Account insert statement above, no additional DML performed
+    Assert.areEqual(1, Limits.getDmlRows());
+    // No additional rows or unexpected DML
+    Assert.areEqual(1, Limits.getDmlStatements());
+    Test.stopTest();
+
+    // Assert
+    System.assertEquals(
+      1,
+      [SELECT NumberOfEmployees FROM Account WHERE id = :accountParent.Id][0]
+      .NumberOfEmployees
+    );
+  }
+
+  @IsTest
+  static void testRollupPreventUnecessaryParentDmlScheduled() {
+    LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+    rollupSummaryA.Name = 'Test Rollup';
+    rollupSummaryA.ParentObject__c = 'Account';
+    rollupSummaryA.ChildObject__c = 'Account';
+    rollupSummaryA.RelationShipField__c = 'ParentId';
+    rollupSummaryA.FieldToAggregate__c = 'NumberOfEmployees';
+    rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+    rollupSummaryA.AggregateResultField__c = 'NumberOfEmployees';
+    rollupSummaryA.Active__c = true;
+    rollupSummaryA.CalculationMode__c = 'Scheduled';
+    insert rollupSummaryA;
+
+    // Setup parent test records
+    Account accountParent = new Account();
+    accountParent.Name = 'Test Opportunity';
+    accountParent.NumberOfEmployees = 1;
+    insert accountParent;
+
+    accountParent = [
+      SELECT Id, LastModifiedDate
+      FROM Account
+      WHERE Id = :accountParent.Id
+    ];
+
+    Test.startTest();
+    Account accountChild = new Account();
+    accountChild.Name = 'Test Opportunity';
+    accountChild.NumberOfEmployees = 1;
+    accountChild.ParentId = accountParent.Id;
+    insert accountChild;
+
+    RollupService.runJobToProcessScheduledItems();
+    Test.stopTest();
+
+    Account accountParentAfterChild = [
+      SELECT Id, LastModifiedDate
+      FROM Account
+      WHERE Id = :accountParent.Id
+    ];
+    Assert.areEqual(
+      accountParent.LastModifiedDate,
+      accountParentAfterChild.LastModifiedDate
+    );
+
+    // Assert
+    Assert.areEqual(
+      1,
+      [SELECT NumberOfEmployees FROM Account WHERE id = :accountParent.Id][0]
+      .NumberOfEmployees
+    );
+  }
 }
