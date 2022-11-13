@@ -176,11 +176,11 @@ global with sharing class OptimizerService {
     }
   }
 
-    public class LookupRollupSummaryScheduleItemsCount extends OptimizationCheckRunner {
+  public class LookupRollupSummaryScheduleItemsCount extends OptimizationCheckRunner {
     public override Notification execute() {
       //Count() aggregate does not hit Row limit but might hit CPU limit
       Integer count = [
-        SELECT count()
+        SELECT COUNT()
         FROM LookupRollupSummaryScheduleItems__c
         LIMIT 200000
       ];
@@ -188,8 +188,11 @@ global with sharing class OptimizerService {
         Notification notification = new Notification();
         notification.Id = NotificationReference.LookupRollupSummaryScheduleItemsCount;
         notification.Status = NotificationStatus.Warning;
-        notification.Message = 'Clear or Schedule the Lookup Rollup Summary Schedule Items. You are using an estimated ' + count*2 + 'kb of data storage';
-        notification.MoreInfoURL = 'https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Warning:-Lookup-Rollup-Summary-Logs-Exist';
+        notification.Message =
+          'Clear or Schedule the Lookup Rollup Summary Schedule Items. You are using an estimated ' +
+          count * 2 +
+          'kb of data storage';
+        notification.MoreInfoURL = 'https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/wiki/What-you-need-to-know-about-Scheduling-Rollups';
         return notification;
       }
       return null;
