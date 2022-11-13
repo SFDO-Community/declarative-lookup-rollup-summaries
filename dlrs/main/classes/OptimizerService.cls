@@ -178,20 +178,25 @@ global with sharing class OptimizerService {
 
   public class LookupRollupSummaryScheduleItemsCount extends OptimizationCheckRunner {
     public override Notification execute() {
-      //Count() aggregate does not hit Row limit but might hit CPU limit
+      //Count() aggregate does not hit Row limit.
       Integer count = [
         SELECT COUNT()
         FROM LookupRollupSummaryScheduleItems__c
         LIMIT 200000
       ];
       if (count > 3000) {
+        //Estimated each record at 2kb
+        Integer mbs = (count * 2) / 1024;
+
         Notification notification = new Notification();
         notification.Id = NotificationReference.LookupRollupSummaryScheduleItemsCount;
         notification.Status = NotificationStatus.Warning;
         notification.Message =
-          'Clear or Schedule the Lookup Rollup Summary Schedule Items. You are using an estimated ' +
-          count * 2 +
-          'kb of data storage';
+          'There are ' +
+          count +
+          ' Scheduled Items - Clear or Schedule the Lookup Rollup Summary Schedule Items. You are using an estimated ' +
+          mbs +
+          ' MB of data storage.';
         notification.MoreInfoURL = 'https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/wiki/What-you-need-to-know-about-Scheduling-Rollups';
         return notification;
       }
