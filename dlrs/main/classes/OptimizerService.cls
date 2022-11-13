@@ -178,17 +178,17 @@ global with sharing class OptimizerService {
 
     public class LookupRollupSummaryScheduleItemsCount extends OptimizationCheckRunner {
     public override Notification execute() {
-      //Count() aggregate where does not hit Row limit but might hit CPU limit
+      //Count() aggregate does not hit Row limit but might hit CPU limit
       Integer count = [
         SELECT count()
         FROM LookupRollupSummaryScheduleItems__c
         LIMIT 200000
       ];
-      if (count > 50000) {
+      if (count > 3000) {
         Notification notification = new Notification();
         notification.Id = NotificationReference.LookupRollupSummaryScheduleItemsCount;
         notification.Status = NotificationStatus.Warning;
-        notification.Message = 'Clear or Schedule the Lookup Rollup Summary Schedule Items. You are using ' + count*2 + 'kb of data storage';
+        notification.Message = 'Clear or Schedule the Lookup Rollup Summary Schedule Items. You are using an estimated ' + count*2 + 'kb of data storage';
         notification.MoreInfoURL = 'https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Warning:-Lookup-Rollup-Summary-Logs-Exist';
         return notification;
       }
