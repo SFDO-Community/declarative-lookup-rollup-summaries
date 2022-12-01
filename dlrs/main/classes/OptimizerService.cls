@@ -175,7 +175,8 @@ global with sharing class OptimizerService {
       return null;
     }
   }
-
+  // custom label with placeholders
+  // Group by rollup schedule items - count and group by
   public class LookupRollupSummaryScheduleItemsCount extends OptimizationCheckRunner {
     public override Notification execute() {
       //Count() aggregate does not hit Row limit.
