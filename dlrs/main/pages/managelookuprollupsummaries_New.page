@@ -58,20 +58,20 @@
 
                 <apex:pageBlockSection title="Information" columns="2">
                     <apex:pageBlockSectionItem>
-                        <apex:outputLabel value="Lookup Rollup Summary Name" />
+                        <apex:outputLabel value="Lookup Rollup Summary Label" />
                         <apex:outputPanel>
                             <div class="requiredInput">
                                 <div class="requiredBlock" />
-                                <apex:inputText size="32" value="{!LookupRollupSummary.Label}" />
+                                <apex:inputText size="32" maxlength="40" value="{!LookupRollupSummary.Label}" />
                             </div>
                         </apex:outputPanel>
                     </apex:pageBlockSectionItem>
                     <apex:pageBlockSectionItem>
-                        <apex:outputLabel value="Lookup Rollup Summary Unique Name" />
+                        <apex:outputLabel value="Lookup Rollup Summary API Name" />
                         <apex:outputPanel>
                             <div class="requiredInput">
                                 <div class="requiredBlock" />
-                                <apex:inputText size="32" value="{!LookupRollupSummary.DeveloperName}" disabled="{!LookupRollupSummary.Id!=null}" />
+                                <apex:inputText size="32" maxlength="40" value="{!LookupRollupSummary.DeveloperName}" disabled="{!LookupRollupSummary.Id!=null}" />
                                 <img src="/s.gif" class="imgclass" title="{!$ObjectType.LookupRollupSummary2__mdt.Fields.DeveloperName.inlineHelpText}" />
                             </div>
                         </apex:outputPanel>
