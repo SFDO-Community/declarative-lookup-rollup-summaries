@@ -57,12 +57,12 @@
                 </apex:pageBlockButtons>
 
                 <apex:pageBlockSection title="Information" columns="2">
-                    <apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem id="labelInputSection">
                         <apex:outputLabel value="Lookup Rollup Summary Label" />
                         <apex:outputPanel>
                             <div class="requiredInput">
                                 <div class="requiredBlock" />
-                                <apex:inputText size="32" maxlength="40" value="{!LookupRollupSummary.Label}" />
+                                <apex:inputText size="32" maxlength="40" value="{!LookupRollupSummary.Label}" id="labelInput"/>
                             </div>
                         </apex:outputPanel>
                     </apex:pageBlockSectionItem>
@@ -71,7 +71,27 @@
                         <apex:outputPanel>
                             <div class="requiredInput">
                                 <div class="requiredBlock" />
-                                <apex:inputText size="32" maxlength="40" value="{!LookupRollupSummary.DeveloperName}" disabled="{!LookupRollupSummary.Id!=null}" />
+                                <script>
+                                    function suggestApiName(labelElementId, nameElementId) {
+                                        let labelElement = document.getElementById(labelElementId);
+                                        let nameElement = document.getElementById(nameElementId);
+
+                                        if (!nameElement.value) {
+                                            nameElement.value = convertLabelToApiName(labelElement.value);
+                                        }
+                                    }
+
+                                    function convertLabelToApiName(label) {
+                                        name = label.trim();
+                                        name = name.replaceAll(' ', '_');
+                                        name = name.replaceAll(/__+/g, '_');
+                                        name = [...name.matchAll(/[a-zA-Z0-9_]/g)].join('');
+                                        name = name.replaceAll(/^[0-9_]+|_$/g, '');
+
+                                        return name;
+                                    }
+                                </script>
+                                <apex:inputText onfocus="suggestApiName('{!$Component.labelInputSection.labelInput}', '{!$Component.nameInput}')" size="32" maxlength="40" id="nameInput" value="{!LookupRollupSummary.DeveloperName}" disabled="{!LookupRollupSummary.Id!=null}" />
                                 <img src="/s.gif" class="imgclass" title="{!$ObjectType.LookupRollupSummary2__mdt.Fields.DeveloperName.inlineHelpText}" />
                             </div>
                         </apex:outputPanel>
