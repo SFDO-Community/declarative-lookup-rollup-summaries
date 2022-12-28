@@ -148,7 +148,7 @@ global with sharing class OptimizerService {
         notification.Id = NotificationReference.LookupRollupSummaryLogsExist;
         notification.Status = NotificationStatus.Warning;
         notification.Message = 'Check the Lookup Rollup Summary Log tab for errors updating rollups.';
-        notification.MoreInfoURL = 'https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Warning:-Lookup-Rollup-Summary-Logs-Exist';
+        notification.MoreInfoURL = 'https://sfdo-community-sprints.github.io/DLRS-Documentation/Issues/#attention-need-to-delete-unused-field-on-dlrs__lookuprollupsummaryscheduleitems__c';
         return notification;
       }
       return null;
@@ -169,20 +169,18 @@ global with sharing class OptimizerService {
         notification.Id = NotificationReference.LookupRollupSummaryScheduleItemsFieldDeletion;
         notification.Status = NotificationStatus.Attention;
         notification.Message = 'This version of the tool no longer requires the field dlrs__LookupRollupSummary__c on dlrs__LookupRollupSummaryScheduleItems__c. For optimum configuration and performance please delete it after reading the further information provided.';
-        notification.MoreInfoURL = 'https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Attention:-Need-to-delete-unused-field-on-dlrs__LookupRollupSummaryScheduleItems__c';
+        notification.MoreInfoURL = 'https://sfdo-community-sprints.github.io/DLRS-Documentation/Issues/#attention-need-to-delete-unused-field-on-dlrs__lookuprollupsummaryscheduleitems__c';
         return notification;
       }
       return null;
     }
   }
 
-  // Group by rollup schedule items - count and group by
   /**
    * Notifies the user if they have to run the "RollupJob" class to process LookupRollupSummaryScheduleItems__c records
    */
   public class LookupRollupSummaryScheduleItemsCount extends OptimizationCheckRunner {
     public override Notification execute() {
-      
       //Count() aggregate does not hit Row limit.
       Integer count = [
         SELECT COUNT()
