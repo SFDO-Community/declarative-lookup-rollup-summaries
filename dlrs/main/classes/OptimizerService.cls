@@ -177,6 +177,9 @@ global with sharing class OptimizerService {
   }
   // custom label with placeholders
   // Group by rollup schedule items - count and group by
+  /**
+   * Notifies the user if they have to run the "RollupJob" class to process LookupRollupSummaryScheduleItems__c records
+   */
   public class LookupRollupSummaryScheduleItemsCount extends OptimizationCheckRunner {
     public override Notification execute() {
       //Count() aggregate does not hit Row limit.
@@ -186,7 +189,7 @@ global with sharing class OptimizerService {
         LIMIT 200000
       ];
       if (count > 3000) {
-        //Estimated each record at 2kb
+        //Estimated custom object records at 2kb
         Integer mbs = (count * 2) / 1024;
 
         Notification notification = new Notification();
@@ -198,7 +201,7 @@ global with sharing class OptimizerService {
           ' Scheduled Items - Clear or Schedule the Lookup Rollup Summary Schedule Items. You are using an estimated ' +
           mbs +
           ' MB of data storage.';
-        notification.MoreInfoURL = 'https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/wiki/What-you-need-to-know-about-Scheduling-Rollups';
+        notification.MoreInfoURL = 'https://sfdo-community-sprints.github.io/DLRS-Documentation/Architecture/calculates.html#scheduled-incremental-calculate';
         return notification;
       }
       return null;

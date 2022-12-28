@@ -69,4 +69,11 @@ private class OptimizerServiceTest {
     );
     System.assertEquals(0, summary.Notifications.size());
   }
+
+  @IsTest
+  static void givenManyScheduleItemsThenCompleteWithWarning(){
+    
+
+
+  }
 }
