@@ -175,13 +175,14 @@ global with sharing class OptimizerService {
       return null;
     }
   }
-  // custom label with placeholders
+
   // Group by rollup schedule items - count and group by
   /**
    * Notifies the user if they have to run the "RollupJob" class to process LookupRollupSummaryScheduleItems__c records
    */
   public class LookupRollupSummaryScheduleItemsCount extends OptimizationCheckRunner {
     public override Notification execute() {
+      
       //Count() aggregate does not hit Row limit.
       Integer count = [
         SELECT COUNT()

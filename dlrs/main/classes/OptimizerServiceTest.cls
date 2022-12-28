@@ -66,6 +66,7 @@ private class OptimizerServiceTest {
     System.assertEquals(
       OptimizerService.SummaryStatus.Complete,
       summary.Status
+
     );
     System.assertEquals(0, summary.Notifications.size());
   }
