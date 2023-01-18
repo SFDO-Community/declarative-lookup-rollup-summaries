@@ -1615,6 +1615,14 @@ global with sharing class RollupService {
     List<LREngine.Context> contexts,
     Map<Id, SObject> records
   ) {
+    DeclarativeLookupRollupSummaries__c configSettings = DeclarativeLookupRollupSummaries__c.getInstance();
+    if (configSettings.DisableParentDMLCheck__c) {
+      // config disables additional checks to validate DML is necessary,
+      // return the list and behave as though they all need DML
+      // this setting is to allow the org to avoid the SOQL cost of querying records
+      // and the CPU time of performing the compare
+      return records.values();
+    }
     Map<Schema.SObjectType, Set<Schema.DescribeFieldResult>> parentTypeListOfFields = new Map<Schema.SObjectType, Set<Schema.DescribeFieldResult>>();
     // Collect parent objects and fields to query them from database
     Map<Schema.SObjectType, List<SObject>> masterRecordsByType = new Map<Schema.SObjectType, List<SObject>>();
