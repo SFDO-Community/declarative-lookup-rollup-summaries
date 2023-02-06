@@ -183,13 +183,16 @@ global with sharing class OptimizerService {
     public override Notification execute() {
       // Check if RollupJob is scheduled
       Integer countScheduled = [
-        SELECT COUNT() 
-        FROM AsyncApexJob 
-        WHERE JobType = 'ScheduledApex' AND status = 'Queued' AND ApexClass.name LIKE '%RollupJob%' 
-        ]; 
+        SELECT COUNT()
+        FROM AsyncApexJob
+        WHERE
+          JobType = 'ScheduledApex'
+          AND status = 'Queued'
+          AND ApexClass.name LIKE '%RollupJob%'
+      ];
 
       //No need to warn user if scheduled items are going to be processed
-      if(countScheduled > 0){
+      if (countScheduled > 0) {
         return null;
       }
 
