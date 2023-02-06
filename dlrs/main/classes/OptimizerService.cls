@@ -181,15 +181,29 @@ global with sharing class OptimizerService {
    */
   public class LookupRollupSummaryScheduleItemsCount extends OptimizationCheckRunner {
     public override Notification execute() {
+      // Check if RollupJob is scheduled
+      Integer countScheduled = [
+        SELECT COUNT() 
+        FROM AsyncApexJob 
+        WHERE JobType = 'ScheduledApex' AND status = 'Queued' AND ApexClass.name LIKE '%RollupJob%' 
+        ]; 
+
+      //No need to warn user if scheduled items are going to be processed
+      if(countScheduled > 0){
+        return null;
+      }
+
       //Count() aggregate does not hit Row limit.
       Integer count = [
         SELECT COUNT()
         FROM LookupRollupSummaryScheduleItems__c
-        LIMIT 200000
+        LIMIT 5000
       ];
-      if (count > 3000) {
+      if (count > 0) {
         //Estimated custom object records at 2kb
-        Integer mbs = (count * 2) / 1024;
+        Integer kilobytesPerRecord = 2;
+        Integer bytes = 1024;
+        Integer megabytesOfDataspaceUsed = (count * kilobytesPerRecord) / bytes;
 
         Notification notification = new Notification();
         notification.Id = NotificationReference.LookupRollupSummaryScheduleItemsCount;
@@ -198,7 +212,7 @@ global with sharing class OptimizerService {
           'There are ' +
           count +
           ' Scheduled Items - Clear or Schedule the Lookup Rollup Summary Schedule Items. You are using an estimated ' +
-          mbs +
+          megabytesOfDataspaceUsed +
           ' MB of data storage.';
         notification.MoreInfoURL = 'https://sfdo-community-sprints.github.io/DLRS-Documentation/Architecture/calculates.html#scheduled-incremental-calculate';
         return notification;

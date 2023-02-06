@@ -79,7 +79,7 @@ private class OptimizerServiceTest {
     Test.startTest();
     List<LookupRollupSummaryScheduleItems__c> newList = new List<LookupRollupSummaryScheduleItems__c>();
 
-    for (Integer i = 5; i < 4000; i++) {
+    for (Integer i = 5; i < 300; i++) {
       LookupRollupSummaryScheduleItems__c item = new LookupRollupSummaryScheduleItems__c();
       item.QualifiedParentId__c = String.valueOf(i);
       newList.add(item);
