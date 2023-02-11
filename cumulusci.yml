@@ -4,7 +4,7 @@ project:
   package:
     name: Declarative Lookup Rollup Summaries Tool
     namespace: dlrs
-    api_version: "48.0"
+    api_version: "57.0"
   git:
     repo_url: https://github.com/SFDO-Community/declarative-lookup-rollup-summaries
     prefix_beta: beta/
@@ -53,7 +53,7 @@ flows:
     steps:
       1.5:
         task: deploy_test_config
- 
+
   config_apextest:
     steps:
       3:
@@ -105,14 +105,14 @@ orgs:
       namespaced: True
       days: 7
 plans:
-    install:
-        slug: install
-        title: Install Declarative Lookup Rollup Summaries (DLRS)
-        tier: primary
-        is_listed: True
-        preflight_message: "This will install Declarative Lookup Rollup Summaries (DLRS) in your org."
-        post_install_message: "Thanks for installing Declarative Lookup Rollup Summaries (DLRS). Please visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion) for any questions about DLRS."
-        error_message: "To get help with this error, visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion)."
-        steps:
-            1:
-                flow: customer_org
+  install:
+    slug: install
+    title: Install Declarative Lookup Rollup Summaries (DLRS)
+    tier: primary
+    is_listed: True
+    preflight_message: "This will install Declarative Lookup Rollup Summaries (DLRS) in your org."
+    post_install_message: "Thanks for installing Declarative Lookup Rollup Summaries (DLRS). Please visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion) for any questions about DLRS."
+    error_message: "To get help with this error, visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion)."
+    steps:
+      1:
+        flow: customer_org

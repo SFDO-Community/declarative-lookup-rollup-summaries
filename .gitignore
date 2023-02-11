@@ -1,5 +1,6 @@
 # Salesforce DX and LWC local dev server cache
 .sfdx/
+.sf/
 .localdevserver/
 
 # DevOps
