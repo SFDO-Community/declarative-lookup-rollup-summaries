@@ -5,7 +5,7 @@
 /**
  * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)
  **/
-trigger RollupServiceTest2Trigger on LookupChild__c(
+trigger UnpackagedRollupServiceTest2Trigger on LookupChild__c(
   before delete,
   before insert,
   before update,
