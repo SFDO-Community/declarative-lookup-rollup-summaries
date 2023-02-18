@@ -1034,14 +1034,16 @@ private with sharing class RollupServiceTest {
     // One query on Rollup object
     // One query on Opportunity for rollup a
     // One query on Opportunity for rollup b
-    System.assertEquals(6, Limits.getQueries());
+    // One query on Parent for values to confirm DML needed
+    System.assertEquals(7, Limits.getQueries());
 
     // One row for ApexTrigger (in the TestContext.isSupported method)
     // One row for ApexTrigger
     // Two rows for Rollup object
     // Two rows for Opportunity for rollup a
     // One rows for Opportunity for rollup b (since its a COUNT and only uses 1 row since Summer'18)
-    System.assertEquals(7, Limits.getQueryRows());
+    // One for Parent
+    System.assertEquals(8, Limits.getQueryRows());
 
     // Assert rollup
     Id accountId = account.Id;
@@ -1062,12 +1064,14 @@ private with sharing class RollupServiceTest {
     // + One query for the Account query above
     // + One query on Rollup object
     // + One query on Opportunity for rollup a
-    System.assertEquals(9, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(11, Limits.getQueries());
 
     // + One query for the Account query above
     // + Two rows for Rollup object
     // + Two rows for Opportunity for rollup a
-    System.assertEquals(12, Limits.getQueryRows());
+    // + One for Parent
+    System.assertEquals(14, Limits.getQueryRows());
 
     // Assert rollup
     accountResult = Database.query(
@@ -1154,13 +1158,15 @@ private with sharing class RollupServiceTest {
     // One query on ApexTrigger (validation when inserting rollups)
     // One query on Rollup object
     // One query on Opportunity for both rollups
-    System.assertEquals(4, Limits.getQueries());
+    // One query on Parent for values to confirm DML needed
+    System.assertEquals(5, Limits.getQueries());
 
     // One row for ApexTrigger (in the TestContext.isSupported method)
     // One row for ApexTrigger
     // Two rows for Rollup object
     // Four rows for Opportunity for rollup a and b
-    System.assertEquals(8, Limits.getQueryRows());
+    // One for Parent
+    System.assertEquals(9, Limits.getQueryRows());
 
     // Assert rollup
     Id accountId = account.Id;
@@ -1181,12 +1187,14 @@ private with sharing class RollupServiceTest {
     // + One query for the Account query above
     // + One query on Rollup object
     // + One query on Opportunity for rollup a
-    System.assertEquals(7, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(9, Limits.getQueries());
 
     // + One query for the Account query above
     // + Two rows for Rollup object
     // + Four rows for Opportunity for rollup a and
-    System.assertEquals(15, Limits.getQueryRows());
+    // + One for Parent
+    System.assertEquals(17, Limits.getQueryRows());
 
     // Assert rollup
     accountResult = Database.query(
@@ -1828,11 +1836,13 @@ private with sharing class RollupServiceTest {
     // Assert limits
     // + One query on Rollup object
     // + One query on Opportunity for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
 
     // + One row for Rollup object
     // + Four rows for Opportunity on Parent 1
-    System.assertEquals(beforeRows + 5, Limits.getQueryRows());
+    // + One for Parent
+    System.assertEquals(beforeRows + 6, Limits.getQueryRows());
 
     // + Twelve rows for Oppportunities (from the update statement itself)
     // + One row for Parent Account 1 (from lookup processing)
@@ -1985,11 +1995,13 @@ private with sharing class RollupServiceTest {
     // Assert limits
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
 
     // + Two rows for Rollup object
     // + Two rows for LookupChild__c for rollup B (One on Parent B and One on Parent C)
-    System.assertEquals(beforeRows + 4, Limits.getQueryRows());
+    // + Two for Parents
+    System.assertEquals(beforeRows + 6, Limits.getQueryRows());
 
     // + Two rows for LookupChild__c (from the update statement itself)
     // + Two rows for LookupParent__c (One for B and One for C)
@@ -2429,11 +2441,13 @@ private with sharing class RollupServiceTest {
     // Assert limits
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
 
     // + One row for Rollup object
     // + Nine rows for LookupChild__c for rollup
-    System.assertEquals(beforeRows + 10, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 13, Limits.getQueryRows());
 
     // + Three rows for LookupChild__c (from the update statement itself)
     // + Three rows for LookupParent__c for the rollup

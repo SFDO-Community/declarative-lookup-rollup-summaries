@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>DisableParentDMLCheck__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Turns off the DML guard that queries the parent record before DML to filter out records that wouldn&apos;t actually change the parent&apos;s held rollup value. Should be used if you&apos;re tight on SQL queries and know that your actions will almost always cause rollup value changes.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Disable the feature to query and compare the parent before executing DML.</inlineHelpText>
+    <label>Disable Parent DML Check</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>
