@@ -924,10 +924,12 @@ private with sharing class RollupServiceTest3 {
     // Assert no further limits have been used since the field to aggregate on the detail has not changed
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
     // + One row for Rollup object
     // + Nine rows for LookupChild__c for rollup
-    System.assertEquals(beforeQueryRows + 10, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeQueryRows + 13, Limits.getQueryRows());
     // + Three rows for LookupParent__c for rollup target
     System.assertEquals(beforeDMLRows + 3, Limits.getDMLRows());
 
@@ -1192,10 +1194,12 @@ private with sharing class RollupServiceTest3 {
     // Assert no further limits have been used since the field to aggregate on the detail has not changed
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
     // + One row for Rollup object
     // + Six rows for LookupChild__c for rollup for Parent A & Parent B
-    System.assertEquals(beforeQueryRows + 7, Limits.getQueryRows());
+    // + Two for Parents
+    System.assertEquals(beforeQueryRows + 9, Limits.getQueryRows());
     // + Two rows for LookupParent__c for rollup target for Parent A & Parent B
     System.assertEquals(beforeDMLRows + 2, Limits.getDMLRows());
 
@@ -1357,10 +1361,12 @@ private with sharing class RollupServiceTest3 {
     // Assert no further limits have been used since the field to aggregate on the detail has not changed
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
     // + One row for Rollup object
     // + Six rows for LookupChild__c for rollup for Parent A & Parent B
-    System.assertEquals(beforeQueryRows + 7, Limits.getQueryRows());
+    // + Two for Parents
+    System.assertEquals(beforeQueryRows + 9, Limits.getQueryRows());
     // + Two rows for LookupParent__c for rollup target for Parent A & Parent B
     System.assertEquals(beforeDMLRows + 2, Limits.getDMLRows());
 
@@ -1520,10 +1526,12 @@ private with sharing class RollupServiceTest3 {
     // Assert no further limits have been used since the field to aggregate on the detail has not changed
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
     // + One row for Rollup object
     // + Three rows for LookupChild__c
-    System.assertEquals(beforeQueryRows + 4, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeQueryRows + 7, Limits.getQueryRows());
     // + Three rows for LookupParent__c
     System.assertEquals(beforeDMLRows + 3, Limits.getDMLRows());
 
@@ -1725,10 +1733,12 @@ private with sharing class RollupServiceTest3 {
     // Assert no further limits have been used since the field to aggregate on the detail has not changed
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
     // + One row for Rollup object
     // + Six rows for LookupChild__c
-    System.assertEquals(beforeQueryRows + 7, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeQueryRows + 10, Limits.getQueryRows());
     // + Three rows for LookupParent__c
     System.assertEquals(beforeDMLRows + 3, Limits.getDMLRows());
 

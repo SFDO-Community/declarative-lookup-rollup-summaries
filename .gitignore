@@ -10,7 +10,7 @@ test_results.*
 src
 
 # Visual Studio Code
-.vscode 
+.vscode
 
 # LWC VSCode autocomplete
 **/lwc/jsconfig.json

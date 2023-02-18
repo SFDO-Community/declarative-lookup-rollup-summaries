@@ -18,6 +18,11 @@ tasks:
     options:
       path: unpackaged/config/test
 
+  deploy_test_triggers:
+    class_path: cumulusci.tasks.salesforce.Deploy
+    options:
+      path: unpackaged/config/test_triggers
+
   deploy_qa_config:
     class_path: cumulusci.tasks.salesforce.Deploy
     options:
@@ -48,16 +53,22 @@ flows:
     steps:
       1.5:
         task: deploy_test_config
+      1.6:
+        task: deploy_test_triggers
 
   ci_release:
     steps:
       1.5:
         task: deploy_test_config
+      1.6:
+        task: deploy_test_triggers
 
   config_apextest:
     steps:
       3:
         task: deploy_test_config
+      3.1:
+        task: deploy_test_triggers
 
   qa_org:
     steps:
@@ -84,6 +95,9 @@ flows:
           extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
       3.1:
         task: dx_push
+      3.2:
+        task: deploy_test_triggers
+
 
   deploy_packaging:
     steps:
@@ -91,7 +105,8 @@ flows:
         task: dx_convert_from
         options:
           extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
-
+      4.1:
+        task: deploy_test_triggers
 orgs:
   scratch:
     dev_prerelease:
