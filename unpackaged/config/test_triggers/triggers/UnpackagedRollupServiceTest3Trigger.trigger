@@ -5,7 +5,7 @@
 /**
  * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)
  **/
-trigger RollupServiceTest5Trigger on Contact(
+trigger UnpackagedRollupServiceTest3Trigger on Account(
   before delete,
   before insert,
   before update,
@@ -16,6 +16,8 @@ trigger RollupServiceTest5Trigger on Contact(
 ) {
   // Avoids the unit test triggers conflicting with manual testing in the org
   if (Test.isRunningTest()) {
-    RollupService.triggerHandler();
+    if (TestContext.AccountTestTriggerEnabled) {
+      RollupService.triggerHandler();
+    }
   }
 }
