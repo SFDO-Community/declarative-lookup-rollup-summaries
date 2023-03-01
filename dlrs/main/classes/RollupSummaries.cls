@@ -550,23 +550,23 @@ public class RollupSummaries extends fflib_SObjectDomain {
     if (
       Test.isRunningTest() && lookupRollupSummary.ParentObject == 'Opportunity'
     )
-      return 'RollupServiceTestTrigger';
+      return 'UnpackagedRollupServiceTestTrigger';
     else if (
       Test.isRunningTest() &&
       lookupRollupSummary.ParentObject ==
       LookupParent__c.sObjectType.getDescribe().getName()
     )
-      return 'RollupServiceTest2Trigger';
+      return 'UnpackagedRollupServiceTest2Trigger';
     else if (
       Test.isRunningTest() && lookupRollupSummary.ParentObject == 'Account'
     )
-      return 'RollupServiceTest3Trigger';
+      return 'UnpackagedRollupServiceTest3Trigger';
     else if (Test.isRunningTest() && lookupRollupSummary.ParentObject == 'Task')
-      return 'RollupServiceTest4Trigger';
+      return 'UnpackagedRollupServiceTest4Trigger';
     else if (
       Test.isRunningTest() && lookupRollupSummary.ParentObject == 'Contact'
     )
-      return 'RollupServiceTest5Trigger';
+      return 'UnpackagedRollupServiceTest5Trigger';
     return calculateComponentName(
       lookupRollupSummary.ParentObject,
       'Trigger',

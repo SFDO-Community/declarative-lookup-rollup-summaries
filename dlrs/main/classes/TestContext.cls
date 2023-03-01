@@ -39,7 +39,7 @@ public class TestContext {
    **/
   public static Boolean isSupported() {
     return (new ApexTriggersSelector()
-      .selectByName(new Set<String>{ 'RollupServiceTestTrigger' })
+      .selectByName(new Set<String>{ 'UnpackagedRollupServiceTestTrigger' })
       .size() > 0);
   }
 }

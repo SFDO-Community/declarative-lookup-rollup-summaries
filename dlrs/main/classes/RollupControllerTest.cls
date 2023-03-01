@@ -69,7 +69,7 @@ private class RollupControllerTest {
       );
       System.assertEquals(true, controller.Deployed);
       System.assertEquals(
-        'RollupServiceTestTrigger',
+        'UnpackagedRollupServiceTestTrigger',
         controller.RollupTriggerName
       );
       System.assertEquals(
@@ -77,7 +77,7 @@ private class RollupControllerTest {
         controller.RollupTriggerTestName
       );
       System.assertEquals(
-        'RollupServiceTestTrigger',
+        'UnpackagedRollupServiceTestTrigger',
         controller.RollupTrigger.Name
       );
       System.assertEquals(
