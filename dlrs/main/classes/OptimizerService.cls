@@ -128,6 +128,7 @@ global with sharing class OptimizerService {
     LookupRollupSummaryLogsExist,
     LookupRollupSummaryScheduleItemsInError,
     LookupShadowRecordsNeedDeleting,
+    LookupRollupSummaryScheduleItemsCount,
     LookupRollupSummaryScheduleItemsFieldDeletion,
     LookupRollupSummaryScheduleItemsWithFullCalcScheduleJob
   }
@@ -147,7 +148,7 @@ global with sharing class OptimizerService {
         notification.Id = NotificationReference.LookupRollupSummaryLogsExist;
         notification.Status = NotificationStatus.Warning;
         notification.Message = 'Check the Lookup Rollup Summary Log tab for errors updating rollups.';
-        notification.MoreInfoURL = 'https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Warning:-Lookup-Rollup-Summary-Logs-Exist';
+        notification.MoreInfoURL = 'https://sfdo-community-sprints.github.io/DLRS-Documentation/Issues/#attention-need-to-delete-unused-field-on-dlrs__lookuprollupsummaryscheduleitems__c';
         return notification;
       }
       return null;
@@ -168,7 +169,55 @@ global with sharing class OptimizerService {
         notification.Id = NotificationReference.LookupRollupSummaryScheduleItemsFieldDeletion;
         notification.Status = NotificationStatus.Attention;
         notification.Message = 'This version of the tool no longer requires the field dlrs__LookupRollupSummary__c on dlrs__LookupRollupSummaryScheduleItems__c. For optimum configuration and performance please delete it after reading the further information provided.';
-        notification.MoreInfoURL = 'https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Attention:-Need-to-delete-unused-field-on-dlrs__LookupRollupSummaryScheduleItems__c';
+        notification.MoreInfoURL = 'https://sfdo-community-sprints.github.io/DLRS-Documentation/Issues/#attention-need-to-delete-unused-field-on-dlrs__lookuprollupsummaryscheduleitems__c';
+        return notification;
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Notifies the user if they have to run the "RollupJob" class to process LookupRollupSummaryScheduleItems__c records
+   */
+  public class LookupRollupSummaryScheduleItemsCount extends OptimizationCheckRunner {
+    public override Notification execute() {
+      // Check if RollupJob is scheduled
+      Integer countScheduled = [
+        SELECT COUNT()
+        FROM AsyncApexJob
+        WHERE
+          JobType = 'ScheduledApex'
+          AND status = 'Queued'
+          AND ApexClass.name LIKE '%RollupJob%'
+      ];
+
+      //No need to warn user if scheduled items are going to be processed
+      if (countScheduled > 0) {
+        return null;
+      }
+
+      //Count() aggregate does not hit Row limit.
+      Integer count = [
+        SELECT COUNT()
+        FROM LookupRollupSummaryScheduleItems__c
+        LIMIT 5000
+      ];
+      if (count > 0) {
+        //Estimated custom object records at 2kb
+        Integer kilobytesPerRecord = 2;
+        Integer bytes = 1024;
+        Integer megabytesOfDataspaceUsed = (count * kilobytesPerRecord) / bytes;
+
+        Notification notification = new Notification();
+        notification.Id = NotificationReference.LookupRollupSummaryScheduleItemsCount;
+        notification.Status = NotificationStatus.Warning;
+        notification.Message =
+          'There are ' +
+          count +
+          ' Scheduled Items - Clear or Schedule the Lookup Rollup Summary Schedule Items. You are using an estimated ' +
+          megabytesOfDataspaceUsed +
+          ' MB of data storage.';
+        notification.MoreInfoURL = 'https://sfdo-community-sprints.github.io/DLRS-Documentation/Architecture/calculates.html#scheduled-incremental-calculate';
         return notification;
       }
       return null;

@@ -1,5 +1,6 @@
 # Salesforce DX and LWC local dev server cache
 .sfdx/
+.sf/
 .localdevserver/
 
 # DevOps
@@ -9,7 +10,7 @@ test_results.*
 src
 
 # Visual Studio Code
-.vscode 
+.vscode
 
 # LWC VSCode autocomplete
 **/lwc/jsconfig.json

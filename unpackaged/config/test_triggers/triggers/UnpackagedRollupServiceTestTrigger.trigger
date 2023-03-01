@@ -5,7 +5,7 @@
 /**
  * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)
  **/
-trigger RollupServiceTestTrigger on Opportunity(
+trigger UnpackagedRollupServiceTestTrigger on Opportunity(
   before delete,
   before insert,
   before update,
