@@ -69,4 +69,54 @@ private class OptimizerServiceTest {
     );
     System.assertEquals(0, summary.Notifications.size());
   }
+
+  @IsTest
+  static void givenManyScheduleItemsThenCompleteWithWarning() {
+    // Given
+    OptimizerService.NotificationReference nf = OptimizerService.NotificationReference.LookupRollupSummaryScheduleItemsCount;
+
+    //When
+    Test.startTest();
+    List<LookupRollupSummaryScheduleItems__c> newList = new List<LookupRollupSummaryScheduleItems__c>();
+
+    for (Integer i = 5; i < 300; i++) {
+      LookupRollupSummaryScheduleItems__c item = new LookupRollupSummaryScheduleItems__c();
+      item.QualifiedParentId__c = String.valueOf(i);
+      newList.add(item);
+    }
+
+    insert newList;
+
+    OptimizerService.Summary summary = OptimizerService.analyize(
+      new Set<OptimizerService.NotificationReference>{ nf }
+    );
+    Test.stopTest();
+
+    //Then
+    System.assertEquals(
+      OptimizerService.SummaryStatus.CompleteWithWarnings,
+      summary.Status,
+      'Status should have completed with warnings given scheduled items in queue'
+    );
+  }
+
+  @IsTest
+  static void givenNoScheduleItemsThenCompleteWithoutWarning() {
+    // Given
+    OptimizerService.NotificationReference nf = OptimizerService.NotificationReference.LookupRollupSummaryScheduleItemsCount;
+
+    //When
+    Test.startTest();
+    OptimizerService.Summary summary = OptimizerService.analyize(
+      new Set<OptimizerService.NotificationReference>{ nf }
+    );
+    Test.stopTest();
+
+    //Then
+    System.assertEquals(
+      OptimizerService.SummaryStatus.Complete,
+      summary.Status,
+      'Status should have completed without warnings given no scheduled items in queue'
+    );
+  }
 }
