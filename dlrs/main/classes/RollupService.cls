@@ -558,7 +558,9 @@ global with sharing class RollupService {
 
     // Update master records
     List<LookupRollupSummaryLog__c> rollupSummaryLogs = new List<LookupRollupSummaryLog__c>();
-    List<SObject> masterRecordList = masterRecords.values();
+
+    List<SObject> masterRecordList = new RollupDmlGuard()
+      .getOnlyRecordsNeedingDml(engineCtxByParentRelationship, masterRecords);
     List<Database.Saveresult> saveResults = updateRecords(
       masterRecordList,
       false,
@@ -1159,7 +1161,7 @@ global with sharing class RollupService {
   }
 
   /**
-   * Method wraps the LREngine.rolup method, provides context via the lookups described in RollupSummary
+   * Method wraps the LREngine.rollup method, provides context via the lookups described in RollupSummary
    *
    * @param lookups Lookup to calculate perform
    * @param childRecords Child records being modified
@@ -1275,7 +1277,8 @@ global with sharing class RollupService {
 
     // Process each context (parent child relationship) and its associated rollups
     Map<Id, SObject> masterRecords = new Map<Id, SObject>();
-    for (LREngine.Context ctx : createLREngineContexts(runnowLookups)) {
+    List<LREngine.Context> contexts = createLREngineContexts(runnowLookups);
+    for (LREngine.Context ctx : contexts) {
       // Produce a set of master Id's applicable to this context (parent only)
       Set<Id> ctxMasterIds = new Set<Id>();
       for (Id masterId : masterRecordIds)
@@ -1300,8 +1303,10 @@ global with sharing class RollupService {
       }
     }
 
+    List<SObject> masterRecordsToUpdate = new RollupDmlGuard()
+      .getOnlyRecordsNeedingDml(contexts, masterRecords);
     // Return distinct set of master records will all rollups from all contexts present
-    return masterRecords.values();
+    return masterRecordsToUpdate;
   }
 
   /**
@@ -1580,7 +1585,8 @@ global with sharing class RollupService {
     if (!npspInstalled()) {
       return;
     }
-    Callable npspApi = (System.Callable) Type.forName('npsp', 'Callable_API').newInstance();
+    Callable npspApi = (System.Callable) Type.forName('npsp', 'Callable_API')
+      .newInstance();
     npspApi.call('TDTM.DisableAllTriggers', new Map<String, Object>());
   }
 

@@ -5,7 +5,7 @@
 /**
  * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)
  **/
-trigger RollupServiceTest4Trigger on Task(
+trigger UnpackagedRollupServiceTest4Trigger on Task(
   before delete,
   before insert,
   before update,
