@@ -4,7 +4,7 @@ project:
   package:
     name: Declarative Lookup Rollup Summaries Tool
     namespace: dlrs
-    api_version: "48.0"
+    api_version: "57.0"
   git:
     repo_url: https://github.com/SFDO-Community/declarative-lookup-rollup-summaries
     prefix_beta: beta/
@@ -17,6 +17,11 @@ tasks:
     class_path: cumulusci.tasks.salesforce.Deploy
     options:
       path: unpackaged/config/test
+
+  deploy_test_triggers:
+    class_path: cumulusci.tasks.salesforce.Deploy
+    options:
+      path: unpackaged/config/test_triggers
 
   deploy_qa_config:
     class_path: cumulusci.tasks.salesforce.Deploy
@@ -43,21 +48,34 @@ tasks:
         - "UNABLE_TO_LOCK_ROW"
       retry_always: True
 
+  uninstall_packaged_incremental:
+    options:
+      ignore:
+        # This trigger is not intended for packaging,
+        # but is spidered in. We can't currently prevent that behavior.
+        ApexTrigger:
+          - UnpackagedRollupServiceTest2Trigger
 flows:
   ci_beta:
     steps:
       1.5:
         task: deploy_test_config
+      1.6:
+        task: deploy_test_triggers
 
   ci_release:
     steps:
       1.5:
         task: deploy_test_config
- 
+      1.6:
+        task: deploy_test_triggers
+
   config_apextest:
     steps:
       3:
         task: deploy_test_config
+      3.1:
+        task: deploy_test_triggers
 
   qa_org:
     steps:
@@ -84,6 +102,9 @@ flows:
           extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
       3.1:
         task: dx_push
+      3.2:
+        task: deploy_test_triggers
+
 
   deploy_packaging:
     steps:
@@ -91,7 +112,8 @@ flows:
         task: dx_convert_from
         options:
           extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
-
+      4.1:
+        task: deploy_test_triggers
 orgs:
   scratch:
     dev_prerelease:
@@ -105,14 +127,14 @@ orgs:
       namespaced: True
       days: 7
 plans:
-    install:
-        slug: install
-        title: Install Declarative Lookup Rollup Summaries (DLRS)
-        tier: primary
-        is_listed: True
-        preflight_message: "This will install Declarative Lookup Rollup Summaries (DLRS) in your org."
-        post_install_message: "Thanks for installing Declarative Lookup Rollup Summaries (DLRS). Please visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion) for any questions about DLRS."
-        error_message: "To get help with this error, visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion)."
-        steps:
-            1:
-                flow: customer_org
+  install:
+    slug: install
+    title: Install Declarative Lookup Rollup Summaries (DLRS)
+    tier: primary
+    is_listed: True
+    preflight_message: "This will install Declarative Lookup Rollup Summaries (DLRS) in your org."
+    post_install_message: "Thanks for installing Declarative Lookup Rollup Summaries (DLRS). Please visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion) for any questions about DLRS."
+    error_message: "To get help with this error, visit the [DLRS Trailblazer Community group](https://trailhead.salesforce.com/trailblazer-community/groups/0F9300000009O5pCAE?tab=discussion)."
+    steps:
+      1:
+        flow: customer_org

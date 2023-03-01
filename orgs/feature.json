@@ -1,6 +1,9 @@
 {
   "orgName": "Declarative Lookup Rollup Summaries Tool - Feature Test Org",
   "edition": "Developer",
+  "features": [
+    "EnableSetPasswordInApi"
+  ],
   "country": "US",
   "language": "en_US",
   "settings": {

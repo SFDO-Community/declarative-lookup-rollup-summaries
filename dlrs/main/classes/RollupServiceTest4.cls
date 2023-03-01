@@ -285,11 +285,13 @@ private class RollupServiceTest4 {
     // Assert limits
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
 
     // + Two rows for Rollup object
     // + Nine rows for LookupChild__c
-    System.assertEquals(beforeRows + 11, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 14, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the update statement itself)
     // + Three rows for LookupParent__c (from rollup processing)
@@ -441,12 +443,14 @@ private class RollupServiceTest4 {
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup A
     // + One query on LookupChild__c for rollup B
-    System.assertEquals(beforeQueries + 3, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 4, Limits.getQueries());
 
     // + Two rows for Rollup object
     // + Nine rows for LookupChild__c for rollup A
     // + Nine rows for LookupChild__c for rollup B
-    System.assertEquals(beforeRows + 20, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 23, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the update statement itself)
     // + Three rows for LookupParent__c for rollup A & B (DLRS combined updates to identical master ids)
@@ -597,11 +601,13 @@ private class RollupServiceTest4 {
     // Assert limits
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
 
     // + Two rows for Rollup object
     // + Nine rows for LookupChild__c
-    System.assertEquals(beforeRows + 11, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 14, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the update statement itself)
     // + Three rows for LookupParent__c (from rollup processing)
@@ -753,12 +759,14 @@ private class RollupServiceTest4 {
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup A
     // + One query on LookupChild__c for rollup B
-    System.assertEquals(beforeQueries + 3, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 4, Limits.getQueries());
 
     // + Two rows for Rollup object
     // + Nine rows for LookupChild__c for rollup A
     // + Nine rows for LookupChild__c for rollup B
-    System.assertEquals(beforeRows + 20, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 23, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the update statement itself)
     // + Three rows for LookupParent__c for rollup A & B (DLRS combined updates to identical master ids)
@@ -914,11 +922,13 @@ private class RollupServiceTest4 {
     // Assert limits
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
 
     // + Two rows for Rollup object
     // + Nine rows for LookupChild__c
-    System.assertEquals(beforeRows + 11, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 14, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the update statement itself)
     // + Three rows for LookupParent__c (from rollup processing)
@@ -1076,12 +1086,14 @@ private class RollupServiceTest4 {
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup A
     // + One query on LookupChild__c for rollup B
-    System.assertEquals(beforeQueries + 3, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 4, Limits.getQueries());
 
     // + Two rows for Rollup object
     // + Nine rows for LookupChild__c for rollup A
     // + Nine rows for LookupChild__c for rollup B
-    System.assertEquals(beforeRows + 20, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 23, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the update statement itself)
     // + Three rows for LookupParent__c for rollup A & B (DLRS combined updates to identical master ids)
@@ -1242,12 +1254,14 @@ private class RollupServiceTest4 {
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup A
     // + One query on LookupChild__c for rollup B
-    System.assertEquals(beforeQueries + 3, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 4, Limits.getQueries());
 
     // + Two rows for Rollup object
     // + Nine rows for LookupChild__c for rollup A
     // + Nine rows for LookupChild__c for rollup B
-    System.assertEquals(beforeRows + 20, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 23, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the update statement itself)
     // + Three rows for LookupParent__c for rollup A & B (DLRS combined updates to identical master ids)
@@ -1408,11 +1422,13 @@ private class RollupServiceTest4 {
     // Assert limits
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup A & B (single query because orderby matches even though one is not specified)
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
 
     // + Two rows for Rollup object
     // + Nine rows for LookupChild__c for rollup A
-    System.assertEquals(beforeRows + 11, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 14, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the insert statement itself)
     // + Three rows for LookupParent__c for rollup A & B (DLRS combined updates to identical master ids)
@@ -1603,11 +1619,13 @@ private class RollupServiceTest4 {
     // Assert limits
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup A, B & C
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
 
     // + Three rows for Rollup object
     // + Nine rows for LookupChild__c for rollup A, B & C
-    System.assertEquals(beforeRows + 12, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 15, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the insert statement itself)
     // + Three rows for LookupParent__c for rollup A & B & C (DLRS combined updates to identical master ids)
@@ -1807,11 +1825,13 @@ private class RollupServiceTest4 {
     // Assert limits
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup A, B & C
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
 
     // + Three rows for Rollup object
     // + Nine rows for LookupChild__c for rollup A, B & C
-    System.assertEquals(beforeRows + 12, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 15, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the insert statement itself)
     // + Three rows for LookupParent__c for rollup A & B & C (DLRS combined updates to identical master ids)
@@ -2050,11 +2070,13 @@ private class RollupServiceTest4 {
     // Assert limits
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup A, B, C, D & E
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
 
     // + Five rows for Rollup object
     // + Nine rows for LookupChild__c for rollup A, B, C, D & E
-    System.assertEquals(beforeRows + 14, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 17, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the insert statement itself)
     // + Three rows for LookupParent__c for rollup A & B & C & D & E (DLRS combined updates to identical master ids)
@@ -2190,12 +2212,14 @@ private class RollupServiceTest4 {
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup A
     // + One query on LookupChild__c for rollup B
-    System.assertEquals(beforeQueries + 3, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 4, Limits.getQueries());
 
     // + Two rows for Rollup object
     // + Nine rows for LookupChild__c for rollup A
     // + Nine rows for LookupChild__c for rollup B
-    System.assertEquals(beforeRows + 20, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 23, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the update statement itself)
     // + Three rows for LookupParent__c for rollup A & B (DLRS combined updates to identical master ids)
@@ -2350,11 +2374,13 @@ private class RollupServiceTest4 {
     // Assert limits
     // + One query on Rollup object
     // + One query on LookupChild__c for rollup
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+    // + One query on Parent for values to confirm DML needed
+    System.assertEquals(beforeQueries + 3, Limits.getQueries());
 
     // + Two rows for Rollup object
     // + Nine rows for LookupChild__c
-    System.assertEquals(beforeRows + 11, Limits.getQueryRows());
+    // + Three for Parents
+    System.assertEquals(beforeRows + 14, Limits.getQueryRows());
 
     // + Nine rows for LookupChild__c (from the update statement itself)
     // + Three rows for LookupParent__c (from rollup processing)
