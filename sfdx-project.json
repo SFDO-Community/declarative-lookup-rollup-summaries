@@ -21,9 +21,12 @@
     },
     {
       "path": "unpackaged/config/test"
+    },
+    {
+      "path": "unpackaged/config/test_triggers"
     }
   ],
   "namespace": "dlrs",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "48.0"
+  "sourceApiVersion": "57.0"
 }

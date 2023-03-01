@@ -57,21 +57,46 @@
                 </apex:pageBlockButtons>
 
                 <apex:pageBlockSection title="Information" columns="2">
-                    <apex:pageBlockSectionItem>
-                        <apex:outputLabel value="Lookup Rollup Summary Name" />
+                    <apex:pageBlockSectionItem id="labelInputSection">
+                        <apex:outputLabel value="Lookup Rollup Summary Label" />
                         <apex:outputPanel>
                             <div class="requiredInput">
                                 <div class="requiredBlock" />
-                                <apex:inputText size="32" value="{!LookupRollupSummary.Label}" />
+                                <apex:inputText size="32" maxlength="40" value="{!LookupRollupSummary.Label}" id="labelInput"/>
                             </div>
                         </apex:outputPanel>
                     </apex:pageBlockSectionItem>
                     <apex:pageBlockSectionItem>
-                        <apex:outputLabel value="Lookup Rollup Summary Unique Name" />
+                        <apex:outputLabel value="Lookup Rollup Summary API Name" />
                         <apex:outputPanel>
                             <div class="requiredInput">
                                 <div class="requiredBlock" />
-                                <apex:inputText size="32" value="{!LookupRollupSummary.DeveloperName}" disabled="{!LookupRollupSummary.Id!=null}" />
+                                <script>
+                                    function suggestApiName(labelElementId, nameElementId) {
+                                        const labelElement = document.getElementById(labelElementId);
+                                        const nameElement = document.getElementById(nameElementId);
+
+                                        if (!nameElement.value) {
+                                            nameElement.value = convertLabelToApiName(labelElement.value);
+                                        }
+                                    
+                                    }
+
+                                    function convertLabelToApiName(label) {
+                                        const oneOrMoreSpaces = / +/g;
+                                        const twoOrMoreUnderscores = /__+/g;
+                                        const allButAllowedCharacters = /[^a-zA-Z0-9_]/g;
+                                        const startsWithNumbersOrUnderscores = /^[0-9_]+/g;
+                                        const endsWithUnderscores = /_+$/g;
+                                        return label.trim()
+                                                .replaceAll(oneOrMoreSpaces, '_')
+                                                .replaceAll(twoOrMoreUnderscores, '_')
+                                                .replaceAll(allButAllowedCharacters, '')
+                                                .replaceAll(startsWithNumbersOrUnderscores, '')
+                                                .replaceAll(endsWithUnderscores, '');
+                                    }
+                                </script>
+                                <apex:inputText onfocus="suggestApiName('{!JSINHTMLENCODE($Component.labelInputSection.labelInput)}', '{!JSINHTMLENCODE($Component.nameInput)}')" size="32" maxlength="40" id="nameInput" value="{!LookupRollupSummary.DeveloperName}" disabled="{!LookupRollupSummary.Id!=null}" />
                                 <img src="/s.gif" class="imgclass" title="{!$ObjectType.LookupRollupSummary2__mdt.Fields.DeveloperName.inlineHelpText}" />
                             </div>
                         </apex:outputPanel>
