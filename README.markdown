@@ -22,6 +22,11 @@ Part of the Salesforce.org [Commons program](https://help.salesforce.com/s/artic
 ## Questions and Community Support
 DLRS a community built and maintained Salesforce package, please help support it share your experiences in this [Trailblazer Community Group](https://success.salesforce.com/_ui/core/chatter/groups/GroupProfilePage?g=0F9300000009O5p). 
 
+# Latest Release Links
+Metadeploy: https://install.salesforce.org/products/dlrs/latest
+Production (2.17): https://login.salesforce.com/packaging/installPackage.apexp?p0=04t5p000000XdcIAAS
+Sandbox (2.17): https://test.salesforce.com/packaging/installPackage.apexp?p0=04t5p000000XdcIAAS
+
 ## Contribute
 If you want to contribute as a developer, see [our documentation](https://sfdo-community-sprints.github.io/DLRS-Documentation/About%20Us%20&%20Contribution/)
 
