@@ -1,3 +1,99 @@
 <template>
-    
+    <div>
+        <lightning-layout>
+            <lightning-layout-item padding="around-small">
+                <lightning-card  title="Lookup Rollup Summary Creation Wizard">
+                    <div slot="actions">
+                        <lightning-button-group>
+                            <lightning-button label="Save" slot="actions"></lightning-button>
+                            <lightning-button label="Cancel" slot="actions"></lightning-button>
+                            <lightning-button label="Clone" slot="actions"></lightning-button>
+                            <lightning-button label="Delete" slot="actions"></lightning-button>
+                        </lightning-button-group>
+                    </div>
+                    <div class="slds-card__body slds-card__body_inner">
+                        <div class="slds-box">
+                            <lightning-layout class="slds-p-horizontal_medium">
+                                <lightning-layout-item size="12" class="slds-form-element_stacked">
+                                    <div class="slds-text-heading_medium">Name your Rollup</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout class="slds-p-horizontal_medium">
+                                <lightning-layout-item size="6" class="slds-form-element_stacked">
+                                <lightning-input
+                                    type="text"
+                                    name="rollup_label"
+                                    label="Lookup Rollup Summary Label"
+                                    placeholder="My Rollup Name"
+                                    value={rollup.label}
+                                ></lightning-input>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="6" class="slds-form-element_stacked">
+                                <lightning-input
+                                    type="text"
+                                    name="rollup_name"
+                                    label="Lookup Rollup Summary API Name"
+                                    placeholder="My_Rollup_Name"
+                                    value={rollup.name}
+                                ></lightning-input>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                        </div>
+                        <div class="slds-box">
+                            <lightning-layout class="slds-p-horizontal_medium">
+                                <lightning-layout-item size="12" class="slds-form-element_stacked">
+                                    <div class="slds-text-heading_medium">Pick the Parent object you want to roll up to, and then the Child object that you want to roll up from</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout class="slds-p-horizontal_medium">
+                                <lightning-layout-item size="6" class="slds-form-element_stacked">
+                                    <p>PARENT OBJECT SEARCH COMPONENT</p>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="6" class="slds-form-element_stacked">
+                                    <p>CHILD OBJECT SEARCH COMPONENT</p>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                        </div>
+                        <div class="slds-box">
+                            <lightning-layout class="slds-p-horizontal_medium">
+                                <lightning-layout-item size="12" class="slds-form-element_stacked">
+                                    <div class="slds-text-heading_medium">Setup the Relationship</div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                            <lightning-layout class="slds-p-horizontal_medium">
+                                <lightning-layout-item size="4" class="slds-form-element_stacked">
+                                    <lightning-input
+                                    type="text"
+                                    name="rollup_relationship_field"
+                                    label="Relationship Field"
+                                    placeholder="lookup__c"
+                                    value={rollup.relationshipField}
+                                    ></lightning-input>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="4" class="slds-form-element_stacked">
+                                <lightning-input
+                                    type="text"
+                                    name="rollup_relationship_criteria"
+                                    label="Relationship Criteria"
+                                    placeholder="Status__c = 'Closed' AND Days__c > 30"
+                                    value={rollup.relationshipCriteria}
+                                    maxlength="255"
+                                ></lightning-input>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="4" class="slds-form-element_stacked">
+                                <lightning-textarea
+                                    name="rollup_relationship_criteria_fields"
+                                    label="Relationship Criteria Fields"
+                                    placeholder="Status__c, Days__c"
+                                    value={rollup.relationshipCriteriaFields}
+                                    maxlength="255"
+                                ></lightning-textarea>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                        </div>
+                    </div>
+                </lightning-card>
+            </lightning-layout-item>
+        </lightning-layout>
+    </div>
 </template>
