@@ -1,5 +1,6 @@
 public with sharing class LookupRollupStatusCheckController {
 
+    // 
     public LookupRollupSummary2__mdt LookupRollupSummary;
     public List<RollupSummary> rollups;
     public Map<id, RollupSummary> mapRollups;
@@ -29,9 +30,10 @@ public with sharing class LookupRollupStatusCheckController {
 
     // Check if any schedule items have the rollup ID 
     @AuraEnabled(Cacheable=true)
-    public static void getSpecificScheduledItems(){
-        Integer count =  [SELECT COUNT() FROM LookupRollupSummaryScheduleItems__c WHERE ];
-
+    public static Integer getSpecificScheduledItems(){
+        String x = '123';
+        Integer count =  [SELECT COUNT() FROM LookupRollupSummaryScheduleItems__c WHERE LookupRollupSummary2__c = :x];
+        
         return count;
     }
 
@@ -90,6 +92,7 @@ public with sharing class LookupRollupStatusCheckController {
           ) {
             return;
           }
+          
           RollupSummary rs = new RollupSummary(LookupRollupSummary);
           String childTrigger = RollupSummaries.makeTriggerName(rs);
           String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
@@ -97,33 +100,10 @@ public with sharing class LookupRollupStatusCheckController {
           Map<String, ApexTrigger> loadTriggers = selector.selectByName(
             new Set<String>{ ChildTrigger, ParentTrigger }
           );
+
+
     
-          switch on loadTriggers.size() {
-            when 2 {
-              Apexpages.addMessage(
-                new Apexpages.Message(
-                  Apexpages.severity.CONFIRM,
-                  'Rollup has child and parent triggers deployed.'
-                )
-              );
-            }
-            when 1 {
-              Apexpages.addMessage(
-                new Apexpages.Message(
-                  Apexpages.severity.INFO,
-                  'Rollup has only one trigger deployed.'
-                )
-              );
-            }
-            when else {
-              Apexpages.addMessage(
-                new Apexpages.Message(
-                  Apexpages.severity.INFO,
-                  'Rollup does not have any triggers deployed.'
-                )
-              );
-            }
-          }
+
         } catch (Exception e) {
           //This method is intended to be informational.
           //If it fails for some reason(soql query) it should not effect the functionality of the Visualforce Page.
