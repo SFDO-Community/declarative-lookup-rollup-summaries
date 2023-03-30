@@ -1,89 +1,153 @@
 public with sharing class LookupRollupStatusCheckController {
+  // Global variables
+  public static LookupRollupSummary2__mdt LookupRollupSummary;
+  public static List<RollupSummary> rollups;
+  public static Map<id, RollupSummary> mapRollups;
+  public static String test = 'test123';
 
-    // Global variables
-    public static LookupRollupSummary2__mdt LookupRollupSummary;
-    public static List<RollupSummary> rollups;
-    public static Map<id, RollupSummary> mapRollups;
+  /**
+   * Check if the rollup has any error logs
+   */
+  @AuraEnabled(Cacheable=true)
+  public static Integer getAssociatedErrorLogs(String lookupID) {
+    Integer count = [
+      SELECT COUNT()
+      FROM LookupRollupSummaryLog__c
+      WHERE ParentId__c = :lookupID
+    ];
 
-    /*
-    * Rollup - Specific Status Information
-    *
-    */
+    return count;
+  }
 
-    // Check if Parent and child triggers have been deployed
-    @AuraEnabled(Cacheable=true)
-    public static void getTriggerStatus(){
+  /**
+   * Check if the rollup has a failed calculate rollup jobs
+   */
+  @AuraEnabled(Cacheable=true)
+  public static String getCalculateJobs(String lookupID) {
+    Integer count = [
+      SELECT COUNT()
+      FROM LookupRollupCalculateJob__c
+      WHERE LookupRollupSummaryId__c = :lookupID
+    ];
 
+    if( count == 0 ) {
+      return 'No Calculate Jobs';
     }
 
-    // Query for all full calculate rollups
-    @AuraEnabled(Cacheable=true)
-    public static void getScheduledFullCalculates(){
-
+    if(count > 0) {
+      return 'Calculate Jobs';
     }
 
-    // Check if any DLRS error logs have the rollup id
-    @AuraEnabled(Cacheable=true)
-    public static void getAssociatedErrorLogs(){
+    return 'No Calculate Jobs';
+  }
 
+  /**
+   * Check if the rollup has any schedule items
+   */
+  @AuraEnabled(Cacheable=true)
+  public static Integer getSpecificScheduledItems(String lookupID) {
+    Integer count = [
+      SELECT COUNT()
+      FROM LookupRollupSummaryScheduleItems__c
+      WHERE LookupRollupSummary2__c = :lookupID
+    ];
+
+    return count;
+  }
+
+  /**
+   * Check if the rollup has a Full Calculate schedule
+   */
+  @AuraEnabled(Cacheable=true)
+  public static String getScheduledFullCalculates(String lookupID) {
+    LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
+      false,
+      true
+    )
+    .selectById(new Set<String>{ lookupID })[0].Record;
+
+    if (LookupRollupSummary == null) {
+      return 'No Schedule for Rollup';
     }
 
-    // Check if any schedule items have the rollup ID 
-    @AuraEnabled(Cacheable=true)
-    public static Integer getSpecificScheduledItems(){
-        String x = '123';
-        Integer count =  [SELECT COUNT() FROM LookupRollupSummaryScheduleItems__c WHERE LookupRollupSummary2__c = :x];
-        
-        return count;
+    String id = (LookupRollupSummary.id).to15();
+    List<CronTrigger> ct = new CronTriggersSelector()
+      .selectScheduledApexById(id);
+
+    if (ct.isEmpty()) {
+      return 'No Schedule for Rollup';
+    } else {
+      return ct[0].NextFireTime.format();
+    }
+  }
+
+  /**
+   * Check if the rollup has a child/parent trigger
+   */
+  @AuraEnabled(Cacheable=true)
+  public static String hasChildTriggerDeployed(String lookupID) {
+    LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
+      false,
+      true
+    )
+    .selectById(new Set<String>{ lookupID })[0].Record;
+
+    if (LookupRollupSummary == null) {
+      return 'Not Deployed';
     }
 
-    /*
-    * Rollup - General Status Information
-    *
-    */
+    RollupSummary rs = new RollupSummary(LookupRollupSummary);
+    String childTrigger = RollupSummaries.makeTriggerName(rs);
+    ApexTriggersSelector selector = new ApexTriggersSelector();
+    Map<String, ApexTrigger> loadTriggers = selector.selectByName(
+      new Set<String>{ ChildTrigger }
+    );
 
-    // Grab a rollup 
-    @AuraEnabled(Cacheable=true)
-    public static Integer getAllScheduledItems(){
-        Integer count =  [SELECT COUNT() FROM LookupRollupSummaryScheduleItems__c];
-
-        return count;
+    if( loadTriggers.size() == 0 ) {
+      return 'Not Deployed';
     }
 
+    return 'Deployed';
+  }
 
-    /**
-     * Old methods from original rollup page
-     * 
-     */
+  @AuraEnabled(Cacheable=true)
+  public static String hasParentTriggerDeployed(String lookupID) {
+    LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
+      false,
+      true
+    )
+    .selectById(new Set<String>{ lookupID })[0].Record;
 
-    @AuraEnabled(Cacheable=true)
-    public static String getRollupSchedule() {
-        if (LookupRollupSummary.id == null) { return 'No Schedule for Rollup';}
-
-        String id = (LookupRollupSummary.id).to15();
-        List<CronTrigger> ct = new CronTriggersSelector().selectScheduledApexById(id);
-    
-        if (ct.isEmpty()) { return 'No Schedule for Rollup';} 
-        else {
-        return ct[0].NextFireTime.format();
-        }
-      }
-
-      @AuraEnabled(Cacheable=true)
-      public static Integer hasChildTriggers() {
-        if (LookupRollupSummary == null) {
-          return -1;
-        }
-
-        RollupSummary rs = new RollupSummary(LookupRollupSummary);
-        String childTrigger = RollupSummaries.makeTriggerName(rs);
-        String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
-        ApexTriggersSelector selector = new ApexTriggersSelector();
-        Map<String, ApexTrigger> loadTriggers = selector.selectByName(
-        new Set<String>{ ChildTrigger, ParentTrigger }
-        );
-
-          return loadTriggers.size();
+    if (LookupRollupSummary == null) {
+      return 'Not Deployed';
     }
-      
+
+    RollupSummary rs = new RollupSummary(LookupRollupSummary);
+    String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
+    ApexTriggersSelector selector = new ApexTriggersSelector();
+    Map<String, ApexTrigger> loadTriggers = selector.selectByName(
+      new Set<String>{  ParentTrigger }
+    );
+
+    if( loadTriggers.size() == 0 ) {
+      return 'Not Deployed';
+    }
+
+    return 'Deployed';
+  }
+
+  /*
+   * Rollup - General Status Information
+   *
+   */
+
+  /**
+   * Check if there are any schedule items in the system
+   */
+  @AuraEnabled(Cacheable=true)
+  public static Integer getAllScheduledItems() {
+    Integer count = [SELECT COUNT() FROM LookupRollupSummaryScheduleItems__c];
+
+    return count;
+  }
 }
