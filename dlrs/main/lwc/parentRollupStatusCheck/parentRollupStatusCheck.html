@@ -1,6 +1,6 @@
 <template>
     <div class="slds-p-around_medium lgc-bg">
-        <lightning-input type="text" label="Enter some text" onchange={handleInputChange}></lightning-input>
+        <lightning-input type="text" label="Enter some text" onkeypress={handleInputChange}></lightning-input>
     </div>
     <c-rollup-status-check name={lookupID}></c-rollup-status-check>
 </template>

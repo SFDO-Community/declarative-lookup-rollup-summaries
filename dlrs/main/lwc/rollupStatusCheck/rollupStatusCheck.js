@@ -67,6 +67,14 @@ export default class rollupStatusCheck extends LightningElement {
         
     }
 
+    get display(){
+        if( this._name === null || this._name === '' || this._name === undefined){
+            return false;
+        }
+
+        return true;
+    }
+
     // Method to check if there are any failed calculate jobs for the specific rollup
     calculateJobs(){
         console.log('calculateJobs');
@@ -117,7 +125,7 @@ export default class rollupStatusCheck extends LightningElement {
 
     // Method to check if child triggers are present
     parentTriggers(){
-        console.log('childTriggers');
+        console.log('ParentTriggers');
         hasParentTriggerDeployed({ lookupID : this._name })
         .then(result => {
             this.parentTrigger = result;

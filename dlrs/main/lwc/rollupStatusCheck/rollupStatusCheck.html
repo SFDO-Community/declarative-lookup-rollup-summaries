@@ -1,16 +1,18 @@
 <template>
-    <lightning-card title="Status Check">
+    <lightning-card title="Rollup Health Check">
         <div class="slds-p-horizontal_small">
-            <h2> Status Check Component:</h2>
+            <h2> General Rollup Health:</h2>
+            <h1> All Schedule Items Count: {recordCountAll} </h1>
+            <h1> Scheduled RollupJob: {scheduledCronJobs} </h1>
+            <br></br>
+            <template lwc:if={display}>
+            <h2> Rollup <b>{_name}</b> Health:</h2>
             <h1> for this Schedule Items: {recordCount} </h1>
             <h1> Parent Trigger: {parentTrigger} </h1>
             <h1> Child Trigger: {childTrigger} </h1>
             <h1> Next Full Calculate Date: {nextFullCalculateDate} </h1>
             <h1> Scheduled Full Calculate Job Errors: {calculateJobError} </h1>
-            <br></br>
-            <h2> General Status Check Component:</h2>
-            <h1> All Schedule Items Count: {recordCountAll} </h1>
-            <h1> Scheduled RollupJob: {scheduledCronJobs} </h1>
+        </template>
         </div>
     </lightning-card>
 </template>
