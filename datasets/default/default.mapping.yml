@@ -1,0 +1,136 @@
+Insert Department__c:
+  sf_object: Department__c
+  table: Department__c
+  fields:
+  - AVG__c
+  - CONCATENATE__c
+  - CONCATENATE_DISTINCT__c
+  - COUNT__c
+  - COUNT_DISTINCT__c
+  - Name
+  - FIRST__c
+  - LAST__c
+  - MAX__c
+  - MIN__c
+  - SUM__c
+Insert DandBCompany:
+  sf_object: DandBCompany
+  table: DandBCompany
+  fields:
+  - DunsNumber
+  - Name
+Insert OperatingHours:
+  sf_object: OperatingHours
+  table: OperatingHours
+  fields:
+  - Name
+  - TimeZone
+Insert Account:
+  sf_object: Account
+  table: Account
+  fields:
+  - Description
+  - Fax
+  - Name
+  - AccountNumber
+  - Phone
+  - Rating
+  - Site
+  - AccountSource
+  - Type
+  - AnnualRevenue
+  - BillingCity
+  - BillingCountry
+  - BillingGeocodeAccuracy
+  - BillingLatitude
+  - BillingLongitude
+  - BillingState
+  - BillingStreet
+  - BillingPostalCode
+  - CleanStatus
+  - DunsNumber
+  - Jigsaw
+  - NumberOfEmployees
+  - DLRS_Expct_Rev_from_Campaigns__c
+  - DLRS_Expct_Rev_from_Campaigns_last_year__c
+  - DLRS_Expct_Rev_from_Campaigns_this_year__c
+  - Industry
+  - NaicsCode
+  - NaicsDesc
+  - No_of_Applications_Accepted_Last_Year__c
+  - No_of_Accepted_Applications__c
+  - No_of_Applications_Submitted_Last_year__c
+  - No_of_Submitted_Applications_This_Year__c
+  - NumberOfLocations__c
+  - Ownership
+  - ShippingCity
+  - ShippingCountry
+  - ShippingGeocodeAccuracy
+  - ShippingLatitude
+  - ShippingLongitude
+  - ShippingState
+  - ShippingStreet
+  - ShippingPostalCode
+  - Sic
+  - SicDesc
+  - SLAExpirationDate__c
+  - TickerSymbol
+  - Tradestyle
+  - Website
+  - YearStarted
+  lookups:
+    DandbCompanyId:
+      table: DandBCompany
+      key_field: DandbCompanyId
+    OperatingHoursId:
+      table: OperatingHours
+      key_field: OperatingHoursId
+    ParentId:
+      table: Account
+      key_field: ParentId
+      after: Insert Account
+Insert Restriction__c:
+  sf_object: Restriction__c
+  table: Restriction__c
+  fields:
+  - Number__c
+  - Picklist__c
+  lookups:
+    Department__c:
+      table: Department__c
+      key_field: Department__c
+Insert Application__c:
+  sf_object: Application__c
+  table: Application__c
+  fields:
+  - Application_Status__c
+  - Name
+  - Start_Date__c
+  lookups:
+    Applying_School__c:
+      table: Account
+      key_field: Applying_School__c
+Insert Campaign:
+  sf_object: Campaign
+  table: Campaign
+  fields:
+  - IsActive
+  - ActualCost
+  - BudgetedCost
+  - Description
+  - EndDate
+  - ExpectedResponse
+  - ExpectedRevenue
+  - Name
+  - NumberSent
+  - StartDate
+  - Status
+  - Type
+  lookups:
+    Account__c:
+      table: Account
+      key_field: Account__c
+    ParentId:
+      table: Campaign
+      key_field: ParentId
+      after: Insert Campaign
