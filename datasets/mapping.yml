@@ -24,11 +24,24 @@ Insert Contact:
     ReportsToId:
       table: Contact
       after: Insert Contact
+Insert Opportunity:
+  sf_object: Opportunity
+  fields:
+  - CloseDate
+  - IsPrivate
+  - Name
+  - StageName
+  lookups:
+    AccountId:
+      table: Account
+    ContactId:
+      table: Contact
 Insert OpportunityContactRole:
   sf_object: OpportunityContactRole
   fields:
   - IsPrimary
-  - Role
   lookups:
     ContactId:
       table: Contact
+    OpportunityId:
+      table: Opportunity

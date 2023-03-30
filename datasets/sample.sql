@@ -21,23 +21,38 @@ CREATE TABLE "Contact" (
 	"ReportsToId" VARCHAR(255), 
 	PRIMARY KEY (id)
 );
-INSERT INTO "Contact" VALUES(1,'Business User;Evaluator;Executive Sponsor','3.0','False','test','False','False','two','','');
-INSERT INTO "Contact" VALUES(2,'Evaluator;Executive Sponsor','2.0','False','test','False','False','three','','');
-INSERT INTO "Contact" VALUES(3,'Decision Maker;Evaluator;Decision Maker;Executive Sponsor','4.0','False','test','False','False','one','','');
-CREATE TABLE "OpportunityContactRole" (
+INSERT INTO "Contact" VALUES(1,'Decision Maker;Evaluator;Decision Maker;Executive Sponsor','4.0','False','test','False','False','one','','');
+INSERT INTO "Contact" VALUES(2,'Business User;Evaluator;Executive Sponsor','3.0','False','test','False','False','two','','');
+INSERT INTO "Contact" VALUES(3,'Business User;Evaluator;Executive Sponsor','3.0','False','test','False','False','two','','');
+INSERT INTO "Contact" VALUES(4,'Evaluator;Executive Sponsor','2.0','False','test','False','False','three','','');
+INSERT INTO "Contact" VALUES(5,'Decision Maker;Evaluator;Decision Maker;Executive Sponsor','4.0','False','test','False','False','one','','');
+INSERT INTO "Contact" VALUES(6,'Evaluator;Executive Sponsor','2.0','False','test','False','False','three','','');
+CREATE TABLE "Opportunity" (
 	id INTEGER NOT NULL, 
-	"IsPrimary" VARCHAR(255), 
-	"Role" VARCHAR(255), 
+	"CloseDate" VARCHAR(255), 
+	"IsPrivate" VARCHAR(255), 
+	"Name" VARCHAR(255), 
+	"StageName" VARCHAR(255), 
+	"AccountId" VARCHAR(255), 
 	"ContactId" VARCHAR(255), 
 	PRIMARY KEY (id)
 );
-INSERT INTO "OpportunityContactRole" VALUES(1,'False','Decision Maker','3');
-INSERT INTO "OpportunityContactRole" VALUES(2,'False','Evaluator','1');
-INSERT INTO "OpportunityContactRole" VALUES(3,'False','Executive Sponsor','3');
-INSERT INTO "OpportunityContactRole" VALUES(4,'False','Executive Sponsor','2');
-INSERT INTO "OpportunityContactRole" VALUES(5,'False','Executive Sponsor','1');
-INSERT INTO "OpportunityContactRole" VALUES(6,'False','Decision Maker','3');
-INSERT INTO "OpportunityContactRole" VALUES(7,'False','Business User','1');
-INSERT INTO "OpportunityContactRole" VALUES(8,'False','Evaluator','2');
-INSERT INTO "OpportunityContactRole" VALUES(9,'False','Evaluator','3');
+INSERT INTO "Opportunity" VALUES(1,'2023-03-01','False','one opp','Closed Won','','');
+INSERT INTO "Opportunity" VALUES(2,'2023-03-01','False','two opp','Closed Won','','');
+CREATE TABLE "OpportunityContactRole" (
+	id INTEGER NOT NULL, 
+	"IsPrimary" VARCHAR(255), 
+	"ContactId" VARCHAR(255), 
+	"OpportunityId" VARCHAR(255), 
+	PRIMARY KEY (id)
+);
+INSERT INTO "OpportunityContactRole" VALUES(1,'False','1','1');
+INSERT INTO "OpportunityContactRole" VALUES(2,'False','2','1');
+INSERT INTO "OpportunityContactRole" VALUES(3,'False','6','1');
+INSERT INTO "OpportunityContactRole" VALUES(4,'False','1','1');
+INSERT INTO "OpportunityContactRole" VALUES(5,'False','1','2');
+INSERT INTO "OpportunityContactRole" VALUES(6,'False','2','2');
+INSERT INTO "OpportunityContactRole" VALUES(7,'False','1','2');
+INSERT INTO "OpportunityContactRole" VALUES(8,'False','6','2');
+INSERT INTO "OpportunityContactRole" VALUES(9,'False','2','2');
 COMMIT;
