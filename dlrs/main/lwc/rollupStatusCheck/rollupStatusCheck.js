@@ -7,10 +7,10 @@ import getScheduledFullCalculates from '@salesforce/apex/LookupRollupStatusCheck
 import getCalculateJobs from '@salesforce/apex/LookupRollupStatusCheckController.getCalculateJobs';
 import getScheduledJobs from '@salesforce/apex/LookupRollupStatusCheckController.getScheduledJobs';
 
-export default class Test extends LightningElement {
+export default class rollupStatusCheck extends LightningElement {
 
     // Get record lookup from parent component
-    @api lookupID;
+    @api name;
 
     // General status check variables
     scheduledCronJobs = 'No Jobs Found';
@@ -29,7 +29,13 @@ export default class Test extends LightningElement {
 
     connectedCallback() {
         console.log('connectedCallback');
+        console.log('my lookup id is :' + this.name);
 
+        if(this.name == null){
+        // General Status Checks
+        this.allScheduleItems();
+        this.scheduleJobs();
+        } else {
         // General Status Checks
         this.allScheduleItems();
         this.scheduleJobs();
@@ -40,12 +46,13 @@ export default class Test extends LightningElement {
         this.parentTriggers();
         this.scheduledFullCalculate();
         this.calculateJobs();
+        }
     }
 
     // Method to check if there are any failed calculate jobs for the specific rollup
     calculateJobs(){
         console.log('calculateJobs');
-        getCalculateJobs({ lookupID : 'm008N000000AnYwQAK'}).then(result => {
+        getCalculateJobs({ lookupID : this.name}).then(result => {
             this.calculateJobError = result;
         }).catch(error => {
             this.error.push(error);
@@ -56,7 +63,7 @@ export default class Test extends LightningElement {
     // Method to check if there are any scheduled full calculates for the specific rollup
     scheduledFullCalculate(){
         console.log('scheduledFullCalculate');
-        getScheduledFullCalculates({ lookupID : 'm008N000000AnYwQAK'}).then(result => {
+        getScheduledFullCalculates({ lookupID : this.name}).then(result => {
             this.nextFullCalculateDate = result;
         }).catch(error => {
             this.error.push(error);
@@ -67,7 +74,7 @@ export default class Test extends LightningElement {
     // Method to check if there are any scheduled items for the specific rollup
     specificScheduleItems(){
         console.log('specificScheduleItems');
-        getSpecificScheduledItems({ lookupID : 'm008N000000AnYwQAK'})
+        getSpecificScheduledItems({ lookupID : this.name})
         .then(result => {
             this.recordCount = result;
         })
@@ -80,7 +87,7 @@ export default class Test extends LightningElement {
     // Method to check if child triggers are present
     childTriggers(){
         console.log('childTriggers');
-        hasChildTriggerDeployed({ lookupID : 'm008N000000AnYwQAK'})
+        hasChildTriggerDeployed({ lookupID : this.name})
         .then(result => {
             this.childTrigger = result;
         })
@@ -93,7 +100,7 @@ export default class Test extends LightningElement {
     // Method to check if child triggers are present
     parentTriggers(){
         console.log('childTriggers');
-        hasParentTriggerDeployed({ lookupID : 'm008N000000AnYwQAK'})
+        hasParentTriggerDeployed({ lookupID : this.name})
         .then(result => {
             this.parentTrigger = result;
         })
