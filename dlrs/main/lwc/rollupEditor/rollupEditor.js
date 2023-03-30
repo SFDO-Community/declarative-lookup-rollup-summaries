@@ -72,4 +72,12 @@ export default class RollupEditor extends LightningElement {
   get errorsAsString() {
     return JSON.stringify(this.errors);
   }
+  
+  get aggregateOptions() {
+    return [
+        { label: 'New', value: 'new' },
+        { label: 'In Progress', value: 'inProgress' },
+        { label: 'Finished', value: 'finished' },
+    ];
+  }
 }
