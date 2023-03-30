@@ -110,6 +110,14 @@ flows:
           extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
       4.1:
         task: deploy_test_triggers
+
+  config_dev:
+    steps:
+      1.1:
+        task: deploy
+        options:
+          path: unpackaged/config/qa
+
 orgs:
   scratch:
     dev_prerelease:
