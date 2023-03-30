@@ -82,6 +82,11 @@ flows:
           sql_path: datasets/qa/qa_data.sql
       5:
         task: deploy_qa_config
+      6:
+        task: load_dataset
+        options:
+          mapping: datasets/mapping.yml
+          sql_path: datasets/sample.sql
 
   customer_org:
     steps:
