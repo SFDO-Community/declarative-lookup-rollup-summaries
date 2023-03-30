@@ -184,5 +184,9 @@
         <members>Admin</members>
         <name>Profile</name>
     </types>
+    <types>
+        <members>Campaign.ViewCampaignInfluenceReport</members>
+        <name>WebLink</name>
+    </types>
     <version>57.0</version>
 </Package>
