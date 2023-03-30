@@ -1,0 +1,96 @@
+extract:
+  Account:
+    fields:
+    - Description
+    - Fax
+    - Name
+    - AccountNumber
+    - Phone
+    - Rating
+    - Site
+    - AccountSource
+    - Type
+    - AnnualRevenue
+    - BillingCity
+    - BillingCountry
+    - BillingGeocodeAccuracy
+    - BillingLatitude
+    - BillingLongitude
+    - BillingState
+    - BillingStreet
+    - BillingPostalCode
+    - CleanStatus
+    - DandbCompanyId
+    - DunsNumber
+    - Jigsaw
+    - NumberOfEmployees
+    - DLRS_Expct_Rev_from_Campaigns__c
+    - DLRS_Expct_Rev_from_Campaigns_last_year__c
+    - DLRS_Expct_Rev_from_Campaigns_this_year__c
+    - Industry
+    - NaicsCode
+    - NaicsDesc
+    - No_of_Applications_Accepted_Last_Year__c
+    - No_of_Accepted_Applications__c
+    - No_of_Applications_Submitted_Last_year__c
+    - No_of_Submitted_Applications_This_Year__c
+    - NumberOfLocations__c
+    - OperatingHoursId
+    - Ownership
+    - ParentId
+    - ShippingCity
+    - ShippingCountry
+    - ShippingGeocodeAccuracy
+    - ShippingLatitude
+    - ShippingLongitude
+    - ShippingState
+    - ShippingStreet
+    - ShippingPostalCode
+    - Sic
+    - SicDesc
+    - SLAExpirationDate__c
+    - TickerSymbol
+    - Tradestyle
+    - Website
+    - YearStarted
+  Application__c:
+    fields:
+    - Application_Status__c
+    - Name
+    - Applying_School__c
+    - Start_Date__c
+  Campaign:
+    fields:
+    - Account__c
+    - IsActive
+    - ActualCost
+    - BudgetedCost
+    - Description
+    - EndDate
+    - ExpectedResponse
+    - ExpectedRevenue
+    - Name
+    - NumberSent
+    - ParentId
+    - CampaignMemberRecordTypeId
+    - StartDate
+    - Status
+    - Type
+  Department__c:
+    fields:
+    - AVG__c
+    - CONCATENATE__c
+    - CONCATENATE_DISTINCT__c
+    - COUNT__c
+    - COUNT_DISTINCT__c
+    - Name
+    - FIRST__c
+    - LAST__c
+    - MAX__c
+    - MIN__c
+    - SUM__c
+  Restriction__c:
+    fields:
+    - Department__c
+    - Number__c
+    - Picklist__c
