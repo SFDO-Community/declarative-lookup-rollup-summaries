@@ -14,7 +14,7 @@ export default class rollupStatusCheck extends LightningElement {
     lookupID;
 
     // General status check variables
-    scheduledCronJobs = 'No Jobs Found';
+    scheduledCronJobs = 'No Rollup Jobs Found';
     recordCountAll = '0';
 
     // Rollup Specific Status Check Variables
@@ -37,7 +37,7 @@ export default class rollupStatusCheck extends LightningElement {
         this.allScheduleItems();
         this.scheduleJobs();
         } else {
-            
+
         // General Status Checks
         this.allScheduleItems();
         this.scheduleJobs();
