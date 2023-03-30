@@ -17,6 +17,10 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>RollupEditorController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>RollupService</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -186,6 +190,15 @@
         <object>LookupRollupSummary__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>UserNotification__e</object>
+        <viewAllRecords>false</viewAllRecords>
+    </objectPermissions>
     <pageAccesses>
         <apexPage>managelookuprollupsummaries</apexPage>
         <enabled>true</enabled>
@@ -256,6 +269,10 @@
     </tabSettings>
     <tabSettings>
         <tab>ManageLookupRollupSummaries</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>ManageLookupRollupSummaries2</tab>
         <visibility>Visible</visibility>
     </tabSettings>
     <tabSettings>

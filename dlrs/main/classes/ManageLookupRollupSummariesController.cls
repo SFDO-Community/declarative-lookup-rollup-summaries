@@ -334,7 +334,9 @@ public with sharing class ManageLookupRollupSummariesController {
 
   public PageReference newWizard() {
     try {
-      PageReference newPage = Page.managelookuprollupsummaries_New;
+      PageReference newPage = new PageReference(
+        '/lightning/n/ManageLookupRollupSummaries2'
+      );
       newPage.setRedirect(true);
       return newPage;
     } catch (Exception e) {

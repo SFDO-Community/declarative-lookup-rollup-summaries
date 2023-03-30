@@ -1,0 +1,28 @@
+<template>
+  <lightning-layout pull-to-boundary="small">
+    <lightning-layout-item size="6" padding="around-small">
+      <lightning-card title="Rollups">
+        <!-- TODO: rebuild as datatable, preferrably with adjustable columns -->
+        <lightning-card
+          for:each={rollupList}
+          for:item="rollup"
+          key={rollup.DeveloperName}
+          title={rollup.Label}
+        >
+          <lightning-button
+            icon-name="utility:edit"
+            label="Edit"
+            onclick={rollupSelectHandler}
+            data-api-name={rollup.DeveloperName}
+            slot="actions"
+          ></lightning-button>
+        </lightning-card>
+      </lightning-card>
+    </lightning-layout-item>
+    <lightning-layout-item size="6" padding="around-small">
+      <lightning-card title="Rollup">
+        <c-rollup-editor rollup-name={selectedRollup}></c-rollup-editor>
+      </lightning-card>
+    </lightning-layout-item>
+  </lightning-layout>
+</template>
