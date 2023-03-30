@@ -68,6 +68,26 @@
         <name>CustomField</name>
     </types>
     <types>
+        <members>LookupRollupSummary2.Application_Accepted_This_Year</members>
+        <members>LookupRollupSummary2.Applications_Accepted_Last_Year</members>
+        <members>LookupRollupSummary2.Applications_Submitted_This_Year</members>
+        <members>LookupRollupSummary2.Applications_submitted_lastyear</members>
+        <members>LookupRollupSummary2.Department_Avg_Wizard</members>
+        <members>LookupRollupSummary2.Department_Concatenate_Distinct_Wizard</members>
+        <members>LookupRollupSummary2.Department_Concatenate_Wizard</members>
+        <members>LookupRollupSummary2.Department_Count_Distinct_Wizard</members>
+        <members>LookupRollupSummary2.Department_Count_Wizard</members>
+        <members>LookupRollupSummary2.Department_First_Wizard</members>
+        <members>LookupRollupSummary2.Department_Last_Wizard</members>
+        <members>LookupRollupSummary2.Department_Max_Wizard</members>
+        <members>LookupRollupSummary2.Department_Min_Wizard</members>
+        <members>LookupRollupSummary2.Department_Sum_Wizard</members>
+        <members>LookupRollupSummary2.Expct_Rev_from_Campaigns</members>
+        <members>LookupRollupSummary2.Expct_Rev_from_Campaigns_last_year</members>
+        <members>LookupRollupSummary2.Expct_Rev_from_Campaigns_this_year</members>
+        <name>CustomMetadata</name>
+    </types>
+    <types>
         <members>Application__c</members>
         <members>Department__c</members>
         <members>Restriction__c</members>
