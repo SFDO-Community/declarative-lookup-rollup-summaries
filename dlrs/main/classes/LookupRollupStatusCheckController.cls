@@ -30,11 +30,11 @@ public with sharing class LookupRollupStatusCheckController {
       WHERE LookupRollupSummaryId__c = :lookupID
     ];
 
-    if( count == 0 ) {
+    if (count == 0) {
       return 'No Calculate Jobs';
     }
 
-    if(count > 0) {
+    if (count > 0) {
       return 'Calculate Jobs';
     }
 
@@ -61,10 +61,11 @@ public with sharing class LookupRollupStatusCheckController {
   @AuraEnabled(Cacheable=true)
   public static String getScheduledFullCalculates(String lookupID) {
     LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
-      false,
-      true
-    )
-    .selectById(new Set<String>{ lookupID })[0].Record;
+          false,
+          true
+        )
+        .selectById(new Set<String>{ lookupID })[0]
+      .Record;
 
     if (LookupRollupSummary == null) {
       return 'No Schedule for Rollup';
@@ -87,10 +88,11 @@ public with sharing class LookupRollupStatusCheckController {
   @AuraEnabled(Cacheable=true)
   public static String hasChildTriggerDeployed(String lookupID) {
     LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
-      false,
-      true
-    )
-    .selectById(new Set<String>{ lookupID })[0].Record;
+          false,
+          true
+        )
+        .selectById(new Set<String>{ lookupID })[0]
+      .Record;
 
     if (LookupRollupSummary == null) {
       return 'Not Deployed';
@@ -103,7 +105,7 @@ public with sharing class LookupRollupStatusCheckController {
       new Set<String>{ ChildTrigger }
     );
 
-    if( loadTriggers.size() == 0 ) {
+    if (loadTriggers.size() == 0) {
       return 'Not Deployed';
     }
 
@@ -113,10 +115,11 @@ public with sharing class LookupRollupStatusCheckController {
   @AuraEnabled(Cacheable=true)
   public static String hasParentTriggerDeployed(String lookupID) {
     LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
-      false,
-      true
-    )
-    .selectById(new Set<String>{ lookupID })[0].Record;
+          false,
+          true
+        )
+        .selectById(new Set<String>{ lookupID })[0]
+      .Record;
 
     if (LookupRollupSummary == null) {
       return 'Not Deployed';
@@ -126,10 +129,10 @@ public with sharing class LookupRollupStatusCheckController {
     String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
     ApexTriggersSelector selector = new ApexTriggersSelector();
     Map<String, ApexTrigger> loadTriggers = selector.selectByName(
-      new Set<String>{  ParentTrigger }
+      new Set<String>{ ParentTrigger }
     );
 
-    if( loadTriggers.size() == 0 ) {
+    if (loadTriggers.size() == 0) {
       return 'Not Deployed';
     }
 
@@ -149,5 +152,32 @@ public with sharing class LookupRollupStatusCheckController {
     Integer count = [SELECT COUNT() FROM LookupRollupSummaryScheduleItems__c];
 
     return count;
+  }
+
+  /**
+   * Check if cron job is running for DLRS
+   */
+  @AuraEnabled(Cacheable=true)
+  public static String getScheduledJobs() {
+    // Check if RollupJob is scheduled
+    Integer countScheduled = [
+      SELECT COUNT()
+      FROM AsyncApexJob
+      WHERE
+        JobType = 'ScheduledApex'
+        AND status = 'Queued'
+        AND ApexClass.name LIKE '%RollupJob%'
+    ];
+
+    if(countScheduled == 0) {
+      return 'RollupJob is not scheduled';
+    }
+
+    //No need to warn user if scheduled items are going to be processed
+    if (countScheduled > 0) {
+      return 'RollupJob is scheduled';
+    }
+    
+    return 'RollupJob is not scheduled';
   }
 }

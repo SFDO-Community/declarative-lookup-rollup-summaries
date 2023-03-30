@@ -1,32 +1,45 @@
-import { LightningElement } from 'lwc';
+import { LightningElement, api } from 'lwc';
 import getAllScheduledItems from '@salesforce/apex/LookupRollupStatusCheckController.getAllScheduledItems';
 import getSpecificScheduledItems from '@salesforce/apex/LookupRollupStatusCheckController.getSpecificScheduledItems';
 import hasChildTriggerDeployed from '@salesforce/apex/LookupRollupStatusCheckController.hasChildTriggerDeployed';
 import hasParentTriggerDeployed from '@salesforce/apex/LookupRollupStatusCheckController.hasParentTriggerDeployed';
 import getScheduledFullCalculates from '@salesforce/apex/LookupRollupStatusCheckController.getScheduledFullCalculates';
 import getCalculateJobs from '@salesforce/apex/LookupRollupStatusCheckController.getCalculateJobs';
+import getScheduledJobs from '@salesforce/apex/LookupRollupStatusCheckController.getScheduledJobs';
 
 export default class Test extends LightningElement {
 
-    recordCount = '0';
+    // Get record lookup from parent component
+    @api lookupID;
+
+    // General status check variables
+    scheduledCronJobs = 'No Jobs Found';
     recordCountAll = '0';
+
+    // Rollup Specific Status Check Variables
+    recordCount = '0';
     nextFullCalculateDate = 'NA';
     triggerCount = '0';
     parentTrigger = 'NA';
     childTrigger = 'NA';
     calculateJobError = 'No Errors Found';
+
+    // Error Handling
     error = [];
 
     connectedCallback() {
         console.log('connectedCallback');
 
+        // General Status Checks
         this.allScheduleItems();
+        this.scheduleJobs();
+
+        // Rollup Specific Status Checks
         this.specificScheduleItems();
         this.childTriggers();
         this.parentTriggers();
         this.scheduledFullCalculate();
         this.calculateJobs();
-
     }
 
     // Method to check if there are any failed calculate jobs for the specific rollup
@@ -101,5 +114,17 @@ export default class Test extends LightningElement {
             this.error.push(error);
             console.log(error);
         });
+    }
+
+    scheduleJobs(){
+        console.log('All Scheduled Cron Jobs');
+        getScheduledJobs()
+        .then(result => {
+            this.scheduledCronJobs = result;
+        })
+        .catch(error => {
+            this.error.push(error);
+            console.log(error);
+        });        
     }
 }
