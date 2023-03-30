@@ -60,6 +60,7 @@ public with sharing class LookupRollupStatusCheckController {
    */
   @AuraEnabled(Cacheable=true)
   public static String getScheduledFullCalculates(String lookupID) {
+    try{
     LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
           false,
           true
@@ -80,6 +81,9 @@ public with sharing class LookupRollupStatusCheckController {
     } else {
       return ct[0].NextFireTime.format();
     }
+  }catch (Exception e){
+    return 'No Schedule for Rollup';
+  }
   }
 
   /**
@@ -87,6 +91,7 @@ public with sharing class LookupRollupStatusCheckController {
    */
   @AuraEnabled(Cacheable=true)
   public static String hasChildTriggerDeployed(String lookupID) {
+    try{
     LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
           false,
           true
@@ -110,10 +115,14 @@ public with sharing class LookupRollupStatusCheckController {
     }
 
     return 'Deployed';
+  } catch (Exception e){
+    return 'Not Deployed';
   }
+}
 
   @AuraEnabled(Cacheable=true)
   public static String hasParentTriggerDeployed(String lookupID) {
+    try{
     LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
           false,
           true
@@ -137,7 +146,10 @@ public with sharing class LookupRollupStatusCheckController {
     }
 
     return 'Deployed';
+  } catch (Exception e){
+    return 'Not Deployed';
   }
+}
 
   /*
    * Rollup - General Status Information
@@ -177,7 +189,7 @@ public with sharing class LookupRollupStatusCheckController {
     if (countScheduled > 0) {
       return 'RollupJob is scheduled';
     }
-    
+
     return 'RollupJob is not scheduled';
   }
 }
