@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
+        <members>ContactTest</members>
         <members>AccountTest</members>
         <members>ApplicationTest</members>
         <members>RestrictionTest</members>
@@ -10,6 +11,7 @@
         <members>AccountTrigger</members>
         <members>ApplicationTrigger</members>
         <members>CampaignTrigger</members>
+        <members>ContactTrigger</members>
         <members>OpportunityTrigger</members>
         <members>RestrictionTrigger</members>
         <name>ApexTrigger</name>
@@ -74,9 +76,61 @@
         <members>Restriction__c.Department__c</members>
         <members>Restriction__c.Number__c</members>
         <members>Restriction__c.Picklist__c</members>
+        <members>Contact.AccountId</members>
+        <members>Contact.AssistantName</members>
+        <members>Contact.AssistantPhone</members>
+        <members>Contact.Birthdate</members>
+        <members>Contact.CleanStatus</members>
+        <members>Contact.Department</members>
+        <members>Contact.Description</members>
+        <members>Contact.DoNotCall</members>
+        <members>Contact.Email</members>
+        <members>Contact.Fax</members>
+        <members>Contact.GenderIdentity</members>
+        <members>Contact.HasOptedOutOfEmail</members>
+        <members>Contact.HasOptedOutOfFax</members>
+        <members>Contact.HomePhone</members>
+        <members>Contact.IndividualId</members>
+        <members>Contact.Jigsaw</members>
+        <members>Contact.LastCURequestDate</members>
+        <members>Contact.LastCUUpdateDate</members>
+        <members>Contact.LeadSource</members>
+        <members>Contact.MailingAddress</members>
+        <members>Contact.MobilePhone</members>
+        <members>Contact.NUMBER__c</members>
+        <members>Contact.Name</members>
+        <members>Contact.Network__c</members>
+        <members>Contact.OtherAddress</members>
+        <members>Contact.OtherPhone</members>
+        <members>Contact.OwnerId</members>
+        <members>Contact.PICKLIST__c</members>
+        <members>Contact.Phone</members>
+        <members>Contact.Pronouns</members>
+        <members>Contact.ReportsToId</members>
+        <members>Contact.Title</members>
+        <members>Network__c.AVG__c</members>
+        <members>Network__c.CONCATENATE_DISTINCT__c</members>
+        <members>Network__c.CONCATENATE__c</members>
+        <members>Network__c.COUNT_DISTINCT__c</members>
+        <members>Network__c.COUNT__c</members>
+        <members>Network__c.FIRST__c</members>
+        <members>Network__c.LAST__c</members>
+        <members>Network__c.MAX__c</members>
+        <members>Network__c.MIN__c</members>
+        <members>Network__c.SUM__c</members>
         <name>CustomField</name>
     </types>
     <types>
+        <members>LookupRollupSummary2.Network_Avg</members>
+        <members>LookupRollupSummary2.Network_Concatenate</members>
+        <members>LookupRollupSummary2.Network_Concatenate_Distinct</members>
+        <members>LookupRollupSummary2.Network_Count</members>
+        <members>LookupRollupSummary2.Network_Count_Distinct</members>
+        <members>LookupRollupSummary2.Network_First</members>
+        <members>LookupRollupSummary2.Network_Last</members>
+        <members>LookupRollupSummary2.Network_Max</members>
+        <members>LookupRollupSummary2.Network_Min</members>
+        <members>LookupRollupSummary2.Network_Sum</members>
         <members>LookupRollupSummary2.Application_Accepted_This_Year</members>
         <members>LookupRollupSummary2.Applications_Accepted_Last_Year</members>
         <members>LookupRollupSummary2.Applications_Submitted_This_Year</members>
@@ -99,35 +153,36 @@
     <types>
         <members>Application__c</members>
         <members>Department__c</members>
+        <members>Network__c</members>
         <members>Restriction__c</members>
         <name>CustomObject</name>
     </types>
     <types>
         <members>Application__c</members>
         <members>Department__c</members>
+        <members>Network__c</members>
         <members>Restriction__c</members>
         <name>CustomTab</name>
     </types>
     <types>
         <members>Application__c-Application Layout</members>
         <members>Department__c-Department Layout</members>
+        <members>Network__c-Network Layout</members>
         <members>Restriction__c-Restriction Layout</members>
         <name>Layout</name>
     </types>
     <types>
         <members>Account.Accounts_with_Rollups</members>
         <members>Application__c.All</members>
+        <members>Contact.All</members>
         <members>Department__c.All</members>
+        <members>Network__c.All</members>
         <members>Restriction__c.All</members>
         <name>ListView</name>
     </types>
     <types>
         <members>Admin</members>
         <name>Profile</name>
-    </types>
-    <types>
-        <members>Campaign.ViewCampaignInfluenceReport</members>
-        <name>WebLink</name>
     </types>
     <version>57.0</version>
 </Package>

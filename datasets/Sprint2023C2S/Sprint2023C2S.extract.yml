@@ -1,0 +1,147 @@
+extract:
+  ApexClass:
+    fields:
+    - ApiVersion
+    - Body
+    - BodyCrc
+    - IsValid
+    - Name
+    - LengthWithoutComments
+    - Status
+  ApexTestQueueItem:
+    fields:
+    - ApexClassId
+  ApexTestResult:
+    fields:
+    - AsyncApexJobId
+    - QueueItemId
+    - ApexTestRunResultId
+    - ApexClassId
+    - Message
+    - ApexLogId
+    - MethodName
+    - Outcome
+    - RunTime
+    - StackTrace
+    - TestTimestamp
+  ApexTestRunResult:
+    fields:
+    - ClassesEnqueued
+    - StartTime
+    - Status
+  ApexTrigger:
+    fields:
+    - UsageAfterDelete
+    - UsageAfterInsert
+    - UsageAfterUndelete
+    - UsageAfterUpdate
+    - ApiVersion
+    - UsageBeforeDelete
+    - UsageBeforeInsert
+    - UsageBeforeUpdate
+    - Body
+    - BodyCrc
+    - TableEnumOrId
+    - IsValid
+    - UsageIsBulk
+    - Name
+    - LengthWithoutComments
+    - Status
+  Contact:
+    fields:
+    - AccountId
+    - AssistantName
+    - AssistantPhone
+    - Birthdate
+    - Fax
+    - Phone
+    - CleanStatus
+    - Description
+    - Jigsaw
+    - Department
+    - DoNotCall
+    - Email
+    - EmailBouncedDate
+    - EmailBouncedReason
+    - HasOptedOutOfEmail
+    - HasOptedOutOfFax
+    - FirstName
+    - GenderIdentity
+    - HomePhone
+    - IndividualId
+    - LastName
+    - LeadSource
+    - MailingCity
+    - MailingCountry
+    - MailingGeocodeAccuracy
+    - MailingLatitude
+    - MailingLongitude
+    - MailingState
+    - MailingStreet
+    - MailingPostalCode
+    - MobilePhone
+    - Network__c
+    - NUMBER__c
+    - OtherCity
+    - OtherCountry
+    - OtherGeocodeAccuracy
+    - OtherLatitude
+    - OtherLongitude
+    - OtherPhone
+    - OtherState
+    - OtherStreet
+    - OtherPostalCode
+    - PICKLIST__c
+    - Pronouns
+    - ReportsToId
+    - Salutation
+    - Title
+  Network__c:
+    fields:
+    - AVG__c
+    - CONCATENATE_DISTINCT__c
+    - CONCATENATE__c
+    - COUNT_DISTINCT__c
+    - COUNT__c
+    - FIRST__c
+    - LAST__c
+    - MAX__c
+    - MIN__c
+    - Name
+    - SUM__c
+  ApexPage:
+    fields:
+    - ApiVersion
+    - IsAvailableInTouch
+    - ControllerKey
+    - ControllerType
+    - Description
+    - MasterLabel
+    - Markup
+    - Name
+    - IsConfirmationTokenRequired
+  ApexComponent:
+    fields:
+    - ApiVersion
+    - ControllerKey
+    - ControllerType
+    - Description
+    - MasterLabel
+    - Markup
+    - Name
+  AuraDefinition:
+    fields:
+    - DefType
+    - Format
+    - AuraDefinitionBundleId
+    - Source
+  AuraDefinitionBundle:
+    fields:
+    - ApiVersion
+    - Description
+    - DeveloperName
+    - Language
+    - MasterLabel
+  Account:
+    fields:
+    - Name

@@ -1,0 +1,195 @@
+Insert ApexClass:
+  sf_object: ApexClass
+  table: ApexClass
+  fields:
+  - ApiVersion
+  - Body
+  - BodyCrc
+  - IsValid
+  - Name
+  - LengthWithoutComments
+  - Status
+Insert ApexTestRunResult:
+  sf_object: ApexTestRunResult
+  table: ApexTestRunResult
+  fields:
+  - ClassesEnqueued
+  - StartTime
+  - Status
+Insert ApexTrigger:
+  sf_object: ApexTrigger
+  table: ApexTrigger
+  fields:
+  - UsageAfterDelete
+  - UsageAfterInsert
+  - UsageAfterUndelete
+  - UsageAfterUpdate
+  - ApiVersion
+  - UsageBeforeDelete
+  - UsageBeforeInsert
+  - UsageBeforeUpdate
+  - Body
+  - BodyCrc
+  - TableEnumOrId
+  - IsValid
+  - UsageIsBulk
+  - Name
+  - LengthWithoutComments
+  - Status
+Insert Network__c:
+  sf_object: Network__c
+  table: Network__c
+  fields:
+  - AVG__c
+  - CONCATENATE_DISTINCT__c
+  - CONCATENATE__c
+  - COUNT_DISTINCT__c
+  - COUNT__c
+  - FIRST__c
+  - LAST__c
+  - MAX__c
+  - MIN__c
+  - Name
+  - SUM__c
+Insert ApexPage:
+  sf_object: ApexPage
+  table: ApexPage
+  fields:
+  - ApiVersion
+  - IsAvailableInTouch
+  - ControllerKey
+  - ControllerType
+  - Description
+  - MasterLabel
+  - Markup
+  - Name
+  - IsConfirmationTokenRequired
+Insert ApexComponent:
+  sf_object: ApexComponent
+  table: ApexComponent
+  fields:
+  - ApiVersion
+  - ControllerKey
+  - ControllerType
+  - Description
+  - MasterLabel
+  - Markup
+  - Name
+Insert AuraDefinitionBundle:
+  sf_object: AuraDefinitionBundle
+  table: AuraDefinitionBundle
+  fields:
+  - ApiVersion
+  - Description
+  - DeveloperName
+  - Language
+  - MasterLabel
+Insert Account:
+  sf_object: Account
+  table: Account
+  fields:
+  - Name
+Insert Individual:
+  sf_object: Individual
+  table: Individual
+  fields:
+  - LastName
+Insert ApexTestQueueItem:
+  sf_object: ApexTestQueueItem
+  table: ApexTestQueueItem
+  lookups:
+    ApexClassId:
+      table: ApexClass
+      key_field: ApexClassId
+Insert Contact:
+  sf_object: Contact
+  table: Contact
+  fields:
+  - AssistantName
+  - AssistantPhone
+  - Birthdate
+  - Fax
+  - Phone
+  - CleanStatus
+  - Description
+  - Jigsaw
+  - Department
+  - DoNotCall
+  - Email
+  - EmailBouncedDate
+  - EmailBouncedReason
+  - HasOptedOutOfEmail
+  - HasOptedOutOfFax
+  - FirstName
+  - GenderIdentity
+  - HomePhone
+  - LastName
+  - LeadSource
+  - MailingCity
+  - MailingCountry
+  - MailingGeocodeAccuracy
+  - MailingLatitude
+  - MailingLongitude
+  - MailingState
+  - MailingStreet
+  - MailingPostalCode
+  - MobilePhone
+  - NUMBER__c
+  - OtherCity
+  - OtherCountry
+  - OtherGeocodeAccuracy
+  - OtherLatitude
+  - OtherLongitude
+  - OtherPhone
+  - OtherState
+  - OtherStreet
+  - OtherPostalCode
+  - PICKLIST__c
+  - Pronouns
+  - Salutation
+  - Title
+  lookups:
+    AccountId:
+      table: Account
+      key_field: AccountId
+    IndividualId:
+      table: Individual
+      key_field: IndividualId
+    Network__c:
+      table: Network__c
+      key_field: Network__c
+    ReportsToId:
+      table: Contact
+      key_field: ReportsToId
+      after: Insert Contact
+Insert AuraDefinition:
+  sf_object: AuraDefinition
+  table: AuraDefinition
+  fields:
+  - DefType
+  - Format
+  - Source
+  lookups:
+    AuraDefinitionBundleId:
+      table: AuraDefinitionBundle
+      key_field: AuraDefinitionBundleId
+Insert ApexTestResult:
+  sf_object: ApexTestResult
+  table: ApexTestResult
+  fields:
+  - Message
+  - MethodName
+  - Outcome
+  - RunTime
+  - StackTrace
+  - TestTimestamp
+  lookups:
+    QueueItemId:
+      table: ApexTestQueueItem
+      key_field: QueueItemId
+    ApexTestRunResultId:
+      table: ApexTestRunResult
+      key_field: ApexTestRunResultId
+    ApexClassId:
+      table: ApexClass
+      key_field: ApexClassId
