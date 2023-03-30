@@ -77,6 +77,10 @@
         <name>CustomTab</name>
     </types>
     <types>
+        <members>Network__c-Network Layout</members>
+        <name>Layout</name>
+    </types>
+    <types>
         <members>Contact.All</members>
         <members>Network__c.All</members>
         <name>ListView</name>
