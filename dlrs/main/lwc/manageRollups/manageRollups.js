@@ -11,6 +11,50 @@ import {
 } from "lightning/empApi";
 
 export default class ManageRollups extends LightningElement {
+  dtColumns = [
+    {
+      label: "Name",
+      fieldName: "Label"
+    },
+    {
+      label: "Parent",
+      fieldName: "ParentObject__c"
+    },
+    {
+      label: "Field To Aggregate",
+      fieldName: "FieldToAggregate__c"
+    },
+    {
+      label: "Child",
+      fieldName: "ChildObject__c"
+    },
+    {
+      label: "Relationship Field",
+      fieldName: "RelationshipField__c"
+    },
+    {
+      label: "Operation",
+      fieldName: "AggregateOperation__c"
+    },
+    {
+      label: "Mode",
+      fieldName: "CalculationMode__c"
+    },
+    {
+      label: "Active",
+      fieldName: "Active__c"
+    },
+    {
+      type: "action",
+      typeAttributes: {
+        rowActions: [
+          { label: "Edit", name: "rollup_select" },
+          { label: "Delete(TBD)", name: "rollup_delete" }
+        ]
+      }
+    }
+  ];
+
   // We only want events for which we've been assigned as the recipient
   channelName = `/event/UserNotification__e?Recipient__c='${USER_ID.substring(
     1,
@@ -21,15 +65,30 @@ export default class ManageRollups extends LightningElement {
   rollups = {};
   selectedRollup = undefined;
 
-  async connectedCallback() {
-    this.rollups = await getAllRollupConfigs();
+  connectedCallback() {
+    this.refreshRollups();
     // Register error listener
     this.registerErrorListener();
     this.handleSubscribe();
   }
 
+  async refreshRollups() {
+    this.rollups = await getAllRollupConfigs();
+  }
+
   rollupSelectHandler(event) {
-    this.selectedRollup = event.currentTarget.dataset.apiName;
+    const action = event.detail.action;
+    const row = event.detail.row;
+    switch (action.name) {
+      case "rollup_select":
+        this.selectedRollup = row.DeveloperName;
+        break;
+      case "rollup_delete":
+        // TODO:
+        break;
+      default:
+      // do nothin
+    }
   }
 
   get rollupList() {
@@ -58,6 +117,8 @@ export default class ManageRollups extends LightningElement {
     // Callback invoked whenever a new event message is received
     const messageCallback = (response) => {
       console.log("New message received: ", JSON.stringify(response));
+      // deployment probably changed the rollup definitions, should refresh
+      this.refreshRollups();
       if (!USER_ID.startsWith(response.data.payload.Recipient__c)) {
         // This message isn't for us, don't do anything
         return;
