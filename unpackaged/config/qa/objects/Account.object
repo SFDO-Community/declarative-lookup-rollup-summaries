@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fields>
+        <fullName>DLRS_Expct_Rev_from_Campaigns__c</fullName>
+        <externalId>false</externalId>
+        <label>Expct Rev from Campaigns</label>
+        <precision>12</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>DLRS_Expct_Rev_from_Campaigns_last_year__c</fullName>
+        <externalId>false</externalId>
+        <label>Expct Rev from Campaigns last year</label>
+        <precision>12</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>DLRS_Expct_Rev_from_Campaigns_this_year__c</fullName>
+        <externalId>false</externalId>
+        <label>Expct Rev from Campaigns this year</label>
+        <precision>12</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>No_of_Accepted_Applications__c</fullName>
+        <externalId>false</externalId>
+        <label>No.of Applications Accepted This Year</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>No_of_Applications_Accepted_Last_Year__c</fullName>
+        <externalId>false</externalId>
+        <label>No.of Applications Accepted Last Year</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>No_of_Applications_Submitted_Last_year__c</fullName>
+        <externalId>false</externalId>
+        <label>No.of Applications Submitted Last year</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>No_of_Submitted_Applications_This_Year__c</fullName>
+        <externalId>false</externalId>
+        <label>No.of Applications Submitted This Year</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <listViews>
+        <fullName>Accounts_with_Rollups</fullName>
+        <columns>ACCOUNT.NAME</columns>
+        <columns>DLRS_Expct_Rev_from_Campaigns__c</columns>
+        <columns>DLRS_Expct_Rev_from_Campaigns_last_year__c</columns>
+        <columns>DLRS_Expct_Rev_from_Campaigns_this_year__c</columns>
+        <columns>No_of_Submitted_Applications_This_Year__c</columns>
+        <filterScope>Everything</filterScope>
+        <label>Accounts with Rollups</label>
+    </listViews>
+</CustomObject>
