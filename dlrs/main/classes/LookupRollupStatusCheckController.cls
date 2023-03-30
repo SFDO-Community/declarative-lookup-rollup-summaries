@@ -1,9 +1,9 @@
 public with sharing class LookupRollupStatusCheckController {
 
-    // 
-    public LookupRollupSummary2__mdt LookupRollupSummary;
-    public List<RollupSummary> rollups;
-    public Map<id, RollupSummary> mapRollups;
+    // Global variables
+    public static LookupRollupSummary2__mdt LookupRollupSummary;
+    public static List<RollupSummary> rollups;
+    public static Map<id, RollupSummary> mapRollups;
 
     /*
     * Rollup - Specific Status Information
@@ -48,7 +48,6 @@ public with sharing class LookupRollupStatusCheckController {
         Integer count =  [SELECT COUNT() FROM LookupRollupSummaryScheduleItems__c];
 
         return count;
-
     }
 
 
@@ -57,62 +56,34 @@ public with sharing class LookupRollupStatusCheckController {
      * 
      */
 
+    @AuraEnabled(Cacheable=true)
+    public static String getRollupSchedule() {
+        if (LookupRollupSummary.id == null) { return 'No Schedule for Rollup';}
 
-    public String getRollupSchedule() {
-        if (LookupRollupSummary.id == null) {
-          return 'No Schedule for Rollup';
-        }
+        String id = (LookupRollupSummary.id).to15();
+        List<CronTrigger> ct = new CronTriggersSelector().selectScheduledApexById(id);
     
-        try {
-          String id = (LookupRollupSummary.id).to15();
-          List<CronTrigger> ct = new CronTriggersSelector()
-            .selectScheduledApexById(id);
-    
-          if (ct.isEmpty()) {
-            return 'No Schedule for Rollup';
-          } else {
-            return ct[0].NextFireTime.format();
-          }
-        } catch (Exception e) {
-          return 'No Schedule for Rollup';
+        if (ct.isEmpty()) { return 'No Schedule for Rollup';} 
+        else {
+        return ct[0].NextFireTime.format();
         }
       }
 
-      public void hasChildTriggers() {
+      @AuraEnabled(Cacheable=true)
+      public static Integer hasChildTriggers() {
         if (LookupRollupSummary == null) {
-          return;
+          return -1;
         }
-    
-        try {
-          //quickly return if user does not want prompts or rollup is already active
-          if (
-            LookupRollupSummary.Active__c == true ||
-            DeclarativeLookupRollupSummaries__c.getOrgDefaults()
-              .HideManageLookupRollupSummariesInfo__c == true
-          ) {
-            return;
-          }
-          
-          RollupSummary rs = new RollupSummary(LookupRollupSummary);
-          String childTrigger = RollupSummaries.makeTriggerName(rs);
-          String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
-          ApexTriggersSelector selector = new ApexTriggersSelector();
-          Map<String, ApexTrigger> loadTriggers = selector.selectByName(
-            new Set<String>{ ChildTrigger, ParentTrigger }
-          );
 
+        RollupSummary rs = new RollupSummary(LookupRollupSummary);
+        String childTrigger = RollupSummaries.makeTriggerName(rs);
+        String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
+        ApexTriggersSelector selector = new ApexTriggersSelector();
+        Map<String, ApexTrigger> loadTriggers = selector.selectByName(
+        new Set<String>{ ChildTrigger, ParentTrigger }
+        );
 
-    
-
-        } catch (Exception e) {
-          //This method is intended to be informational.
-          //If it fails for some reason(soql query) it should not effect the functionality of the Visualforce Page.
-        }
-      }
-
-
-
-
-
-
+          return loadTriggers.size();
+    }
+      
 }
