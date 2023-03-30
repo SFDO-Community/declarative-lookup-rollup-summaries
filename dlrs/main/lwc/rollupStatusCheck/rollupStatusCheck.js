@@ -51,14 +51,6 @@ export default class rollupStatusCheck extends LightningElement {
         }
     }
 
-    display(){
-        if(_name == null){
-            return false;
-        }
-
-        return true;
-    }
-
     @api
     get name(){
         return this._name;
