@@ -375,6 +375,25 @@
         <trackFeedHistory>false</trackFeedHistory>
     </fields>
     <fields>
+        <fullName>DLRS_All_OCRs__c</fullName>
+        <externalId>false</externalId>
+        <label>DLRS_All OCRs</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>TextArea</type>
+    </fields>
+    <fields>
+        <fullName>DLRS_Count_OCRs__c</fullName>
+        <externalId>false</externalId>
+        <label>DLRS_Count OCRs</label>
+        <precision>10</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>Department</fullName>
         <trackFeedHistory>false</trackFeedHistory>
     </fields>
@@ -540,6 +559,8 @@
         <columns>Network__c</columns>
         <columns>NUMBER__c</columns>
         <columns>PICKLIST__c</columns>
+        <columns>DLRS_All_OCRs__c</columns>
+        <columns>DLRS_Count_OCRs__c</columns>
         <filterScope>Mine</filterScope>
         <label>All</label>
     </listViews>

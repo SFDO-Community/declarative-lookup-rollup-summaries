@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
-        <members>ContactTest</members>
         <members>AccountTest</members>
         <members>ApplicationTest</members>
+        <members>ContactTest</members>
         <members>RestrictionTest</members>
         <name>ApexClass</name>
     </types>
@@ -63,24 +63,13 @@
         <members>Campaign.StartDate</members>
         <members>Campaign.Status</members>
         <members>Campaign.Type</members>
-        <members>Department__c.AVG__c</members>
-        <members>Department__c.CONCATENATE_DISTINCT__c</members>
-        <members>Department__c.CONCATENATE__c</members>
-        <members>Department__c.COUNT_DISTINCT__c</members>
-        <members>Department__c.COUNT__c</members>
-        <members>Department__c.FIRST__c</members>
-        <members>Department__c.LAST__c</members>
-        <members>Department__c.MAX__c</members>
-        <members>Department__c.MIN__c</members>
-        <members>Department__c.SUM__c</members>
-        <members>Restriction__c.Department__c</members>
-        <members>Restriction__c.Number__c</members>
-        <members>Restriction__c.Picklist__c</members>
         <members>Contact.AccountId</members>
         <members>Contact.AssistantName</members>
         <members>Contact.AssistantPhone</members>
         <members>Contact.Birthdate</members>
         <members>Contact.CleanStatus</members>
+        <members>Contact.DLRS_All_OCRs__c</members>
+        <members>Contact.DLRS_Count_OCRs__c</members>
         <members>Contact.Department</members>
         <members>Contact.Description</members>
         <members>Contact.DoNotCall</members>
@@ -108,6 +97,16 @@
         <members>Contact.Pronouns</members>
         <members>Contact.ReportsToId</members>
         <members>Contact.Title</members>
+        <members>Department__c.AVG__c</members>
+        <members>Department__c.CONCATENATE_DISTINCT__c</members>
+        <members>Department__c.CONCATENATE__c</members>
+        <members>Department__c.COUNT_DISTINCT__c</members>
+        <members>Department__c.COUNT__c</members>
+        <members>Department__c.FIRST__c</members>
+        <members>Department__c.LAST__c</members>
+        <members>Department__c.MAX__c</members>
+        <members>Department__c.MIN__c</members>
+        <members>Department__c.SUM__c</members>
         <members>Network__c.AVG__c</members>
         <members>Network__c.CONCATENATE_DISTINCT__c</members>
         <members>Network__c.CONCATENATE__c</members>
@@ -118,19 +117,12 @@
         <members>Network__c.MAX__c</members>
         <members>Network__c.MIN__c</members>
         <members>Network__c.SUM__c</members>
+        <members>Restriction__c.Department__c</members>
+        <members>Restriction__c.Number__c</members>
+        <members>Restriction__c.Picklist__c</members>
         <name>CustomField</name>
     </types>
     <types>
-        <members>LookupRollupSummary2.Network_Avg</members>
-        <members>LookupRollupSummary2.Network_Concatenate</members>
-        <members>LookupRollupSummary2.Network_Concatenate_Distinct</members>
-        <members>LookupRollupSummary2.Network_Count</members>
-        <members>LookupRollupSummary2.Network_Count_Distinct</members>
-        <members>LookupRollupSummary2.Network_First</members>
-        <members>LookupRollupSummary2.Network_Last</members>
-        <members>LookupRollupSummary2.Network_Max</members>
-        <members>LookupRollupSummary2.Network_Min</members>
-        <members>LookupRollupSummary2.Network_Sum</members>
         <members>LookupRollupSummary2.Application_Accepted_This_Year</members>
         <members>LookupRollupSummary2.Applications_Accepted_Last_Year</members>
         <members>LookupRollupSummary2.Applications_Submitted_This_Year</members>
@@ -148,6 +140,16 @@
         <members>LookupRollupSummary2.Expct_Rev_from_Campaigns</members>
         <members>LookupRollupSummary2.Expct_Rev_from_Campaigns_last_year</members>
         <members>LookupRollupSummary2.Expct_Rev_from_Campaigns_this_year</members>
+        <members>LookupRollupSummary2.Network_Avg</members>
+        <members>LookupRollupSummary2.Network_Concatenate</members>
+        <members>LookupRollupSummary2.Network_Concatenate_Distinct</members>
+        <members>LookupRollupSummary2.Network_Count</members>
+        <members>LookupRollupSummary2.Network_Count_Distinct</members>
+        <members>LookupRollupSummary2.Network_First</members>
+        <members>LookupRollupSummary2.Network_Last</members>
+        <members>LookupRollupSummary2.Network_Max</members>
+        <members>LookupRollupSummary2.Network_Min</members>
+        <members>LookupRollupSummary2.Network_Sum</members>
         <name>CustomMetadata</name>
     </types>
     <types>
