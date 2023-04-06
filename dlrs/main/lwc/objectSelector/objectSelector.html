@@ -1,0 +1,69 @@
+<!--
+API : 50
+for : DLRS; Opensource commons
+-->
+<template>
+    <div class="slds-form-element" onmouseleave={toggleResult}  data-source="lookupContainer">      
+        <div class="slds-combobox_container slds-has-selection">
+          <label class="slds-form-element__label" for="combobox-id-1">{label}</label>
+          <div class="lookupInputContainer slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" aria-expanded="false" aria-haspopup="listbox" role="combobox"> 
+           <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_left-right" role="none">
+              <div class="searchBoxWrapper slds-show">
+                <!--Lookup Input Field-->
+                <lightning-input                   
+                   type="search"
+                   data-source="searchInputField"
+                   onclick={toggleResult}
+                   onchange={handleKeyChange}
+                   is-loading={isSearchLoading}
+                   value={searchKey}
+                   variant="label-hidden"
+                   placeholder={placeholder}
+               ></lightning-input>  
+              </div>
+              
+            <!--Lookup Selected record pill container start-->  
+            <div class="pillDiv slds-hide">        
+              <span class="slds-icon_container slds-combobox__input-entity-icon">
+                <lightning-icon icon-name={iconName} size="x-small" alternative-text="icon"></lightning-icon>  
+              </span>
+              <input type="text"
+                     id="combobox-id-1"
+                     value={selectedRecord}       
+                     class="slds-input slds-combobox__input slds-combobox__input-value"
+                     readonly
+                     />
+              <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title="Remove selected option">
+              <lightning-icon icon-name="utility:close" size="x-small" alternative-text="close icon" onclick={handleRemove}></lightning-icon> 
+             </button>
+            </div>  
+            </div>
+        
+            <!-- lookup search result part start-->
+            <div style="margin-top:0px" id="listbox-id-5" class="slds-dropdown slds-dropdown_length-with-icon-7 slds-dropdown_fluid" role="listbox">
+              <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                <template for:each={lstResult} for:item="obj">
+                <li key={obj} role="presentation" class="slds-listbox__item">
+                  <div data-recid={obj} onclick={handelSelectedRecord} class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                    <span style="pointer-events: none;" class="slds-media__figure slds-listbox__option-icon" >
+                      <span class="slds-icon_container" >
+                          <lightning-icon icon-name={iconName} size="small" alternative-text="icon" ></lightning-icon>  
+                      </span>
+                    </span>
+                    <span style="pointer-events: none;" class="slds-media__body" >
+                      <span  class="slds-listbox__option-text slds-listbox__option-text_entity">{obj}</span>
+                    </span>
+                  </div>
+                </li>
+                </template>
+                <!--ERROR msg, if there is no records..-->
+                <template if:false={hasRecords}>
+                  <li class="slds-listbox__item" style="text-align: center; font-weight: bold;">No Records Found....</li>
+                </template>
+              </ul>
+             
+            </div>
+          </div>
+        </div>
+      </div>
+  </template>
