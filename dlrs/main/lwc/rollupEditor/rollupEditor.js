@@ -1,13 +1,28 @@
-import { api, LightningElement } from "lwc";
+import { api, LightningElement, track } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import getRollupConfig from "@salesforce/apex/RollupEditorController.getRollupConfig";
 import validateRollupConfig from "@salesforce/apex/RollupEditorController.validateRollupConfig";
 import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollupConfig";
 
 export default class RollupEditor extends LightningElement {
-  errors = {};
-  _rollupName;
+  @track
   rollup = {};
+  errors = {};
+
+  _rollupName;
+  @api
+  async loadRollup(rollupName) {
+    this.rollupName = rollupName;
+  }
+
+  get rollupName() {
+    return this._rollupName;
+  }
+  set rollupName(val) {
+    this._rollupName = val;
+
+    this.getRollup();
+  }
 
   connectedCallback() {
     this.getRollup();
@@ -33,7 +48,25 @@ export default class RollupEditor extends LightningElement {
     });
   }
 
+  cancelClickHandler() {
+    this.rollupName = undefined;
+  }
+
+  cloneClickHandler() {
+    this.rollup.DeveloperName = undefined;
+    this.rollup.Id = undefined;
+  }
+
+  deleteClickHandler() {
+    const evt = new CustomEvent("requestdelete", {
+      detail: { rollupName: this.rollup.DeveloperName }
+    });
+    this.dispatchEvent(evt);
+    this.rollupName = undefined;
+  }
+
   async runSave() {
+    this.assembleRollupFromForm();
     const jobId = await saveRollupConfig({
       rollup: JSON.stringify(this.rollup)
     });
@@ -45,24 +78,46 @@ export default class RollupEditor extends LightningElement {
     this.dispatchEvent(evt);
   }
 
-  updateRollup() {
-    try {
-      this.rollup = JSON.parse(
-        this.template.querySelector("lightning-textarea").value
-      );
-    } catch (error) {
-      console.error(error);
-    }
+  assembleRollupFromForm() {
+    this.rollup.Label = this.template.querySelector(
+      '[data-name="rollup_label"]'
+    ).value;
+    this.rollup.DeveloperName = this.template.querySelector(
+      '[data-name="rollup_DeveloperName"]'
+    ).value;
+    this.rollup.RelationshipField__c = this.template.querySelector(
+      '[data-name="rollup_relationship_field"]'
+    ).value;
+    this.rollup.RelationshipCriteria__c = this.template.querySelector(
+      '[data-name="rollup_relationship_criteria"]'
+    ).value;
+    this.rollup.RelationshipCriteriaFields__c = this.template.querySelector(
+      '[data-name="rollup_relationship_criteria_fields"]'
+    ).value;
+    this.rollup.FieldToAggregate__c = this.template.querySelector(
+      '[data-name="rollup_FieldToAggregate__c"]'
+    ).value;
+    this.rollup.AggregateOperation__c = this.template.querySelector(
+      '[data-name="rollup_AggregateOperation__c"]'
+    ).value;
+    this.rollup.AggregateResultField__c = this.template.querySelector(
+      '[data-name="rollup_AggregateResultField__c"]'
+    ).value;
+    this.rollup.AggregateAllRows__c = this.template.querySelector(
+      '[data-name="rollup_AggregateAllRows__c"]'
+    ).value;
+    this.rollup.RowLimit__c = this.template.querySelector(
+      '[data-name="rollup_RowLimit__c"]'
+    ).value;
+    this.rollup.ConcatenateDelimiter__c = this.template.querySelector(
+      '[data-name="rollup_ConcatenateDelimiter__c"]'
+    ).value;
   }
-
-  @api
-  get rollupName() {
-    return this._rollupName;
+  childObjectSelected(event) {
+    this.rollup.ChildObject__c = event.detail.selectedRecord;
   }
-  set rollupName(val) {
-    this._rollupName = val;
-
-    this.getRollup();
+  parentObjectSelected(event) {
+    this.rollup.ParentObject__c = event.detail.selectedRecord;
   }
 
   get rollupAsString() {
@@ -72,12 +127,19 @@ export default class RollupEditor extends LightningElement {
   get errorsAsString() {
     return JSON.stringify(this.errors);
   }
-  
+
   get aggregateOptions() {
     return [
-        { label: 'New', value: 'new' },
-        { label: 'In Progress', value: 'inProgress' },
-        { label: 'Finished', value: 'finished' },
+      { label: "Sum", value: "Sum" },
+      { label: "Max", value: "Max" },
+      { label: "Min", value: "Min" },
+      { label: "Avg", value: "Avg" },
+      { label: "Count", value: "Count" },
+      { label: "Count Distinct", value: "Count Distinct" },
+      { label: "Concatenate", value: "Concatenate" },
+      { label: "Concatenate Distinct", value: "	Concatenate Distinct" },
+      { label: "First", value: "First" },
+      { label: "Last", value: "Last" }
     ];
   }
 }
