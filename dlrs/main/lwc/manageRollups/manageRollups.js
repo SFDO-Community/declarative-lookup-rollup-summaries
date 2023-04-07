@@ -1,6 +1,8 @@
 import { LightningElement } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
+import LightningConfirm from "lightning/confirm";
 import getAllRollupConfigs from "@salesforce/apex/RollupEditorController.getAllRollupConfigs";
+import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
 import USER_ID from "@salesforce/user/Id";
 
 import {
@@ -49,7 +51,7 @@ export default class ManageRollups extends LightningElement {
       typeAttributes: {
         rowActions: [
           { label: "Edit", name: "rollup_select" },
-          { label: "Delete(TBD)", name: "rollup_delete" }
+          { label: "Delete", name: "rollup_delete" }
         ]
       }
     }
@@ -63,6 +65,8 @@ export default class ManageRollups extends LightningElement {
   subscription = {};
 
   rollups = {};
+  rollupList = [];
+  searchFilter = "";
   selectedRollup = undefined;
 
   connectedCallback() {
@@ -74,6 +78,25 @@ export default class ManageRollups extends LightningElement {
 
   async refreshRollups() {
     this.rollups = await getAllRollupConfigs();
+    this.calcRollupList();
+  }
+
+  calcRollupList() {
+    this.rollupList = Object.values(this.rollups).filter((r) => {
+      if (this.searchFilter.trim().length === 0) {
+        return true;
+      }
+      for (const c of this.dtColumns) {
+        if (
+          r[c.fieldName] &&
+          "" + r[c.fieldName].toLowerCase().indexOf(this.searchFilter) >= 0
+        ) {
+          return true;
+        }
+      }
+      // didn't match any of the displayed fields
+      return false;
+    });
   }
 
   rollupSelectHandler(event) {
@@ -81,21 +104,45 @@ export default class ManageRollups extends LightningElement {
     const row = event.detail.row;
     switch (action.name) {
       case "rollup_select":
-        this.selectedRollup = row.DeveloperName;
+        this.template
+          .querySelector("c-rollup-editor")
+          .loadRollup(row.DeveloperName);
         break;
       case "rollup_delete":
-        // TODO:
+        this.requestDelete(row.DeveloperName);
         break;
       default:
-      // do nothin
+        throw new Error("unexpected action on rollupSelectHandler");
     }
   }
 
-  get rollupList() {
-    if (!this.rollups) {
-      return [];
+  async requestDelete(rollupName) {
+    const confirmed = await LightningConfirm.open({
+      message: `Are you sure you want to delete the rollup named: ${rollupName}`,
+      label: "Delete Rollup Configuration",
+      theme: "warning"
+    });
+    if (confirmed) {
+      this.dispatchEvent(
+        new ShowToastEvent({
+          title: "Delete Started",
+          message: `Started request to delete ${rollupName}`,
+          variant: "info"
+        })
+      );
+      deleteRollupConfig({ rollupName: rollupName });
     }
-    return Object.values(this.rollups);
+  }
+
+  handleInputChange() {
+    this.searchFilter = this.template
+      .querySelector("lightning-input")
+      .value.toLowerCase();
+    this.calcRollupList();
+  }
+
+  handleRequestDelete(event) {
+    this.requestDelete(event.detail.rollupName);
   }
 
   ////////////////////
@@ -116,41 +163,59 @@ export default class ManageRollups extends LightningElement {
     }
     // Callback invoked whenever a new event message is received
     const messageCallback = (response) => {
-      console.log("New message received: ", JSON.stringify(response));
+      // console.log("New message received: ", JSON.stringify(response));
       // deployment probably changed the rollup definitions, should refresh
       this.refreshRollups();
       if (!USER_ID.startsWith(response.data.payload.Recipient__c)) {
         // This message isn't for us, don't do anything
         return;
       }
-      // TODO: handle this way better
-
       let title, message, messageData, variant, mode;
       const deploymentData = JSON.parse(response.data.payload.Payload__c);
-      if (deploymentData.status === "Succeeded") {
-        title = "Deployment Completed!";
-        message = "Metadata saved successfully";
-        variant = "success";
-        mode = "dismissible";
-      } else {
-        title = "Deployment Failed!";
-        message =
-          "Status of " +
-          deploymentData.status +
-          ", errors [" +
-          deploymentData.details.componentFailures
-            .map((failure) => `${failure.fullName}: ${failure.problem}`)
-            .join("\n") +
-          "], \n{0}";
-        // if you know a better way to build this URL please replace this
-        messageData = [
-          {
-            label: "Click to view Deployment",
-            url: `/lightning/setup/DeployStatus/page?address=%2Fchangemgmt%2FmonitorDeploymentsDetails.apexp%3FasyncId%3D${deploymentData.id}`
+
+      switch (response.data.payload.Type__c) {
+        case "DeleteRequestResult":
+          if (deploymentData.success) {
+            title = "Delete Completed!";
+            message = `${deploymentData.metadataNames} deleted successfully`;
+            variant = "success";
+            mode = "dismissible";
+          } else {
+            title = "Delete Failed!";
+            message = `Attempt to delete ${deploymentData.metadataNames} returned with errors [${deploymentData.error}]`;
+            variant = "error";
+            mode = "sticky";
           }
-        ];
-        variant = "error";
-        mode = "sticky";
+          break;
+        case "DeploymentResult":
+          if (deploymentData.status === "Succeeded") {
+            title = "Deployment Completed!";
+            message = "Metadata saved successfully";
+            variant = "success";
+            mode = "dismissible";
+          } else {
+            title = "Deployment Failed!";
+            message =
+              "Status of " +
+              deploymentData.status +
+              ", errors [" +
+              deploymentData.details.componentFailures
+                .map((failure) => `${failure.fullName}: ${failure.problem}`)
+                .join("\n") +
+              "], \n{0}";
+            // if you know a better way to build this URL please replace this
+            messageData = [
+              {
+                label: "Click to view Deployment",
+                url: `/lightning/setup/DeployStatus/page?address=%2Fchangemgmt%2FmonitorDeploymentsDetails.apexp%3FasyncId%3D${deploymentData.id}`
+              }
+            ];
+            variant = "error";
+            mode = "sticky";
+          }
+          break;
+        default:
+          break;
       }
 
       const evt = new ShowToastEvent({
@@ -168,17 +233,14 @@ export default class ManageRollups extends LightningElement {
     subscribe(this.channelName, -1, messageCallback).then((response) => {
       // Response contains the subscription information on subscribe call
       this.subscription = response;
-      this.toggleSubscribeButton(true);
     });
   }
 
   // Handles unsubscribe button click
   handleUnsubscribe() {
-    this.toggleSubscribeButton(false);
-
     // Invoke unsubscribe method of empApi
-    unsubscribe(this.subscription, (response) => {
-      console.log("unsubscribe() response: ", JSON.stringify(response));
+    unsubscribe(this.subscription, (/*response*/) => {
+      // console.log("unsubscribe() response: ", JSON.stringify(response));
       // Response is true for successful unsubscribe
     });
   }

@@ -1,137 +1,218 @@
 <template>
-    <lightning-card  title="Lookup Rollup Summary Creation Wizard">
-        <div slot="actions">
-            <lightning-button-group>
-                <lightning-button label="Save" slot="actions"></lightning-button>
-                <lightning-button label="Cancel" slot="actions"></lightning-button>
-                <lightning-button label="Clone" slot="actions"></lightning-button>
-                <lightning-button label="Delete" slot="actions"></lightning-button>
-            </lightning-button-group>
-        </div>
-        <div class="slds-card__body slds-card__body_inner">
-            <!--Name Rollup-->
-            <div class="slds-box">
-                <lightning-layout class="slds-p-horizontal_medium">
-                    <lightning-layout-item size="12" class="slds-form-element_stacked">
-                        <div class="slds-text-heading_small slds-border_bottom">1. Name your Rollup</div>
-                    </lightning-layout-item>
-                </lightning-layout>
-                <lightning-layout class="slds-p-horizontal_medium">
-                    <lightning-layout-item size="6" class="slds-form-element_stacked">
-                    <lightning-input
-                        type="text"
-                        name="rollup_label"
-                        label="Lookup Rollup Summary Label"
-                        placeholder="My Rollup Name"
-                        value={rollup.Label}
-                    ></lightning-input>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="6" class="slds-form-element_stacked">
-                    <lightning-input
-                        type="text"
-                        name="rollup_name"
-                        label="Lookup Rollup Summary API Name"
-                        placeholder="My_Rollup_Name"
-                        value={rollup.Name}
-                    ></lightning-input>
-                    </lightning-layout-item>
-                </lightning-layout>
+  <lightning-card title="Lookup Rollup Summary Creation Wizard">
+    <div slot="actions">
+      <lightning-button-group>
+        <lightning-button label="Save" onclick={runSave}></lightning-button>
+        <lightning-button
+          label="Cancel"
+          onclick={cancelClickHandler}
+        ></lightning-button>
+        <lightning-button
+          label="Clone"
+          onclick={cloneClickHandler}
+          if:true={rollup.Id}
+        ></lightning-button>
+        <lightning-button
+          label="Delete"
+          onclick={deleteClickHandler}
+          variant="destructive"
+          if:true={rollup.Id}
+        ></lightning-button>
+      </lightning-button-group>
+    </div>
+    <div class="slds-card__body slds-card__body_inner">
+      <!--Name Rollup-->
+      <div class="slds-box">
+        <lightning-layout class="slds-p-horizontal_medium">
+          <lightning-layout-item size="12" class="slds-form-element_stacked">
+            <div class="slds-text-heading_small slds-border_bottom">
+              1. Name your Rollup
             </div>
-            <!--Pick Objects-->
-            <div class="slds-box">
-                <lightning-layout class="slds-p-horizontal_medium">
-                    <lightning-layout-item size="12" class="slds-form-element_stacked">
-                        <div class="slds-text-heading_small slds-border_bottom">2. Pick the Parent object you want to roll up to, and then the Child object that you want to roll up from</div>
-                    </lightning-layout-item>
-                </lightning-layout>
-                <lightning-layout class="slds-p-horizontal_medium">
-                    <lightning-layout-item size="6" class="slds-form-element_stacked">
-                        <p>PARENT OBJECT SEARCH COMPONENT</p>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="6" class="slds-form-element_stacked">
-                        <p>CHILD OBJECT SEARCH COMPONENT</p>
-                    </lightning-layout-item>
-                </lightning-layout>
+          </lightning-layout-item>
+        </lightning-layout>
+        <lightning-layout class="slds-p-horizontal_medium">
+          <lightning-layout-item size="6" class="slds-form-element_stacked">
+            <lightning-input
+              type="text"
+              name="rollup_label"
+              data-name="rollup_label"
+              label="Lookup Rollup Summary Label"
+              placeholder="My Rollup Name"
+              value={rollup.Label}
+            ></lightning-input>
+          </lightning-layout-item>
+          <lightning-layout-item size="6" class="slds-form-element_stacked">
+            <lightning-input
+              type="text"
+              name="rollup_DeveloperName"
+              data-name="rollup_DeveloperName"
+              label="Lookup Rollup Summary API Name"
+              placeholder="My_Rollup_Name"
+              disabled={rollup.Id}
+              value={rollup.DeveloperName}
+            ></lightning-input>
+          </lightning-layout-item>
+        </lightning-layout>
+      </div>
+      <!--Pick Objects-->
+      <div class="slds-box">
+        <lightning-layout class="slds-p-horizontal_medium">
+          <lightning-layout-item size="12" class="slds-form-element_stacked">
+            <div class="slds-text-heading_small slds-border_bottom">
+              2. Pick the Parent object you want to roll up to, and then the
+              Child object that you want to roll up from
             </div>
-            <!--Set Relationship-->
-            <div class="slds-box">
-                <lightning-layout class="slds-p-horizontal_medium">
-                    <lightning-layout-item size="12" class="slds-form-element_stacked">
-                        <div class="slds-text-heading_small slds-border_bottom">3. Setup the Relationship</div>
-                    </lightning-layout-item>
-                </lightning-layout>
-                <lightning-layout class="slds-p-horizontal_medium">
-                    <lightning-layout-item size="4" class="slds-form-element_stacked">
-                        <lightning-input
-                        type="text"
-                        name="rollup_relationship_field"
-                        label="Relationship Field"
-                        placeholder="lookup__c"
-                        value={rollup.RelationshipField__c}
-                        ></lightning-input>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="4" class="slds-form-element_stacked">
-                    <lightning-input
-                        type="text"
-                        name="rollup_relationship_criteria"
-                        label="Relationship Criteria"
-                        placeholder="Status__c = 'Closed' AND Days__c > 30"
-                        value={rollup.RelationshipCriteria__c}
-                        maxlength="255"
-                    ></lightning-input>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="4" class="slds-form-element_stacked">
-                    <lightning-textarea
-                        name="rollup_relationship_criteria_fields"
-                        label="Relationship Criteria Fields"
-                        placeholder="Status__c, Days__c"
-                        value={rollup.RelationshipCriteriaFields__c}
-                        maxlength="255"
-                    ></lightning-textarea>
-                    </lightning-layout-item>
-                </lightning-layout>
+          </lightning-layout-item>
+        </lightning-layout>
+        <lightning-layout class="slds-p-horizontal_medium">
+          <lightning-layout-item size="6" class="slds-form-element_stacked">
+            <c-object-selector
+              label="Parent Object"
+              current-selection={rollup.ParentObject__c}
+              onlookupupdate={parentObjectSelected}
+            ></c-object-selector>
+          </lightning-layout-item>
+          <lightning-layout-item size="6" class="slds-form-element_stacked">
+            <c-object-selector
+              label="Child Object"
+              current-selection={rollup.ChildObject__c}
+              onlookupupdate={childObjectSelected}
+            ></c-object-selector>
+          </lightning-layout-item>
+        </lightning-layout>
+      </div>
+      <!--Set Relationship-->
+      <div class="slds-box">
+        <lightning-layout class="slds-p-horizontal_medium">
+          <lightning-layout-item size="12" class="slds-form-element_stacked">
+            <div class="slds-text-heading_small slds-border_bottom">
+              3. Setup the Relationship
             </div>
-            <!--Summary settings-->
-            <div class="slds-box">
-                <lightning-layout class="slds-p-horizontal_medium">
-                    <lightning-layout-item size="12" class="slds-form-element_stacked">
-                        <div class="slds-text-heading_small slds-border_bottom">4. Define what to Summarize</div>
-                        <p>Select what field you want to rollup, the type of rollup, and what field on the Parent object to store the result.</p>
-                    </lightning-layout-item>
-                </lightning-layout>
-                <lightning-layout class="slds-p-horizontal_medium">
-                    <lightning-layout-item size="4" class="slds-form-element_stacked">
-                        <lightning-input
-                        type="text"
-                        name="rollup_FieldToAggregate__c"
-                        label="Field To Aggregate"
-                        placeholder="Days__c"
-                        value={rollup.FieldToAggregate__c}
-                        ></lightning-input>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="4" class="slds-form-element_stacked">
-                    <lightning-combobox
-                        name="rollup_AggregateOperation__c"
-                        label="Aggregate Operation"
-                        placeholder="Select"
-                        options={aggregateOptions}
-                        value={rollup.AggregateOperation__c}
-                        onchange={handleChange}
-                    ></lightning-combobox>
-                    </lightning-layout-item>
-                    <lightning-layout-item size="4" class="slds-form-element_stacked">
-                    <lightning-input
-                        name="rollup_AggregateResultField__c"
-                        label="Aggregate Result Field"
-                        placeholder="Total__c"
-                        value={rollup.AggregateResultField__c}
-                    ></lightning-input>
-                    </lightning-layout-item>
-                </lightning-layout>
+          </lightning-layout-item>
+        </lightning-layout>
+        <lightning-layout class="slds-p-horizontal_medium">
+          <lightning-layout-item size="4" class="slds-form-element_stacked">
+            <lightning-input
+              type="text"
+              name="rollup_relationship_field"
+              data-name="rollup_relationship_field"
+              label="Relationship Field"
+              placeholder="lookup__c"
+              value={rollup.RelationshipField__c}
+            ></lightning-input>
+          </lightning-layout-item>
+          <lightning-layout-item size="4" class="slds-form-element_stacked">
+            <lightning-input
+              type="text"
+              name="rollup_relationship_criteria"
+              data-name="rollup_relationship_criteria"
+              label="Relationship Criteria"
+              placeholder="Status__c = 'Closed' AND Days__c > 30"
+              value={rollup.RelationshipCriteria__c}
+              maxlength="255"
+            ></lightning-input>
+          </lightning-layout-item>
+          <lightning-layout-item size="4" class="slds-form-element_stacked">
+            <lightning-textarea
+              name="rollup_relationship_criteria_fields"
+              data-name="rollup_relationship_criteria_fields"
+              label="Relationship Criteria Fields"
+              placeholder="Status__c, Days__c"
+              value={rollup.RelationshipCriteriaFields__c}
+              maxlength="255"
+            ></lightning-textarea>
+          </lightning-layout-item>
+        </lightning-layout>
+      </div>
+      <!--Summary settings-->
+      <div class="slds-box">
+        <lightning-layout class="slds-p-horizontal_medium">
+          <lightning-layout-item size="12" class="slds-form-element_stacked">
+            <div class="slds-text-heading_small slds-border_bottom">
+              4. Define what to Summarize
             </div>
-            <div class="slds-box">
-                <c-rollup-status-check name={rollup.Id}></c-rollup-status-check>
-            </div>
-        </div>
-    </lightning-card>
+            <p>
+              Select what field you want to rollup, the type of rollup, and what
+              field on the Parent object to store the result.
+            </p>
+          </lightning-layout-item>
+        </lightning-layout>
+        <lightning-layout class="slds-p-horizontal_medium">
+          <lightning-layout-item size="4" class="slds-form-element_stacked">
+            <lightning-input
+              type="text"
+              name="rollup_FieldToAggregate__c"
+              data-name="rollup_FieldToAggregate__c"
+              label="Field To Aggregate"
+              placeholder="Days__c"
+              value={rollup.FieldToAggregate__c}
+            ></lightning-input>
+          </lightning-layout-item>
+          <lightning-layout-item size="4" class="slds-form-element_stacked">
+            <lightning-combobox
+              name="rollup_AggregateOperation__c"
+              data-name="rollup_AggregateOperation__c"
+              label="Aggregate Operation"
+              placeholder="Select"
+              options={aggregateOptions}
+              value={rollup.AggregateOperation__c}
+              onchange={handleChange}
+            ></lightning-combobox>
+          </lightning-layout-item>
+          <lightning-layout-item size="4" class="slds-form-element_stacked">
+            <lightning-input
+              name="rollup_AggregateResultField__c"
+              data-name="rollup_AggregateResultField__c"
+              label="Aggregate Result Field"
+              placeholder="Total__c"
+              value={rollup.AggregateResultField__c}
+            ></lightning-input>
+          </lightning-layout-item>
+        </lightning-layout>
+        <lightning-layout class="slds-p-horizontal_medium">
+          <lightning-layout-item size="4" class="slds-form-element_stacked">
+            <h2 class="header">Aggregate All Rows</h2>
+            <lightning-input
+              type="checkbox"
+              name="rollup_AggregateAllRows__c"
+              data-name="rollup_AggregateAllRows__c"
+              label="Include Deleted"
+              value={rollup.AggregateAllRows__c}
+            ></lightning-input>
+          </lightning-layout-item>
+          <lightning-layout-item size="4" class="slds-form-element_stacked">
+            <lightning-input
+              type="number"
+              name="rollup_RowLimit__c"
+              data-name="rollup_RowLimit__c"
+              label="Row Limit"
+              placeholder="0"
+              value={rollup.RowLimit__c}
+            ></lightning-input>
+          </lightning-layout-item>
+          <lightning-layout-item size="4" class="slds-form-element_stacked">
+            <lightning-input
+              type="text"
+              name="rollup_ConcatenateDelimiter__c"
+              data-name="rollup_ConcatenateDelimiter__c"
+              label="Concatenate Delimiter"
+              value={rollup.ConcatenateDelimiter__c}
+            ></lightning-input>
+          </lightning-layout-item>
+        </lightning-layout>
+        <lightning-layout horizontal-align="center">
+          <lightning-layout-item>
+            <lightning-button
+              label="Save"
+              variant="brand"
+              onclick={runSave}
+            ></lightning-button>
+          </lightning-layout-item>
+        </lightning-layout>
+      </div>
+      <div class="slds-box">
+        <c-rollup-status-check name={rollup.Id}></c-rollup-status-check>
+      </div>
+    </div>
+  </lightning-card>
 </template>

@@ -40,6 +40,46 @@ public class CustomMetadataService {
   }
 
   /**
+   * Starts async metadata save using Apex Metadata API
+   */
+  public static Id initiateMetadataSave(List<SObject> records) {
+    Metadata.DeployContainer mdContainer = new Metadata.DeployContainer();
+    for (SObject r : records) {
+      // Setup custom metadata to be created in the subscriber org.
+      Metadata.CustomMetadata customMetadata = new Metadata.CustomMetadata();
+      // Developer name and Label are applied here
+      customMetadata.fullName =
+        r.getSObjectType().getDescribe().getName() +
+        '.' +
+        (String) r.get('DeveloperName');
+      customMetadata.label = (String) r.get('Label');
+      Metadata.CustomMetadata mdt = new Metadata.CustomMetadata();
+      Map<String, Object> populatedFields = r.getPopulatedFieldsAsMap();
+      // We don't want these in values
+      List<String> ignoredKeys = new List<String>{
+        'Id',
+        'DeveloperName',
+        'Label'
+      };
+      for (String key : populatedFields.keySet()) {
+        if (ignoredKeys.contains(key)) {
+          continue;
+        }
+        Metadata.CustomMetadataValue customField = new Metadata.CustomMetadataValue();
+        customField.field = key;
+        customField.value = populatedFields.get(key);
+        customMetadata.values.add(customField);
+      }
+
+      mdContainer.addMetadata(customMetadata);
+    }
+
+    ApexMdApiDeployCallback cb = new ApexMdApiDeployCallback();
+    // Enqueue custom metadata deployment
+    return Metadata.Operations.enqueueDeployment(mdContainer, cb);
+  }
+
+  /**
    * Insert the given Custom Metadata records into the orgs config
    **/
   public static void createMetadata(List<SObject> records) {
@@ -83,6 +123,21 @@ public class CustomMetadataService {
       qualifiedFullNames
     );
     handleDeleteResults(results[0]);
+  }
+
+  /**
+   * Delete the given Custom Metadata records from the org using Async action
+   **/
+  public static Id deleteMetadataAsync(
+    SObjectType qualifiedMetadataType,
+    List<String> customMetadataFullNames
+  ) {
+    return System.enqueueJob(
+      new DeleteMetadataQueueable(
+        qualifiedMetadataType,
+        customMetadataFullNames
+      )
+    );
   }
 
   public class CustomMetadataServiceException extends Exception {
@@ -216,5 +271,61 @@ public class CustomMetadataService {
       throw new CustomMetadataServiceException(
         'Request failed with no specified error.'
       );
+  }
+
+  class ApexMdApiDeployCallback implements Metadata.DeployCallback {
+    public void handleResult(
+      Metadata.DeployResult result,
+      Metadata.DeployCallbackContext context
+    ) {
+      UserNotification__e updateEvent = new UserNotification__e(
+        Type__c = 'DeploymentResult',
+        Payload__c = JSON.serialize(result)
+      );
+      EventBus.publish(updateEvent);
+    }
+  }
+
+  class DeleteMetadataQueueable implements Queueable, Database.AllowsCallouts {
+    SObjectType qualifiedMetadataType;
+    List<String> customMetadataFullNames;
+    public DeleteMetadataQueueable(
+      SObjectType qualifiedMetadataType,
+      List<String> customMetadataFullNames
+    ) {
+      this.qualifiedMetadataType = qualifiedMetadataType;
+      this.customMetadataFullNames = customMetadataFullNames;
+    }
+
+    public void execute(QueueableContext ctx) {
+      try {
+        CustomMetadataService.deleteMetadata(
+          qualifiedMetadataType,
+          customMetadataFullNames
+        );
+        UserNotification__e updateEvent = new UserNotification__e(
+          Type__c = 'DeleteRequestResult',
+          Payload__c = JSON.serialize(
+            new Map<String, Object>{
+              'success' => true,
+              'metadataNames' => customMetadataFullNames
+            }
+          )
+        );
+        EventBus.publish(updateEvent);
+      } catch (CustomMetadataService.CustomMetadataServiceException e) {
+        UserNotification__e updateEvent = new UserNotification__e(
+          Type__c = 'DeleteRequestResult',
+          Payload__c = JSON.serialize(
+            new Map<String, Object>{
+              'success' => false,
+              'metadataNames' => customMetadataFullNames,
+              'error' => e.getMessage()
+            }
+          )
+        );
+        EventBus.publish(updateEvent);
+      }
+    }
   }
 }

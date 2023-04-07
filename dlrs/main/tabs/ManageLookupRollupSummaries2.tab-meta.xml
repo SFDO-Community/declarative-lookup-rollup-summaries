@@ -2,6 +2,6 @@
 <CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
     <description>Manage Lookup Rollup Configs</description>
     <flexiPage>ManageLookupRollupSummaries</flexiPage>
-    <label>Manage Lookup Rollup Summaries (New)</label>
+    <label>Manage Lookup Rollup Summaries (Beta)</label>
     <motif>Custom67: Gears</motif>
 </CustomTab>
