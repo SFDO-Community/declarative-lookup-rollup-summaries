@@ -5,8 +5,9 @@ import validateRollupConfig from "@salesforce/apex/RollupEditorController.valida
 import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollupConfig";
 
 export default class RollupEditor extends LightningElement {
+  DEFAULT_ROLLUP_VALUES = { Active__c: false };
   @track
-  rollup = {};
+  rollup = this.DEFAULT_ROLLUP_VALUES;
   errors = {};
 
   _rollupName;
@@ -28,9 +29,17 @@ export default class RollupEditor extends LightningElement {
     this.getRollup();
   }
 
+  get rollupCanBeActivated() {
+    return this.rollup.Id && !this.rollup.Active__c;
+  }
+
+  get rollupCanBeDeactivated() {
+    return this.rollup.Id && this.rollup.Active__c;
+  }
+
   async getRollup() {
     if (!this.rollupName) {
-      this.rollup = {};
+      this.rollup = this.DEFAULT_ROLLUP_VALUES;
       return;
     }
     try {
@@ -65,8 +74,23 @@ export default class RollupEditor extends LightningElement {
     this.rollupName = undefined;
   }
 
+  activateClickHandler() {
+    this.rollup.Active__c = true;
+    this.runSave();
+  }
+
+  deactivateClickHandler() {
+    this.rollup.Active__c = false;
+    this.runSave();
+  }
+
   async runSave() {
     this.assembleRollupFromForm();
+    await this.runValidate();
+    if (Object.keys(this.errors).length > 0) {
+      console.error("Record has errors", this.errors);
+      return;
+    }
     const jobId = await saveRollupConfig({
       rollup: JSON.stringify(this.rollup)
     });

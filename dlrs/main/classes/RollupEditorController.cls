@@ -14,6 +14,10 @@ public with sharing class RollupEditorController {
       .Record;
   }
 
+  /**
+   * returns a map of fieldname => list<errorstring> to use in displaying error in the UI
+   * general errors are applied to the 'record' field name
+   */
   @AuraEnabled
   public static Map<String, List<String>> validateRollupConfig(String rollup) {
     // do things like validate that the Rollup Criteria can be used in a SOQL query
@@ -21,11 +25,19 @@ public with sharing class RollupEditorController {
       rollup,
       LookupRollupSummary2__mdt.class
     );
-    // map of errors by "location" such as "record" or "[fieldname]" to enable displaying the error against a specific field/aread of
-    Map<String, List<String>> errorMap = new Map<String, List<String>>{};
-    // 'record' => new List<String>()
 
-    // TODO: execute validations and check configs
+    // Process only Custom Metadata records here
+    List<LookupRollupSummary2__mdt> mdtRecords = new List<LookupRollupSummary2__mdt>();
+    mdtRecords.add(lookupConfig);
+
+    // Validate via Domain class and throw appropirte exception
+    RollupSummaries rollupSummaries = new RollupSummaries(mdtRecords);
+    rollupSummaries.onValidate();
+    Map<String, List<String>> errorMap;
+    for (RollupSummary rollupSummaryRecord : rollupSummaries.Records) {
+      errorMap = collectErrors(rollupSummaryRecord);
+    }
+
     return errorMap;
   }
 
@@ -50,5 +62,107 @@ public with sharing class RollupEditorController {
     } catch (Exception e) {
       throw new AuraHandledException(e.getMessage());
     }
+  }
+
+  private static Map<String, List<String>> collectErrors(RollupSummary rollup) {
+    Map<String, List<String>> errorMap = new Map<String, List<String>>();
+    if (rollup.Error != null) {
+      buildErrorIfNeeded(errorMap, 'record', new List<String>{ rollup.Error });
+    }
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.Active__c.getDescribe().getName(),
+      rollup.Fields.Active.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.AggregateOperation__c.getDescribe()
+        .getName(),
+      rollup.Fields.AggregateOperation.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.AggregateResultField__c.getDescribe()
+        .getName(),
+      rollup.Fields.AggregateResultField.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.CalculationMode__c.getDescribe()
+        .getName(),
+      rollup.Fields.CalculationMode.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.CalculationSharingMode__c.getDescribe()
+        .getName(),
+      rollup.Fields.CalculationSharingMode.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.ChildObject__c.getDescribe().getName(),
+      rollup.Fields.ChildObject.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.Description__c.getDescribe().getName(),
+      rollup.Fields.Description.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.FieldToAggregate__c.getDescribe()
+        .getName(),
+      rollup.Fields.FieldToAggregate.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.DeveloperName.getDescribe().getName(),
+      rollup.Fields.UniqueName.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.ParentObject__c.getDescribe().getName(),
+      rollup.Fields.ParentObject.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.RelationshipCriteria__c.getDescribe()
+        .getName(),
+      rollup.Fields.RelationshipCriteria.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.RelationshipCriteriaFields__c.getDescribe()
+        .getName(),
+      rollup.Fields.RelationshipCriteriaFields.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.RelationshipField__c.getDescribe()
+        .getName(),
+      rollup.Fields.RelationshipField.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.TestCode2__c.getDescribe().getName(),
+      rollup.Fields.TestCode.errors
+    );
+    buildErrorIfNeeded(
+      errorMap,
+      LookupRollupSummary2__mdt.fields.RowLimit__c.getDescribe().getName(),
+      rollup.Fields.RowLimit.errors
+    );
+    return errorMap;
+  }
+
+  private static void buildErrorIfNeeded(
+    Map<String, List<String>> errorMap,
+    String fieldName,
+    List<String> errors
+  ) {
+    if (errors.isEmpty()) {
+      return;
+    }
+    errorMap.put(fieldName, errors);
   }
 }

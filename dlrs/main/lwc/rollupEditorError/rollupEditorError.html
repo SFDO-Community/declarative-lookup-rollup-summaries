@@ -1,0 +1,11 @@
+<template>
+  <div
+    style="color: red"
+    if:true={errors}
+    for:each={errors}
+    for:item="error"
+    key={error}
+  >
+    {error}
+  </div>
+</template>
