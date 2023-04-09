@@ -8,6 +8,16 @@
           onclick={cancelClickHandler}
         ></lightning-button>
         <lightning-button
+          label="Activate"
+          onclick={activateClickHandler}
+          if:true={rollupCanBeActivated}
+        ></lightning-button>
+        <lightning-button
+          label="Deactivate"
+          onclick={deactivateClickHandler}
+          if:true={rollupCanBeDeactivated}
+        ></lightning-button>
+        <lightning-button
           label="Clone"
           onclick={cloneClickHandler}
           if:true={rollup.Id}
@@ -22,6 +32,7 @@
     </div>
     <div class="slds-card__body slds-card__body_inner">
       <!--Name Rollup-->
+      <c-rollup-editor-error errors={errors.record}></c-rollup-editor-error>
       <div class="slds-box">
         <lightning-layout class="slds-p-horizontal_medium">
           <lightning-layout-item size="12" class="slds-form-element_stacked">
@@ -40,6 +51,10 @@
               placeholder="My Rollup Name"
               value={rollup.Label}
             ></lightning-input>
+
+            <c-rollup-editor-error
+              errors={errors.Label}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item size="6" class="slds-form-element_stacked">
             <lightning-input
@@ -51,6 +66,9 @@
               disabled={rollup.Id}
               value={rollup.DeveloperName}
             ></lightning-input>
+            <c-rollup-editor-error
+              errors={errors.DeveloperName}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
         </lightning-layout>
       </div>
@@ -71,6 +89,9 @@
               current-selection={rollup.ParentObject__c}
               onlookupupdate={parentObjectSelected}
             ></c-object-selector>
+            <c-rollup-editor-error
+              errors={errors.ParentObject__c}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item size="6" class="slds-form-element_stacked">
             <c-object-selector
@@ -78,6 +99,9 @@
               current-selection={rollup.ChildObject__c}
               onlookupupdate={childObjectSelected}
             ></c-object-selector>
+            <c-rollup-editor-error
+              errors={errors.ChildObject__c}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
         </lightning-layout>
       </div>
@@ -100,6 +124,9 @@
               placeholder="lookup__c"
               value={rollup.RelationshipField__c}
             ></lightning-input>
+            <c-rollup-editor-error
+              errors={errors.RelationshipField__c}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item size="4" class="slds-form-element_stacked">
             <lightning-input
@@ -111,6 +138,9 @@
               value={rollup.RelationshipCriteria__c}
               maxlength="255"
             ></lightning-input>
+            <c-rollup-editor-error
+              errors={errors.RelationshipCriteria__c}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item size="4" class="slds-form-element_stacked">
             <lightning-textarea
@@ -121,6 +151,9 @@
               value={rollup.RelationshipCriteriaFields__c}
               maxlength="255"
             ></lightning-textarea>
+            <c-rollup-editor-error
+              errors={errors.RelationshipCriteriaFields__c}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
         </lightning-layout>
       </div>
@@ -147,6 +180,9 @@
               placeholder="Days__c"
               value={rollup.FieldToAggregate__c}
             ></lightning-input>
+            <c-rollup-editor-error
+              errors={errors.FieldToAggregate__c}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item size="4" class="slds-form-element_stacked">
             <lightning-combobox
@@ -158,6 +194,9 @@
               value={rollup.AggregateOperation__c}
               onchange={handleChange}
             ></lightning-combobox>
+            <c-rollup-editor-error
+              errors={errors.AggregateOperation__c}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item size="4" class="slds-form-element_stacked">
             <lightning-input
@@ -167,6 +206,9 @@
               placeholder="Total__c"
               value={rollup.AggregateResultField__c}
             ></lightning-input>
+            <c-rollup-editor-error
+              errors={errors.AggregateResultField__c}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
         </lightning-layout>
         <lightning-layout class="slds-p-horizontal_medium">
@@ -179,6 +221,9 @@
               label="Include Deleted"
               value={rollup.AggregateAllRows__c}
             ></lightning-input>
+            <c-rollup-editor-error
+              errors={errors.AggregateAllRows__c}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item size="4" class="slds-form-element_stacked">
             <lightning-input
@@ -189,6 +234,9 @@
               placeholder="0"
               value={rollup.RowLimit__c}
             ></lightning-input>
+            <c-rollup-editor-error
+              errors={errors.RowLimit__c}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item size="4" class="slds-form-element_stacked">
             <lightning-input
@@ -198,6 +246,9 @@
               label="Concatenate Delimiter"
               value={rollup.ConcatenateDelimiter__c}
             ></lightning-input>
+            <c-rollup-editor-error
+              errors={errors.ConcatenateDelimiter__c}
+            ></c-rollup-editor-error>
           </lightning-layout-item>
         </lightning-layout>
         <lightning-layout horizontal-align="center">
