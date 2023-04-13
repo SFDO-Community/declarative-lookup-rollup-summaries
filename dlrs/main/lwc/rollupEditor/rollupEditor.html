@@ -14,35 +14,82 @@
             </h2>
           </div>
           <div class="slds-no-flex">
+              <!-- Show when Screen: Medium (>= 768px) -->
+              <div class="slds-show_medium">
+                <div class="slds-button-group" role="group">
+                  <button class="slds-button slds-button_neutral" onclick={runSave}>Save</button>
+                  <button class="slds-button slds-button_neutral" onclick={activateClickHandler} if:true={rollupCanBeActivated} >Activate</button>
+                  <button class="slds-button slds-button_neutral" onclick={deactivateClickHandler} if:true={rollupCanBeDeactivated}>Deactivate</button>
+                  <button class="slds-button slds-button_neutral" onclick={cancelClickHandler}>Cancel</button>
+                  <div class="slds-dropdown-trigger slds-dropdown-trigger_click slds-button_last" data-name="expandable-button-list">
+                    <button onclick={onToggleButtonGroupList} class="slds-button slds-button_icon slds-button_icon-border-filled" aria-haspopup="true" aria-expanded="true" title="Show More">
+                      <svg class="slds-button__icon" aria-hidden="true">
+                        <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#down"></use>
+                      </svg>
+                      <span class="slds-assistive-text">Show More</span>
+                    </button>
 
-              <lightning-button-group>
-                <lightning-button label="Save" onclick={runSave}></lightning-button>
-                <lightning-button
-                  label="Cancel"
-                  onclick={cancelClickHandler}
-                ></lightning-button>
-                <lightning-button
-                  label="Activate"
-                  onclick={activateClickHandler}
-                  if:true={rollupCanBeActivated}
-                ></lightning-button>
-                <lightning-button
-                  label="Deactivate"
-                  onclick={deactivateClickHandler}
-                  if:true={rollupCanBeDeactivated}
-                ></lightning-button>
-                <lightning-button
-                  label="Clone"
-                  onclick={cloneClickHandler}
-                  if:true={rollup.Id}
-                ></lightning-button>
-                <lightning-button
-                  label="Delete"
-                  onclick={deleteClickHandler}
-                  variant="destructive"
-                  if:true={rollup.Id}
-                ></lightning-button>
-              </lightning-button-group>
+                    <div class="slds-dropdown slds-dropdown_right slds-dropdown_actions">
+                      <ul class="slds-dropdown__list" role="menu">
+                        <li class="slds-dropdown__item" role="presentation" onclick={cloneClickHandler} if:true={rollup.Id}>
+                          <a href="#" role="menuitem" tabindex="0">
+                            <span class="slds-truncate" title="Clone">Clone</span>
+                          </a>
+                        </li>
+                        <li class="slds-dropdown__item" role="presentation" onclick={deleteClickHandler} if:true={rollup.Id}>
+                          <a href="#" role="menuitem" tabindex="-1">
+                            <span class="slds-truncate slds-text-color_destructive">Delete</span>
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Show when Screen: Small (< 768px) -->
+              <div class="slds-hide_medium">
+                <div class="slds-button-group" role="group">
+                  <button class="slds-button slds-button_neutral" onclick={runSave}>Save</button>
+                  <div class="slds-dropdown-trigger slds-dropdown-trigger_click slds-button_last" data-name="expandable-button-list">
+                    <button onclick={onToggleButtonGroupList} class="slds-button slds-button_icon slds-button_icon-border-filled" aria-haspopup="true" aria-expanded="true" title="Show More">
+                      <svg class="slds-button__icon" aria-hidden="true">
+                        <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#down"></use>
+                      </svg>
+                      <span class="slds-assistive-text">Show More</span>
+                    </button>
+                    <div class="slds-dropdown slds-dropdown_right slds-dropdown_actions">
+                      <ul class="slds-dropdown__list" role="menu">
+                        <li class="slds-dropdown__item" role="presentation" onclick={activateClickHandler} if:true={rollupCanBeActivated}>
+                          <a href="#" role="menuitem" tabindex="0">
+                            <span class="slds-truncate" title="Activate">Activate</span>
+                          </a>
+                        </li>
+                        <li class="slds-dropdown__item" role="presentation" onclick={deactivateClickHandler} if:true={rollupCanBeDeactivated}>
+                          <a href="#" role="menuitem" tabindex="0">
+                            <span class="slds-truncate" title="Deactivate">Deactivate</span>
+                          </a>
+                        </li>
+                        <li class="slds-dropdown__item" role="presentation" onclick={cancelClickHandler}>
+                          <a href="#" role="menuitem" tabindex="0">
+                            <span class="slds-truncate" title="Cancel">Cancel</span>
+                          </a>
+                        </li>
+                        <li class="slds-dropdown__item" role="presentation" onclick={cloneClickHandler} if:true={rollup.Id}>
+                          <a href="#" role="menuitem" tabindex="0">
+                            <span class="slds-truncate" title="Clone">Clone</span>
+                          </a>
+                        </li>
+                        <li class="slds-dropdown__item" role="presentation" onclick={deleteClickHandler} if:true={rollup.Id}>
+                          <a href="#" role="menuitem" tabindex="-1">
+                            <span class="slds-truncate slds-text-color_destructive">Delete</span>
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
           </div>
         </header>
       </div>
@@ -95,6 +142,20 @@
                   ></lightning-input>
                   <c-rollup-editor-error
                     errors={errors.DeveloperName}
+                  ></c-rollup-editor-error>
+                </div>
+
+                <!-- Description -->
+                <div class="slds-col slds-size_1-of-1 slds-m-top_x-small">
+                  <lightning-textarea
+                    name="rollup_Description__c"
+                    data-name="rollup_Description__c"
+                    label="Description"
+                    value={rollup.Description__c}
+                    maxlength="255"
+                  ></lightning-textarea>
+                  <c-rollup-editor-error
+                    errors={errors.Description__c}
                   ></c-rollup-editor-error>
                 </div>
 
@@ -226,7 +287,7 @@
 
         <!-- Rollup Details Section -->
         <div class="slds-m-top_large">
-          <div class="slds-section" data-section-name="section_rollup-details">
+          <div class="slds-section slds-is-open" data-section-name="section_rollup-details">
             <h3 class="slds-section__title">
               <button onclick={onToggleSection} data-section-button="section_rollup-details" class="slds-button slds-section__title-action">
                 <svg class="slds-section__title-action-icon slds-button__icon slds-button__icon_left" >
@@ -298,20 +359,21 @@
                     ></c-rollup-editor-error>
                   </div>
 
-                  <!-- Aggregate All Rows -->
+                </div>
+
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+
+                  <!-- Concatenate Delimiter -->
                   <div class="slds-m-top_x-small">
                     <lightning-input
-                      type="checkbox"
-                      name="rollup_AggregateAllRows__c"
-                      data-name="rollup_AggregateAllRows__c"
-                      label="Aggregate All Rows"
-                      value={rollup.AggregateAllRows__c}
-                      field-level-help="Include deleted records"
-                      variant="label-stacked"
-                      style="padding-left: 0px !important"
+                      type="text"
+                      name="rollup_ConcatenateDelimiter__c"
+                      data-name="rollup_ConcatenateDelimiter__c"
+                      label="Concatenate Delimiter"
+                      value={rollup.ConcatenateDelimiter__c}
                     ></lightning-input>
                     <c-rollup-editor-error
-                      errors={errors.AggregateAllRows__c}
+                      errors={errors.ConcatenateDelimiter__c}
                     ></c-rollup-editor-error>
                   </div>
 
@@ -328,27 +390,46 @@
                       errors={errors.RowLimit__c}
                     ></c-rollup-editor-error>
                   </div>
-                </div>
 
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
-                    <!-- Active Toggle -->
-                    <div class="slds-m-top_x-small">
-                        <lightning-input
-                          type="toggle"
-                          name="rollup_Active__c"
-                          data-name="rollup_Active__c"
-                          label="Rollup Status"
-                          checked={rollup.Active__c}
-                          variant="label-stacked"
-                          style="padding-left: 0px !important"
-                        ></lightning-input>
-                        <c-rollup-editor-error
-                          errors={errors.Active__c}
-                        ></c-rollup-editor-error>
-                    </div>
-
-                  <!-- Calculation mode -->
+                  <!-- Aggregate All Rows -->
                   <div class="slds-m-top_x-small">
+                    <lightning-input
+                      type="checkbox"
+                      name="rollup_AggregateAllRows__c"
+                      data-name="rollup_AggregateAllRows__c"
+                      label="Aggregate All Rows"
+                      value={rollup.AggregateAllRows__c}
+                      field-level-help="Include deleted records"
+                      variant="label-stacked"
+                      style="padding-left: 0px !important"
+                    ></lightning-input>
+                    <c-rollup-editor-error
+                      errors={errors.AggregateAllRows__c}
+                    ></c-rollup-editor-error>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Calculation Mode Section -->
+        <div class="slds-m-top_large">
+          <div class="slds-section slds-is-open" data-section-name="section_calculation-mode">
+            <h3 class="slds-section__title">
+              <button onclick={onToggleSection}  data-section-button="section_calculation-mode" class="slds-button slds-section__title-action">
+                <svg class="slds-section__title-action-icon slds-button__icon slds-button__icon_left" >
+                  <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#switch"></use>
+                </svg>
+                <span class="slds-truncate" title="Calculation Mode">Calculation Mode</span>
+              </button>
+            </h3>
+            <div class="slds-section__content" >
+
+              <div class="slds-grid slds-gutters slds-wrap">
+
+                <!-- Calculation mode -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-top_x-small">
                       <lightning-combobox
                         name="rollup_CalculationMode__c"
                         data-name="rollup_CalculationMode__c"
@@ -363,8 +444,8 @@
                       ></c-rollup-editor-error>
                   </div>
 
-                  <!-- Calculation Sharing Mode -->
-                  <div class="slds-m-top_x-small">
+                <!-- Calculation Sharing Mode -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-top_x-small">
                       <lightning-combobox
                         name="rollup_CalculationSharingMode__c"
                         data-name="rollup_CalculationSharingMode__c"
@@ -379,70 +460,6 @@
                       ></c-rollup-editor-error>
                   </div>
 
-                </div>
-
-            </div>
-          </div>
-        </div>
-
-        <!-- Text Lookups Section -->
-        <div class="slds-m-top_large">
-          <div class="slds-section" data-section-name="section_text-lookups">
-            <h3 class="slds-section__title">
-              <button onclick={onToggleSection} data-section-button="section_text-lookups" class="slds-button slds-section__title-action">
-                <svg class="slds-section__title-action-icon slds-button__icon slds-button__icon_left" >
-                  <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#switch"></use>
-                </svg>
-                <span class="slds-truncate" title="Text Lookups">Text Lookups</span>
-              </button>
-            </h3>
-            <div  class="slds-section__content" >
-
-              <div class="slds-grid slds-gutters slds-wrap">
-                <!-- Concatenate Delimiter -->
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-top_x-small">
-                    <lightning-input
-                      type="text"
-                      name="rollup_ConcatenateDelimiter__c"
-                      data-name="rollup_ConcatenateDelimiter__c"
-                      label="Concatenate Delimiter"
-                      value={rollup.ConcatenateDelimiter__c}
-                    ></lightning-input>
-                    <c-rollup-editor-error
-                      errors={errors.ConcatenateDelimiter__c}
-                    ></c-rollup-editor-error>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Description Section -->
-        <div class="slds-m-top_large">
-          <div class="slds-section" data-section-name="section_description">
-            <h3 class="slds-section__title">
-              <button onclick={onToggleSection} data-section-button="section_description"  class="slds-button slds-section__title-action">
-                <svg class="slds-section__title-action-icon slds-button__icon slds-button__icon_left" >
-                  <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#switch"></use>
-                </svg>
-                <span class="slds-truncate" title="Description">Description</span>
-              </button>
-            </h3>
-            <div  class="slds-section__content">
-              <div class="slds-grid slds-gutters slds-wrap">
-                <!-- Description -->
-                <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-m-top_x-small">
-                  <lightning-textarea
-                    name="rollup_Description__c"
-                    data-name="rollup_Description__c"
-                    label="Description"
-                    value={rollup.Description__c}
-                    maxlength="255"
-                  ></lightning-textarea>
-                  <c-rollup-editor-error
-                    errors={errors.Description__c}
-                  ></c-rollup-editor-error>
-                </div>
               </div>
             </div>
           </div>
@@ -519,24 +536,6 @@
     </article>
   </div>
 
-
   <c-rollup-status-check name={rollup.Id}></c-rollup-status-check>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 </template>
