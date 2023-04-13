@@ -106,6 +106,7 @@ export default class RollupEditor extends LightningElement {
     const fieldNames = [
       'Label',
       'DeveloperName',
+      'Description__c',
       'RelationshipField__c',
       'RelationshipCriteria__c',
       'RelationshipCriteriaFields__c',
@@ -115,11 +116,10 @@ export default class RollupEditor extends LightningElement {
       'AggregateResultField__c',
       'AggregateAllRows__c',
       'RowLimit__c',
-      'Active__c',
+      'Active__c', // No Input Element for this field
       'CalculationMode__c',
       'CalculationSharingMode__c',
       'ConcatenateDelimiter__c',
-      'Description__c',
       'TestCode2__c',
       'TestCodeParent__c',
       'TestCodeSeeAllData__c'
@@ -129,8 +129,10 @@ export default class RollupEditor extends LightningElement {
 
     fieldNames.forEach(fieldName => {
       const inputElement = this.template.querySelector(`[data-name="rollup_${fieldName}"]`);
-      const attribute = checkboxFields.includes(fieldName) ? 'checked' : 'value';
-      this.rollup[fieldName] = inputElement[attribute];
+      if(inputElement){
+        const attribute = checkboxFields.includes(fieldName) ? 'checked' : 'value';
+        this.rollup[fieldName] = inputElement[attribute];
+      }
     })
   }
   childObjectSelected(event) {
@@ -189,5 +191,17 @@ export default class RollupEditor extends LightningElement {
       element.className += ' ' + expandClass;
     }
   }
+
+  onToggleButtonGroupList(){
+    const elementName = 'expandable-button-list';
+    const element = this.template.querySelector(`[data-name="${elementName}"]`);
+    const expandClass = 'slds-is-open';
+    if(element.className.includes(expandClass)){
+      element.className = element.className.replace(expandClass, '');
+    } else {
+      element.className += ' ' + expandClass;
+    }
+  }
+
 
 }
