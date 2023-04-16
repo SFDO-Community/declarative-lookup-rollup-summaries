@@ -3,12 +3,18 @@ import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import getRollupConfig from "@salesforce/apex/RollupEditorController.getRollupConfig";
 import validateRollupConfig from "@salesforce/apex/RollupEditorController.validateRollupConfig";
 import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollupConfig";
+import getFieldRelationships from "@salesforce/apex/RollupEditorController.getFieldRelationships";
 
 export default class RollupEditor extends LightningElement {
   DEFAULT_ROLLUP_VALUES = { Active__c: false };
   @track
   rollup = this.DEFAULT_ROLLUP_VALUES;
   errors = {};
+
+  @track
+  parentRFieldOptions = [];
+  @track
+  childRFieldOptions = [];
 
   _rollupName;
   @api
@@ -25,8 +31,9 @@ export default class RollupEditor extends LightningElement {
     this.getRollup();
   }
 
-  connectedCallback() {
-    this.getRollup();
+  async connectedCallback() {
+    await this.getRollup();
+    await this.getRelationshipFieldOptions();
   }
 
   get rollupCanBeActivated() {
@@ -50,6 +57,16 @@ export default class RollupEditor extends LightningElement {
       this.errors.record = [error.message];
     }
   }
+
+  async getRelationshipFieldOptions(){
+    if(this.rollup.ParentObject__c){
+      this.parentRFieldOptions = await getFieldRelationships({ 'objectName': this.rollup.ParentObject__c });
+    }
+    if(this.rollup.ChildObject__c){
+      this.childRFieldOptions = await getFieldRelationships({ 'objectName': this.rollup.ChildObject__c });
+    }
+  }
+
 
   async runValidate() {
     this.errors = await validateRollupConfig({
@@ -132,6 +149,7 @@ export default class RollupEditor extends LightningElement {
       if(inputElement){
         const attribute = checkboxFields.includes(fieldName) ? 'checked' : 'value';
         this.rollup[fieldName] = inputElement[attribute];
+        console.log(`fieldName (${fieldName}) :  ${inputElement[attribute]}`);
       }
     })
   }
@@ -141,6 +159,7 @@ export default class RollupEditor extends LightningElement {
   parentObjectSelected(event) {
     this.rollup.ParentObject__c = event.detail.selectedRecord;
   }
+
 
   get rollupAsString() {
     return JSON.stringify(this.rollup, null, 2);
