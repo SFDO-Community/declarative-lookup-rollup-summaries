@@ -236,14 +236,14 @@
 
                 <!-- Relationship Field Input -->
                 <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-m-top_x-small">
-                  <lightning-input
-                    type="text"
-                    name="rollup_RelationshipField__c"
+                  <c-autocomplete-combobox
                     data-name="rollup_RelationshipField__c"
                     label="Relationship Field"
-                    placeholder="lookup__c"
                     value={rollup.RelationshipField__c}
-                  ></lightning-input>
+                    options={childRFieldOptions}
+                    placeholder="Lookup__c"
+                    helper-text="All fields are listed. But, relationship fields are recommended."
+                  ></c-autocomplete-combobox>
                   <c-rollup-editor-error
                     errors={errors.RelationshipField__c}
                   ></c-rollup-editor-error>
@@ -300,16 +300,15 @@
             <div  class="slds-section__content slds-grid slds-wrap slds-gutters">
 
                 <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+
                   <!-- Field to Aggregate	 -->
                   <div class="slds-m-top_x-small">
-                    <lightning-input
-                      type="text"
-                      name="rollup_FieldToAggregate__c"
+                    <c-autocomplete-combobox
                       data-name="rollup_FieldToAggregate__c"
                       label="Field to Aggregate"
                       value={rollup.FieldToAggregate__c}
-                      required
-                    ></lightning-input>
+                      options={childRFieldOptions}
+                    ></c-autocomplete-combobox>
                     <c-rollup-editor-error
                       errors={errors.FieldToAggregate__c}
                     ></c-rollup-editor-error>
@@ -347,13 +346,12 @@
 
                   <!-- Aggregate Result Field -->
                   <div class="slds-m-top_x-small">
-                    <lightning-input
-                      type="text"
-                      name="rollup_AggregateResultField__c"
+                    <c-autocomplete-combobox
                       data-name="rollup_AggregateResultField__c"
                       label="Aggregate Result Field"
+                      options={parentRFieldOptions}
                       value={rollup.AggregateResultField__c}
-                    ></lightning-input>
+                    ></c-autocomplete-combobox>
                     <c-rollup-editor-error
                       errors={errors.AggregateResultField__c}
                     ></c-rollup-editor-error>

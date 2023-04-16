@@ -14,6 +14,54 @@ public with sharing class RollupEditorController {
       .Record;
   }
 
+
+  public class SelectOption {
+
+    @AuraEnabled
+    public String value;
+
+    @AuraEnabled
+    public String label;
+
+    @AuraEnabled
+    public String icon;
+
+    @AuraEnabled
+    public String type;
+
+    public SelectOption(String value, String label){
+      this.value = value;
+      this.label = label;
+    }
+
+  }
+
+  @AuraEnabled
+  public static List<SelectOption> getFieldRelationships(String objectName){
+    Map<String, Schema.SobjectField> mapOfFields =  Schema.getGlobalDescribe()
+                                                      .get(objectName)
+                                                      .getDescribe()
+                                                      .fields.getMap();
+
+    SelectOption emptyOption = new SelectOption('', '-- Select --');
+
+    List<SelectOption> options = new List<SelectOption>();
+    options.add(emptyOption);
+
+    for (Schema.SObjectField field : mapOfFields.values()) {
+      Schema.DescribeFieldResult fr = field.getDescribe();
+      String fieldName = fr.getName();
+      String label = fr.getLabel();
+
+      SelectOption option = new SelectOption(fieldName, label);
+      option.type = String.valueof(fr.getType());
+      options.add(option);
+    }
+
+    return options;
+  }
+
+  
   /**
    * returns a map of fieldname => list<errorstring> to use in displaying error in the UI
    * general errors are applied to the 'record' field name
