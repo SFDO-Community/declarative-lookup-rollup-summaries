@@ -1,6 +1,6 @@
 import { LightningElement, api, track } from "lwc";
 
-const DELAY = 300; // timing in miliseconds
+const DELAY = 100; // timing in miliseconds
 
 export default class AutocompleteCombobox extends LightningElement {
 
@@ -11,31 +11,36 @@ export default class AutocompleteCombobox extends LightningElement {
     @api helperText;
 
     @track selectedOption = {};
+    @track _value = ''
     @api 
-    get value(){ return this.selectedOption.value; }
-    set value(selectedValue){
-        if(!selectedValue) return;
-        console.log('selectedValue: ' + selectedValue);
-        this.searchKey = selectedValue;
-        this.selectOptionBySearchKey();
-        this.showSelectionInput();
+    get value(){ return this._value; }
+    set value(val){
+        this._value = val;
+        this.selectOptionByValue();
+        if(this._value){
+            this.showSelectionInput();
+        } else {
+            this.showSearchInput();
+        }
     }
 
+    _firstTimeSetOptions = true;
     @track filteredOptions = [];
-    _firstTimeSetOptions = true; // handle when "Set Value" is executed before "Set Options"
     _options = [];
     @api
     get options(){ return this._options; }
     set options(val){ 
-        if(!val || val.length === 0) return;
-        this._options = val; 
-        this.filterOptionsBySearchKey();
-        if(this._firstTimeSetOptions){
-            this.selectOptionBySearchKey();
+        this._options = val ? val : []; 
+        this.filteredOptions = this._options;
+        this.searchKey = '';
+        this.selectedOption = {};
+        if(this._value){
+            this.selectOptionByValue();
             this.showSelectionInput();
-            this._firstTimeSetOptions = false
+        }else {
+            this.showSearchInput();
         }
-    }
+    }  
 
     @track isLoading = false;
     @track searchKey = ""; 
@@ -75,23 +80,24 @@ export default class AutocompleteCombobox extends LightningElement {
         window.clearTimeout(this.delayTimeout);
         this.searchKey = event.target.value;
         this.delayTimeout = setTimeout(() => { // eslint-disable-line
-            this.filterOptionsBySearchKey();
+            this.filterOptions(this.searchKey);
             this.isLoading = false;
         }, DELAY);
     }
 
     onSelectOption(event) {
-        this.searchKey = event.target.getAttribute("data-name");
-        this.selectOptionBySearchKey();
+        this._value = event.target.getAttribute("data-name");
+        this.selectOptionByValue();
         this.showSelectionInput();
         this.dispatchSelectionEvent()
     }
 
     // method to clear selected lookup record
     onRemoveSelection() {
+        this._value = "";
         this.searchKey = "";
         this.selectedOption = {};
-        this.filterOptionsBySearchKey();
+        this.filteredOptions = this._options;
         this.showSearchInput();
         this.dispatchSelectionEvent();
     }
@@ -99,9 +105,9 @@ export default class AutocompleteCombobox extends LightningElement {
 
 // *** CONTROLLER
 
-    filterOptionsBySearchKey() {
+    filterOptions(searchKey) {
         try {
-            const lowerCaseSearchKey = this.searchKey.toLowerCase();
+            const lowerCaseSearchKey = searchKey.toLowerCase();
             this.filteredOptions = this._options.filter(({value, label}) => {
                 return value.toLowerCase().includes(lowerCaseSearchKey)
                     || label.toLowerCase().includes(lowerCaseSearchKey);
@@ -111,15 +117,16 @@ export default class AutocompleteCombobox extends LightningElement {
         }
     }
 
-    selectOptionBySearchKey(){
+    selectOptionByValue(){
         try{
-            const lowerCaseValue = this.searchKey.toLowerCase();
+            const lowerCaseValue = this._value.toLowerCase();
             this.selectedOption = this._options.find(option => {
                 return option.value.toLowerCase().includes(lowerCaseValue)
             })
-            if(!this.selectedOption) this.selectedOption = {};
+            this.searchKey = this.selectedOption.label;
         }catch(error){
             this.selectedOption = {};
+            this.searchKey = '';
         }
     }
 
@@ -133,8 +140,8 @@ export default class AutocompleteCombobox extends LightningElement {
 // *** UI HELPER ***
 
     showSelectionInput() {
-        if(!this.selectedOption) return;
         try {
+            if(!this.selectedOption.value) return;
             const inputElement = this.template.querySelector(".lookupInputContainer");
             inputElement.classList.remove('slds-is-open');
 
@@ -151,14 +158,18 @@ export default class AutocompleteCombobox extends LightningElement {
     }
 
     showSearchInput(){
-        // remove selected pill and display input field again
-        const searchBoxWrapper = this.template.querySelector(".searchBoxWrapper");
-        searchBoxWrapper.classList.remove("slds-hide");
-        searchBoxWrapper.classList.add("slds-show");
+        try {
+            // remove selected pill and display input field again
+            const searchBoxWrapper = this.template.querySelector(".searchBoxWrapper");
+            searchBoxWrapper.classList.remove("slds-hide");
+            searchBoxWrapper.classList.add("slds-show");
 
-        const pillDiv = this.template.querySelector(".pillDiv");
-        pillDiv.classList.remove("slds-show");
-        pillDiv.classList.add("slds-hide");
+            const pillDiv = this.template.querySelector(".pillDiv");
+            pillDiv.classList.remove("slds-show");
+            pillDiv.classList.add("slds-hide");
+        } catch (error) {
+            console.log(error);
+        }
     }
 
 
