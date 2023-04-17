@@ -37,7 +37,7 @@ public with sharing class RollupEditorController {
   }
 
   @AuraEnabled
-  public static List<SelectOption> getFieldRelationships(String objectName){
+  public static List<SelectOption> getFieldOptions(String objectName){
     Map<String, Schema.SobjectField> mapOfFields =  Schema.getGlobalDescribe()
                                                       .get(objectName)
                                                       .getDescribe()

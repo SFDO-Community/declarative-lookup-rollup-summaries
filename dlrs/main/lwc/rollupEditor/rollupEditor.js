@@ -3,7 +3,7 @@ import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import getRollupConfig from "@salesforce/apex/RollupEditorController.getRollupConfig";
 import validateRollupConfig from "@salesforce/apex/RollupEditorController.validateRollupConfig";
 import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollupConfig";
-import getFieldRelationships from "@salesforce/apex/RollupEditorController.getFieldRelationships";
+import getFieldOptions from "@salesforce/apex/RollupEditorController.getFieldOptions";
 
 export default class RollupEditor extends LightningElement {
   DEFAULT_ROLLUP_VALUES = { Active__c: false };
@@ -60,10 +60,10 @@ export default class RollupEditor extends LightningElement {
 
   async getRelationshipFieldOptions(){
     if(this.rollup.ParentObject__c){
-      this.parentRFieldOptions = await getFieldRelationships({ 'objectName': this.rollup.ParentObject__c });
+      this.parentRFieldOptions = await getFieldOptions({ 'objectName': this.rollup.ParentObject__c });
     }
     if(this.rollup.ChildObject__c){
-      this.childRFieldOptions = await getFieldRelationships({ 'objectName': this.rollup.ChildObject__c });
+      this.childRFieldOptions = await getFieldOptions({ 'objectName': this.rollup.ChildObject__c });
     }
   }
 
