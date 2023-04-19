@@ -58,15 +58,18 @@ export default class RollupEditor extends LightningElement {
     }
   }
 
-  async getRelationshipFieldOptions(){
-    if(this.rollup.ParentObject__c){
-      this.parentRFieldOptions = await getFieldOptions({ 'objectName': this.rollup.ParentObject__c });
+  async getRelationshipFieldOptions() {
+    if (this.rollup.ParentObject__c) {
+      this.parentRFieldOptions = await getFieldOptions({
+        objectName: this.rollup.ParentObject__c
+      });
     }
-    if(this.rollup.ChildObject__c){
-      this.childRFieldOptions = await getFieldOptions({ 'objectName': this.rollup.ChildObject__c });
+    if (this.rollup.ChildObject__c) {
+      this.childRFieldOptions = await getFieldOptions({
+        objectName: this.rollup.ChildObject__c
+      });
     }
   }
-
 
   async runValidate() {
     this.errors = await validateRollupConfig({
@@ -121,37 +124,45 @@ export default class RollupEditor extends LightningElement {
 
   assembleRollupFromForm() {
     const fieldNames = [
-      'Label',
-      'DeveloperName',
-      'Description__c',
-      'RelationshipField__c',
-      'RelationshipCriteria__c',
-      'RelationshipCriteriaFields__c',
-      'FieldToAggregate__c',
-      'FieldToOrderBy__c',
-      'AggregateOperation__c',
-      'AggregateResultField__c',
-      'AggregateAllRows__c',
-      'RowLimit__c',
-      'Active__c', // No Input Element for this field
-      'CalculationMode__c',
-      'CalculationSharingMode__c',
-      'ConcatenateDelimiter__c',
-      'TestCode2__c',
-      'TestCodeParent__c',
-      'TestCodeSeeAllData__c'
+      "Label",
+      "DeveloperName",
+      "Description__c",
+      "RelationshipField__c",
+      "RelationshipCriteria__c",
+      "RelationshipCriteriaFields__c",
+      "FieldToAggregate__c",
+      "FieldToOrderBy__c",
+      "AggregateOperation__c",
+      "AggregateResultField__c",
+      "AggregateAllRows__c",
+      "RowLimit__c",
+      "Active__c", // No Input Element for this field
+      "CalculationMode__c",
+      "CalculationSharingMode__c",
+      "ConcatenateDelimiter__c",
+      "TestCode2__c",
+      "TestCodeParent__c",
+      "TestCodeSeeAllData__c"
     ];
 
-    const checkboxFields = ['Active__c', 'AggregateAllRows__c', 'TestCodeSeeAllData__c'];
+    const checkboxFields = [
+      "Active__c",
+      "AggregateAllRows__c",
+      "TestCodeSeeAllData__c"
+    ];
 
-    fieldNames.forEach(fieldName => {
-      const inputElement = this.template.querySelector(`[data-name="rollup_${fieldName}"]`);
-      if(inputElement){
-        const attribute = checkboxFields.includes(fieldName) ? 'checked' : 'value';
+    fieldNames.forEach((fieldName) => {
+      const inputElement = this.template.querySelector(
+        `[data-name="rollup_${fieldName}"]`
+      );
+      if (inputElement) {
+        const attribute = checkboxFields.includes(fieldName)
+          ? "checked"
+          : "value";
         this.rollup[fieldName] = inputElement[attribute];
         console.log(`fieldName (${fieldName}) :  ${inputElement[attribute]}`);
       }
-    })
+    });
   }
   childObjectSelected(event) {
     this.rollup.ChildObject__c = event.detail.selectedRecord;
@@ -159,7 +170,6 @@ export default class RollupEditor extends LightningElement {
   parentObjectSelected(event) {
     this.rollup.ParentObject__c = event.detail.selectedRecord;
   }
-
 
   get rollupAsString() {
     return JSON.stringify(this.rollup, null, 2);
@@ -184,43 +194,43 @@ export default class RollupEditor extends LightningElement {
     ];
   }
 
-  get calculationModes(){
+  get calculationModes() {
     return [
       { label: "Realtime", value: "Realtime" },
       { label: "Scheduled", value: "Scheduled" },
       { label: "Developer", value: "Developer" },
-      { label: "Process Builder", value: "Process Builder" },
+      { label: "Process Builder", value: "Process Builder" }
     ];
   }
 
-  get calculationSharingModes(){
+  get calculationSharingModes() {
     return [
       { label: "User", value: "User" },
       { label: "System", value: "System" }
     ];
   }
 
-  onToggleSection(event){
-    const sectionName = event.currentTarget.getAttribute('data-section-button');
-    const element = this.template.querySelector(`[data-section-name="${sectionName}"]`);
-    const expandClass = 'slds-is-open';
-    if(element.className.includes(expandClass)){
-      element.className = element.className.replace(expandClass, '');
+  onToggleSection(event) {
+    const sectionName = event.currentTarget.getAttribute("data-section-button");
+    const element = this.template.querySelector(
+      `[data-section-name="${sectionName}"]`
+    );
+    const expandClass = "slds-is-open";
+    if (element.className.includes(expandClass)) {
+      element.className = element.className.replace(expandClass, "");
     } else {
-      element.className += ' ' + expandClass;
+      element.className += " " + expandClass;
     }
   }
 
-  onToggleButtonGroupList(){
-    const elementName = 'expandable-button-list';
+  onToggleButtonGroupList() {
+    const elementName = "expandable-button-list";
     const element = this.template.querySelector(`[data-name="${elementName}"]`);
-    const expandClass = 'slds-is-open';
-    if(element.className.includes(expandClass)){
-      element.className = element.className.replace(expandClass, '');
+    const expandClass = "slds-is-open";
+    if (element.className.includes(expandClass)) {
+      element.className = element.className.replace(expandClass, "");
     } else {
-      element.className += ' ' + expandClass;
+      element.className += " " + expandClass;
     }
   }
-
-
 }
