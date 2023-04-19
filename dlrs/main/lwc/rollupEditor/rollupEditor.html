@@ -1,269 +1,539 @@
 <template>
-  <lightning-card title="Lookup Rollup Summary Creation Wizard">
-    <div slot="actions">
-      <lightning-button-group>
-        <lightning-button label="Save" onclick={runSave}></lightning-button>
-        <lightning-button
-          label="Cancel"
-          onclick={cancelClickHandler}
-        ></lightning-button>
-        <lightning-button
-          label="Activate"
-          onclick={activateClickHandler}
-          if:true={rollupCanBeActivated}
-        ></lightning-button>
-        <lightning-button
-          label="Deactivate"
-          onclick={deactivateClickHandler}
-          if:true={rollupCanBeDeactivated}
-        ></lightning-button>
-        <lightning-button
-          label="Clone"
-          onclick={cloneClickHandler}
-          if:true={rollup.Id}
-        ></lightning-button>
-        <lightning-button
-          label="Delete"
-          onclick={deleteClickHandler}
-          variant="destructive"
-          if:true={rollup.Id}
-        ></lightning-button>
-      </lightning-button-group>
-    </div>
-    <div class="slds-card__body slds-card__body_inner">
-      <!--Name Rollup-->
-      <c-rollup-editor-error errors={errors.record}></c-rollup-editor-error>
-      <div class="slds-box">
-        <lightning-layout class="slds-p-horizontal_medium">
-          <lightning-layout-item size="12" class="slds-form-element_stacked">
-            <div class="slds-text-heading_small slds-border_bottom">
-              1. Name your Rollup
-            </div>
-          </lightning-layout-item>
-        </lightning-layout>
-        <lightning-layout class="slds-p-horizontal_medium">
-          <lightning-layout-item size="6" class="slds-form-element_stacked">
-            <lightning-input
-              type="text"
-              name="rollup_label"
-              data-name="rollup_label"
-              label="Lookup Rollup Summary Label"
-              placeholder="My Rollup Name"
-              value={rollup.Label}
-            ></lightning-input>
 
-            <c-rollup-editor-error
-              errors={errors.Label}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-          <lightning-layout-item size="6" class="slds-form-element_stacked">
-            <lightning-input
-              type="text"
-              name="rollup_DeveloperName"
-              data-name="rollup_DeveloperName"
-              label="Lookup Rollup Summary API Name"
-              placeholder="My_Rollup_Name"
-              disabled={rollup.Id}
-              value={rollup.DeveloperName}
-            ></lightning-input>
-            <c-rollup-editor-error
-              errors={errors.DeveloperName}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-        </lightning-layout>
+  <div class="slds-m-bottom_medium">
+    <article class="slds-card">
+
+      <!-- HEADER -->
+      <div class="slds-card__header slds-grid">
+        <header class="slds-media slds-media_center slds-has-flexi-truncate">
+          <div class="slds-media__body">
+            <h2 class="slds-card__header-title">
+              <div class="slds-card__header-link slds-truncate" title="Lookup Rollup Summary Creation Wizard">
+                <span>Lookup Rollup Summary Creation Wizard</span>
+              </div>
+            </h2>
+          </div>
+          <div class="slds-no-flex">
+              <!-- Show when Screen: Medium (>= 768px) -->
+              <div class="slds-show_medium">
+                <div class="slds-button-group" role="group">
+                  <button class="slds-button slds-button_neutral" onclick={runSave}>Save</button>
+                  <button class="slds-button slds-button_neutral" onclick={activateClickHandler} if:true={rollupCanBeActivated} >Activate</button>
+                  <button class="slds-button slds-button_neutral" onclick={deactivateClickHandler} if:true={rollupCanBeDeactivated}>Deactivate</button>
+                  <button class="slds-button slds-button_neutral" onclick={cancelClickHandler}>Cancel</button>
+                  <div class="slds-dropdown-trigger slds-dropdown-trigger_click slds-button_last" data-name="expandable-button-list">
+                    <button onclick={onToggleButtonGroupList} class="slds-button slds-button_icon slds-button_icon-border-filled" aria-haspopup="true" aria-expanded="true" title="Show More">
+                      <svg class="slds-button__icon" aria-hidden="true">
+                        <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#down"></use>
+                      </svg>
+                      <span class="slds-assistive-text">Show More</span>
+                    </button>
+
+                    <div class="slds-dropdown slds-dropdown_right slds-dropdown_actions">
+                      <ul class="slds-dropdown__list" role="menu">
+                        <li class="slds-dropdown__item" role="presentation" onclick={cloneClickHandler} if:true={rollup.Id}>
+                          <a href="#" role="menuitem" tabindex="0">
+                            <span class="slds-truncate" title="Clone">Clone</span>
+                          </a>
+                        </li>
+                        <li class="slds-dropdown__item" role="presentation" onclick={deleteClickHandler} if:true={rollup.Id}>
+                          <a href="#" role="menuitem" tabindex="-1">
+                            <span class="slds-truncate slds-text-color_destructive">Delete</span>
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Show when Screen: Small (< 768px) -->
+              <div class="slds-hide_medium">
+                <div class="slds-button-group" role="group">
+                  <button class="slds-button slds-button_neutral" onclick={runSave}>Save</button>
+                  <div class="slds-dropdown-trigger slds-dropdown-trigger_click slds-button_last" data-name="expandable-button-list">
+                    <button onclick={onToggleButtonGroupList} class="slds-button slds-button_icon slds-button_icon-border-filled" aria-haspopup="true" aria-expanded="true" title="Show More">
+                      <svg class="slds-button__icon" aria-hidden="true">
+                        <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#down"></use>
+                      </svg>
+                      <span class="slds-assistive-text">Show More</span>
+                    </button>
+                    <div class="slds-dropdown slds-dropdown_right slds-dropdown_actions">
+                      <ul class="slds-dropdown__list" role="menu">
+                        <li class="slds-dropdown__item" role="presentation" onclick={activateClickHandler} if:true={rollupCanBeActivated}>
+                          <a href="#" role="menuitem" tabindex="0">
+                            <span class="slds-truncate" title="Activate">Activate</span>
+                          </a>
+                        </li>
+                        <li class="slds-dropdown__item" role="presentation" onclick={deactivateClickHandler} if:true={rollupCanBeDeactivated}>
+                          <a href="#" role="menuitem" tabindex="0">
+                            <span class="slds-truncate" title="Deactivate">Deactivate</span>
+                          </a>
+                        </li>
+                        <li class="slds-dropdown__item" role="presentation" onclick={cancelClickHandler}>
+                          <a href="#" role="menuitem" tabindex="0">
+                            <span class="slds-truncate" title="Cancel">Cancel</span>
+                          </a>
+                        </li>
+                        <li class="slds-dropdown__item" role="presentation" onclick={cloneClickHandler} if:true={rollup.Id}>
+                          <a href="#" role="menuitem" tabindex="0">
+                            <span class="slds-truncate" title="Clone">Clone</span>
+                          </a>
+                        </li>
+                        <li class="slds-dropdown__item" role="presentation" onclick={deleteClickHandler} if:true={rollup.Id}>
+                          <a href="#" role="menuitem" tabindex="-1">
+                            <span class="slds-truncate slds-text-color_destructive">Delete</span>
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+        </header>
       </div>
-      <!--Pick Objects-->
-      <div class="slds-box">
-        <lightning-layout class="slds-p-horizontal_medium">
-          <lightning-layout-item size="12" class="slds-form-element_stacked">
-            <div class="slds-text-heading_small slds-border_bottom">
-              2. Pick the Parent object you want to roll up to, and then the
-              Child object that you want to roll up from
+
+      <!-- BODY -->
+      <div class="slds-card__body slds-card__body_inner">
+
+        <c-rollup-editor-error errors={errors.record}></c-rollup-editor-error>
+
+        <!-- Rollup Name Section -->
+        <div class="slds-m-top_large">
+          <div class="slds-section slds-is-open" data-section-name="section_information">
+            <h3 class="slds-section__title">
+              <button onclick={onToggleSection}  data-section-button="section_information" class="slds-button slds-section__title-action">
+                <svg class="slds-section__title-action-icon slds-button__icon slds-button__icon_left" >
+                  <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#switch"></use>
+                </svg>
+                <span class="slds-truncate" title="Information">Information</span>
+              </button>
+            </h3>
+            <div class="slds-section__content" >
+
+              <div class="slds-grid slds-gutters slds-wrap">
+
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-top_x-small">
+                  <!-- Lookup Rollup Summary Label -->
+                  <lightning-input
+                    type="text"
+                    name="rollup_Label"
+                    data-name="rollup_Label"
+                    label="Lookup Rollup Summary Label"
+                    placeholder="My Rollup Name"
+                    value={rollup.Label}
+                  ></lightning-input>
+                  <c-rollup-editor-error
+                    errors={errors.Label}
+                  ></c-rollup-editor-error>
+                </div>
+
+                  <!-- Lookup Rollup Summary API Name -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-top_x-small">
+                  <lightning-input
+                    type="text"
+                    name="rollup_DeveloperName"
+                    data-name="rollup_DeveloperName"
+                    label="Lookup Rollup Summary API Name"
+                    placeholder="My_Rollup_Name"
+                    disabled={rollup.Id}
+                    value={rollup.DeveloperName}
+                  ></lightning-input>
+                  <c-rollup-editor-error
+                    errors={errors.DeveloperName}
+                  ></c-rollup-editor-error>
+                </div>
+
+                <!-- Description -->
+                <div class="slds-col slds-size_1-of-1 slds-m-top_x-small">
+                  <lightning-textarea
+                    name="rollup_Description__c"
+                    data-name="rollup_Description__c"
+                    label="Description"
+                    value={rollup.Description__c}
+                    maxlength="255"
+                  ></lightning-textarea>
+                  <c-rollup-editor-error
+                    errors={errors.Description__c}
+                  ></c-rollup-editor-error>
+                </div>
+
+              </div>
             </div>
-          </lightning-layout-item>
-        </lightning-layout>
-        <lightning-layout class="slds-p-horizontal_medium">
-          <lightning-layout-item size="6" class="slds-form-element_stacked">
-            <c-object-selector
-              label="Parent Object"
-              current-selection={rollup.ParentObject__c}
-              onlookupupdate={parentObjectSelected}
-            ></c-object-selector>
-            <c-rollup-editor-error
-              errors={errors.ParentObject__c}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-          <lightning-layout-item size="6" class="slds-form-element_stacked">
-            <c-object-selector
-              label="Child Object"
-              current-selection={rollup.ChildObject__c}
-              onlookupupdate={childObjectSelected}
-            ></c-object-selector>
-            <c-rollup-editor-error
-              errors={errors.ChildObject__c}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-        </lightning-layout>
-      </div>
-      <!--Set Relationship-->
-      <div class="slds-box">
-        <lightning-layout class="slds-p-horizontal_medium">
-          <lightning-layout-item size="12" class="slds-form-element_stacked">
-            <div class="slds-text-heading_small slds-border_bottom">
-              3. Setup the Relationship
+          </div>
+        </div>
+
+        <!-- Lookup Object Section -->
+        <div class="slds-m-top_large">
+
+          <div class="slds-section slds-is-open" data-section-name="section_select-object">
+            <h3 class="slds-section__title">
+              <button onclick={onToggleSection} data-section-button="section_select-object" class="slds-button slds-section__title-action">
+                <svg class="slds-section__title-action-icon slds-button__icon slds-button__icon_left" >
+                  <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#switch"></use>
+                </svg>
+                <span class="slds-truncate" title="Select Object">Select Object</span>
+              </button>
+            </h3>
+            <div  class="slds-section__content">
+              
+              <div class="slds-grid slds-gutters slds-wrap">
+
+                <!-- Parent Object Combobox Input -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-top_x-small">
+
+                  <c-object-selector
+                    label="Parent Object"
+                    current-selection={rollup.ParentObject__c}
+                    onlookupupdate={parentObjectSelected}
+                  ></c-object-selector>
+
+                  <c-rollup-editor-error
+                    errors={errors.ParentObject__c}
+                  ></c-rollup-editor-error>
+
+                </div>
+
+                <!-- Child Object Combobox Input -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-top_x-small">
+
+                  <c-object-selector
+                    label="Child Object"
+                    current-selection={rollup.ChildObject__c}
+                    onlookupupdate={childObjectSelected}
+                  ></c-object-selector>
+
+                  <c-rollup-editor-error
+                    errors={errors.ChildObject__c}
+                  ></c-rollup-editor-error>
+
+                </div>
+
+              </div>
             </div>
-          </lightning-layout-item>
-        </lightning-layout>
-        <lightning-layout class="slds-p-horizontal_medium">
-          <lightning-layout-item size="4" class="slds-form-element_stacked">
-            <lightning-input
-              type="text"
-              name="rollup_relationship_field"
-              data-name="rollup_relationship_field"
-              label="Relationship Field"
-              placeholder="lookup__c"
-              value={rollup.RelationshipField__c}
-            ></lightning-input>
-            <c-rollup-editor-error
-              errors={errors.RelationshipField__c}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-          <lightning-layout-item size="4" class="slds-form-element_stacked">
-            <lightning-input
-              type="text"
-              name="rollup_relationship_criteria"
-              data-name="rollup_relationship_criteria"
-              label="Relationship Criteria"
-              placeholder="Status__c = 'Closed' AND Days__c > 30"
-              value={rollup.RelationshipCriteria__c}
-              maxlength="255"
-            ></lightning-input>
-            <c-rollup-editor-error
-              errors={errors.RelationshipCriteria__c}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-          <lightning-layout-item size="4" class="slds-form-element_stacked">
-            <lightning-textarea
-              name="rollup_relationship_criteria_fields"
-              data-name="rollup_relationship_criteria_fields"
-              label="Relationship Criteria Fields"
-              placeholder="Status__c, Days__c"
-              value={rollup.RelationshipCriteriaFields__c}
-              maxlength="255"
-            ></lightning-textarea>
-            <c-rollup-editor-error
-              errors={errors.RelationshipCriteriaFields__c}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-        </lightning-layout>
-      </div>
-      <!--Summary settings-->
-      <div class="slds-box">
-        <lightning-layout class="slds-p-horizontal_medium">
-          <lightning-layout-item size="12" class="slds-form-element_stacked">
-            <div class="slds-text-heading_small slds-border_bottom">
-              4. Define what to Summarize
+          </div>
+        </div>
+
+        <!-- Setup Relationship Section -->
+        <div class="slds-m-top_large">
+
+          <div class="slds-section slds-is-open" data-section-name="section_setup-relationship">
+            <h3 class="slds-section__title">
+
+              <button onclick={onToggleSection} data-section-button="section_setup-relationship"  class="slds-button slds-section__title-action">
+                <svg class="slds-section__title-action-icon slds-button__icon slds-button__icon_left" >
+                  <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#switch"></use>
+                </svg>
+
+                <span class="slds-truncate" title="Setup Relationship">Setup Relationship</span>
+              </button>
+
+            </h3>
+            <div  class="slds-section__content">
+
+              <div class="slds-grid slds-gutters slds-wrap">
+
+                <!-- Relationship Field Input -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-m-top_x-small">
+                  <c-autocomplete-combobox
+                    data-name="rollup_RelationshipField__c"
+                    label="Relationship Field"
+                    value={rollup.RelationshipField__c}
+                    options={childRFieldOptions}
+                    placeholder="Lookup__c"
+                    helper-text="All fields are listed. But, relationship fields are recommended."
+                  ></c-autocomplete-combobox>
+                  <c-rollup-editor-error
+                    errors={errors.RelationshipField__c}
+                  ></c-rollup-editor-error>
+                </div>
+
+                <!-- Relationship Criteria Input -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-m-top_x-small">
+                  <lightning-input
+                    type="text"
+                    name="rollup_RelationshipCriteria__c"
+                    data-name="rollup_RelationshipCriteria__c"
+                    label="Relationship Criteria"
+                    placeholder="Status__c = 'Closed' AND Days__c > 30"
+                    value={rollup.RelationshipCriteria__c}
+                    maxlength="255"
+                  ></lightning-input>
+                  <c-rollup-editor-error
+                    errors={errors.RelationshipCriteria__c}
+                  ></c-rollup-editor-error>
+                </div>
+
+                <!-- Relationship Criteria Input -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-m-top_x-small">
+                  <lightning-textarea
+                    name="rollup_RelationshipCriteriaFields__c"
+                    data-name="rollup_RelationshipCriteriaFields__c"
+                    label="Relationship Criteria Fields"
+                    placeholder="Status__c, Days__c"
+                    value={rollup.RelationshipCriteriaFields__c}
+                    maxlength="255"
+                  ></lightning-textarea>
+                  <c-rollup-editor-error
+                    errors={errors.RelationshipCriteriaFields__c}
+                  ></c-rollup-editor-error>
+                </div>
+
+              </div>
             </div>
-            <p>
-              Select what field you want to rollup, the type of rollup, and what
-              field on the Parent object to store the result.
-            </p>
-          </lightning-layout-item>
-        </lightning-layout>
-        <lightning-layout class="slds-p-horizontal_medium">
-          <lightning-layout-item size="4" class="slds-form-element_stacked">
-            <lightning-input
-              type="text"
-              name="rollup_FieldToAggregate__c"
-              data-name="rollup_FieldToAggregate__c"
-              label="Field To Aggregate"
-              placeholder="Days__c"
-              value={rollup.FieldToAggregate__c}
-            ></lightning-input>
-            <c-rollup-editor-error
-              errors={errors.FieldToAggregate__c}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-          <lightning-layout-item size="4" class="slds-form-element_stacked">
-            <lightning-combobox
-              name="rollup_AggregateOperation__c"
-              data-name="rollup_AggregateOperation__c"
-              label="Aggregate Operation"
-              placeholder="Select"
-              options={aggregateOptions}
-              value={rollup.AggregateOperation__c}
-              onchange={handleChange}
-            ></lightning-combobox>
-            <c-rollup-editor-error
-              errors={errors.AggregateOperation__c}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-          <lightning-layout-item size="4" class="slds-form-element_stacked">
-            <lightning-input
-              name="rollup_AggregateResultField__c"
-              data-name="rollup_AggregateResultField__c"
-              label="Aggregate Result Field"
-              placeholder="Total__c"
-              value={rollup.AggregateResultField__c}
-            ></lightning-input>
-            <c-rollup-editor-error
-              errors={errors.AggregateResultField__c}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-        </lightning-layout>
-        <lightning-layout class="slds-p-horizontal_medium">
-          <lightning-layout-item size="4" class="slds-form-element_stacked">
-            <h2 class="header">Aggregate All Rows</h2>
-            <lightning-input
-              type="checkbox"
-              name="rollup_AggregateAllRows__c"
-              data-name="rollup_AggregateAllRows__c"
-              label="Include Deleted"
-              value={rollup.AggregateAllRows__c}
-            ></lightning-input>
-            <c-rollup-editor-error
-              errors={errors.AggregateAllRows__c}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-          <lightning-layout-item size="4" class="slds-form-element_stacked">
-            <lightning-input
-              type="number"
-              name="rollup_RowLimit__c"
-              data-name="rollup_RowLimit__c"
-              label="Row Limit"
-              placeholder="0"
-              value={rollup.RowLimit__c}
-            ></lightning-input>
-            <c-rollup-editor-error
-              errors={errors.RowLimit__c}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-          <lightning-layout-item size="4" class="slds-form-element_stacked">
-            <lightning-input
-              type="text"
-              name="rollup_ConcatenateDelimiter__c"
-              data-name="rollup_ConcatenateDelimiter__c"
-              label="Concatenate Delimiter"
-              value={rollup.ConcatenateDelimiter__c}
-            ></lightning-input>
-            <c-rollup-editor-error
-              errors={errors.ConcatenateDelimiter__c}
-            ></c-rollup-editor-error>
-          </lightning-layout-item>
-        </lightning-layout>
-        <lightning-layout horizontal-align="center">
-          <lightning-layout-item>
-            <lightning-button
-              label="Save"
-              variant="brand"
-              onclick={runSave}
-            ></lightning-button>
-          </lightning-layout-item>
-        </lightning-layout>
+          </div>
+        </div>
+
+        <!-- Rollup Details Section -->
+        <div class="slds-m-top_large">
+          <div class="slds-section slds-is-open" data-section-name="section_rollup-details">
+            <h3 class="slds-section__title">
+              <button onclick={onToggleSection} data-section-button="section_rollup-details" class="slds-button slds-section__title-action">
+                <svg class="slds-section__title-action-icon slds-button__icon slds-button__icon_left" >
+                  <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#switch"></use>
+                </svg>
+                <span class="slds-truncate" title="Rollup Details">Rollup Details</span>
+              </button>
+            </h3>
+
+            <div  class="slds-section__content slds-grid slds-wrap slds-gutters">
+
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+
+                  <!-- Field to Aggregate	 -->
+                  <div class="slds-m-top_x-small">
+                    <c-autocomplete-combobox
+                      data-name="rollup_FieldToAggregate__c"
+                      label="Field to Aggregate"
+                      value={rollup.FieldToAggregate__c}
+                      options={childRFieldOptions}
+                    ></c-autocomplete-combobox>
+                    <c-rollup-editor-error
+                      errors={errors.FieldToAggregate__c}
+                    ></c-rollup-editor-error>
+                  </div>
+
+                  <!-- Field to Order By	 -->
+                  <div class="slds-m-top_x-small">
+                    <lightning-input
+                      type="text"
+                      name="rollup_FieldToOrderBy__c"
+                      data-name="rollup_FieldToOrderBy__c"
+                      label="Field to Order By"
+                      value={rollup.FieldToOrderBy__c}
+                    ></lightning-input>
+                    <c-rollup-editor-error
+                      errors={errors.FieldToOrderBy__c}
+                    ></c-rollup-editor-error>
+                  </div>
+
+                  <!-- Aggregate Options -->
+                  <div class="slds-m-top_x-small">
+                    <lightning-combobox
+                      name="rollup_AggregateOperation__c"
+                      data-name="rollup_AggregateOperation__c"
+                      label="Aggregate Operation"
+                      placeholder="Select"
+                      options={aggregateOptions}
+                      value={rollup.AggregateOperation__c}
+                      required
+                    ></lightning-combobox>
+                    <c-rollup-editor-error
+                      errors={errors.FieldToOrderBy__c}
+                    ></c-rollup-editor-error>
+                  </div>
+
+                  <!-- Aggregate Result Field -->
+                  <div class="slds-m-top_x-small">
+                    <c-autocomplete-combobox
+                      data-name="rollup_AggregateResultField__c"
+                      label="Aggregate Result Field"
+                      options={parentRFieldOptions}
+                      value={rollup.AggregateResultField__c}
+                    ></c-autocomplete-combobox>
+                    <c-rollup-editor-error
+                      errors={errors.AggregateResultField__c}
+                    ></c-rollup-editor-error>
+                  </div>
+
+                </div>
+
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+
+                  <!-- Concatenate Delimiter -->
+                  <div class="slds-m-top_x-small">
+                    <lightning-input
+                      type="text"
+                      name="rollup_ConcatenateDelimiter__c"
+                      data-name="rollup_ConcatenateDelimiter__c"
+                      label="Concatenate Delimiter"
+                      value={rollup.ConcatenateDelimiter__c}
+                    ></lightning-input>
+                    <c-rollup-editor-error
+                      errors={errors.ConcatenateDelimiter__c}
+                    ></c-rollup-editor-error>
+                  </div>
+
+                  <!-- Row Limit -->
+                  <div class="slds-m-top_x-small">
+                    <lightning-input
+                      type="number"
+                      name="rollup_RowLimit__c"
+                      data-name="rollup_RowLimit__c"
+                      label="Row Limit"
+                      value={rollup.RowLimit__c}
+                    ></lightning-input>
+                    <c-rollup-editor-error
+                      errors={errors.RowLimit__c}
+                    ></c-rollup-editor-error>
+                  </div>
+
+                  <!-- Aggregate All Rows -->
+                  <div class="slds-m-top_x-small">
+                    <lightning-input
+                      type="checkbox"
+                      name="rollup_AggregateAllRows__c"
+                      data-name="rollup_AggregateAllRows__c"
+                      label="Aggregate All Rows"
+                      value={rollup.AggregateAllRows__c}
+                      field-level-help="Include deleted records"
+                      variant="label-stacked"
+                      style="padding-left: 0px !important"
+                    ></lightning-input>
+                    <c-rollup-editor-error
+                      errors={errors.AggregateAllRows__c}
+                    ></c-rollup-editor-error>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Calculation Mode Section -->
+        <div class="slds-m-top_large">
+          <div class="slds-section slds-is-open" data-section-name="section_calculation-mode">
+            <h3 class="slds-section__title">
+              <button onclick={onToggleSection}  data-section-button="section_calculation-mode" class="slds-button slds-section__title-action">
+                <svg class="slds-section__title-action-icon slds-button__icon slds-button__icon_left" >
+                  <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#switch"></use>
+                </svg>
+                <span class="slds-truncate" title="Calculation Mode">Calculation Mode</span>
+              </button>
+            </h3>
+            <div class="slds-section__content" >
+
+              <div class="slds-grid slds-gutters slds-wrap">
+
+                <!-- Calculation mode -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-top_x-small">
+                      <lightning-combobox
+                        name="rollup_CalculationMode__c"
+                        data-name="rollup_CalculationMode__c"
+                        label="Calculation Mode"
+                        placeholder="Select"
+                        options={calculationModes}
+                        value={rollup.CalculationMode__c}
+                        required
+                      ></lightning-combobox>
+                      <c-rollup-editor-error
+                        errors={errors.FieldToOrderBy__c}
+                      ></c-rollup-editor-error>
+                  </div>
+
+                <!-- Calculation Sharing Mode -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-top_x-small">
+                      <lightning-combobox
+                        name="rollup_CalculationSharingMode__c"
+                        data-name="rollup_CalculationSharingMode__c"
+                        label="Calculation Sharing Mode"
+                        placeholder="Select"
+                        options={calculationSharingModes}
+                        value={rollup.CalculationSharingMode__c}
+                        required
+                      ></lightning-combobox>
+                      <c-rollup-editor-error
+                        errors={errors.FieldToOrderBy__c}
+                      ></c-rollup-editor-error>
+                  </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advanced Section -->
+        <div class="slds-m-top_large">
+          <div class="slds-section" data-section-name="section_advanced">
+            <h3 class="slds-section__title">
+              <button onclick={onToggleSection} data-section-button="section_advanced"  class="slds-button slds-section__title-action">
+                <svg class="slds-section__title-action-icon slds-button__icon slds-button__icon_left" >
+                  <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#switch"></use>
+                </svg>
+                <span class="slds-truncate" title="Advanced">Advanced</span>
+              </button>
+            </h3>
+            <div  class="slds-section__content">
+              <div class="slds-grid slds-gutters slds-wrap">
+
+                <!-- Test Code (Child Object)	-->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-m-top_x-small">
+                  <lightning-textarea
+                    name="rollup_TestCode2__c"
+                    data-name="rollup_TestCode2__c"
+                    label="Test Code (Child Object)"
+                    value={rollup.TestCode2__c}
+                    maxlength="131072"
+                  ></lightning-textarea>
+                  <c-rollup-editor-error
+                    errors={errors.TestCode2__c}
+                  ></c-rollup-editor-error>
+                </div>
+
+
+                <!-- Test Code (Parent Object) -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-m-top_x-small">
+                  <lightning-textarea
+                    name="rollup_TestCodeParent__c"
+                    data-name="rollup_TestCodeParent__c"
+                    label="Test Code (Parent Object)"
+                    value={rollup.TestCodeParent__c}
+                    maxlength="131072"
+                  ></lightning-textarea>
+                  <c-rollup-editor-error
+                    errors={errors.TestCodeParent__c}
+                  ></c-rollup-editor-error>
+                </div>
+
+                  <!-- Test Code See All Data -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-m-top_x-small">
+                    <lightning-input
+                      type="checkbox"
+                      name="rollup_TestCodeSeeAllData__c"
+                      data-name="rollup_TestCodeSeeAllData__c"
+                      label="Test Code See All Data"
+                      value={rollup.TestCodeSeeAllData__c}
+                      variant="label-stacked"
+                      style="padding-left: 0px !important"
+                    ></lightning-input>
+                    <c-rollup-editor-error
+                      errors={errors.TestCodeSeeAllData__c}
+                    ></c-rollup-editor-error>
+                  </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
       </div>
-      <div class="slds-box">
-        <c-rollup-status-check name={rollup.Id}></c-rollup-status-check>
-      </div>
-    </div>
-  </lightning-card>
+
+    </article>
+  </div>
+
+  <c-rollup-status-check name={rollup.Id}></c-rollup-status-check>
+
 </template>
