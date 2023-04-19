@@ -13,6 +13,11 @@ Part of the Salesforce.org [Commons program](https://help.salesforce.com/s/artic
 - Define filter criteria on rollups, like rolling up Closed Won Opportunity Amount onto Account.
 - Run rollups in Realtime, Scheduled and Developer API modes.
 
+### Latest Release Links
+Metadeploy: https://install.salesforce.org/products/dlrs/latest
+Production (2.17): https://login.salesforce.com/packaging/installPackage.apexp?p0=04t5p000000XdcIAAS
+Sandbox (2.17): https://test.salesforce.com/packaging/installPackage.apexp?p0=04t5p000000XdcIAAS
+
 ## Read All About It
 - [Documentation](https://sfdo-community-sprints.github.io/DLRS-Documentation/)
 - [Install DLRS](https://sfdo-community-sprints.github.io/DLRS-Documentation/Installation/)
