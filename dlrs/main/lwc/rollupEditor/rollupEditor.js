@@ -26,6 +26,7 @@ export default class RollupEditor extends LightningElement {
     return this._rollupName;
   }
   set rollupName(val) {
+    this.errors = {}; // clear any existing error
     this._rollupName = val;
 
     this.getRollup();
