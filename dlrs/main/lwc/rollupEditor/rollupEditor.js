@@ -38,6 +38,10 @@ export default class RollupEditor extends LightningElement {
     await this.getRelationshipFieldOptions();
   }
 
+  get cardHeader(){
+    return this.rollup.DeveloperName ? this.rollup.DeveloperName : 'Lookup Rollup Summary Creation Wizard'
+  }
+
   get saveButtonLabel(){
     return this.rollup.Id ? 'Save' : 'Create'
   }
