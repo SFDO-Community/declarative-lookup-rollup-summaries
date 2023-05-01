@@ -14,9 +14,8 @@ Part of the Salesforce.org [Commons program](https://help.salesforce.com/s/artic
 - Run rollups in Realtime, Scheduled and Developer API modes.
 
 ### Latest Release Links
-Metadeploy: https://install.salesforce.org/products/dlrs/latest
-Production (2.17): https://login.salesforce.com/packaging/installPackage.apexp?p0=04t5p000000XdcIAAS
-Sandbox (2.17): https://test.salesforce.com/packaging/installPackage.apexp?p0=04t5p000000XdcIAAS
+- [Install DLRS](https://install.salesforce.org/products/dlrs/latest)
+- [View current and past releases](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/releases)
 
 ## Read All About It
 - [Documentation](https://sfdo-community-sprints.github.io/DLRS-Documentation/)
