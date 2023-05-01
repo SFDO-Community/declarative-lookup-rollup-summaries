@@ -6,6 +6,7 @@ import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollup
 import getFieldOptions from "@salesforce/apex/RollupEditorController.getFieldOptions";
 
 export default class RollupEditor extends LightningElement {
+  isLoading = false;
   DEFAULT_ROLLUP_VALUES = { Active__c: false };
   @track
   rollup = this.DEFAULT_ROLLUP_VALUES;
@@ -35,6 +36,10 @@ export default class RollupEditor extends LightningElement {
   async connectedCallback() {
     await this.getRollup();
     await this.getRelationshipFieldOptions();
+  }
+
+  get saveButtonLabel(){
+    return this.rollup.Id ? 'Save' : 'Create'
   }
 
   get rollupCanBeActivated() {
@@ -106,6 +111,7 @@ export default class RollupEditor extends LightningElement {
   }
 
   async runSave() {
+    this.isLoading = true;
     this.assembleRollupFromForm();
     await this.runValidate();
     if (Object.keys(this.errors).length > 0) {
@@ -121,6 +127,7 @@ export default class RollupEditor extends LightningElement {
       variant: "info"
     });
     this.dispatchEvent(evt);
+    this.isLoading = false;
   }
 
   assembleRollupFromForm() {
