@@ -23,7 +23,7 @@
                   class="slds-card__header-link slds-truncate"
                   title="Lookup Rollup Summary Creation Wizard"
                 >
-                  <span>Lookup Rollup Summary Creation Wizard</span>
+                  <span>{cardHeader}</span>
                 </div>
               </h2>
             </div>
@@ -256,6 +256,7 @@
 
                   <!-- Lookup Rollup Summary API Name -->
                   <div
+                    if:false={rollup.Id}
                     class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-top_x-small"
                   >
                     <lightning-input
