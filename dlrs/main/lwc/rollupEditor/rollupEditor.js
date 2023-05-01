@@ -30,13 +30,19 @@ export default class RollupEditor extends LightningElement {
     this.errors = {}; // clear any existing error
     this._rollupName = val;
 
-    this.getRollup();
+    this.getRollup()
+    .then(() => {
+      this.getRelationshipFieldOptions(this.rollup.ParentObject__c)
+      .then(res =>{
+        this.parentRFieldOptions = res; 
+      })
+      this.getRelationshipFieldOptions(this.rollup.ChildObject__c)
+      .then(res =>{
+        this.childRFieldOptions = res; 
+      })
+    })
   }
 
-  async connectedCallback() {
-    await this.getRollup();
-    await this.getRelationshipFieldOptions();
-  }
 
   get cardHeader(){
     return this.rollup.DeveloperName ? this.rollup.DeveloperName : 'Lookup Rollup Summary Creation Wizard'
@@ -65,19 +71,6 @@ export default class RollupEditor extends LightningElement {
       });
     } catch (error) {
       this.errors.record = [error.message];
-    }
-  }
-
-  async getRelationshipFieldOptions() {
-    if (this.rollup.ParentObject__c) {
-      this.parentRFieldOptions = await getFieldOptions({
-        objectName: this.rollup.ParentObject__c
-      });
-    }
-    if (this.rollup.ChildObject__c) {
-      this.childRFieldOptions = await getFieldOptions({
-        objectName: this.rollup.ChildObject__c
-      });
     }
   }
 
@@ -176,11 +169,32 @@ export default class RollupEditor extends LightningElement {
       }
     });
   }
+
   childObjectSelected(event) {
     this.rollup.ChildObject__c = event.detail.selectedRecord;
+    this.getRelationshipFieldOptions(this.rollup.ChildObject__c)
+    .then(res => { this.childRFieldOptions = res; });
   }
   parentObjectSelected(event) {
     this.rollup.ParentObject__c = event.detail.selectedRecord;
+    this.getRelationshipFieldOptions(this.rollup.ParentObject__c)
+    .then(res => { this.parentRFieldOptions = res; });
+  }
+
+  getRelationshipFieldOptions(objectName){
+    return new Promise((resolve) => {
+      if(!objectName || objectName.trim().length === 0) resolve([])
+      else {
+        getFieldOptions({ objectName: objectName })
+        .then(res => {
+          resolve(res);
+        }).catch(err => {
+          console.log(`Error in Get Field Options of ${objectName}: `);
+          console.error(err);
+          resolve([]);
+        })
+      }
+    })
   }
 
   get rollupAsString() {
