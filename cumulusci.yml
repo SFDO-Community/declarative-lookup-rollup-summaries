@@ -60,11 +60,15 @@ flows:
     steps:
       1.5:
         task: deploy_test_config
+      1.6:
+        task: deploy_test_triggers
 
   ci_release:
     steps:
       1.5:
         task: deploy_test_config
+      1.6:
+        task: deploy_test_triggers
 
   config_apextest:
     steps:
