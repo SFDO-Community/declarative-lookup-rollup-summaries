@@ -128,6 +128,11 @@ export default class AutocompleteCombobox extends LightningElement {
   }
 
   selectOptionByValue() {
+    if (!this._value) {
+      this.selectedOptions = {};
+      this.searchKey = "";
+      return;
+    }
     try {
       const lowerCaseValue = this._value.toLowerCase();
       this.selectedOption = this._options.find((option) => {
@@ -153,15 +158,21 @@ export default class AutocompleteCombobox extends LightningElement {
     try {
       if (!this.selectedOption.value) return;
       const inputElement = this.template.querySelector(".lookupInputContainer");
-      inputElement.classList.remove("slds-is-open");
+      if (inputElement) {
+        inputElement.classList.remove("slds-is-open");
+      }
 
       const searchBoxWrapper = this.template.querySelector(".searchBoxWrapper");
-      searchBoxWrapper.classList.remove("slds-show");
-      searchBoxWrapper.classList.add("slds-hide");
+      if (searchBoxWrapper) {
+        searchBoxWrapper.classList.remove("slds-show");
+        searchBoxWrapper.classList.add("slds-hide");
+      }
 
       const pillDiv = this.template.querySelector(".pillDiv");
-      pillDiv.classList.remove("slds-hide");
-      pillDiv.classList.add("slds-show");
+      if (pillDiv) {
+        pillDiv.classList.remove("slds-hide");
+        pillDiv.classList.add("slds-show");
+      }
     } catch (err) {
       console.log(err);
     }
@@ -171,12 +182,16 @@ export default class AutocompleteCombobox extends LightningElement {
     try {
       // remove selected pill and display input field again
       const searchBoxWrapper = this.template.querySelector(".searchBoxWrapper");
-      searchBoxWrapper.classList.remove("slds-hide");
-      searchBoxWrapper.classList.add("slds-show");
+      if (searchBoxWrapper) {
+        searchBoxWrapper.classList.remove("slds-hide");
+        searchBoxWrapper.classList.add("slds-show");
+      }
 
       const pillDiv = this.template.querySelector(".pillDiv");
-      pillDiv.classList.remove("slds-show");
-      pillDiv.classList.add("slds-hide");
+      if (pillDiv) {
+        pillDiv.classList.remove("slds-show");
+        pillDiv.classList.add("slds-hide");
+      }
     } catch (error) {
       console.log(error);
     }

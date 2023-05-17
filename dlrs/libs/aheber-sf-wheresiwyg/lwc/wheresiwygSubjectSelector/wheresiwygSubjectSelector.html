@@ -1,0 +1,129 @@
+<template>
+  <div class="slds-form-element">
+    <label class="slds-form-element__label combobox-id-33 slds-assistive-text"
+      >Condition</label
+    >
+    <div class="slds-form-element__control">
+      <div class="slds-combobox-group slds-has-selection">
+        <div class="" if:true={hasSelectedFields}>
+          <div class="slds-form-element">
+            <label
+              class="slds-form-element__label slds-assistive-text"
+              for="combobox-id-34"
+              id="combobox-label-id-130"
+              >Fields</label
+            >
+            <div class="slds-form-element__control">
+              <div class="slds-combobox_container">
+                <div
+                  class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right"
+                  role="none"
+                >
+                  <div
+                    role="combobox"
+                    tabindex="0"
+                    class="slds-input_faux slds-combobox__input slds-combobox__input-value"
+                    aria-labelledby="combobox-label-id-130 combobox-id-34-selected-value"
+                    id="combobox-id-34-selected-value"
+                    aria-controls="objectswitcher-listbox-id-1"
+                    aria-expanded="false"
+                    aria-haspopup="listbox"
+                  >
+                    <template
+                      for:each={selectedFields}
+                      for:item="f"
+                      for:index="idx"
+                      ><span key={f}>{f}</span></template
+                    >
+                  </div>
+                  <lightning-icon
+                    onclick={handleRemoveSubject}
+                    size="small"
+                    icon-name="utility:close"
+                  ></lightning-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="slds-combobox_container slds-combobox-addon_end">
+          <div
+            class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open"
+            id="primary-combobox-id-4"
+          >
+            <div
+              class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right"
+              role="none"
+              if:true={displayFieldPicker}
+            >
+              <input
+                type="text"
+                class="slds-input slds-combobox__input slds-has-focus subjectInput"
+                id="combobox-id-33"
+                aria-autocomplete="list"
+                aria-controls="please-provide-listbox-id-here"
+                aria-expanded="true"
+                aria-haspopup="listbox"
+                autocomplete="off"
+                role="combobox"
+                placeholder="Search..."
+                onblur={blurTextInput}
+                onfocus={focusTextInput}
+                oninput={textInputChange}
+              />
+              <lightning-icon size="small" icon-name="utility:search">
+              </lightning-icon>
+            </div>
+            <div
+              id="listbox-id28"
+              class="slds-dropdown slds-dropdown_length-with-icon-7 slds-dropdown_fluid"
+              role="listbox"
+              aria-label="**Placeholder for Dropdown Items**"
+              tabindex="0"
+              aria-busy="false"
+              onclick={handleRecommendationClicked}
+              if:true={showInputOptions}
+            >
+              <ul
+                class="slds-listbox slds-listbox_vertical"
+                role="presentation"
+              >
+                <li
+                  role="presentation"
+                  class="slds-listbox__item"
+                  for:each={recommendedFields}
+                  data-value={f.value}
+                  for:item="f"
+                  key={f.value}
+                >
+                  <div
+                    id="option748"
+                    class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta"
+                    role="option"
+                  >
+                    <span class="slds-media__figure slds-listbox__option-icon">
+                      <lightning-icon
+                        size="small"
+                        icon-name="standard:account"
+                      ></lightning-icon>
+                    </span>
+                    <span class="slds-media__body">
+                      <span
+                        class="slds-listbox__option-text slds-listbox__option-text_entity"
+                        >{f.label}</span
+                      >
+                      <span
+                        class="slds-listbox__option-meta slds-listbox__option-meta_entity"
+                        >{f.value}</span
+                      >
+                    </span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

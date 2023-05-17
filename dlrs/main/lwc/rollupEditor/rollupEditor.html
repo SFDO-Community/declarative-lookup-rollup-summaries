@@ -1,17 +1,18 @@
 <template>
-
-  <div style="position:relative">
-
+  <div style="position: relative">
     <template if:true={isLoading}>
       <div class="slds-spinner_container">
-        <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand" style="top: 10% !important;">
+        <div
+          role="status"
+          class="slds-spinner slds-spinner_medium slds-spinner_brand"
+          style="top: 10% !important"
+        >
           <span class="slds-assistive-text">Loading</span>
           <div class="slds-spinner__dot-a"></div>
           <div class="slds-spinner__dot-b"></div>
         </div>
       </div>
     </template>
-
     <div class="slds-m-bottom_medium">
       <article class="slds-card">
         <!-- HEADER -->
@@ -87,7 +88,9 @@
                           if:true={rollup.Id}
                         >
                           <a href="#" role="menuitem" tabindex="0">
-                            <span class="slds-truncate" title="Clone">Clone</span>
+                            <span class="slds-truncate" title="Clone"
+                              >Clone</span
+                            >
                           </a>
                         </li>
                         <li
@@ -182,7 +185,9 @@
                           if:true={rollup.Id}
                         >
                           <a href="#" role="menuitem" tabindex="0">
-                            <span class="slds-truncate" title="Clone">Clone</span>
+                            <span class="slds-truncate" title="Clone"
+                              >Clone</span
+                            >
                           </a>
                         </li>
                         <li
@@ -244,6 +249,7 @@
                     <lightning-input
                       type="text"
                       name="rollup_Label"
+                      onblur={onLabelBlurHandler}
                       data-name="rollup_Label"
                       label="Lookup Rollup Summary Label"
                       placeholder="My Rollup Name"
@@ -398,18 +404,12 @@
                   </div>
 
                   <!-- Relationship Criteria Input -->
-                  <div
-                    class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-m-top_x-small"
-                  >
-                    <lightning-input
-                      type="text"
-                      name="rollup_RelationshipCriteria__c"
-                      data-name="rollup_RelationshipCriteria__c"
-                      label="Relationship Criteria"
-                      placeholder="Status__c = 'Closed' AND Days__c > 30"
-                      value={rollup.RelationshipCriteria__c}
-                      maxlength="255"
-                    ></lightning-input>
+                  <div class="slds-col slds-size_1-of-1 slds-m-top_x-small">
+                    <c-wheresiwyg
+                      mode="soql-where"
+                      base-object={rollup.ChildObject__c}
+                      onquerychanged={updateRelationshipCriteria}
+                    ></c-wheresiwyg>
                     <c-rollup-editor-error
                       errors={errors.RelationshipCriteria__c}
                     ></c-rollup-editor-error>
@@ -461,7 +461,9 @@
                 </button>
               </h3>
 
-              <div class="slds-section__content slds-grid slds-wrap slds-gutters">
+              <div
+                class="slds-section__content slds-grid slds-wrap slds-gutters"
+              >
                 <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
                   <!-- Field to Aggregate	 -->
                   <div class="slds-m-top_x-small">
@@ -716,5 +718,4 @@
 
     <c-rollup-status-check name={rollup.Id}></c-rollup-status-check>
   </div>
-
 </template>

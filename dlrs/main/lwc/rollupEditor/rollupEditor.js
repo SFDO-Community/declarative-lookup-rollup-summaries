@@ -29,27 +29,21 @@ export default class RollupEditor extends LightningElement {
   set rollupName(val) {
     this.errors = {}; // clear any existing error
     this._rollupName = val;
-
-    this.getRollup()
-    .then(() => {
-      this.getRelationshipFieldOptions(this.rollup.ParentObject__c)
-      .then(res =>{
-        this.parentRFieldOptions = res; 
-      })
-      this.getRelationshipFieldOptions(this.rollup.ChildObject__c)
-      .then(res =>{
-        this.childRFieldOptions = res; 
-      })
-    })
+    this.getRollup();
   }
 
-
-  get cardHeader(){
-    return this.rollup.DeveloperName ? this.rollup.DeveloperName : 'Lookup Rollup Summary Creation Wizard'
+  get cardHeader() {
+    return this.rollup.DeveloperName
+      ? this.rollup.DeveloperName
+      : "Lookup Rollup Summary Creation Wizard";
   }
 
-  get saveButtonLabel(){
-    return this.rollup.Id ? 'Save' : 'Create'
+  get saveButtonLabel() {
+    return this.rollup.Id ? "Save" : "Create";
+  }
+
+  async connectedCallback() {
+    await this.getRollup();
   }
 
   get rollupCanBeActivated() {
@@ -63,14 +57,52 @@ export default class RollupEditor extends LightningElement {
   async getRollup() {
     if (!this.rollupName) {
       this.rollup = this.DEFAULT_ROLLUP_VALUES;
+    } else {
+      try {
+        this.rollup = await getRollupConfig({
+          rollupName: this.rollupName
+        });
+      } catch (error) {
+        this.errors.record = [error.message];
+      }
+    }
+
+    this.deliverQuery(this.rollup.RelationshipCriteria__c);
+    await this.getRelationshipFieldOptions();
+  }
+
+  deliverQuery(query) {
+    const wheresiwyg = this.template.querySelector("c-wheresiwyg");
+    if (!wheresiwyg) {
+      // eslint-disable-next-line @lwc/lwc/no-async-operation
+      setTimeout(this.deliverQuery.bind(this), 500);
       return;
     }
-    try {
-      this.rollup = await getRollupConfig({
-        rollupName: this.rollupName
+    wheresiwyg.setQuery(query);
+  }
+
+  async getRelationshipFieldOptions() {
+    await this.getParentRelationshipFieldOptions();
+    await this.getChildRelationshipFieldOptions();
+  }
+
+  async getParentRelationshipFieldOptions() {
+    if (this.rollup.ParentObject__c) {
+      this.parentRFieldOptions = await getFieldOptions({
+        objectName: this.rollup.ParentObject__c
       });
-    } catch (error) {
-      this.errors.record = [error.message];
+    } else {
+      this.parentRFieldOptions = [];
+    }
+  }
+
+  async getChildRelationshipFieldOptions() {
+    if (this.rollup.ChildObject__c) {
+      this.childRFieldOptions = await getFieldOptions({
+        objectName: this.rollup.ChildObject__c
+      });
+    } else {
+      this.childRFieldOptions = [];
     }
   }
 
@@ -107,6 +139,25 @@ export default class RollupEditor extends LightningElement {
     this.runSave();
   }
 
+  updateRelationshipCriteria(event) {
+    this.rollup.RelationshipCriteria__c = event.detail.query;
+  }
+
+  onLabelBlurHandler(event) {
+    const devNameElem = this.template.querySelector(
+      '[data-name="rollup_DeveloperName"]'
+    );
+    if (!devNameElem || devNameElem.value.trim().length > 0) {
+      return;
+    }
+    this.rollup.DeveloperName = this._makeApiSafe(event.currentTarget.value);
+    devNameElem.value = this.rollup.DeveloperName;
+  }
+
+  _makeApiSafe(val) {
+    return val.replace(/^([0-9])/, "X$1").replace(/[^0-9a-zA-Z]+/g, "_");
+  }
+
   async runSave() {
     this.isLoading = true;
     this.assembleRollupFromForm();
@@ -133,7 +184,7 @@ export default class RollupEditor extends LightningElement {
       "DeveloperName",
       "Description__c",
       "RelationshipField__c",
-      "RelationshipCriteria__c",
+      "RelationshipCriteria__c", // No Input Element for this field
       "RelationshipCriteriaFields__c",
       "FieldToAggregate__c",
       "FieldToOrderBy__c",
@@ -172,29 +223,12 @@ export default class RollupEditor extends LightningElement {
 
   childObjectSelected(event) {
     this.rollup.ChildObject__c = event.detail.selectedRecord;
-    this.getRelationshipFieldOptions(this.rollup.ChildObject__c)
-    .then(res => { this.childRFieldOptions = res; });
-  }
-  parentObjectSelected(event) {
-    this.rollup.ParentObject__c = event.detail.selectedRecord;
-    this.getRelationshipFieldOptions(this.rollup.ParentObject__c)
-    .then(res => { this.parentRFieldOptions = res; });
+    this.getChildRelationshipFieldOptions();
   }
 
-  getRelationshipFieldOptions(objectName){
-    return new Promise((resolve) => {
-      if(!objectName || objectName.trim().length === 0) resolve([])
-      else {
-        getFieldOptions({ objectName: objectName })
-        .then(res => {
-          resolve(res);
-        }).catch(err => {
-          console.log(`Error in Get Field Options of ${objectName}: `);
-          console.error(err);
-          resolve([]);
-        })
-      }
-    })
+  parentObjectSelected(event) {
+    this.rollup.ParentObject__c = event.detail.selectedRecord;
+    this.getParentRelationshipFieldOptions();
   }
 
   get rollupAsString() {

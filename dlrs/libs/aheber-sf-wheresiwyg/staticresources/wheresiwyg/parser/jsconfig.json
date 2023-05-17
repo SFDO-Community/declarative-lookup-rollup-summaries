@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target":"ESNext",
+    "experimentalDecorators": true
+  },
+  "typeAcquisition": {
+    "include": ["jest"]
+  }
+}

@@ -1,0 +1,36 @@
+<template>
+  <div>
+    <lightning-layout>
+      <lightning-layout-item flexibility="grow">
+        <c-wheresiwyg-subject-selector
+          mode="where"
+          base-object={baseObject}
+          subjects={item.subjects}
+          onsubjectselected={handleSubjectSelected}
+        ></c-wheresiwyg-subject-selector>
+      </lightning-layout-item>
+      <lightning-layout-item>
+        <lightning-combobox
+          value={item.operator}
+          onchange={buildFilterConfig}
+          options={criteriaOperators}
+        ></lightning-combobox>
+      </lightning-layout-item>
+      <lightning-layout-item flexibility="grow">
+        <template for:each={item.values} for:item="v">
+          <lightning-input
+            oncommit={buildFilterConfig}
+            class="values"
+            value={v}
+            key={v}
+          ></lightning-input>
+        </template>
+        <lightning-button
+          label="+"
+          onclick={addValue}
+          if:true={allowsMultipleValues}
+        ></lightning-button>
+      </lightning-layout-item>
+    </lightning-layout>
+  </div>
+</template>

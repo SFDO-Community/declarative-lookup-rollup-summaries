@@ -1,0 +1,46 @@
+<template>
+  <label class="slds-form-element__label" for="combobox-id-33"
+    >Conditions</label
+  >
+  <template for:each={filterConfig.filters} for:item="f" for:index="filterIdx">
+    <c-wheresiwyg-comparison-item
+      key={f.num}
+      index={filterIdx}
+      base-object={baseObject}
+      onupdateitem={handleUpdateItem}
+      item={f}
+    ></c-wheresiwyg-comparison-item>
+  </template>
+  <lightning-layout vertical-align="end">
+    <lightning-layout-item>
+      <lightning-input
+        class="filterLogic"
+        value={filterConfig.filterLogic}
+        oncommit={updateFilterLogic}
+        label="Filter Logic"
+      ></lightning-input>
+    </lightning-layout-item>
+    <lightning-layout-item>
+      <lightning-button
+        label="Add Condition"
+        onclick={addFilter}
+      ></lightning-button>
+    </lightning-layout-item>
+  </lightning-layout>
+  <lightning-textarea
+    onchange={queryOnChange}
+    value={query}
+  ></lightning-textarea>
+  <lightning-formatted-rich-text
+    value={queryBreakdown}
+  ></lightning-formatted-rich-text>
+  <div>{parsedQuery}</div>
+  <iframe
+    id="parser"
+    src={soqlBuilderSrcUrl}
+    onmessage={onQueryParserMessage}
+    height="0"
+    width="0"
+    style="display: none"
+  ></iframe>
+</template>
