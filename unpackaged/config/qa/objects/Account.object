@@ -30,4 +30,11 @@
         <filterScope>Everything</filterScope>
         <label>QA Rollup: Annual Revenue</label>
     </listViews>
+    <listViews>
+        <fullName>QA_Rollup_Salesforce_Count_Negotiation</fullName>
+        <columns>ACCOUNT.NAME</columns>
+        <columns>ACCOUNT.EMPLOYEES</columns>
+        <filterScope>Everything</filterScope>
+        <label>QA Rollup: Salesforce Count Negotiation</label>
+    </listViews>
 </CustomObject>
