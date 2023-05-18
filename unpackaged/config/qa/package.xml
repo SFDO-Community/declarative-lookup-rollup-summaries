@@ -40,10 +40,12 @@
     <types>
         <members>LookupChild__c</members>
         <members>LookupParent__c</members>
+        <members>standard-home</members>
         <name>CustomTab</name>
     </types>
     <types>
         <members>DLRS_QA_App_UtilityBar</members>
+        <members>Home_Page_Default</members>
         <members>Lookup_Child_Record_Page</members>
         <members>Lookup_Parent_Record_Page</members>
         <name>FlexiPage</name>

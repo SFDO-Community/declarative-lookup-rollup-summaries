@@ -12,12 +12,13 @@
     <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
     <label>DLRS QA App</label>
     <navType>Standard</navType>
-    <tabs>Welcome</tabs>
+    <tabs>standard-home</tabs>
     <tabs>ManageLookupRollupSummaries</tabs>
-    <tabs>LookupRollupSummariesHome</tabs>
-    <tabs>LookupRollupSummaryLog__c</tabs>
     <tabs>LookupParent__c</tabs>
     <tabs>LookupChild__c</tabs>
+    <tabs>Welcome</tabs>
+    <tabs>LookupRollupSummariesHome</tabs>
+    <tabs>LookupRollupSummaryLog__c</tabs>
     <tabs>standard-Account</tabs>
     <tabs>standard-Contact</tabs>
     <tabs>standard-Lead</tabs>
