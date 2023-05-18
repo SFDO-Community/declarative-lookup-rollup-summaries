@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>AccountTrigger</members>
+        <members>OpportunityTrigger</members>
+        <name>ApexTrigger</name>
+    </types>
+    <types>
+        <members>LookupChild__c.Amount__c</members>
+        <members>LookupChild__c.Color__c</members>
+        <members>LookupChild__c.Description2__c</members>
+        <members>LookupChild__c.Description__c</members>
+        <members>LookupChild__c.LookupParent2__c</members>
+        <members>LookupChild__c.LookupParent__c</members>
+        <members>LookupParent__c.Colours__c</members>
+        <members>LookupParent__c.Descriptions2__c</members>
+        <members>LookupParent__c.Descriptions__c</members>
+        <members>LookupParent__c.Total2__c</members>
+        <members>LookupParent__c.Total__c</members>
+        <name>CustomField</name>
+    </types>
+    <types>
+        <members>LookupChild__c</members>
+        <members>LookupParent__c</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>LookupChild__c</members>
+        <members>LookupParent__c</members>
+        <name>CustomTab</name>
+    </types>
+    <types>
+        <members>Lookup_Child_Record_Page</members>
+        <members>Lookup_Parent_Record_Page</members>
+        <name>FlexiPage</name>
+    </types>
+    <types>
+        <members>LookupChild__c-Lookup Child Layout</members>
+        <members>LookupParent__c-Lookup Parent Layout</members>
+        <name>Layout</name>
+    </types>
+    <types>
+        <members>LookupChild__c.All</members>
+        <members>LookupParent__c.All</members>
+        <name>ListView</name>
+    </types>
+    <types>
+        <members>Admin</members>
+        <name>Profile</name>
+    </types>
+    <types>
+        <members>LookupParent__c.Not_42</members>
+        <name>ValidationRule</name>
+    </types>
+    <version>57.0</version>
+</Package>
