@@ -6,6 +6,15 @@
         <name>ApexTrigger</name>
     </types>
     <types>
+        <members>AppSwitcher</members>
+        <name>AppMenu</name>
+    </types>
+    <types>
+        <members>DLRS_QA_App</members>
+        <name>CustomApplication</name>
+    </types>
+    <types>
+        <members>Account.Self_Relationship_Number_Target__c</members>
         <members>LookupChild__c.Amount__c</members>
         <members>LookupChild__c.Color__c</members>
         <members>LookupChild__c.Description2__c</members>
@@ -15,6 +24,8 @@
         <members>LookupParent__c.Colours__c</members>
         <members>LookupParent__c.Descriptions2__c</members>
         <members>LookupParent__c.Descriptions__c</members>
+        <members>LookupParent__c.Self_Relationship_Number_Target__c</members>
+        <members>LookupParent__c.Self_Relationship__c</members>
         <members>LookupParent__c.Total2__c</members>
         <members>LookupParent__c.Total__c</members>
         <name>CustomField</name>
@@ -30,11 +41,13 @@
         <name>CustomTab</name>
     </types>
     <types>
+        <members>DLRS_QA_App_UtilityBar</members>
         <members>Lookup_Child_Record_Page</members>
         <members>Lookup_Parent_Record_Page</members>
         <name>FlexiPage</name>
     </types>
     <types>
+        <members>Account-Account Layout</members>
         <members>LookupChild__c-Lookup Child Layout</members>
         <members>LookupParent__c-Lookup Parent Layout</members>
         <name>Layout</name>

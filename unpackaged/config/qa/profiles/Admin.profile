@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Profile xmlns="http://soap.sforce.com/2006/04/metadata">
     <applicationVisibilities>
+        <application>DLRS_QA_App</application>
+        <default>true</default>
+        <visible>true</visible>
+    </applicationVisibilities>
+    <applicationVisibilities>
         <application>DeclarativeLookupRollupSummaries</application>
         <default>false</default>
         <visible>true</visible>
@@ -491,6 +496,11 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>Account.Self_Relationship_Number_Target__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>LookupChild__c.Amount__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -532,6 +542,16 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>LookupParent__c.Descriptions__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>LookupParent__c.Self_Relationship_Number_Target__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>LookupParent__c.Self_Relationship__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -729,6 +749,9 @@
         <field>LookupRollupSummary__c.UniqueName__c</field>
         <readable>true</readable>
     </fieldPermissions>
+    <layoutAssignments>
+        <layout>Account-Account Layout</layout>
+    </layoutAssignments>
     <layoutAssignments>
         <layout>LookupChild__c-Lookup Child Layout</layout>
     </layoutAssignments>

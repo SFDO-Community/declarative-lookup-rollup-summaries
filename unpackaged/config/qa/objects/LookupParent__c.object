@@ -224,6 +224,31 @@
         <unique>false</unique>
     </fields>
     <fields>
+        <fullName>Self_Relationship_Number_Target__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Number field to serve as the target field for a rollup across Self-Relationship field.</inlineHelpText>
+        <label>Self Relationship Number Target</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Self_Relationship__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <inlineHelpText>Lookup to Lookup Parent. Used to test self-relationship rollups on a custom object.</inlineHelpText>
+        <label>Self Relationship</label>
+        <referenceTo>LookupParent__c</referenceTo>
+        <relationshipLabel>Lookup Parents</relationshipLabel>
+        <relationshipName>Lookup_Parents</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
         <fullName>Total2__c</fullName>
         <externalId>false</externalId>
         <label>Total 2</label>
