@@ -12,4 +12,22 @@
         <type>Number</type>
         <unique>false</unique>
     </fields>
+    <listViews>
+        <fullName>All_Accounts</fullName>
+        <columns>ACCOUNT.NAME</columns>
+        <columns>ACCOUNT.SITE</columns>
+        <columns>ACCOUNT.ADDRESS1_STATE</columns>
+        <columns>ACCOUNT.PHONE1</columns>
+        <columns>ACCOUNT.TYPE</columns>
+        <columns>CORE.USERS.ALIAS</columns>
+        <filterScope>Everything</filterScope>
+        <label>All Accounts</label>
+    </listViews>
+    <listViews>
+        <fullName>QA_Rollup_Annual_Revenue</fullName>
+        <columns>ACCOUNT.NAME</columns>
+        <columns>ACCOUNT.SALES</columns>
+        <filterScope>Everything</filterScope>
+        <label>QA Rollup: Annual Revenue</label>
+    </listViews>
 </CustomObject>

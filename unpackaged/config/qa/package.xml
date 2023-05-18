@@ -30,6 +30,24 @@
         <members>LookupParent__c.Self_Relationship__c</members>
         <members>LookupParent__c.Total2__c</members>
         <members>LookupParent__c.Total__c</members>
+        <members>Opportunity.AccountId</members>
+        <members>Opportunity.Amount</members>
+        <members>Opportunity.CampaignId</members>
+        <members>Opportunity.CloseDate</members>
+        <members>Opportunity.ContractId</members>
+        <members>Opportunity.Description</members>
+        <members>Opportunity.ExpectedRevenue</members>
+        <members>Opportunity.IqScore</members>
+        <members>Opportunity.IsPrivate</members>
+        <members>Opportunity.LeadSource</members>
+        <members>Opportunity.Name</members>
+        <members>Opportunity.NextStep</members>
+        <members>Opportunity.OwnerId</members>
+        <members>Opportunity.Pricebook2Id</members>
+        <members>Opportunity.Probability</members>
+        <members>Opportunity.StageName</members>
+        <members>Opportunity.TotalOpportunityQuantity</members>
+        <members>Opportunity.Type</members>
         <name>CustomField</name>
     </types>
     <types>
@@ -48,6 +66,7 @@
         <members>Home_Page_Default</members>
         <members>Lookup_Child_Record_Page</members>
         <members>Lookup_Parent_Record_Page</members>
+        <members>Opportunity_Record_Page</members>
         <name>FlexiPage</name>
     </types>
     <types>
@@ -58,9 +77,13 @@
         <name>Layout</name>
     </types>
     <types>
+        <members>Account.All_Accounts</members>
+        <members>Account.QA_Rollup_Annual_Revenue</members>
         <members>Contact.DLRS_QA_List_View</members>
         <members>LookupChild__c.All</members>
         <members>LookupParent__c.All</members>
+        <members>Opportunity.All_Opportunities</members>
+        <members>Opportunity.Default_Opportunity_Pipeline</members>
         <name>ListView</name>
     </types>
     <types>
