@@ -15,6 +15,8 @@
     </types>
     <types>
         <members>Account.Self_Relationship_Number_Target__c</members>
+        <members>Contact.DLRS_All_OCRs__c</members>
+        <members>Contact.DLRS_CountOCRs__c</members>
         <members>LookupChild__c.Amount__c</members>
         <members>LookupChild__c.Color__c</members>
         <members>LookupChild__c.Description2__c</members>
@@ -48,11 +50,13 @@
     </types>
     <types>
         <members>Account-Account Layout</members>
+        <members>Contact-Contact Layout</members>
         <members>LookupChild__c-Lookup Child Layout</members>
         <members>LookupParent__c-Lookup Parent Layout</members>
         <name>Layout</name>
     </types>
     <types>
+        <members>Contact.DLRS_QA_List_View</members>
         <members>LookupChild__c.All</members>
         <members>LookupParent__c.All</members>
         <name>ListView</name>
