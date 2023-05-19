@@ -14,7 +14,40 @@
         <name>CustomApplication</name>
     </types>
     <types>
+        <members>Account.AccountNumber</members>
+        <members>Account.AccountSource</members>
+        <members>Account.AnnualRevenue</members>
+        <members>Account.BillingAddress</members>
+        <members>Account.CleanStatus</members>
+        <members>Account.DandbCompanyId</members>
+        <members>Account.Description</members>
+        <members>Account.DunsNumber</members>
+        <members>Account.Fax</members>
+        <members>Account.Industry</members>
+        <members>Account.Jigsaw</members>
+        <members>Account.NaicsCode</members>
+        <members>Account.NaicsDesc</members>
+        <members>Account.Name</members>
+        <members>Account.NumberOfEmployees</members>
+        <members>Account.NumberOfLocations__c</members>
+        <members>Account.OperatingHoursId</members>
+        <members>Account.OwnerId</members>
+        <members>Account.Ownership</members>
+        <members>Account.ParentId</members>
+        <members>Account.Phone</members>
+        <members>Account.Rating</members>
+        <members>Account.SLAExpirationDate__c</members>
         <members>Account.Self_Relationship_Number_Target__c</members>
+        <members>Account.ShippingAddress</members>
+        <members>Account.Sic</members>
+        <members>Account.SicDesc</members>
+        <members>Account.Site</members>
+        <members>Account.TickerSymbol</members>
+        <members>Account.Tier</members>
+        <members>Account.Tradestyle</members>
+        <members>Account.Type</members>
+        <members>Account.Website</members>
+        <members>Account.YearStarted</members>
         <members>Contact.DLRS_All_OCRs__c</members>
         <members>Contact.DLRS_CountOCRs__c</members>
         <members>LookupChild__c.Amount__c</members>
@@ -64,6 +97,7 @@
         <name>CustomTab</name>
     </types>
     <types>
+        <members>Account_Record_Page</members>
         <members>DLRS_QA_App_UtilityBar</members>
         <members>Home_Page_Default</members>
         <members>Lookup_Child_Record_Page</members>
