@@ -257,6 +257,16 @@
         <trackTrending>false</trackTrending>
         <type>Lookup</type>
     </fields>
+    <fields>
+        <fullName>Record_Notes__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Use this field to record any additional notes about how this record is going to be used in the test dataset.</inlineHelpText>
+        <label>Record Notes</label>
+        <length>32768</length>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
     <listViews>
         <fullName>All</fullName>
         <columns>NAME</columns>

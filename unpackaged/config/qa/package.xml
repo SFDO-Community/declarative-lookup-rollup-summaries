@@ -23,9 +23,11 @@
         <members>LookupChild__c.Description__c</members>
         <members>LookupChild__c.LookupParent2__c</members>
         <members>LookupChild__c.LookupParent__c</members>
+        <members>LookupChild__c.Record_Notes__c</members>
         <members>LookupParent__c.Colours__c</members>
         <members>LookupParent__c.Descriptions2__c</members>
         <members>LookupParent__c.Descriptions__c</members>
+        <members>LookupParent__c.Record_Notes__c</members>
         <members>LookupParent__c.Self_Relationship_Number_Target__c</members>
         <members>LookupParent__c.Self_Relationship__c</members>
         <members>LookupParent__c.Total2__c</members>
