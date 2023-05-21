@@ -204,6 +204,18 @@
         <visibleLines>4</visibleLines>
     </fields>
     <fields>
+        <fullName>Count_of_String_Children__c</fullName>
+        <description>Count of LookupChild records for which this is the parent across the Parent_by_String__c field, rather than an actual relationship field.</description>
+        <externalId>false</externalId>
+        <label>Count of String Children</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>Descriptions2__c</fullName>
         <externalId>false</externalId>
         <label>Descriptions 2</label>

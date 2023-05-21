@@ -681,12 +681,22 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>LookupChild__c.Parent_by_String__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>LookupChild__c.Record_Notes__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
         <field>LookupParent__c.Colours__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>LookupParent__c.Count_of_String_Children__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>

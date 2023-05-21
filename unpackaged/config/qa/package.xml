@@ -56,8 +56,10 @@
         <members>LookupChild__c.Description__c</members>
         <members>LookupChild__c.LookupParent2__c</members>
         <members>LookupChild__c.LookupParent__c</members>
+        <members>LookupChild__c.Parent_by_String__c</members>
         <members>LookupChild__c.Record_Notes__c</members>
         <members>LookupParent__c.Colours__c</members>
+        <members>LookupParent__c.Count_of_String_Children__c</members>
         <members>LookupParent__c.Descriptions2__c</members>
         <members>LookupParent__c.Descriptions__c</members>
         <members>LookupParent__c.Record_Notes__c</members>

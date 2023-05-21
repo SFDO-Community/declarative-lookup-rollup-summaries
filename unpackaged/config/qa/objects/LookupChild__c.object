@@ -258,6 +258,17 @@
         <type>Lookup</type>
     </fields>
     <fields>
+        <fullName>Parent_by_String__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Related (parent) record just by its Id as a string, rather than a lookup field. DLRS can still roll up across a relationship like this.</inlineHelpText>
+        <label>Parent by String</label>
+        <length>18</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>Record_Notes__c</fullName>
         <externalId>false</externalId>
         <inlineHelpText>Use this field to record any additional notes about how this record is going to be used in the test dataset.</inlineHelpText>
