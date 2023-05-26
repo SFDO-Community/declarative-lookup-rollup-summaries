@@ -184,16 +184,16 @@
     </actionOverrides>
     <actionOverrides>
         <actionName>View</actionName>
-        <comment>Action override created by Lightning App Builder during activation.</comment>
-        <content>Account_Record_Page</content>
+        <comment>Action override updated by Lightning App Builder during activation.</comment>
+        <content>Account_Record_Page2</content>
         <formFactor>Large</formFactor>
         <skipRecordTypeSelect>false</skipRecordTypeSelect>
         <type>Flexipage</type>
     </actionOverrides>
     <actionOverrides>
         <actionName>View</actionName>
-        <comment>Action override created by Lightning App Builder during activation.</comment>
-        <content>Account_Record_Page</content>
+        <comment>Action override updated by Lightning App Builder during activation.</comment>
+        <content>Account_Record_Page2</content>
         <formFactor>Small</formFactor>
         <skipRecordTypeSelect>false</skipRecordTypeSelect>
         <type>Flexipage</type>

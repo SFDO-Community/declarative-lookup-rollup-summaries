@@ -43,12 +43,6 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>cooper:companyInsightTeaserCard</componentName>
-                <identifier>cooper_companyInsightTeaserCard</identifier>
-            </componentInstance>
-        </itemInstances>
-        <itemInstances>
-            <componentInstance>
                 <componentInstanceProperties>
                     <name>displayOption</name>
                     <value>BOTH</value>
@@ -205,7 +199,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>updateQuickActionName</name>
-                    <value>Account.DLRS_QA_Fields</value>
+                    <value>Contact.DLRS_QA_Fields</value>
                 </componentInstanceProperties>
                 <componentName>console:relatedRecord</componentName>
                 <identifier>console_relatedRecord</identifier>
@@ -234,8 +228,8 @@
         <name>rightcol</name>
         <type>Region</type>
     </flexiPageRegions>
-    <masterLabel>Account Record Page</masterLabel>
-    <sobjectType>Account</sobjectType>
+    <masterLabel>Contact Record Page1</masterLabel>
+    <sobjectType>Contact</sobjectType>
     <template>
         <name>flexipage:recordHomeTwoColEqualHeaderTemplateDesktop</name>
     </template>

@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <actionOverrides>
-        <actionName>AddCampaign</actionName>
+        <actionName>Accept</actionName>
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
-        <actionName>AddCampaign</actionName>
+        <actionName>Accept</actionName>
         <formFactor>Large</formFactor>
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
-        <actionName>AddCampaign</actionName>
+        <actionName>Accept</actionName>
         <formFactor>Small</formFactor>
         <type>Default</type>
     </actionOverrides>
@@ -57,6 +57,20 @@
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
+        <actionName>ChangeStatus</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>ChangeStatus</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>ChangeStatus</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
         <actionName>Clone</actionName>
         <type>Default</type>
     </actionOverrides>
@@ -67,6 +81,20 @@
     </actionOverrides>
     <actionOverrides>
         <actionName>Clone</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Convert</actionName>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Convert</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>Convert</actionName>
         <formFactor>Small</formFactor>
         <type>Default</type>
     </actionOverrides>
@@ -113,44 +141,16 @@
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
-        <actionName>EnableCustomerPortal</actionName>
+        <actionName>FindDup</actionName>
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
-        <actionName>EnableCustomerPortal</actionName>
+        <actionName>FindDup</actionName>
         <formFactor>Large</formFactor>
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
-        <actionName>EnableCustomerPortal</actionName>
-        <formFactor>Small</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>EnablePartnerPortalUser</actionName>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>EnablePartnerPortalUser</actionName>
-        <formFactor>Large</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>EnablePartnerPortalUser</actionName>
-        <formFactor>Small</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>EnableSelfService</actionName>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>EnableSelfService</actionName>
-        <formFactor>Large</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>EnableSelfService</actionName>
+        <actionName>FindDup</actionName>
         <formFactor>Small</formFactor>
         <type>Default</type>
     </actionOverrides>
@@ -183,44 +183,16 @@
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
-        <actionName>Merge</actionName>
+        <actionName>New</actionName>
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
-        <actionName>Merge</actionName>
+        <actionName>New</actionName>
         <formFactor>Large</formFactor>
         <type>Default</type>
     </actionOverrides>
     <actionOverrides>
-        <actionName>Merge</actionName>
-        <formFactor>Small</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>NewContact</actionName>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>NewContact</actionName>
-        <formFactor>Large</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>NewContact</actionName>
-        <formFactor>Small</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>RequestUpdate</actionName>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>RequestUpdate</actionName>
-        <formFactor>Large</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>RequestUpdate</actionName>
+        <actionName>New</actionName>
         <formFactor>Small</formFactor>
         <type>Default</type>
     </actionOverrides>
@@ -269,7 +241,7 @@
     <actionOverrides>
         <actionName>View</actionName>
         <comment>Action override created by Lightning App Builder during activation.</comment>
-        <content>Contact_Record_Page</content>
+        <content>Lead_Record_Page1</content>
         <formFactor>Large</formFactor>
         <skipRecordTypeSelect>false</skipRecordTypeSelect>
         <type>Flexipage</type>
@@ -277,138 +249,67 @@
     <actionOverrides>
         <actionName>View</actionName>
         <comment>Action override created by Lightning App Builder during activation.</comment>
-        <content>Contact_Record_Page</content>
+        <content>Lead_Record_Page1</content>
         <formFactor>Small</formFactor>
         <skipRecordTypeSelect>false</skipRecordTypeSelect>
         <type>Flexipage</type>
     </actionOverrides>
     <actionOverrides>
         <actionName>View</actionName>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>ViewCustomerPortal</actionName>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>ViewCustomerPortal</actionName>
-        <formFactor>Large</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>ViewCustomerPortal</actionName>
-        <formFactor>Small</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>ViewPartnerPortalUser</actionName>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>ViewPartnerPortalUser</actionName>
-        <formFactor>Large</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>ViewPartnerPortalUser</actionName>
-        <formFactor>Small</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>ViewSelfService</actionName>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>ViewSelfService</actionName>
-        <formFactor>Large</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>ViewSelfService</actionName>
-        <formFactor>Small</formFactor>
         <type>Default</type>
     </actionOverrides>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <enableFeeds>true</enableFeeds>
     <enableHistory>false</enableHistory>
-    <externalSharingModel>ControlledByParent</externalSharingModel>
+    <externalSharingModel>Private</externalSharingModel>
     <searchLayouts>
         <customTabListAdditionalFields>FULL_NAME</customTabListAdditionalFields>
-        <customTabListAdditionalFields>ACCOUNT.NAME</customTabListAdditionalFields>
-        <customTabListAdditionalFields>CONTACT.PHONE1</customTabListAdditionalFields>
+        <customTabListAdditionalFields>LEAD.COMPANY</customTabListAdditionalFields>
+        <customTabListAdditionalFields>LEAD.PHONE</customTabListAdditionalFields>
         <lookupDialogsAdditionalFields>FULL_NAME</lookupDialogsAdditionalFields>
-        <lookupDialogsAdditionalFields>ACCOUNT.NAME</lookupDialogsAdditionalFields>
-        <lookupDialogsAdditionalFields>ACCOUNT.SITE</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>LEAD.COMPANY</lookupDialogsAdditionalFields>
         <lookupPhoneDialogsAdditionalFields>FULL_NAME</lookupPhoneDialogsAdditionalFields>
-        <lookupPhoneDialogsAdditionalFields>ACCOUNT.NAME</lookupPhoneDialogsAdditionalFields>
-        <lookupPhoneDialogsAdditionalFields>ACCOUNT.SITE</lookupPhoneDialogsAdditionalFields>
-        <lookupPhoneDialogsAdditionalFields>CONTACT.PHONE1</lookupPhoneDialogsAdditionalFields>
-        <lookupPhoneDialogsAdditionalFields>CONTACT.PHONE3</lookupPhoneDialogsAdditionalFields>
-        <lookupPhoneDialogsAdditionalFields>CONTACT.PHONE4</lookupPhoneDialogsAdditionalFields>
-        <lookupPhoneDialogsAdditionalFields>CONTACT.PHONE5</lookupPhoneDialogsAdditionalFields>
-        <lookupPhoneDialogsAdditionalFields>CONTACT.PHONE6</lookupPhoneDialogsAdditionalFields>
-        <lookupPhoneDialogsAdditionalFields>ACCOUNT.PHONE1</lookupPhoneDialogsAdditionalFields>
+        <lookupPhoneDialogsAdditionalFields>LEAD.COMPANY</lookupPhoneDialogsAdditionalFields>
+        <lookupPhoneDialogsAdditionalFields>LEAD.PHONE</lookupPhoneDialogsAdditionalFields>
+        <lookupPhoneDialogsAdditionalFields>LEAD.MOBILE_PHONE</lookupPhoneDialogsAdditionalFields>
         <searchResultsAdditionalFields>FULL_NAME</searchResultsAdditionalFields>
-        <searchResultsAdditionalFields>ACCOUNT.NAME</searchResultsAdditionalFields>
-        <searchResultsAdditionalFields>ACCOUNT.SITE</searchResultsAdditionalFields>
-        <searchResultsAdditionalFields>CONTACT.PHONE1</searchResultsAdditionalFields>
-        <searchResultsAdditionalFields>CONTACT.EMAIL</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>LEAD.TITLE</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>LEAD.COMPANY</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>LEAD.PHONE</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>LEAD.MOBILE_PHONE</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>LEAD.EMAIL</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>LEAD.STATUS</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>CORE.USERS.ALIAS</searchResultsAdditionalFields>
     </searchLayouts>
-    <sharingModel>ControlledByParent</sharingModel>
+    <sharingModel>ReadWriteTransfer</sharingModel>
     <fields>
-        <fullName>AccountId</fullName>
-        <trackFeedHistory>true</trackFeedHistory>
+        <fullName>Address</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+    </fields>
+    <fields>
+        <fullName>AnnualRevenue</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+    </fields>
+    <fields>
+        <fullName>CampaignId</fullName>
         <type>Lookup</type>
-    </fields>
-    <fields>
-        <fullName>AssistantName</fullName>
-        <securityClassification>Confidential</securityClassification>
-        <trackFeedHistory>false</trackFeedHistory>
-    </fields>
-    <fields>
-        <fullName>AssistantPhone</fullName>
-        <securityClassification>Confidential</securityClassification>
-        <trackFeedHistory>false</trackFeedHistory>
-    </fields>
-    <fields>
-        <fullName>Birthdate</fullName>
-        <securityClassification>Confidential</securityClassification>
-        <trackFeedHistory>false</trackFeedHistory>
     </fields>
     <fields>
         <fullName>CleanStatus</fullName>
         <trackFeedHistory>false</trackFeedHistory>
     </fields>
     <fields>
-        <fullName>DLRS_All_OCRs__c</fullName>
-        <description>Target field to be used when hand-creating a DLRS rollup as part of QA testing.</description>
-        <externalId>false</externalId>
-        <inlineHelpText>Target field to be used when hand-creating a DLRS rollup as part of QA testing.</inlineHelpText>
-        <label>DLRS_All_OCRs</label>
-        <precision>18</precision>
-        <required>false</required>
-        <scale>0</scale>
+        <fullName>Company</fullName>
         <trackFeedHistory>false</trackFeedHistory>
-        <type>Number</type>
-        <unique>false</unique>
     </fields>
     <fields>
-        <fullName>DLRS_CountOCRs__c</fullName>
-        <description>Target field to be used when hand-creating a DLRS rollup as part of QA testing.</description>
-        <externalId>false</externalId>
-        <inlineHelpText>Target field to be used when hand-creating a DLRS rollup as part of QA testing.</inlineHelpText>
-        <label>DLRS_CountOCRs</label>
-        <precision>18</precision>
-        <required>false</required>
-        <scale>0</scale>
+        <fullName>CompanyDunsNumber</fullName>
         <trackFeedHistory>false</trackFeedHistory>
-        <type>Number</type>
-        <unique>false</unique>
     </fields>
     <fields>
-        <fullName>Department</fullName>
+        <fullName>DandbCompanyId</fullName>
         <trackFeedHistory>false</trackFeedHistory>
+        <type>Lookup</type>
     </fields>
     <fields>
         <fullName>Description</fullName>
@@ -442,33 +343,26 @@
         <trackFeedHistory>false</trackFeedHistory>
     </fields>
     <fields>
-        <fullName>HomePhone</fullName>
-        <securityClassification>Confidential</securityClassification>
-        <trackFeedHistory>false</trackFeedHistory>
-    </fields>
-    <fields>
         <fullName>IndividualId</fullName>
         <trackFeedHistory>false</trackFeedHistory>
         <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Industry</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Picklist</type>
     </fields>
     <fields>
         <fullName>Jigsaw</fullName>
         <trackFeedHistory>false</trackFeedHistory>
     </fields>
     <fields>
-        <fullName>LastCURequestDate</fullName>
-    </fields>
-    <fields>
-        <fullName>LastCUUpdateDate</fullName>
+        <fullName>LastTransferDate</fullName>
     </fields>
     <fields>
         <fullName>LeadSource</fullName>
         <trackFeedHistory>false</trackFeedHistory>
         <type>Picklist</type>
-    </fields>
-    <fields>
-        <fullName>MailingAddress</fullName>
-        <trackFeedHistory>false</trackFeedHistory>
     </fields>
     <fields>
         <fullName>MobilePhone</fullName>
@@ -480,12 +374,7 @@
         <trackFeedHistory>true</trackFeedHistory>
     </fields>
     <fields>
-        <fullName>OtherAddress</fullName>
-        <trackFeedHistory>false</trackFeedHistory>
-    </fields>
-    <fields>
-        <fullName>OtherPhone</fullName>
-        <securityClassification>Confidential</securityClassification>
+        <fullName>NumberOfEmployees</fullName>
         <trackFeedHistory>false</trackFeedHistory>
     </fields>
     <fields>
@@ -504,23 +393,21 @@
         <type>Picklist</type>
     </fields>
     <fields>
-        <fullName>ReportsToId</fullName>
-        <securityClassification>Confidential</securityClassification>
+        <fullName>Rating</fullName>
         <trackFeedHistory>false</trackFeedHistory>
-        <type>Lookup</type>
+        <type>Picklist</type>
+    </fields>
+    <fields>
+        <fullName>Status</fullName>
+        <trackFeedHistory>true</trackFeedHistory>
+        <type>Picklist</type>
     </fields>
     <fields>
         <fullName>Title</fullName>
-        <securityClassification>Confidential</securityClassification>
         <trackFeedHistory>false</trackFeedHistory>
     </fields>
-    <listViews>
-        <fullName>DLRS_QA_List_View</fullName>
-        <columns>FULL_NAME</columns>
-        <columns>ACCOUNT.NAME</columns>
-        <columns>DLRS_All_OCRs__c</columns>
-        <columns>DLRS_CountOCRs__c</columns>
-        <filterScope>Everything</filterScope>
-        <label>DLRS QA List View</label>
-    </listViews>
+    <fields>
+        <fullName>Website</fullName>
+        <trackFeedHistory>false</trackFeedHistory>
+    </fields>
 </CustomObject>

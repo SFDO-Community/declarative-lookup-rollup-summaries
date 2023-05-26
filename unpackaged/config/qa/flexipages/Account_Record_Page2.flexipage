@@ -234,7 +234,7 @@
         <name>rightcol</name>
         <type>Region</type>
     </flexiPageRegions>
-    <masterLabel>Account Record Page</masterLabel>
+    <masterLabel>Account Record Page2</masterLabel>
     <sobjectType>Account</sobjectType>
     <template>
         <name>flexipage:recordHomeTwoColEqualHeaderTemplateDesktop</name>
