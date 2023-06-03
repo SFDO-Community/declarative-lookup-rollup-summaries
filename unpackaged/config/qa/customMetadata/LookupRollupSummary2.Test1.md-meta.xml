@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-    <label>QA Salesforce Count Negotiation/Review</label>
+    <label>Test1</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
@@ -12,11 +12,11 @@
     </values>
     <values>
         <field>AggregateOperation__c</field>
-        <value xsi:type="xsd:string">Count</value>
+        <value xsi:type="xsd:string">Sum</value>
     </values>
     <values>
         <field>AggregateResultField__c</field>
-        <value xsi:type="xsd:string">NumberOfEmployees</value>
+        <value xsi:type="xsd:string">annualrevenue</value>
     </values>
     <values>
         <field>CalculationMode__c</field>
@@ -24,7 +24,7 @@
     </values>
     <values>
         <field>CalculationSharingMode__c</field>
-        <value xsi:type="xsd:string">System</value>
+        <value xsi:type="xsd:string">User</value>
     </values>
     <values>
         <field>ChildObject__c</field>
@@ -36,11 +36,11 @@
     </values>
     <values>
         <field>Description__c</field>
-        <value xsi:type="xsd:string">Salesforce - Count Opportunities where Stage = Negotiation/Review and places value in NumberOfEmployees</value>
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>FieldToAggregate__c</field>
-        <value xsi:type="xsd:string">Name</value>
+        <value xsi:type="xsd:string">amount</value>
     </values>
     <values>
         <field>FieldToOrderBy__c</field>
@@ -48,20 +48,19 @@
     </values>
     <values>
         <field>ParentObject__c</field>
-        <value xsi:type="xsd:string">Account</value>
+        <value xsi:type="xsd:string">account</value>
     </values>
     <values>
         <field>RelationshipCriteriaFields__c</field>
-        <value xsi:type="xsd:string">Name
-StageName</value>
+        <value xsi:type="xsd:string">amount</value>
     </values>
     <values>
         <field>RelationshipCriteria__c</field>
-        <value xsi:type="xsd:string">Name like &apos;%Salesforce%&apos; AND StageName = &apos;Negotiation/Review&apos;</value>
+        <value xsi:type="xsd:string">amount &gt; 100</value>
     </values>
     <values>
         <field>RelationshipField__c</field>
-        <value xsi:type="xsd:string">AccountId</value>
+        <value xsi:type="xsd:string">accountid</value>
     </values>
     <values>
         <field>RowLimit__c</field>
