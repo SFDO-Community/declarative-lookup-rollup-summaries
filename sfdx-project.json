@@ -26,7 +26,7 @@
       "path": "unpackaged/config/test_triggers"
     },
     {
-      "path": "unpackaged/config/qa"
+      "path": "unpackaged/config/qa2"
     }
   ],
   "namespace": "dlrs",
