@@ -1,14 +1,10 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<CustomMetadata
-  xmlns="http://soap.sforce.com/2006/04/metadata"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
->
-    <label>Test1</label>
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>QA Apple String Concatenate</label>
     <protected>false</protected>
     <values>
         <field>Active__c</field>
-        <value xsi:type="xsd:boolean">false</value>
+        <value xsi:type="xsd:boolean">true</value>
     </values>
     <values>
         <field>AggregateAllRows__c</field>
@@ -16,11 +12,11 @@
     </values>
     <values>
         <field>AggregateOperation__c</field>
-        <value xsi:type="xsd:string">Sum</value>
+        <value xsi:type="xsd:string">Concatenate</value>
     </values>
     <values>
         <field>AggregateResultField__c</field>
-        <value xsi:type="xsd:string">annualrevenue</value>
+        <value xsi:type="xsd:string">Description</value>
     </values>
     <values>
         <field>CalculationMode__c</field>
@@ -28,7 +24,7 @@
     </values>
     <values>
         <field>CalculationSharingMode__c</field>
-        <value xsi:type="xsd:string">User</value>
+        <value xsi:type="xsd:string">System</value>
     </values>
     <values>
         <field>ChildObject__c</field>
@@ -36,47 +32,47 @@
     </values>
     <values>
         <field>ConcatenateDelimiter__c</field>
-        <value xsi:nil="true" />
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>Description__c</field>
-        <value xsi:nil="true" />
+        <value xsi:type="xsd:string">Apple - Concatenating Opportunity Description into Account Description</value>
     </values>
     <values>
         <field>FieldToAggregate__c</field>
-        <value xsi:type="xsd:string">amount</value>
+        <value xsi:type="xsd:string">Description</value>
     </values>
     <values>
         <field>FieldToOrderBy__c</field>
-        <value xsi:nil="true" />
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>ParentObject__c</field>
-        <value xsi:type="xsd:string">account</value>
+        <value xsi:type="xsd:string">Account</value>
     </values>
     <values>
         <field>RelationshipCriteriaFields__c</field>
-        <value xsi:type="xsd:string">amount</value>
+        <value xsi:type="xsd:string">Name</value>
     </values>
     <values>
         <field>RelationshipCriteria__c</field>
-        <value xsi:type="xsd:string">amount &gt; 100</value>
+        <value xsi:type="xsd:string">Name like &apos;%Apple%&apos;</value>
     </values>
     <values>
         <field>RelationshipField__c</field>
-        <value xsi:type="xsd:string">accountid</value>
+        <value xsi:type="xsd:string">AccountId</value>
     </values>
     <values>
         <field>RowLimit__c</field>
-        <value xsi:nil="true" />
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>TestCode2__c</field>
-        <value xsi:nil="true" />
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>TestCodeParent__c</field>
-        <value xsi:nil="true" />
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>TestCodeSeeAllData__c</field>
@@ -84,6 +80,6 @@
     </values>
     <values>
         <field>TestCode__c</field>
-        <value xsi:nil="true" />
+        <value xsi:nil="true"/>
     </values>
 </CustomMetadata>
