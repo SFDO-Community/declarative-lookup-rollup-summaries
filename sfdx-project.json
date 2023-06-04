@@ -24,9 +24,6 @@
     },
     {
       "path": "unpackaged/config/test_triggers"
-    },
-    {
-      "path": "unpackaged/config/qa"
     }
   ],
   "namespace": "dlrs",
