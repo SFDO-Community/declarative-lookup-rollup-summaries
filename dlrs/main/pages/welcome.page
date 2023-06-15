@@ -89,7 +89,7 @@
 					<li>
 						<p>If your Org
 							<b>is not using My Domain</b> a
-							<a target="_new" href="http://na1.salesforce.com/help/doc/en/configuring_remoteproxy.htm">Remote Site Setting</a> with this Salesforce Server URL
+							<a target="_new" href="https://sfdo-community-sprints.github.io/DLRS-Documentation/Issues/#why-do-i-need-to-allow-metadata-api-in-remote-site-settings">Remote Site Setting</a> with this Salesforce Server URL
 							<b>{!MetadataAPIUrl}</b>
 						</p>
 						<p> Click the
