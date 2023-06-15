@@ -82,7 +82,7 @@
 				<p>In order to
 					<b>configure</b> the features of this tool you need to permit the current user access to the
 					<b>Salesforce Metadata API</b> of your organization. See
-					<a href="https://github.com/afawcett/declarative-lookup-rollup-summaries/wiki/Metadata-API-Connection-Issues-FAQ">FAQ here for more</a>.</p>
+					<a href="https://sfdo-community-sprints.github.io/DLRS-Documentation/Issues/">FAQ here for more</a>.</p>
 				<ul>
 					<li>If your Org
 						<b>is using My Domain</b> resolve the errors on screen and refersh this page until no more errors are shown.</li>
