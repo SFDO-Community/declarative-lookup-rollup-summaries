@@ -184,7 +184,7 @@ private with sharing class fflib_SObjectSelectorTest {
     Testfflib_SObjectSelector selector = new Testfflib_SObjectSelector();
     String soql = selector.newQueryFactory().toSOQL();
     Pattern p = Pattern.compile(
-      'SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST '
+      'SELECT (.*) FROM Account ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST '
     );
     Matcher m = p.matcher(soql);
     System.assert(
@@ -288,7 +288,7 @@ private with sharing class fflib_SObjectSelectorTest {
 
     //Then
     Pattern soqlPattern = Pattern.compile(
-      'SELECT (.*) FROM Account ORDER BY Name DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST '
+      'SELECT (.*) FROM Account ORDER BY AccountNumber DESC NULLS FIRST , AnnualRevenue ASC NULLS FIRST '
     );
     Matcher soqlMatcher = soqlPattern.matcher(soql);
     soqlMatcher.matches();
@@ -344,7 +344,7 @@ private with sharing class fflib_SObjectSelectorTest {
     }
 
     public override String getOrderBy() {
-      return 'Name DESC, AnnualRevenue ASC';
+      return 'AccountNumber DESC, AnnualRevenue ASC';
     }
   }
 
