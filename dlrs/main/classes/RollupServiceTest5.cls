@@ -133,7 +133,7 @@ private class RollupServiceTest5 {
     rollupSummaryOpp.CalculationMode__c = 'Scheduled';
     insert rollupSummaryOpp;
 
-    RollupSummariesSelector.summariesCacheByKey = new Map<String, List<RollupSummary>>();
+    RollupSummariesSelector.clearRollupCache();
 
     // Setup parent test records
     Account accountParent = new Account(Name = 'Test Account');
@@ -239,7 +239,7 @@ private class RollupServiceTest5 {
     insert rollupSummaryAccount;
 
     // burn the cache
-    RollupSummariesSelector.summariesCacheByKey = new Map<String, List<RollupSummary>>();
+    RollupSummariesSelector.clearRollupCache();
 
     // Polymorphic lookup between Task and Opportunity
     LookupRollupSummary__c rollupSummaryOpp = new LookupRollupSummary__c();

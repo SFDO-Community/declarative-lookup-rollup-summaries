@@ -156,8 +156,9 @@ private with sharing class RollupSummariesSelectorTest {
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
 
     // fill cache
-    RollupSummariesSelector.summariesCacheByKey.put(
-      'false|false',
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
       RollupSummary.toList(mock.summariesByDeveloperName.values())
     );
 
@@ -258,8 +259,9 @@ private with sharing class RollupSummariesSelectorTest {
   private static void selectActiveByChildObject_NotForEdit_SortOrder_MDT() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
 
-    RollupSummariesSelector.summariesCacheByKey.put(
-      'false|false',
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
       RollupSummary.toList(mock.summariesByDeveloperName.values())
     );
     RollupSummariesSelector rollupSelector = new RollupSummariesSelector(
@@ -389,8 +391,9 @@ private with sharing class RollupSummariesSelectorTest {
   private static void selectById_notForEdit_MDT() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
 
-    RollupSummariesSelector.summariesCacheByKey.put(
-      'false|false',
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
       RollupSummary.toList(mock.summariesByDeveloperName.values())
     );
 

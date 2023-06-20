@@ -114,7 +114,7 @@ private with sharing class RollupServiceTest3 {
     insert rollupSummary;
 
     // burn the rollup cache so it can see the record
-    RollupSummariesSelector.summariesCacheByKey = new Map<String, List<RollupSummary>>();
+    RollupSummariesSelector.clearRollupCache();
 
     // Run rollup calculate job
     Test.startTest();
@@ -247,7 +247,7 @@ private with sharing class RollupServiceTest3 {
     insert rollupSummary;
 
     // burn the cache
-    RollupSummariesSelector.summariesCacheByKey = new Map<String, List<RollupSummary>>();
+    RollupSummariesSelector.clearRollupCache();
 
     // Run rollup calculate job with WHERE clause
     Test.startTest();
@@ -353,7 +353,7 @@ private with sharing class RollupServiceTest3 {
     insert rollupSummary;
 
     // burn the rollup cache
-    RollupSummariesSelector.summariesCacheByKey = new Map<String, List<RollupSummary>>();
+    RollupSummariesSelector.clearRollupCache();
 
     // Run rollup calculate job
     Test.startTest();

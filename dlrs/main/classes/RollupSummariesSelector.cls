@@ -34,10 +34,31 @@ public class RollupSummariesSelector {
   @TestVisible
   private CustomMetadataSelector m_customMetadataSelector;
 
-  @TestVisible
   private static Map<String, List<RollupSummary>> summariesCacheByKey = new Map<String, List<RollupSummary>>();
 
   private List<RollupSummary> allSummaries;
+
+  public static void clearRollupCache() {
+    summariesCacheByKey = new Map<String, List<RollupSummary>>();
+  }
+
+  @TestVisible
+  private static void setRollupCache(
+    Boolean enforceSecurity,
+    Boolean forEdit,
+    List<RollupSummary> rollups
+  ) {
+    String cacheKey = getCacheKey(enforceSecurity, forEdit);
+    summariesCacheByKey.put(cacheKey, rollups);
+  }
+
+  private static List<RollupSummary> getRollupsFromCache(
+    Boolean enforceSecurity,
+    Boolean forEdit
+  ) {
+    String cacheKey = getCacheKey(enforceSecurity, forEdit);
+    return summariesCacheByKey.get(cacheKey);
+  }
 
   public RollupSummariesSelector() {
     this(false, false);
@@ -55,24 +76,28 @@ public class RollupSummariesSelector {
       forEdit
     );
 
-    String cacheKey = String.format(
-      '{0}|{1}',
-      new List<String>{
-        String.valueOf(enforceSecurity),
-        String.valueOf(forEdit)
-      }
-    );
+    this.allSummaries = getRollupsFromCache(enforceSecurity, forEdit);
 
-    this.allSummaries = summariesCacheByKey.get(cacheKey);
     if (allSummaries == null) {
       this.allSummaries = new List<RollupSummary>();
-      summariesCacheByKey.put(cacheKey, this.allSummaries);
       // build summaries cache
       // Dual selectors for querying custom object and custom metadata stores
       // Build the cache of data
       this.allSummaries.addAll(m_customObjectSelector.selectAll());
       this.allSummaries.addAll(m_customMetadataSelector.selectAll());
+
+      setRollupCache(enforceSecurity, forEdit, this.allSummaries);
     }
+  }
+
+  private static String getCacheKey(boolean enforceSecurity, boolean forEdit) {
+    return String.format(
+      '{0}|{1}',
+      new List<String>{
+        enforceSecurity ? 'withSecurityEnforced' : 'withoutSecurityEnforced',
+        forEdit ? 'forEdit' : 'forRead'
+      }
+    );
   }
 
   /**
