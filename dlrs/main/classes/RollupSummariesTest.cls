@@ -214,8 +214,8 @@ private class RollupSummariesTest {
     System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());
     System.assertEquals(
       'Apex Trigger ' +
-      RollupSummaries.makeTriggerName(new RollupSummary(rollupSummary)) +
-      ' has not been deployed. Click Manage Child Trigger and try again.',
+        RollupSummaries.makeTriggerName(new RollupSummary(rollupSummary)) +
+        ' has not been deployed. Click Manage Child Trigger and try again.',
       fflib_SObjectDomain.Errors.getAll()[0].message
     );
     System.assertEquals(
@@ -572,10 +572,10 @@ private class RollupSummariesTest {
     // Test RollupSummaries.calculateComponentName directly so we can override the maxComponentNameLength
     System.assertEquals(
       componentPrefix +
-      componentPrefix +
-      'DeclarativeLookupRollupSu' +
-      dlrsKeyPrefix +
-      'Trigger',
+        componentPrefix +
+        'DeclarativeLookupRollupSu' +
+        dlrsKeyPrefix +
+        'Trigger',
       RollupSummaries.calculateComponentName(
         objectPrefix + 'DeclarativeLookupRollupSummaries__c',
         'Trigger',
@@ -584,10 +584,10 @@ private class RollupSummariesTest {
     );
     System.assertEquals(
       componentPrefix +
-      componentPrefix +
-      'DeclarativeLookupRollupSumma' +
-      dlrsKeyPrefix +
-      'Test',
+        componentPrefix +
+        'DeclarativeLookupRollupSumma' +
+        dlrsKeyPrefix +
+        'Test',
       RollupSummaries.calculateComponentName(
         objectPrefix + 'DeclarativeLookupRollupSummaries__c',
         'Test',
@@ -773,6 +773,159 @@ private class RollupSummariesTest {
     );
     System.assertEquals(
       LookupRollupSummary__c.RowLimit__c,
+      ((fflib_SObjectDomain.FieldError) fflib_SObjectDomain.Errors.getAll()[0])
+        .field
+    );
+  }
+
+  private testMethod static void testInsertRelationshipFieldValidationShouldPass() {
+    // Test supported?
+    if (!TestContext.isSupported())
+      return;
+
+    LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt();
+    rollupSummary.Label = 'Total Opportunities into Annual Revenue on Account';
+    rollupSummary.ParentObject__c = 'Account';
+    rollupSummary.ChildObject__c = 'Opportunity';
+    rollupSummary.RelationShipField__c = 'AccountId';
+    rollupSummary.RelationShipCriteria__c = null;
+    rollupSummary.FieldToAggregate__c = 'Amount';
+    rollupSummary.AggregateOperation__c = 'Sum';
+    rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+    rollupSummary.Active__c = true;
+    rollupSummary.CalculationMode__c = 'Realtime';
+    rollupSummary.FieldToOrderBy__c = 'CreatedDate DESC, Amount ASC';
+    fflib_SObjectDomain.Test.Database.onInsert(
+      new List<LookupRollupSummary2__mdt>{ rollupSummary }
+    );
+    fflib_SObjectDomain.triggerHandler(RollupSummaries.class);
+    System.assertEquals(0, fflib_SObjectDomain.Errors.getAll().size());
+  }
+
+  private testMethod static void testInsertRelationshipFieldValidationRelationshipNameShouldFail() {
+    // Test supported?
+    if (!TestContext.isSupported())
+      return;
+
+    LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt();
+    rollupSummary.Label = 'Total Opportunities into Annual Revenue on Account';
+    rollupSummary.ParentObject__c = 'Account';
+    rollupSummary.ChildObject__c = 'Opportunity';
+    rollupSummary.RelationShipField__c = 'Account';
+    rollupSummary.RelationShipCriteria__c = null;
+    rollupSummary.FieldToAggregate__c = 'Amount';
+    rollupSummary.AggregateOperation__c = 'Sum';
+    rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+    rollupSummary.Active__c = true;
+    rollupSummary.CalculationMode__c = 'Realtime';
+    fflib_SObjectDomain.Test.Database.onInsert(
+      new List<LookupRollupSummary2__mdt>{ rollupSummary }
+    );
+    fflib_SObjectDomain.triggerHandler(RollupSummaries.class);
+    System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());
+    System.assertEquals(
+      'Field does not exist.',
+      fflib_SObjectDomain.Errors.getAll()[0].message
+    );
+    System.assertEquals(
+      LookupRollupSummary__c.RelationShipField__c,
+      ((fflib_SObjectDomain.FieldError) fflib_SObjectDomain.Errors.getAll()[0])
+        .field
+    );
+  }
+
+  private testMethod static void testInsertRelationshipFieldValidationFieldToAggregateShouldFail() {
+    // Test supported?
+    if (!TestContext.isSupported())
+      return;
+
+    LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt();
+    rollupSummary.Label = 'Total Opportunities into Annual Revenue on Account';
+    rollupSummary.ParentObject__c = 'Account';
+    rollupSummary.ChildObject__c = 'Opportunity';
+    rollupSummary.RelationShipField__c = 'AccountId';
+    rollupSummary.RelationShipCriteria__c = null;
+    rollupSummary.FieldToAggregate__c = 'Robot';
+    rollupSummary.AggregateOperation__c = 'Sum';
+    rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+    rollupSummary.Active__c = true;
+    rollupSummary.CalculationMode__c = 'Realtime';
+    fflib_SObjectDomain.Test.Database.onInsert(
+      new List<LookupRollupSummary2__mdt>{ rollupSummary }
+    );
+    fflib_SObjectDomain.triggerHandler(RollupSummaries.class);
+    System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());
+    System.assertEquals(
+      'Field does not exist.',
+      fflib_SObjectDomain.Errors.getAll()[0].message
+    );
+    System.assertEquals(
+      LookupRollupSummary__c.FieldToAggregate__c,
+      ((fflib_SObjectDomain.FieldError) fflib_SObjectDomain.Errors.getAll()[0])
+        .field
+    );
+  }
+
+  private testMethod static void testInsertRelationshipFieldValidationAggregateResultFieldShouldFail() {
+    // Test supported?
+    if (!TestContext.isSupported())
+      return;
+
+    LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt();
+    rollupSummary.Label = 'Total Opportunities into Annual Revenue on Account';
+    rollupSummary.ParentObject__c = 'Account';
+    rollupSummary.ChildObject__c = 'Opportunity';
+    rollupSummary.RelationShipField__c = 'AccountId';
+    rollupSummary.RelationShipCriteria__c = null;
+    rollupSummary.FieldToAggregate__c = 'Amount';
+    rollupSummary.AggregateOperation__c = 'Sum';
+    rollupSummary.AggregateResultField__c = 'NotAField';
+    rollupSummary.Active__c = true;
+    rollupSummary.CalculationMode__c = 'Realtime';
+    fflib_SObjectDomain.Test.Database.onInsert(
+      new List<LookupRollupSummary2__mdt>{ rollupSummary }
+    );
+    fflib_SObjectDomain.triggerHandler(RollupSummaries.class);
+    System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());
+    System.assertEquals(
+      'Field does not exist.',
+      fflib_SObjectDomain.Errors.getAll()[0].message
+    );
+    System.assertEquals(
+      LookupRollupSummary__c.AggregateResultField__c,
+      ((fflib_SObjectDomain.FieldError) fflib_SObjectDomain.Errors.getAll()[0])
+        .field
+    );
+  }
+
+  private testMethod static void testInsertRelationshipFieldValidationFieldToOrderByShouldFail() {
+    // Test supported?
+    if (!TestContext.isSupported())
+      return;
+
+    LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt();
+    rollupSummary.Label = 'Total Opportunities into Annual Revenue on Account';
+    rollupSummary.ParentObject__c = 'Account';
+    rollupSummary.ChildObject__c = 'Opportunity';
+    rollupSummary.RelationShipField__c = 'AccountId';
+    rollupSummary.RelationShipCriteria__c = null;
+    rollupSummary.FieldToAggregate__c = 'Amount';
+    rollupSummary.AggregateOperation__c = 'Sum';
+    rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+    rollupSummary.Active__c = true;
+    rollupSummary.CalculationMode__c = 'Realtime';
+    rollupSummary.FieldToOrderBy__c = 'CreatedDate DESC, InvalidField ASC';
+    fflib_SObjectDomain.Test.Database.onInsert(
+      new List<LookupRollupSummary2__mdt>{ rollupSummary }
+    );
+    fflib_SObjectDomain.triggerHandler(RollupSummaries.class);
+    System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());
+    System.assertEquals(
+      'Field does not exist.',
+      fflib_SObjectDomain.Errors.getAll()[0].message
+    );
+    System.assertEquals(
+      LookupRollupSummary__c.FieldToOrderBy__c,
       ((fflib_SObjectDomain.FieldError) fflib_SObjectDomain.Errors.getAll()[0])
         .field
     );

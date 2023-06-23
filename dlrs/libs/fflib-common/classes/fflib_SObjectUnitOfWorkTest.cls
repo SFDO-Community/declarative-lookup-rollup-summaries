@@ -59,8 +59,6 @@ private with sharing class fflib_SObjectUnitOfWorkTest {
     List<Opportunity> opps = [
       SELECT Id, Name, (SELECT Id FROM OpportunityLineItems)
       FROM Opportunity
-      WHERE Name = :testRecordName
-      ORDER BY Name
     ];
 
     // assert that an email was sent
@@ -115,8 +113,6 @@ private with sharing class fflib_SObjectUnitOfWorkTest {
     List<Opportunity> opps = [
       SELECT Id, Name, (SELECT Id FROM OpportunityLineItems)
       FROM Opportunity
-      WHERE Name LIKE 'UoW Test Name %'
-      ORDER BY Name
     ];
 
     // Update some records with UnitOfWork
@@ -167,8 +163,6 @@ private with sharing class fflib_SObjectUnitOfWorkTest {
           ORDER BY PricebookEntry.Product2.Name
         )
       FROM Opportunity
-      WHERE Name LIKE 'UoW Test Name %'
-      ORDER BY Name
     ];
     System.assertEquals(10, opps.size());
     System.assertEquals('UoW Test Name 0 Changed', opps[0].Name);
@@ -221,8 +215,6 @@ private with sharing class fflib_SObjectUnitOfWorkTest {
           ORDER BY PricebookEntry.Product2.Name
         )
       FROM Opportunity
-      WHERE Name LIKE 'UoW Test Name %'
-      ORDER BY Name
     ];
     List<Product2> prods = [
       SELECT Id
@@ -237,12 +229,9 @@ private with sharing class fflib_SObjectUnitOfWorkTest {
 
   private static void assertResults(String prefix) {
     // Standard Assertions on tests data inserted by tests
-    String filter = prefix + ' Test Name %';
     List<Opportunity> opps = [
       SELECT Id, Name, (SELECT Id FROM OpportunityLineItems)
       FROM Opportunity
-      WHERE Name LIKE :filter
-      ORDER BY Name
     ];
     System.assertEquals(10, opps.size());
     System.assertEquals(1, opps[0].OpportunityLineItems.size());
