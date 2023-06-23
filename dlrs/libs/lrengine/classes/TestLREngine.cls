@@ -1137,7 +1137,7 @@ private class TestLREngine {
 
   static testMethod void testRollupConcatenateOrderByMultipleAscendingNullsFirst() {
     testRollup2(
-      'CloseDate, Type, Amount, Name',
+      'CloseDate, Type, Amount, StageName',
       new LREngine.RollupSummaryField(
         Schema.SObjectType.Account.fields.Description,
         Schema.SObjectType.Opportunity.fields.StageName,
@@ -1145,13 +1145,13 @@ private class TestLREngine {
         ','
       ),
       'blue,red,yellow',
-      'orange,green,purple'
+      'green,orange,purple'
     );
   }
 
   static testMethod void testRollupConcatenateOrderByMultipleAscendingNullsLast() {
     testRollup2(
-      'CloseDate NULLS LAST, Type NULLS LAST, Amount NULLS LAST, Name NULLS LAST',
+      'CloseDate NULLS LAST, Type NULLS LAST, Amount NULLS LAST, StageName NULLS LAST',
       new LREngine.RollupSummaryField(
         Schema.SObjectType.Account.fields.Description,
         Schema.SObjectType.Opportunity.fields.StageName,
@@ -1159,13 +1159,13 @@ private class TestLREngine {
         ','
       ),
       'red,yellow,blue',
-      'orange,green,purple'
+      'green,orange,purple'
     );
   }
 
   static testMethod void testRollupConcatenateOrderByMultipleDescendingNullsFirst() {
     testRollup2(
-      'CloseDate DESC, Type DESC, Amount DESC, Name DESC',
+      'CloseDate DESC, Type DESC, Amount DESC, StageName DESC',
       new LREngine.RollupSummaryField(
         Schema.SObjectType.Account.fields.Description,
         Schema.SObjectType.Opportunity.fields.StageName,
@@ -1173,13 +1173,13 @@ private class TestLREngine {
         ','
       ),
       'blue,yellow,red',
-      'purple,green,orange'
+      'purple,orange,green'
     );
   }
 
   static testMethod void testRollupConcatenateOrderByMultipleDescendingNullsLast() {
     testRollup2(
-      'CloseDate DESC NULLS LAST, Type DESC NULLS LAST, Amount DESC NULLS LAST, Name DESC NULLS LAST',
+      'CloseDate DESC NULLS LAST, Type DESC NULLS LAST, Amount DESC NULLS LAST, StageName DESC NULLS LAST',
       new LREngine.RollupSummaryField(
         Schema.SObjectType.Account.fields.Description,
         Schema.SObjectType.Opportunity.fields.StageName,
@@ -1187,7 +1187,7 @@ private class TestLREngine {
         ','
       ),
       'yellow,red,blue',
-      'purple,green,orange'
+      'purple,orange,green'
     );
   }
 
@@ -1235,7 +1235,7 @@ private class TestLREngine {
 
   static testMethod void testRollupConcatenateDistinctWithMultipleFieldsOrderBy() {
     testRollup(
-      'Amount DESC, CloseDate DESC, Type DESC, Name DESC',
+      'Amount DESC, CloseDate DESC, Type DESC, StageName DESC',
       new LREngine.RollupSummaryField(
         Schema.SObjectType.Account.fields.Description,
         Schema.SObjectType.Opportunity.fields.StageName,
