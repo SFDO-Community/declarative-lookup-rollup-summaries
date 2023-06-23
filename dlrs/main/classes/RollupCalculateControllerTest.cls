@@ -27,14 +27,12 @@
 @IsTest
 private class RollupCalculateControllerTest {
   static Schema.SObjectField ACCOUNT_SLA_EXPIRATION_DATE;
-  static Schema.SObjectField ACCOUNT_NUMBER_OF_LOCATIONS;
   static {
     // Dynamically resolve these fields, if they are not present when the test runs, the test will return as passed to avoid failures in subscriber org when packaged
     fflib_SObjectDescribe describe = fflib_SObjectDescribe.getDescribe(
       Account.SObjectType
     );
     ACCOUNT_SLA_EXPIRATION_DATE = describe.getField('SLAExpirationDate__c');
-    ACCOUNT_NUMBER_OF_LOCATIONS = describe.getField('NumberOfLocations__c');
   }
 
   @IsTest
@@ -87,7 +85,7 @@ private class RollupCalculateControllerTest {
     // Assert rollups are null
     Id accountId = account1.Id;
     Account accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      'select AnnualRevenue from Account where Id = :accountId'
     );
     System.assertEquals(null, accountResult.AnnualRevenue);
 
@@ -99,7 +97,7 @@ private class RollupCalculateControllerTest {
 
     // Assert rollups are calculated
     accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      'select AnnualRevenue from Account where Id = :accountId'
     );
     System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
 
@@ -121,14 +119,14 @@ private class RollupCalculateControllerTest {
     System.assertEquals(
       /* Expected following additional query rows */
       /* Lookup row **/ +1 +
-      /* Rollup query rows (children) **/ rollups.size() +
-      /* Master query rows (parents) */ accounts.size(),
+        /* Rollup query rows (children) **/ rollups.size() +
+        /* Master query rows (parents) */ accounts.size(),
       Limits.getQueryRows() - queryRows
     );
 
     // Assert rollups are still ok
     accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      'select AnnualRevenue from Account where Id = :accountId'
     );
     System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
 
@@ -155,14 +153,14 @@ private class RollupCalculateControllerTest {
     System.assertEquals(
       /* Expected following additional query rows */
       /* Lookup row **/ +1 +
-      /* Rollup query rows (children) **/ rollups.size() +
-      /* Master query rows (parents) */ accounts.size(),
+        /* Rollup query rows (children) **/ rollups.size() +
+        /* Master query rows (parents) */ accounts.size(),
       Limits.getQueryRows() - queryRows
     );
 
     // Assert rollups are still ok
     accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      'select AnnualRevenue from Account where Id = :accountId'
     );
     System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
   }

@@ -43,6 +43,11 @@ private class RollupServiceTest4 {
     Decimal expectedValue2,
     String sharingMode
   ) {
+    // Test supported?
+    if (!TestContext.isSupported()) {
+      return;
+    }
+
     // Create test user A
     User testUserA = null;
     System.runAs(new User(Id = UserInfo.getUserId())) {
