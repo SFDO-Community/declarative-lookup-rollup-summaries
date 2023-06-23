@@ -48,27 +48,16 @@ tasks:
         - "UNABLE_TO_LOCK_ROW"
       retry_always: True
 
-  uninstall_packaged_incremental:
-    options:
-      ignore:
-        # This trigger is not intended for packaging,
-        # but is spidered in. We can't currently prevent that behavior.
-        ApexTrigger:
-          - UnpackagedRollupServiceTest2Trigger
 flows:
   ci_beta:
     steps:
       1.5:
         task: deploy_test_config
-      1.6:
-        task: deploy_test_triggers
 
   ci_release:
     steps:
       1.5:
         task: deploy_test_config
-      1.6:
-        task: deploy_test_triggers
 
   config_apextest:
     steps:
@@ -111,8 +100,6 @@ flows:
         task: dx_convert_from
         options:
           extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
-      4.1:
-        task: deploy_test_triggers
 
   config_dev:
     steps:
