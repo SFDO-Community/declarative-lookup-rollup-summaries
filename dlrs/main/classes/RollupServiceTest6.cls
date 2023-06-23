@@ -676,6 +676,11 @@ private class RollupServiceTest6 {
 
   @IsTest
   static void testRollupPreventUnecessaryParentDmlScheduled() {
+    // Test supported?
+    if (!TestContext.isSupported()) {
+      return;
+    }
+
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
     rollupSummaryA.Name = 'Test Rollup';
     rollupSummaryA.ParentObject__c = 'Account';
@@ -730,6 +735,10 @@ private class RollupServiceTest6 {
 
   @IsTest
   static void testRollupPreventUnecessaryParentDmlScheduledRespectDisable() {
+    // Test supported?
+    if (!TestContext.isSupported()) {
+      return;
+    }
     DeclarativeLookupRollupSummaries__c settings = new DeclarativeLookupRollupSummaries__c(
       DisableParentDMLCheck__c = true
     );
