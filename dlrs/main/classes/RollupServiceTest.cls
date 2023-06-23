@@ -1472,12 +1472,12 @@ private with sharing class RollupServiceTest {
     // Test data for rollup A
     String expectedResultA = 'Prospecting';
     RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.First;
-    String orderByClauseA = 'Amount ASC NULLS FIRST, CloseDate ASC NULLS FIRST, Name';
+    String orderByClauseA = 'Amount ASC NULLS FIRST, CloseDate ASC NULLS FIRST, StageName';
 
     // Test data for rollup B
     String expectedResultB = 'Kim,Joe,Charlie,Steve';
     RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Concatenate;
-    String orderByClauseB = 'Amount ASC NULLS FIRST, CloseDate DESC NULLS FIRST, Name';
+    String orderByClauseB = 'Amount ASC NULLS FIRST, CloseDate DESC NULLS FIRST, StageName';
 
     // generate rollups and data
     Id accountId = setupMultiRollupDifferentTypes(
