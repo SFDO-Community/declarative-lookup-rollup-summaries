@@ -299,6 +299,7 @@ private class fflib_QueryFactoryTest {
     Contact cont = new Contact();
     cont.FirstName = 'test';
     cont.LastName = 'test';
+    cont.Department = 'test';
     cont.AccountId = acct.Id;
     insert cont;
     Task tsk = new Task();
@@ -310,7 +311,7 @@ private class fflib_QueryFactoryTest {
     fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
     qf.selectField('name')
       .selectField('Id')
-      .setCondition('name like \'%test%\'')
+      .setCondition('department like \'%test%\'')
       .addOrdering(
         'CreatedDate',
         fflib_QueryFactory.SortOrder.DESCENDING,
@@ -338,6 +339,7 @@ private class fflib_QueryFactoryTest {
     Contact cont = new Contact();
     cont.FirstName = 'test';
     cont.LastName = 'test';
+    cont.Department = 'test';
     cont.AccountId = acct.Id;
     insert cont;
     Task tsk = new Task();
@@ -349,7 +351,7 @@ private class fflib_QueryFactoryTest {
     fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
     qf.selectField('name')
       .selectField('Id')
-      .setCondition('name like \'%test%\'')
+      .setCondition('department like \'%test%\'')
       .addOrdering(
         'CreatedDate',
         fflib_QueryFactory.SortOrder.DESCENDING,
@@ -378,6 +380,7 @@ private class fflib_QueryFactoryTest {
     Contact cont = new Contact();
     cont.FirstName = 'test';
     cont.LastName = 'test';
+    cont.Department = 'test';
     cont.AccountId = acct.Id;
     insert cont;
     Task tsk = new Task();
@@ -389,7 +392,7 @@ private class fflib_QueryFactoryTest {
     fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
     qf.selectField('name')
       .selectField('Id')
-      .setCondition('name like \'%test%\'')
+      .setCondition('department like \'%test%\'')
       .addOrdering(
         'CreatedDate',
         fflib_QueryFactory.SortOrder.DESCENDING,
@@ -427,6 +430,7 @@ private class fflib_QueryFactoryTest {
     Contact cont = new Contact();
     cont.FirstName = 'test';
     cont.LastName = 'test';
+    cont.Department = 'test';
     cont.AccountId = acct.Id;
     insert cont;
     Task tsk = new Task();
@@ -438,7 +442,7 @@ private class fflib_QueryFactoryTest {
     fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
     qf.selectField('name')
       .selectField('Id')
-      .setCondition('name like \'%test%\'')
+      .setCondition('department like \'%test%\'')
       .addOrdering(
         'CreatedDate',
         fflib_QueryFactory.SortOrder.DESCENDING,
@@ -516,6 +520,7 @@ private class fflib_QueryFactoryTest {
     Contact cont = new Contact();
     cont.FirstName = 'test';
     cont.LastName = 'test';
+    cont.Department = 'test';
     cont.AccountId = acct.Id;
     insert cont;
     Task tsk = new Task();
@@ -527,7 +532,7 @@ private class fflib_QueryFactoryTest {
     fflib_QueryFactory qf = new fflib_QueryFactory(Contact.SObjectType);
     qf.selectField('name')
       .selectField('Id')
-      .setCondition('name like \'%test%\'')
+      .setCondition('department like \'%test%\'')
       .addOrdering(
         'CreatedDate',
         fflib_QueryFactory.SortOrder.DESCENDING,
