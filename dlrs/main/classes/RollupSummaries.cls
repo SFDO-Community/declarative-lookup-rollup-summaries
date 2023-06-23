@@ -146,16 +146,14 @@ public class RollupSummaries extends fflib_SObjectDomain {
       SObjectField fieldToAggregate = null;
       if (childObject != null) {
         // Relationship field
-        relationshipField = childObject.getField(
-          lookupRollupSummary.RelationshipField
-        );
+        relationshipField = childObject.getFieldsMap()
+          .get(lookupRollupSummary.RelationshipField);
         if (relationshipField != null)
           lookupRollupSummary.RelationshipField = relationshipField.getDescribe()
             .getName();
         // Field to Aggregate
-        fieldToAggregate = childObject.getField(
-          lookupRollupSummary.FieldToAggregate
-        );
+        fieldToAggregate = childObject.getFieldsMap()
+          .get(lookupRollupSummary.FieldToAggregate);
         if (fieldToAggregate != null)
           lookupRollupSummary.FieldToAggregate = fieldToAggregate.getDescribe()
             .getName();
@@ -176,9 +174,8 @@ public class RollupSummaries extends fflib_SObjectDomain {
       SObjectField aggregateResultField = null;
       if (parentObject != null) {
         // Aggregate Result field
-        aggregateResultField = parentObject.getField(
-          lookupRollupSummary.AggregateResultField
-        );
+        aggregateResultField = parentObject.getFieldsMap()
+          .get(lookupRollupSummary.AggregateResultField);
         if (aggregateResultField != null)
           lookupRollupSummary.AggregateResultField = aggregateResultField.getDescribe()
             .getName();
@@ -193,7 +190,8 @@ public class RollupSummaries extends fflib_SObjectDomain {
           '\r\n'
         );
         for (String field : fieldList) {
-          SObjectField relationshipCriteriaField = childObject.getField(field);
+          SObjectField relationshipCriteriaField = childObject.getFieldsMap()
+            .get(field);
           relationshipCriteriaFields.add(
             relationshipCriteriaField != null
               ? relationshipCriteriaField.getDescribe().getName()
@@ -272,9 +270,8 @@ public class RollupSummaries extends fflib_SObjectDomain {
       Boolean orderByIsValid = true;
       if (childObject != null) {
         // Relationship field valid?
-        relationshipField = childObject.getField(
-          lookupRollupSummary.RelationshipField
-        );
+        relationshipField = childObject.getFieldsMap()
+          .get(lookupRollupSummary.RelationshipField);
         if (relationshipField == null)
           lookupRollupSummary.Fields.RelationshipField.addError(
             error(
@@ -284,9 +281,8 @@ public class RollupSummaries extends fflib_SObjectDomain {
             )
           );
         // Field to Aggregate valid?
-        fieldToAggregate = childObject.getField(
-          lookupRollupSummary.FieldToAggregate
-        );
+        fieldToAggregate = childObject.getFieldsMap()
+          .get(lookupRollupSummary.FieldToAggregate);
         if (fieldToAggregate == null)
           lookupRollupSummary.Fields.FieldToAggregate.addError(
             error(
@@ -320,9 +316,8 @@ public class RollupSummaries extends fflib_SObjectDomain {
       SObjectField aggregateResultField = null;
       if (parentObject != null) {
         // Aggregate Result field valid?
-        aggregateResultField = parentObject.getField(
-          lookupRollupSummary.AggregateResultField
-        );
+        aggregateResultField = parentObject.getFieldsMap()
+          .get(lookupRollupSummary.AggregateResultField);
         if (aggregateResultField == null)
           lookupRollupSummary.Fields.AggregateResultField.addError(
             error(
@@ -346,8 +341,8 @@ public class RollupSummaries extends fflib_SObjectDomain {
           lookupRollupSummary.Fields.Active.addError(
             error(
               'Apex Trigger ' +
-              triggerName +
-              ' has not been deployed. Click Manage Child Trigger and try again.',
+                triggerName +
+                ' has not been deployed. Click Manage Child Trigger and try again.',
               lookupRollupSummary.Record,
               LookupRollupSummary__c.Active__c
             )
@@ -364,14 +359,14 @@ public class RollupSummaries extends fflib_SObjectDomain {
         String[] fieldsInError = new List<String>();
         for (String field : fieldList)
           if (field.length() > 0)
-            if (childObject.getField(field) == null)
+            if (childObject.getFieldsMap().get(field) == null)
               fieldsInError.add(field);
         if (fieldsInError.size() == 1)
           lookupRollupSummary.Fields.RelationshipCriteriaFields.addError(
             error(
               'Field ' +
-              fieldsInError[0] +
-              ' does not exist on the child object.',
+                fieldsInError[0] +
+                ' does not exist on the child object.',
               lookupRollupSummary.Record,
               LookupRollupSummary__c.RelationshipCriteriaFields__c
             )
@@ -380,8 +375,8 @@ public class RollupSummaries extends fflib_SObjectDomain {
           lookupRollupSummary.Fields.RelationshipCriteriaFields.addError(
             error(
               'Fields ' +
-              String.join(fieldsInError, ',') +
-              ' do not exist on the child object.',
+                String.join(fieldsInError, ',') +
+                ' do not exist on the child object.',
               lookupRollupSummary.Record,
               LookupRollupSummary__c.RelationshipCriteriaFields__c
             )
@@ -606,7 +601,8 @@ public class RollupSummaries extends fflib_SObjectDomain {
     String componentName = prefix + trimmedObjectName + suffix;
     Integer componentNameLength = componentName.length();
     if (
-      componentNameLength > maxComponentNameLength // Do we need to trim the trigger name?
+      componentNameLength >
+      maxComponentNameLength // Do we need to trim the trigger name?
     ) {
       Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
       SObjectType childObjectType = gd.get(childObjectName);
@@ -639,7 +635,8 @@ public class RollupSummaries extends fflib_SObjectDomain {
 
     String parsedOrderByClause = '';
     for (Utilities.Ordering orderByField : fieldsToOrderBy) {
-      SObjectField sObjectField = fields.getField(orderByField.getField());
+      SObjectField sObjectField = fields.getFieldsMap()
+        .get(orderByField.getField());
       if (sObjectField == null) {
         throw new Utilities.OrderByInvalidException('Field does not exist.');
       }
