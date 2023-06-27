@@ -28,7 +28,8 @@
  * Handles the Manage Trigger and Calculate Custom Buttons
  **/
 public with sharing class RollupController {
-  public static String API_VERSION = '51.0';
+  
+  public static String API_VERSION = '58.0';
 
   public String ZipData { get; set; }
 
