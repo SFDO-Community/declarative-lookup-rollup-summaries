@@ -96,6 +96,7 @@ Insert Lead:
   sf_object: Lead
   fields:
   - Company
+  - Description
   - DoNotCall
   - FirstName
   - HasOptedOutOfEmail

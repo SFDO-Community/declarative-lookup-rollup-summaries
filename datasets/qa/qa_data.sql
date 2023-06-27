@@ -51,6 +51,7 @@ INSERT INTO "Contact" VALUES(1,'False','Parker','False','False','Harris','','','
 CREATE TABLE "Lead" (
 	id INTEGER NOT NULL, 
 	"Company" VARCHAR(255), 
+	"Description" VARCHAR(255), 
 	"DoNotCall" VARCHAR(255), 
 	"FirstName" VARCHAR(255), 
 	"HasOptedOutOfEmail" VARCHAR(255), 
@@ -61,7 +62,7 @@ CREATE TABLE "Lead" (
 	"Status" VARCHAR(255), 
 	PRIMARY KEY (id)
 );
-INSERT INTO "Lead" VALUES(1,'Salesforce','False','Marc','False','False','False','False','Benioff','Open - Not Contacted');
+INSERT INTO "Lead" VALUES(1,'Salesforce','CEO of Salesforce','False','Marc','False','False','False','False','Benioff','Open - Not Contacted');
 CREATE TABLE "Opportunity" (
 	id INTEGER NOT NULL, 
 	"Amount" VARCHAR(255), 
