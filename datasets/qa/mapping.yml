@@ -4,6 +4,10 @@ Insert Account:
   - Name
   - NumberOfLocations__c
   - SLAExpirationDate__c
+  - Description
+  - Type
+  - Industry
+  - AnnualRevenue
   lookups:
     ParentId:
       table: Account
@@ -32,6 +36,9 @@ Insert Contact:
   - HasOptedOutOfEmail
   - HasOptedOutOfFax
   - LastName
+  - Email
+  - Mobile
+  - Description
   lookups:
     AccountId:
       table: Account
@@ -57,6 +64,12 @@ Insert Case:
   sf_object: Case
   fields:
   - IsEscalated
+  - Subject
+  - Description
+  - Type
+  - Priority
+  - Reason
+  - Origin
   lookups:
     AccountId:
       table: Account
@@ -68,7 +81,9 @@ Insert Case:
 Insert Opportunity:
   sf_object: Opportunity
   fields:
+  - Amount
   - CloseDate
+  - Description
   - IsPrivate
   - Name
   - StageName
@@ -77,3 +92,15 @@ Insert Opportunity:
       table: Account
     ContactId:
       table: Contact
+Insert Lead:
+  sf_object: Lead
+  fields:
+  - Company
+  - DoNotCall
+  - FirstName
+  - HasOptedOutOfEmail
+  - HasOptedOutOfFax
+  - IsConverted
+  - IsUnreadByOwner
+  - LastName
+  - Status
