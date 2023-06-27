@@ -37,7 +37,7 @@ Insert Contact:
   - HasOptedOutOfFax
   - LastName
   - Email
-  - Mobile
+  - MobilePhone
   - Description
   lookups:
     AccountId:
