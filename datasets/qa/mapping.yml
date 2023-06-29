@@ -2,8 +2,6 @@ Insert Account:
   sf_object: Account
   fields:
   - Name
-  - NumberOfLocations__c
-  - SLAExpirationDate__c
   - Description
   - Type
   - Industry
