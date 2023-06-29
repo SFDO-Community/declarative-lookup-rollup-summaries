@@ -1,6 +1,12 @@
+/**
+ * Helper class for QA-related functionality.
+ */
 public with sharing class QAHelper {
   private static final String QA_APP_NAME = 'DLRS_QA_App';
 
+  /**
+   * Queries AppMenuItems and reorders them so that the QA app is first.
+   */
   public static void updateAppMenuOrdering() {
     AppMenuItem[] menuItems = [SELECT ApplicationId, Name FROM AppMenuItem];
     Map<String, AppMenuItem> menuItemMap = new Map<String, AppMenuItem>();
