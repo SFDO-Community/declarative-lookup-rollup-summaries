@@ -2,8 +2,6 @@ BEGIN TRANSACTION;
 CREATE TABLE "Account" (
 	id INTEGER NOT NULL, 
 	"Name" VARCHAR(255), 
-	"NumberOfLocations__c" VARCHAR(255), 
-	"SLAExpirationDate__c" VARCHAR(255), 
 	"Description" VARCHAR(255), 
 	"Type" VARCHAR(255), 
 	"Industry" VARCHAR(255), 
@@ -11,13 +9,13 @@ CREATE TABLE "Account" (
 	"ParentId" VARCHAR(255), 
 	PRIMARY KEY (id)
 );
-INSERT INTO "Account" VALUES(1,'Apple','','','','','','0.0','');
-INSERT INTO "Account" VALUES(2,'Google','','','','','','100000.0','');
-INSERT INTO "Account" VALUES(3,'Slack','','','','','','0.0','');
-INSERT INTO "Account" VALUES(4,'Mulesoft','','','','','','0.0','');
-INSERT INTO "Account" VALUES(5,'Sonos','','','','','','0.0','');
-INSERT INTO "Account" VALUES(6,'Salesforce','','','','','','0.0','');
-INSERT INTO "Account" VALUES(7,'Microsoft','','','','','','0.0','');
+INSERT INTO "Account" VALUES(1,'Apple','','','','0.0','');
+INSERT INTO "Account" VALUES(2,'Google','','','','100000.0','');
+INSERT INTO "Account" VALUES(3,'Slack','','','','0.0','');
+INSERT INTO "Account" VALUES(4,'Mulesoft','','','','0.0','');
+INSERT INTO "Account" VALUES(5,'Sonos','','','','0.0','');
+INSERT INTO "Account" VALUES(6,'Salesforce','','','','0.0','');
+INSERT INTO "Account" VALUES(7,'Microsoft','','','','0.0','');
 CREATE TABLE "Case" (
 	id INTEGER NOT NULL, 
 	"IsEscalated" VARCHAR(255), 
@@ -103,10 +101,10 @@ INSERT INTO "Opportunity" VALUES(25,'25000.0','2022-07-17','','False','Microsoft
 INSERT INTO "Opportunity" VALUES(26,'25000.0','2022-07-18','','False','Microsoft Dec','Prospecting','7','');
 INSERT INTO "Opportunity" VALUES(27,'25000.0','2022-07-19','','False','Microsoft Jan','Negotiation/Review','7','');
 INSERT INTO "Opportunity" VALUES(28,'25000.0','2022-07-20','','False','Microsoft Feb','Negotiation/Review','7','');
-INSERT INTO "Opportunity" VALUES(29,'5000.0','2022-06-01','','False','Apple Jan','Prospecting','1','');
-INSERT INTO "Opportunity" VALUES(30,'5000.0','2022-06-02','','False','Apple Feb','Qualification','1','');
-INSERT INTO "Opportunity" VALUES(31,'5000.0','2022-06-03','','False','Apple Mar','Needs Analysis','1','');
-INSERT INTO "Opportunity" VALUES(32,'5000.0','2022-06-04','','False','Apple Apr','Value Proposition','1','');
+INSERT INTO "Opportunity" VALUES(29,'5000.0','2022-06-04','','False','Apple Apr','Value Proposition','1','');
+INSERT INTO "Opportunity" VALUES(30,'5000.0','2022-06-01','','False','Apple Jan','Prospecting','1','');
+INSERT INTO "Opportunity" VALUES(31,'5000.0','2022-06-02','','False','Apple Feb','Qualification','1','');
+INSERT INTO "Opportunity" VALUES(32,'5000.0','2022-06-03','','False','Apple Mar','Needs Analysis','1','');
 INSERT INTO "Opportunity" VALUES(33,'5000.0','2022-06-05','','False','Apple May','Id. Decision Makers','1','');
 INSERT INTO "Opportunity" VALUES(34,'5000.0','2022-06-06','','False','Apple Jun','Perception Analysis','1','');
 INSERT INTO "Opportunity" VALUES(35,'5000.0','2022-06-07','','False','Apple Jul','Negotiation/Review','1','');
@@ -127,10 +125,10 @@ INSERT INTO "Opportunity" VALUES(49,'40000.0','2022-07-31','','False','Slack Jan
 INSERT INTO "Opportunity" VALUES(50,'40000.0','2022-08-01','','False','Slack Feb','Negotiation/Review','3','');
 INSERT INTO "Opportunity" VALUES(51,'40000.0','2022-08-02','','False','Slack Mar','Prospecting','3','');
 INSERT INTO "Opportunity" VALUES(52,'40000.0','2022-08-03','','False','Slack Apr','Qualification','3','');
-INSERT INTO "Opportunity" VALUES(53,'40000.0','2022-08-04','','False','Slack May','Qualification','3','');
-INSERT INTO "Opportunity" VALUES(54,'40000.0','2022-08-05','','False','Slack Jun','Qualification','3','');
-INSERT INTO "Opportunity" VALUES(55,'40000.0','2022-08-06','','False','Slack Jul','Prospecting','3','');
-INSERT INTO "Opportunity" VALUES(56,'40000.0','2022-08-07','','False','Slack Aug','Prospecting','3','');
+INSERT INTO "Opportunity" VALUES(53,'40000.0','2022-08-07','','False','Slack Aug','Prospecting','3','');
+INSERT INTO "Opportunity" VALUES(54,'40000.0','2022-08-04','','False','Slack May','Qualification','3','');
+INSERT INTO "Opportunity" VALUES(55,'40000.0','2022-08-05','','False','Slack Jun','Qualification','3','');
+INSERT INTO "Opportunity" VALUES(56,'40000.0','2022-08-06','','False','Slack Jul','Prospecting','3','');
 INSERT INTO "Opportunity" VALUES(57,'40000.0','2022-08-08','','False','Slack Sep','Id. Decision Makers','3','');
 INSERT INTO "Opportunity" VALUES(58,'40000.0','2022-08-09','','False','Slack Oct','Prospecting','3','');
 INSERT INTO "Opportunity" VALUES(59,'30000.0','2022-07-21','','False','Mulesoft Mar','Prospecting','4','');
@@ -158,9 +156,9 @@ CREATE TABLE "QALookupChild__c" (
 	"LookupParent__c" VARCHAR(255), 
 	PRIMARY KEY (id)
 );
-INSERT INTO "QALookupChild__c" VALUES(1,'','','','','LookupChild1','a08DS000008Qjv4YAC','A child to LookupParent1, LookupParent2, and again to LookupParent1 by the string field.','4','3');
-INSERT INTO "QALookupChild__c" VALUES(2,'','','','','LookupChild2','a08DS000008Qjv4YAC','Another child to LookupParent1, LookupParent2, and again to LookupParent1 by the string field.','4','3');
-INSERT INTO "QALookupChild__c" VALUES(3,'','','','','LookupChild3','a08DS000008Qjv4YAC','Another child to LookupParent1, LookupParent2, and again to LookupParent1 by the string field. But the values in the lookups to the parents are reversed compared to LookupChild1 and 2.','4','4');
+INSERT INTO "QALookupChild__c" VALUES(1,'','','','','LookupChild1','a08DS000008Qjv4YAC','A child to LookupParent1, LookupParent2, and again to LookupParent1 by the string field.','3','4');
+INSERT INTO "QALookupChild__c" VALUES(2,'','','','','LookupChild3','a08DS000008Qjv4YAC','Another child to LookupParent1, LookupParent2, and again to LookupParent1 by the string field. But the values in the lookups to the parents are reversed compared to LookupChild1 and 2.','3','3');
+INSERT INTO "QALookupChild__c" VALUES(3,'','','','','LookupChild2','a08DS000008Qjv4YAC','Another child to LookupParent1, LookupParent2, and again to LookupParent1 by the string field.','3','4');
 CREATE TABLE "QALookupParent__c" (
 	id INTEGER NOT NULL, 
 	"Colours__c" VARCHAR(255), 
@@ -175,8 +173,8 @@ CREATE TABLE "QALookupParent__c" (
 	"Self_Relationship__c" VARCHAR(255), 
 	PRIMARY KEY (id)
 );
-INSERT INTO "QALookupParent__c" VALUES(1,'','','','','LookupParent3','This one is a "child" to LookupParent2.','','','','4');
-INSERT INTO "QALookupParent__c" VALUES(2,'','','','','LookupParent4','This one is another "child" to LookupParent2.','','','','4');
-INSERT INTO "QALookupParent__c" VALUES(3,'','','','','LookupParent1','Nothing special about this lookup parent. It''s just the first one created.','','','','');
-INSERT INTO "QALookupParent__c" VALUES(4,'','','','','LookupParent2','Nothing special about this lookup parent. It''s just the second one created.','','','','');
+INSERT INTO "QALookupParent__c" VALUES(1,'','','','','LookupParent3','This one is a "child" to LookupParent2.','','','','3');
+INSERT INTO "QALookupParent__c" VALUES(2,'','','','','LookupParent4','This one is another "child" to LookupParent2.','','','','3');
+INSERT INTO "QALookupParent__c" VALUES(3,'','','','','LookupParent2','Nothing special about this lookup parent. It''s just the second one created.','','','','');
+INSERT INTO "QALookupParent__c" VALUES(4,'','','','','LookupParent1','Nothing special about this lookup parent. It''s just the first one created.','','','','');
 COMMIT;
