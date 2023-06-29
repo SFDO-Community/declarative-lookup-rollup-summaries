@@ -1,5 +1,4 @@
 minimum_cumulusci_version: "3.41.0"
-
 project:
   name: DLRS
   package:
