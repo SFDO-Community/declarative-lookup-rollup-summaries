@@ -94,52 +94,52 @@ private class RollupControllerTest {
       );
       System.assertEquals(
         '<?xml version="1.0" encoding="UTF-8"?>' +
-        '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-        '<version>' +
-        RollupController.API_VERSION +
-        '</version>' +
-        '</Package>',
+          '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
+          '<version>' +
+          RollupController.API_VERSION +
+          '</version>' +
+          '</Package>',
         controller.getPackageXml()
       );
       System.assertEquals(
         '<?xml version="1.0" encoding="UTF-8"?>' +
-        '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-        '<types>' +
-        '<members>' +
-        controller.RollupTriggerName +
-        '</members>' +
-        '<name>ApexTrigger</name>' +
-        '</types>' +
-        '<types>' +
-        '<members>' +
-        controller.RollupTriggerTestName +
-        '</members>' +
-        '<name>ApexClass</name>' +
-        '</types>' +
-        '<version>' +
-        RollupController.API_VERSION +
-        '</version>' +
-        '</Package>',
+          '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
+          '<types>' +
+          '<members>' +
+          controller.RollupTriggerName +
+          '</members>' +
+          '<name>ApexTrigger</name>' +
+          '</types>' +
+          '<types>' +
+          '<members>' +
+          controller.RollupTriggerTestName +
+          '</members>' +
+          '<name>ApexClass</name>' +
+          '</types>' +
+          '<version>' +
+          RollupController.API_VERSION +
+          '</version>' +
+          '</Package>',
         controller.getDestructiveChangesXml()
       );
       System.assertEquals(
         '<?xml version="1.0" encoding="UTF-8"?>' +
-        '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-        '<apiVersion>' +
-        RollupController.API_VERSION +
-        '</apiVersion>' +
-        '<status>Active</status>' +
-        '</ApexTrigger>',
+          '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
+          '<apiVersion>' +
+          RollupController.API_VERSION +
+          '</apiVersion>' +
+          '<status>Active</status>' +
+          '</ApexTrigger>',
         controller.getTriggerCodeMetadata()
       );
       System.assertEquals(
         '<?xml version="1.0" encoding="UTF-8"?>' +
-        '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-        '<apiVersion>' +
-        RollupController.API_VERSION +
-        '</apiVersion>' +
-        '<status>Active</status>' +
-        '</ApexClass>',
+          '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
+          '<apiVersion>' +
+          RollupController.API_VERSION +
+          '</apiVersion>' +
+          '<status>Active</status>' +
+          '</ApexClass>',
         controller.getTriggerTestCodeMetadata()
       );
 
@@ -168,8 +168,7 @@ private class RollupControllerTest {
       return;
 
     System.runAs(setupTestUser()) {
-      // Metadata API web Service mock implementation for tests
-      Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+      setupMocks();
 
       // Test data
       LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
@@ -197,96 +196,96 @@ private class RollupControllerTest {
       System.assertEquals(null, controller.RollupTriggerTest);
       System.assertEquals(
         '/**\n' +
-        ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-        ' **/\n' +
-        'trigger ' +
-        controller.RollupTriggerName +
-        ' on ' +
-        rollupSummary.ChildObject__c +
-        '\n' +
-        '    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n' +
-        '{\n' +
-        '    ' +
-        Utilities.classPrefix() +
-        'RollupService.triggerHandler(Contact.SObjectType);\n' +
-        '}\n',
+          ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+          ' **/\n' +
+          'trigger ' +
+          controller.RollupTriggerName +
+          ' on ' +
+          rollupSummary.ChildObject__c +
+          '\n' +
+          '    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n' +
+          '{\n' +
+          '    ' +
+          Utilities.classPrefix() +
+          'RollupService.triggerHandler(Contact.SObjectType);\n' +
+          '}\n',
         controller.getTriggerCode()
       );
       System.assertEquals(
         '/**\n' +
-        ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-        ' **/\n' +
-        '@IsTest\n' +
-        'private class ' +
-        controller.RollupTriggerTestName +
-        '\n' +
-        '{\n' +
-        '    @IsTest\n' +
-        '    private static void testTrigger()\n' +
-        '    {\n' +
-        '        // Force the ' +
-        controller.RollupTriggerName +
-        ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-        '        ' +
-        Utilities.classPrefix() +
-        'RollupService.testHandler(new ' +
-        rollupSummary.ChildObject__c +
-        '());\n' +
-        '    }\n' +
-        '}',
+          ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+          ' **/\n' +
+          '@IsTest\n' +
+          'private class ' +
+          controller.RollupTriggerTestName +
+          '\n' +
+          '{\n' +
+          '    @IsTest\n' +
+          '    private static void testTrigger()\n' +
+          '    {\n' +
+          '        // Force the ' +
+          controller.RollupTriggerName +
+          ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
+          '        ' +
+          Utilities.classPrefix() +
+          'RollupService.testHandler(new ' +
+          rollupSummary.ChildObject__c +
+          '());\n' +
+          '    }\n' +
+          '}',
         controller.getTriggerTestCode()
       );
       System.assertEquals(
         '<?xml version="1.0" encoding="UTF-8"?>' +
-        '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-        '<types>' +
-        '<members>' +
-        controller.RollupTriggerName +
-        '</members>' +
-        '<name>ApexTrigger</name>' +
-        '</types>' +
-        '<types>' +
-        '<members>' +
-        controller.RollupTriggerTestName +
-        '</members>' +
-        '<name>ApexClass</name>' +
-        '</types>' +
-        '<types>' +
-        '<members>' +
-        controller.RollupParentTriggerName +
-        '</members>' +
-        '<name>ApexTrigger</name>' +
-        '</types>' +
-        '<types>' +
-        '<members>' +
-        controller.RollupParentTriggerTestName +
-        '</members>' +
-        '<name>ApexClass</name>' +
-        '</types>' +
-        '<version>' +
-        RollupController.API_VERSION +
-        '</version>' +
-        '</Package>',
+          '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
+          '<types>' +
+          '<members>' +
+          controller.RollupTriggerName +
+          '</members>' +
+          '<name>ApexTrigger</name>' +
+          '</types>' +
+          '<types>' +
+          '<members>' +
+          controller.RollupTriggerTestName +
+          '</members>' +
+          '<name>ApexClass</name>' +
+          '</types>' +
+          '<types>' +
+          '<members>' +
+          controller.RollupParentTriggerName +
+          '</members>' +
+          '<name>ApexTrigger</name>' +
+          '</types>' +
+          '<types>' +
+          '<members>' +
+          controller.RollupParentTriggerTestName +
+          '</members>' +
+          '<name>ApexClass</name>' +
+          '</types>' +
+          '<version>' +
+          controller.apiVersion +
+          '</version>' +
+          '</Package>',
         controller.getPackageXml()
       );
       System.assertEquals(
         '<?xml version="1.0" encoding="UTF-8"?>' +
-        '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-        '<apiVersion>' +
-        RollupController.API_VERSION +
-        '</apiVersion>' +
-        '<status>Active</status>' +
-        '</ApexTrigger>',
+          '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
+          '<apiVersion>' +
+          controller.apiVersion +
+          '</apiVersion>' +
+          '<status>Active</status>' +
+          '</ApexTrigger>',
         controller.getTriggerCodeMetadata()
       );
       System.assertEquals(
         '<?xml version="1.0" encoding="UTF-8"?>' +
-        '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-        '<apiVersion>' +
-        RollupController.API_VERSION +
-        '</apiVersion>' +
-        '<status>Active</status>' +
-        '</ApexClass>',
+          '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
+          '<apiVersion>' +
+          controller.apiVersion +
+          '</apiVersion>' +
+          '<status>Active</status>' +
+          '</ApexClass>',
         controller.getTriggerTestCodeMetadata()
       );
 
@@ -300,8 +299,7 @@ private class RollupControllerTest {
       return;
 
     System.runAs(setupTestUser()) {
-      // Metadata API web Service mock implementation for tests
-      Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+      setupMocks();
 
       // Test data
       LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
@@ -328,19 +326,19 @@ private class RollupControllerTest {
       );
       System.assertEquals(
         '/**\n' +
-        ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-        ' **/\n' +
-        '@IsTest\n' +
-        'private class ' +
-        controller.RollupTriggerTestName +
-        '\n' +
-        '{\n' +
-        '    @IsTest(SeeAllData=true)\n' +
-        '    private static void testTrigger()\n' +
-        '    {\n' +
-        'System.assertEquals(1,1);\n' +
-        '    }\n' +
-        '}',
+          ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+          ' **/\n' +
+          '@IsTest\n' +
+          'private class ' +
+          controller.RollupTriggerTestName +
+          '\n' +
+          '{\n' +
+          '    @IsTest(SeeAllData=true)\n' +
+          '    private static void testTrigger()\n' +
+          '    {\n' +
+          'System.assertEquals(1,1);\n' +
+          '    }\n' +
+          '}',
         controller.getTriggerTestCode()
       );
     }
@@ -352,8 +350,7 @@ private class RollupControllerTest {
       return;
 
     System.runAs(setupTestUser()) {
-      // Metadata API web Service mock implementation for tests
-      Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+      setupMocks();
 
       // Custom Metadata test data
       LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt();
@@ -428,21 +425,107 @@ private class RollupControllerTest {
       );
       System.assertEquals(
         '/**\n' +
-        ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-        ' **/\n' +
-        '@IsTest\n' +
-        'private class ' +
-        controller.RollupParentTriggerTestName +
-        '\n' +
-        '{\n' +
-        '    @IsTest(SeeAllData=true)\n' +
-        '    private static void testTrigger()\n' +
-        '    {\n' +
-        'System.assertEquals(1,1);\n' +
-        '    }\n' +
-        '}',
+          ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+          ' **/\n' +
+          '@IsTest\n' +
+          'private class ' +
+          controller.RollupParentTriggerTestName +
+          '\n' +
+          '{\n' +
+          '    @IsTest(SeeAllData=true)\n' +
+          '    private static void testTrigger()\n' +
+          '    {\n' +
+          'System.assertEquals(1,1);\n' +
+          '    }\n' +
+          '}',
         controller.getParentTriggerTestCode()
       );
+    }
+  }
+
+  @IsTest
+  static void testSuccessGetLatestApiVersion() {
+    System.runAs(setupTestUser()) {
+      setupMocks();
+
+      LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt(
+        ParentObject__c = 'Account',
+        ChildObject__c = 'Contact'
+      );
+
+      // Open test context, permits callouts following DML
+      Test.startTest();
+
+      // Assert initial state of controller when the trigger for the child object is deployed
+      RollupController controller = new RollupController(
+        new RollupSummary(rollupSummary)
+      );
+      Test.stopTest();
+      Assert.areEqual('97.0', controller.apiVersion);
+    }
+  }
+
+  @IsTest
+  static void testFail1GetLatestApiVersion() {
+    System.runAs(setupTestUser()) {
+      // service/data mock for getting API version
+      HttpCalloutMockImpl mockCallout = new HttpCalloutMockImpl();
+
+      HTTPResponse res = new HTTPResponse();
+      // choosing to provide very high defaults so we can overcome the fallback value set in the class
+      res.setBody('{"success":"false"}');
+      res.setHeader('Content-Type', 'application/json');
+      res.setStatusCode(401);
+      mockCallout.responses.add(res);
+
+      Test.setMock(HttpCalloutMock.class, mockCallout);
+      Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+      LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt(
+        ParentObject__c = 'Account',
+        ChildObject__c = 'Contact'
+      );
+
+      // Open test context, permits callouts following DML
+      Test.startTest();
+
+      // Assert initial state of controller when the trigger for the child object is deployed
+      RollupController controller = new RollupController(
+        new RollupSummary(rollupSummary)
+      );
+      Test.stopTest();
+      Assert.areEqual(RollupController.DEF_API_VERSION, controller.apiVersion);
+    }
+  }
+
+  @IsTest
+  static void testFail2GetLatestApiVersion() {
+    System.runAs(setupTestUser()) {
+      // service/data mock for getting API version
+      HttpCalloutMockImpl mockCallout = new HttpCalloutMockImpl();
+
+      HTTPResponse res = new HTTPResponse();
+      // choosing to provide very high defaults so we can overcome the fallback value set in the class
+      res.setBody('this is not json');
+      res.setHeader('Content-Type', 'application/json');
+      res.setStatusCode(200);
+      mockCallout.responses.add(res);
+
+      Test.setMock(HttpCalloutMock.class, mockCallout);
+      Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+      LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt(
+        ParentObject__c = 'Account',
+        ChildObject__c = 'Contact'
+      );
+
+      // Open test context, permits callouts following DML
+      Test.startTest();
+
+      // Assert initial state of controller when the trigger for the child object is deployed
+      RollupController controller = new RollupController(
+        new RollupSummary(rollupSummary)
+      );
+      Test.stopTest();
+      Assert.areEqual(RollupController.DEF_API_VERSION, controller.apiVersion);
     }
   }
 
@@ -507,8 +590,8 @@ private class RollupControllerTest {
     String uniqueness = DateTime.now() + ':' + Math.random();
     uniqueness += new NullPointerException().getStackTraceString(); //includes the top level test method name without having to pass it
 
-    // officially, there is no Read Only Profile anymore; 
-    // its present for packaging org and scratch org support 
+    // officially, there is no Read Only Profile anymore;
+    // its present for packaging org and scratch org support
     List<Profile> profiles = [
       SELECT id, Name
       FROM Profile
@@ -571,5 +654,32 @@ private class RollupControllerTest {
     insert psa2;
 
     return result;
+  }
+
+  static void setupMocks() {
+    HttpCalloutMockImpl mockCallout = new HttpCalloutMockImpl();
+    HTTPResponse res = new HTTPResponse();
+    // choosing to provide very high API versions so we can overcome the fallback value set in the class
+    res.setBody(
+      '[{"label":"Winter \'97","url":"/services/data/v97.0","version":"97.0"},{"label":"Summer \'95","url":"/services/data/v95.0","version":"95.0"},{"label":"Spring \'96","url":"/services/data/v96.0","version":"96.0"}]'
+    );
+    res.setHeader('Content-Type', 'application/json');
+    res.setStatusCode(200);
+    mockCallout.responses.add(res);
+    Test.setMock(HttpCalloutMock.class, mockCallout);
+    // Mocking for the MetadataService
+    Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+  }
+
+  private class HttpCalloutMockImpl implements HttpCalloutMock {
+    public List<HTTPRequest> requests = new List<HTTPRequest>();
+    public List<HttpResponse> responses = new List<HttpResponse>();
+    public HTTPResponse respond(HTTPRequest req) {
+      // report the inbound request so it can be validated
+      requests.add(req);
+      // respond with the queued up responses, FIFO
+      // may throw an exception if we don't have any items in the list
+      return responses.remove(0);
+    }
   }
 }
