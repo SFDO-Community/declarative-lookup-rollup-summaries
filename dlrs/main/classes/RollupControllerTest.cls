@@ -32,8 +32,7 @@ private class RollupControllerTest {
       return;
 
     System.runAs(setupTestUser()) {
-      // Metadata API web Service mock implementation for tests
-      Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+      setupMocks();
 
       // Test data
       LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -96,7 +95,7 @@ private class RollupControllerTest {
         '<?xml version="1.0" encoding="UTF-8"?>' +
           '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
           '<version>' +
-          RollupController.API_VERSION +
+          controller.apiVersion +
           '</version>' +
           '</Package>',
         controller.getPackageXml()
@@ -117,7 +116,7 @@ private class RollupControllerTest {
           '<name>ApexClass</name>' +
           '</types>' +
           '<version>' +
-          RollupController.API_VERSION +
+          controller.apiVersion +
           '</version>' +
           '</Package>',
         controller.getDestructiveChangesXml()
@@ -126,7 +125,7 @@ private class RollupControllerTest {
         '<?xml version="1.0" encoding="UTF-8"?>' +
           '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
           '<apiVersion>' +
-          RollupController.API_VERSION +
+          controller.apiVersion +
           '</apiVersion>' +
           '<status>Active</status>' +
           '</ApexTrigger>',
@@ -136,7 +135,7 @@ private class RollupControllerTest {
         '<?xml version="1.0" encoding="UTF-8"?>' +
           '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
           '<apiVersion>' +
-          RollupController.API_VERSION +
+          controller.apiVersion +
           '</apiVersion>' +
           '<status>Active</status>' +
           '</ApexClass>',
@@ -595,10 +594,7 @@ private class RollupControllerTest {
     List<Profile> profiles = [
       SELECT id, Name
       FROM Profile
-      WHERE
-        Name = 'Read Only'
-        OR Name = 'ReadOnly'
-        OR Name = 'Standard User'
+      WHERE Name = 'Read Only' OR Name = 'ReadOnly' OR Name = 'Standard User'
       ORDER BY Name ASC
     ];
     system.assert(
