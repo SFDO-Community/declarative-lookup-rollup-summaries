@@ -189,9 +189,18 @@ public class RollupSummariesSelector {
   }
 
   private Boolean containsIgnoreCase(Iterable<String> collection, String val) {
+    if (collection == null) {
+      return false;
+    }
     Iterator<string> i = collection.iterator();
     while (i.hasNext()) {
       String s = i.next();
+      if (val == null) {
+        if (s == null) {
+          return true;
+        }
+        continue;
+      }
       if (val.equalsIgnoreCase(s)) {
         return true;
       }
