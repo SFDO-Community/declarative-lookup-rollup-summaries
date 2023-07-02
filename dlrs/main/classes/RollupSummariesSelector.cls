@@ -188,20 +188,15 @@ public class RollupSummariesSelector {
     return this.allSummaries;
   }
 
-  private Boolean containsIgnoreCase(List<String> collection, String val) {
-    if (val == null) {
-      return collection.contains(val);
-    }
-    for (String s : collection) {
+  private Boolean containsIgnoreCase(Iterable<String> collection, String val) {
+    Iterator<string> i = collection.iterator();
+    while (i.hasNext()) {
+      String s = i.next();
       if (val.equalsIgnoreCase(s)) {
         return true;
       }
     }
     return false;
-  }
-
-  private Boolean containsIgnoreCase(Set<String> collection, String val) {
-    return containsIgnoreCase(new List<String>(collection), val);
   }
 
   /**
