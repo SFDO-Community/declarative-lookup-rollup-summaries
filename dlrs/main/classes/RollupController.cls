@@ -28,7 +28,8 @@
  * Handles the Manage Trigger and Calculate Custom Buttons
  **/
 public with sharing class RollupController {
-  public static String DEF_API_VERSION = '58.0';
+  @TestVisible
+  private static String FALLBACK_COMPONENT_API_VERSION = '58.0';
 
   public String ZipData { get; set; }
 
@@ -59,9 +60,11 @@ public with sharing class RollupController {
   public ApexClass RollupParentTriggerTest { get; private set; }
 
   public Integer deployCount;
-  public String apiVersion;
 
   public Boolean MetadataConnectionError { get; set; }
+
+  @TestVisible
+  private String componentApiVersion;
 
   public RollupController(ApexPages.StandardController standardController) {
     // Query Lookup Rollup Summary record
@@ -101,7 +104,7 @@ public with sharing class RollupController {
       return '<?xml version="1.0" encoding="UTF-8"?>' +
         '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
         '<version>' +
-        apiVersion +
+        componentApiVersion +
         '</version>' +
         '</Package>';
     else
@@ -135,7 +138,7 @@ public with sharing class RollupController {
             '</types>')
           : '') +
         '<version>' +
-        apiVersion +
+        componentApiVersion +
         '</version>' +
         '</Package>';
   }
@@ -170,7 +173,7 @@ public with sharing class RollupController {
           '</types>')
         : '') +
       '<version>' +
-      apiVersion +
+      componentApiVersion +
       '</version>' +
       '</Package>';
   }
@@ -183,7 +186,7 @@ public with sharing class RollupController {
     return '<?xml version="1.0" encoding="UTF-8"?>' +
       '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
       '<apiVersion>' +
-      apiVersion +
+      componentApiVersion +
       '</apiVersion>' +
       '<status>Active</status>' +
       '</ApexClass>';
@@ -228,7 +231,7 @@ public with sharing class RollupController {
     return '<?xml version="1.0" encoding="UTF-8"?>' +
       '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
       '<apiVersion>' +
-      apiVersion +
+      componentApiVersion +
       '</apiVersion>' +
       '<status>Active</status>' +
       '</ApexTrigger>';
@@ -269,7 +272,7 @@ public with sharing class RollupController {
     return '<?xml version="1.0" encoding="UTF-8"?>' +
       '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
       '<apiVersion>' +
-      apiVersion +
+      componentApiVersion +
       '</apiVersion>' +
       '<status>Active</status>' +
       '</ApexClass>';
@@ -316,7 +319,7 @@ public with sharing class RollupController {
     return '<?xml version="1.0" encoding="UTF-8"?>' +
       '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
       '<apiVersion>' +
-      apiVersion +
+      componentApiVersion +
       '</apiVersion>' +
       '<status>Active</status>' +
       '</ApexTrigger>';
@@ -493,7 +496,7 @@ public with sharing class RollupController {
       );
       return;
     }
-    apiVersion = getNewestApiVersion();
+    componentApiVersion = getNewestApiVersion();
 
     // Already deployed?
     Set<String> triggerNames = new Set<String>{ RollupTriggerName };
@@ -602,11 +605,11 @@ public with sharing class RollupController {
       Http http = new Http();
       HTTPResponse res = http.send(req);
       if (res.getStatusCode() != 200) {
-        return DEF_API_VERSION;
+        return FALLBACK_COMPONENT_API_VERSION;
       }
       String body = res.getBody();
       List<Object> data = (List<Object>) JSON.deserializeUntyped(body);
-      Decimal maxVersion = Decimal.valueOf(DEF_API_VERSION);
+      Decimal maxVersion = Decimal.valueOf(FALLBACK_COMPONENT_API_VERSION);
       for (Object obj : data) {
         Map<String, Object> apiV = (Map<String, Object>) obj;
         Decimal newV = Decimal.valueOf((String) apiV.get('version'));
@@ -616,7 +619,8 @@ public with sharing class RollupController {
       }
       return String.valueOf(maxVersion);
     } catch (Exception e) {
-      return DEF_API_VERSION;
+      System.debug(e);
+      return FALLBACK_COMPONENT_API_VERSION;
     }
   }
 

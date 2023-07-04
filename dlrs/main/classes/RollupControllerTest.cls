@@ -95,7 +95,7 @@ private class RollupControllerTest {
         '<?xml version="1.0" encoding="UTF-8"?>' +
           '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
           '<version>' +
-          controller.apiVersion +
+          controller.componentApiVersion +
           '</version>' +
           '</Package>',
         controller.getPackageXml()
@@ -116,7 +116,7 @@ private class RollupControllerTest {
           '<name>ApexClass</name>' +
           '</types>' +
           '<version>' +
-          controller.apiVersion +
+          controller.componentApiVersion +
           '</version>' +
           '</Package>',
         controller.getDestructiveChangesXml()
@@ -125,7 +125,7 @@ private class RollupControllerTest {
         '<?xml version="1.0" encoding="UTF-8"?>' +
           '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
           '<apiVersion>' +
-          controller.apiVersion +
+          controller.componentApiVersion +
           '</apiVersion>' +
           '<status>Active</status>' +
           '</ApexTrigger>',
@@ -135,7 +135,7 @@ private class RollupControllerTest {
         '<?xml version="1.0" encoding="UTF-8"?>' +
           '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
           '<apiVersion>' +
-          controller.apiVersion +
+          controller.componentApiVersion +
           '</apiVersion>' +
           '<status>Active</status>' +
           '</ApexClass>',
@@ -262,7 +262,7 @@ private class RollupControllerTest {
           '<name>ApexClass</name>' +
           '</types>' +
           '<version>' +
-          controller.apiVersion +
+          controller.componentApiVersion +
           '</version>' +
           '</Package>',
         controller.getPackageXml()
@@ -271,7 +271,7 @@ private class RollupControllerTest {
         '<?xml version="1.0" encoding="UTF-8"?>' +
           '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
           '<apiVersion>' +
-          controller.apiVersion +
+          controller.componentApiVersion +
           '</apiVersion>' +
           '<status>Active</status>' +
           '</ApexTrigger>',
@@ -281,7 +281,7 @@ private class RollupControllerTest {
         '<?xml version="1.0" encoding="UTF-8"?>' +
           '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
           '<apiVersion>' +
-          controller.apiVersion +
+          controller.componentApiVersion +
           '</apiVersion>' +
           '<status>Active</status>' +
           '</ApexClass>',
@@ -460,7 +460,7 @@ private class RollupControllerTest {
         new RollupSummary(rollupSummary)
       );
       Test.stopTest();
-      Assert.areEqual('97.0', controller.apiVersion);
+      Assert.areEqual('97.0', controller.componentApiVersion);
     }
   }
 
@@ -492,7 +492,10 @@ private class RollupControllerTest {
         new RollupSummary(rollupSummary)
       );
       Test.stopTest();
-      Assert.areEqual(RollupController.DEF_API_VERSION, controller.apiVersion);
+      Assert.areEqual(
+        RollupController.FALLBACK_COMPONENT_API_VERSION,
+        controller.componentApiVersion
+      );
     }
   }
 
@@ -524,7 +527,10 @@ private class RollupControllerTest {
         new RollupSummary(rollupSummary)
       );
       Test.stopTest();
-      Assert.areEqual(RollupController.DEF_API_VERSION, controller.apiVersion);
+      Assert.areEqual(
+        RollupController.FALLBACK_COMPONENT_API_VERSION,
+        controller.componentApiVersion
+      );
     }
   }
 
