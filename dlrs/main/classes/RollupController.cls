@@ -28,8 +28,8 @@
  * Handles the Manage Trigger and Calculate Custom Buttons
  **/
 public with sharing class RollupController {
-  
-  public static String API_VERSION = '58.0';
+  @TestVisible
+  private static String FALLBACK_COMPONENT_API_VERSION = '58.0';
 
   public String ZipData { get; set; }
 
@@ -62,6 +62,9 @@ public with sharing class RollupController {
   public Integer deployCount;
 
   public Boolean MetadataConnectionError { get; set; }
+
+  @TestVisible
+  private String componentApiVersion;
 
   public RollupController(ApexPages.StandardController standardController) {
     // Query Lookup Rollup Summary record
@@ -101,7 +104,7 @@ public with sharing class RollupController {
       return '<?xml version="1.0" encoding="UTF-8"?>' +
         '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
         '<version>' +
-        API_VERSION +
+        componentApiVersion +
         '</version>' +
         '</Package>';
     else
@@ -135,7 +138,7 @@ public with sharing class RollupController {
             '</types>')
           : '') +
         '<version>' +
-        API_VERSION +
+        componentApiVersion +
         '</version>' +
         '</Package>';
   }
@@ -170,7 +173,7 @@ public with sharing class RollupController {
           '</types>')
         : '') +
       '<version>' +
-      API_VERSION +
+      componentApiVersion +
       '</version>' +
       '</Package>';
   }
@@ -183,7 +186,7 @@ public with sharing class RollupController {
     return '<?xml version="1.0" encoding="UTF-8"?>' +
       '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
       '<apiVersion>' +
-      API_VERSION +
+      componentApiVersion +
       '</apiVersion>' +
       '<status>Active</status>' +
       '</ApexClass>';
@@ -228,7 +231,7 @@ public with sharing class RollupController {
     return '<?xml version="1.0" encoding="UTF-8"?>' +
       '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
       '<apiVersion>' +
-      API_VERSION +
+      componentApiVersion +
       '</apiVersion>' +
       '<status>Active</status>' +
       '</ApexTrigger>';
@@ -269,7 +272,7 @@ public with sharing class RollupController {
     return '<?xml version="1.0" encoding="UTF-8"?>' +
       '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
       '<apiVersion>' +
-      API_VERSION +
+      componentApiVersion +
       '</apiVersion>' +
       '<status>Active</status>' +
       '</ApexClass>';
@@ -316,7 +319,7 @@ public with sharing class RollupController {
     return '<?xml version="1.0" encoding="UTF-8"?>' +
       '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
       '<apiVersion>' +
-      API_VERSION +
+      componentApiVersion +
       '</apiVersion>' +
       '<status>Active</status>' +
       '</ApexTrigger>';
@@ -403,12 +406,12 @@ public with sharing class RollupController {
               new ApexPages.Message(
                 ApexPages.Severity.Error,
                 deployMessage.fileName +
-                ' (Line: ' +
-                deployMessage.lineNumber +
-                ': Column:' +
-                deployMessage.columnNumber +
-                ') : ' +
-                deployMessage.problem
+                  ' (Line: ' +
+                  deployMessage.lineNumber +
+                  ': Column:' +
+                  deployMessage.columnNumber +
+                  ') : ' +
+                  deployMessage.problem
               )
             );
       // Test errors?
@@ -421,12 +424,12 @@ public with sharing class RollupController {
             new ApexPages.Message(
               ApexPages.Severity.Error,
               testFailure.name +
-              '.' +
-              testFailure.methodName +
-              ' ' +
-              testFailure.message +
-              ' ' +
-              testFailure.stackTrace
+                '.' +
+                testFailure.methodName +
+                ' ' +
+                testFailure.message +
+                ' ' +
+                testFailure.stackTrace
             )
           );
       // Code coverage warnings?
@@ -438,11 +441,11 @@ public with sharing class RollupController {
             new ApexPages.Message(
               ApexPages.Severity.Warning,
               (codeCoverageWarning.namespace != null
-                ? codeCoverageWarning.namespace + '.'
-                : '') +
-              codeCoverageWarning.name +
-              ':' +
-              codeCoverageWarning.message
+                  ? codeCoverageWarning.namespace + '.'
+                  : '') +
+                codeCoverageWarning.name +
+                ':' +
+                codeCoverageWarning.message
             )
           );
 
@@ -493,6 +496,7 @@ public with sharing class RollupController {
       );
       return;
     }
+    componentApiVersion = getNewestApiVersion();
 
     // Already deployed?
     Set<String> triggerNames = new Set<String>{ RollupTriggerName };
@@ -566,8 +570,8 @@ public with sharing class RollupController {
           new ApexPages.Message(
             ApexPages.Severity.Info,
             'Apex Trigger <b>' +
-            RollupParentTriggerTestName +
-            '</b> is installed.'
+              RollupParentTriggerTestName +
+              '</b> is installed.'
           )
         );
       }
@@ -584,6 +588,39 @@ public with sharing class RollupController {
           'Click <b>Deploy</b> to install the Apex Trigger and Apex Class for this child object.'
         )
       );
+    }
+  }
+
+  /**
+   * Call salesforce API to get current max supported API version
+   */
+  private String getNewestApiVersion() {
+    HttpRequest req = new HttpRequest();
+    req.setMethod('GET');
+    // submit a Versions request
+    req.setEndpoint(URL.getOrgDomainUrl().toExternalForm() + '/services/data/');
+    // Salesforce REST API Dev Guide says this endpoint doesn't need authentication
+
+    try {
+      Http http = new Http();
+      HTTPResponse res = http.send(req);
+      if (res.getStatusCode() != 200) {
+        return FALLBACK_COMPONENT_API_VERSION;
+      }
+      String body = res.getBody();
+      List<Object> data = (List<Object>) JSON.deserializeUntyped(body);
+      Decimal maxVersion = Decimal.valueOf(FALLBACK_COMPONENT_API_VERSION);
+      for (Object obj : data) {
+        Map<String, Object> apiV = (Map<String, Object>) obj;
+        Decimal newV = Decimal.valueOf((String) apiV.get('version'));
+        if (newV > maxVersion) {
+          maxVersion = newV;
+        }
+      }
+      return String.valueOf(maxVersion);
+    } catch (Exception e) {
+      System.debug(e);
+      return FALLBACK_COMPONENT_API_VERSION;
     }
   }
 
