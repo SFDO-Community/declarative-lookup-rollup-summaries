@@ -34,8 +34,8 @@ public class RollupSummariesSelector {
   @TestVisible
   private CustomMetadataSelector m_customMetadataSelector;
 
-  @TestVisible
-  private static DeclarativeLookupRollupSummaries__c dlrsSettings = DeclarativeLookupRollupSummaries__c.getInstance();
+  //@TestVisible
+  //private static DeclarativeLookupRollupSummaries__c dlrsSettings = DeclarativeLookupRollupSummaries__c.getInstance();
 
   private static Map<String, List<RollupSummary>> summariesCacheByKey = new Map<String, List<RollupSummary>>();
 
@@ -88,9 +88,9 @@ public class RollupSummariesSelector {
       // Build the cache of data
 
       // Check the custom setting to bypass legacy lookup definitions query
-      if (!dlrsSettings.Disable_Legacy_Rollup_Query__c) {
+      //if (!dlrsSettings.Disable_Legacy_Rollup_Query__c) {
         this.allSummaries.addAll(m_customObjectSelector.selectAll());
-      }
+      //}
       this.allSummaries.addAll(m_customMetadataSelector.selectAll());
 
       setRollupCache(enforceSecurity, forEdit, this.allSummaries);
