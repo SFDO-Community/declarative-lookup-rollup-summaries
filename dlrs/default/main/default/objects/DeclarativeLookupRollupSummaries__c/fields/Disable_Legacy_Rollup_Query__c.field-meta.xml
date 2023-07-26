@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Disable_Legacy_Rollup_Query__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Checking this box disables the legacy dlrs__LookupRollupSummary__c query.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Checking this box disables the legacy dlrs__LookupRollupSummary__c query.</inlineHelpText>
+    <label>Disable Legacy Rollup Query</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>
