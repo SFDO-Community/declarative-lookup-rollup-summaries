@@ -1,37 +1,105 @@
-Insert Accounts:
+Insert Account:
   sf_object: Account
-  table: Account
   fields:
-    Name: Name
-    Description: Description
-    BillingStreet: BillingStreet
-    BillingCity: BillingCity
-    BillingState: BillingState
-    BillingPostalCode: BillingPostalCode
-    BillingCountry: BillingCountry
-    ShippingStreet: ShippingStreet
-    ShippingCity: ShippingCity
-    ShippingState: ShippingState
-    ShippingPostalCode: ShippingPostalCode
-    ShippingCountry: ShippingCountry
-    Phone: Phone
-    Fax: Fax
-    Website: Website
-    NumberOfEmployees: NumberOfEmployees
-    AccountNumber: AccountNumber
-    Site: Site
-    Type: Type
-
-Insert Opportunities:
-    sf_object: Opportunity
-    table: Opportunity
-    fields:
-        Name: Name
-        StageName: StageName
-        Amount: Amount
-        CloseDate: CloseDate
-        Probability: Probability
-        LeadSource: LeadSource 
-    lookups:
-        AccountId:
-            table: Account
+  - Name
+  - Description
+  - Type
+  - Industry
+  - AnnualRevenue
+  lookups:
+    ParentId:
+      table: Account
+      after: Insert Account
+Insert QALookupParent__c:
+  sf_object: QALookupParent__c
+  fields:
+  - Colours__c
+  - Count_of_String_Children__c
+  - Descriptions2__c
+  - Descriptions__c
+  - Name
+  - Record_Notes__c
+  - Self_Relationship_Number_Target__c
+  - Total2__c
+  - Total__c
+  lookups:
+    Self_Relationship__c:
+      table: QALookupParent__c
+      after: Insert QALookupParent__c
+Insert Contact:
+  sf_object: Contact
+  fields:
+  - DoNotCall
+  - FirstName
+  - HasOptedOutOfEmail
+  - HasOptedOutOfFax
+  - LastName
+  - Email
+  - MobilePhone
+  - Description
+  lookups:
+    AccountId:
+      table: Account
+    ReportsToId:
+      table: Contact
+      after: Insert Contact
+Insert QALookupChild__c:
+  sf_object: QALookupChild__c
+  fields:
+  - Amount__c
+  - Color__c
+  - Description2__c
+  - Description__c
+  - Name
+  - Parent_by_String__c
+  - Record_Notes__c
+  lookups:
+    LookupParent2__c:
+      table: QALookupParent__c
+    LookupParent__c:
+      table: QALookupParent__c
+Insert Case:
+  sf_object: Case
+  fields:
+  - IsEscalated
+  - Subject
+  - Description
+  - Type
+  - Priority
+  - Reason
+  - Origin
+  lookups:
+    AccountId:
+      table: Account
+    ContactId:
+      table: Contact
+    ParentId:
+      table: Case
+      after: Insert Case
+Insert Opportunity:
+  sf_object: Opportunity
+  fields:
+  - Amount
+  - CloseDate
+  - Description
+  - IsPrivate
+  - Name
+  - StageName
+  lookups:
+    AccountId:
+      table: Account
+    ContactId:
+      table: Contact
+Insert Lead:
+  sf_object: Lead
+  fields:
+  - Company
+  - Description
+  - DoNotCall
+  - FirstName
+  - HasOptedOutOfEmail
+  - HasOptedOutOfFax
+  - IsConverted
+  - IsUnreadByOwner
+  - LastName
+  - Status
