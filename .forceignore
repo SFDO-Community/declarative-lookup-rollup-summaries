@@ -12,3 +12,14 @@ package.xml
 
 # LWC Jest
 **/__tests__/**
+
+# Default SFDX ignore
+*.settings
+*.appMenu
+*.appSwitcher
+*.rule
+*.profile
+*.profilePasswordPolicy
+*.profileSessionSetting
+*.sharingRules
+*.AuthProvider
