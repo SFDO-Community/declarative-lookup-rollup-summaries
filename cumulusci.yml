@@ -69,12 +69,20 @@ flows:
   qa_org:
     steps:
       4:
+        task: deploy_qa_config
+      5:
+        task: assign_permission_sets
+        options:
+          api_names: DLRSQAPermissions
+      6:
+        task: execute_anon
+        options:
+          apex: QAHelper.updateAppMenuOrdering();
+      7:
         task: load_dataset
         options:
           mapping: datasets/qa/mapping.yml
           sql_path: datasets/qa/qa_data.sql
-      5:
-        task: deploy_qa_config
 
   customer_org:
     steps:
