@@ -150,7 +150,7 @@ private class RollupCalculateControllerTest {
       Limits.getDmlRows() - dmlRows
     );
     System.assertEquals(
-      /* Expected following additional query rows */
+      /* Expected the following additional query rows */
       /* Rollup query rows (children) **/ rollups.size() +
       /* Master query rows (parents) */ accounts.size(),
       Limits.getQueryRows() - queryRows
