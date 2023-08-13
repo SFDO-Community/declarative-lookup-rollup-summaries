@@ -681,7 +681,7 @@ global with sharing class RollupService {
       // https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/619
       masterRecordQuery.setCondition(
         // It appears there is no Apex Describe to determine FOR UPDATE support
-          ctx.master == User.SObjectType
+        ctx.master == User.SObjectType
           ? 'Id in :ctxMasterIds'
           : 'Id in :ctxMasterIds FOR UPDATE'
       );
@@ -1235,9 +1235,7 @@ global with sharing class RollupService {
         }
         Map<String, RollupSummary> shadowRollupsByMdtId = new Map<String, RollupSummary>();
         for (
-          RollupSummary shadowRollup : new RollupSummariesSelector.CustomObjectSelector(
-              false
-            )
+          RollupSummary shadowRollup : new RollupSummariesSelector(false)
             .selectByUniqueName(uniqueNames)
         ) {
           String uniqueName = shadowRollup.UniqueName;
