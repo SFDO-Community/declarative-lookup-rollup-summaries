@@ -118,9 +118,8 @@ private class RollupCalculateControllerTest {
     );
     System.assertEquals(
       /* Expected following additional query rows */
-      /* Lookup row **/ +1 +
-        /* Rollup query rows (children) **/ rollups.size() +
-        /* Master query rows (parents) */ accounts.size(),
+      /* Rollup query rows (children) **/ rollups.size() +
+      /* Master query rows (parents) */ accounts.size(),
       Limits.getQueryRows() - queryRows
     );
 
@@ -151,10 +150,9 @@ private class RollupCalculateControllerTest {
       Limits.getDmlRows() - dmlRows
     );
     System.assertEquals(
-      /* Expected following additional query rows */
-      /* Lookup row **/ +1 +
-        /* Rollup query rows (children) **/ rollups.size() +
-        /* Master query rows (parents) */ accounts.size(),
+      /* Expected the following additional query rows */
+      /* Rollup query rows (children) **/ rollups.size() +
+      /* Master query rows (parents) */ accounts.size(),
       Limits.getQueryRows() - queryRows
     );
 
