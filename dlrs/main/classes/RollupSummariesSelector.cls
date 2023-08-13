@@ -34,6 +34,32 @@ public class RollupSummariesSelector {
   @TestVisible
   private CustomMetadataSelector m_customMetadataSelector;
 
+  private static Map<String, List<RollupSummary>> summariesCacheByKey = new Map<String, List<RollupSummary>>();
+
+  private List<RollupSummary> allSummaries;
+
+  public static void clearRollupCache() {
+    summariesCacheByKey = new Map<String, List<RollupSummary>>();
+  }
+
+  @TestVisible
+  private static void setRollupCache(
+    Boolean enforceSecurity,
+    Boolean forEdit,
+    List<RollupSummary> rollups
+  ) {
+    String cacheKey = getCacheKey(enforceSecurity, forEdit);
+    summariesCacheByKey.put(cacheKey, rollups);
+  }
+
+  private static List<RollupSummary> getRollupsFromCache(
+    Boolean enforceSecurity,
+    Boolean forEdit
+  ) {
+    String cacheKey = getCacheKey(enforceSecurity, forEdit);
+    return summariesCacheByKey.get(cacheKey);
+  }
+
   public RollupSummariesSelector() {
     this(false, false);
   }
@@ -49,16 +75,46 @@ public class RollupSummariesSelector {
       enforceSecurity,
       forEdit
     );
+
+    this.allSummaries = getRollupsFromCache(enforceSecurity, forEdit);
+
+    if (allSummaries == null) {
+      this.allSummaries = new List<RollupSummary>();
+      // build summaries cache
+      // Dual selectors for querying custom object and custom metadata stores
+      // Build the cache of data
+      this.allSummaries.addAll(m_customObjectSelector.selectAll());
+      this.allSummaries.addAll(m_customMetadataSelector.selectAll());
+
+      setRollupCache(enforceSecurity, forEdit, this.allSummaries);
+    }
+  }
+
+  private static String getCacheKey(boolean enforceSecurity, boolean forEdit) {
+    return String.format(
+      '{0}|{1}',
+      new List<String>{
+        enforceSecurity ? 'withSecurityEnforced' : 'withoutSecurityEnforced',
+        forEdit ? 'forEdit' : 'forRead'
+      }
+    );
   }
 
   /**
-   * Returns all rollups for the given Id set (can contain either Custom Metadata Id' or DeveloperName's)
+   * Returns all rollups for the given Id set (can contain either Custom Metadata Ids or DeveloperNames)
    **/
   public List<RollupSummary> selectById(Set<String> idSet) {
     List<RollupSummary> records = new List<RollupSummary>();
-    records = m_customObjectSelector.selectById(idSet);
-    records.addAll(m_customMetadataSelector.selectById(idSet));
-    records.addAll(m_customMetadataSelector.selectByDeveloperName(idSet));
+    for (RollupSummary rs : this.allSummaries) {
+      // case ignore on the 18 but case match on the 15
+      if (
+        containsIgnoreCase(idset, rs.Id) ||
+        idset.contains(rs.Id.left(15)) ||
+        containsIgnoreCase(idSet, rs.UniqueName)
+      ) {
+        records.add(rs);
+      }
+    }
     return records;
   }
 
@@ -69,18 +125,10 @@ public class RollupSummariesSelector {
     RollupSummaries.CalculationMode calculationMode,
     Set<String> childObjectNames
   ) {
-    List<RollupSummary> records = new List<RollupSummary>();
-    records = m_customObjectSelector.selectActiveByChildObject(
-      calculationMode,
+    return selectActiveByChildObject(
+      new List<RollupSummaries.CalculationMode>{ calculationMode },
       childObjectNames
     );
-    records.addAll(
-      m_customMetadataSelector.selectActiveByChildObject(
-        calculationMode,
-        childObjectNames
-      )
-    );
-    return records;
   }
 
   /**
@@ -90,18 +138,21 @@ public class RollupSummariesSelector {
     List<RollupSummaries.CalculationMode> calculationModes,
     Set<String> childObjectNames
   ) {
+    List<String> rollupSummaryNames = new List<String>();
+    for (RollupSummaries.CalculationMode cm : calculationModes) {
+      rollupSummaryNames.add(cm.name());
+    }
     List<RollupSummary> records = new List<RollupSummary>();
-    records = m_customObjectSelector.selectActiveByChildObject(
-      calculationModes,
-      childObjectNames
-    );
-    records.addAll(
-      m_customMetadataSelector.selectActiveByChildObject(
-        calculationModes,
-        childObjectNames
-      )
-    );
-    return records;
+    for (RollupSummary rs : this.allSummaries) {
+      if (
+        rs.Active &&
+        containsIgnoreCase(childObjectNames, rs.ChildObject) &&
+        containsIgnoreCase(rollupSummaryNames, rs.CalculationMode)
+      ) {
+        records.add(rs);
+      }
+    }
+    return sortSummaries(records, 'ParentObject__c', 'RelationshipField__c');
   }
 
   /**
@@ -109,22 +160,52 @@ public class RollupSummariesSelector {
    **/
   public List<RollupSummary> selectActiveByUniqueName(Set<String> uniqueNames) {
     List<RollupSummary> records = new List<RollupSummary>();
-    records = m_customObjectSelector.selectActiveByUniqueName(uniqueNames);
-    records.addAll(
-      m_customMetadataSelector.selectActiveByUniqueName(uniqueNames)
-    );
+    for (RollupSummary rs : selectByUniqueName(uniqueNames)) {
+      if (rs.Active) {
+        records.add(rs);
+      }
+    }
     return records;
+  }
+
+  /**
+   * Returns active lookup rollup summary definitions for the given rollup unique names
+   **/
+  public List<RollupSummary> selectByUniqueName(Set<String> uniqueNames) {
+    List<RollupSummary> records = new List<RollupSummary>();
+    for (RollupSummary rs : this.allSummaries) {
+      if (containsIgnoreCase(uniqueNames, rs.UniqueName)) {
+        records.add(rs);
+      }
+    }
+    return sortSummaries(records, 'ParentObject__c', 'RelationshipField__c');
   }
 
   /**
    * Returns lookup rollup summary definitions for all fields
    **/
   public List<RollupSummary> selectAll() {
-    List<RollupSummary> records = new List<RollupSummary>();
-    records = m_customMetadataSelector.selectAll();
-    records.addAll(m_customObjectSelector.selectAll());
+    return this.allSummaries;
+  }
 
-    return records;
+  private Boolean containsIgnoreCase(Iterable<String> collection, String val) {
+    if (collection == null) {
+      return false;
+    }
+    Iterator<string> i = collection.iterator();
+    while (i.hasNext()) {
+      String s = i.next();
+      if (val == null) {
+        if (s == null) {
+          return true;
+        }
+        continue;
+      }
+      if (val.equalsIgnoreCase(s)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -165,99 +246,6 @@ public class RollupSummariesSelector {
 
     public Schema.SObjectType getSObjectType() {
       return LookupRollupSummary__c.sObjectType;
-    }
-
-    public List<RollupSummary> selectById(Set<String> idSet) {
-      Set<Id> recordIds = new Set<Id>();
-      for (String idAsString : idSet)
-        recordIds.add((Id) idAsString);
-      return RollupSummary.toList(selectSObjectsById(recordIds));
-    }
-
-    /**
-     * Returns active lookup rollup summary definitions for thr given calculation mode and child object
-     **/
-    public List<RollupSummary> selectActiveByChildObject(
-      RollupSummaries.CalculationMode calculationMode,
-      Set<String> childObjectNames
-    ) {
-      return selectActiveByChildObject(
-        new List<RollupSummaries.CalculationMode>{ calculationMode },
-        childObjectNames
-      );
-    }
-
-    /**
-     * Returns active lookup rollup summary definitions for thr given calculation modes and child object
-     **/
-    public List<RollupSummary> selectActiveByChildObject(
-      List<RollupSummaries.CalculationMode> calculationModes,
-      Set<String> childObjectNames
-    ) {
-      List<String> calculationModeNames = new List<String>();
-      for (RollupSummaries.CalculationMode calculationMode : calculationModes)
-        calculationModeNames.add(calculationMode.name());
-      return RollupSummary.toList(
-        Database.query(
-          newQueryFactory()
-            .setCondition(
-              'CalculationMode__c in :calculationModeNames and ChildObject__c in :childObjectNames and Active__c = true'
-            )
-            .addOrdering(
-              LookupRollupSummary__c.ParentObject__c,
-              fflib_QueryFactory.SortOrder.ASCENDING
-            )
-            .addOrdering(
-              LookupRollupSummary__c.RelationshipField__c,
-              fflib_QueryFactory.SortOrder.ASCENDING
-            )
-            .toSOQL()
-        )
-      );
-    }
-
-    /**
-     * Returns active lookup rollup summary definitions for the given rollup unique names
-     **/
-    public List<RollupSummary> selectActiveByUniqueName(
-      Set<String> uniqueNames
-    ) {
-      return RollupSummary.toList(
-        Database.query(
-          newQueryFactory()
-            .setCondition('UniqueName__c in :uniqueNames and Active__c = true')
-            .addOrdering(
-              LookupRollupSummary__c.ParentObject__c,
-              fflib_QueryFactory.SortOrder.ASCENDING
-            )
-            .addOrdering(
-              LookupRollupSummary__c.RelationshipField__c,
-              fflib_QueryFactory.SortOrder.ASCENDING
-            )
-            .toSOQL()
-        )
-      );
-    }
-
-    /**
-     * Returns lookup rollup summary definitions for the given rollup unique names
-     **/
-    public List<RollupSummary> selectByUniqueName(Set<String> uniqueNames) {
-      return RollupSummary.toList(
-        Database.query(
-          newQueryFactory()
-            .setCondition('UniqueName__c in :uniqueNames')
-            .addOrdering(
-              LookupRollupSummary__c.ParentObject__c,
-              fflib_QueryFactory.SortOrder.ASCENDING
-            )
-            .addOrdering(
-              LookupRollupSummary__c.RelationshipField__c,
-              fflib_QueryFactory.SortOrder.ASCENDING
-            )
-            .toSOQL()
-        )
-      );
     }
 
     /**
@@ -370,117 +358,6 @@ public class RollupSummariesSelector {
     }
 
     /**
-     * Returns active lookup rollup summary definitions for thr given calculation mode and child object
-     **/
-    public List<RollupSummary> selectActiveByChildObject(
-      RollupSummaries.CalculationMode calculationMode,
-      Set<String> childObjectNames
-    ) {
-      return selectActiveByChildObject(
-        new List<RollupSummaries.CalculationMode>{ calculationMode },
-        childObjectNames
-      );
-    }
-
-    /**
-     * Returns active lookup rollup summary definitions for thr given calculation modes and child object
-     **/
-    public List<RollupSummary> selectActiveByChildObject(
-      List<RollupSummaries.CalculationMode> calculationModes,
-      Set<String> childObjectNames
-    ) {
-      List<String> calculationModeNames = new List<String>();
-      for (RollupSummaries.CalculationMode calculationMode : calculationModes)
-        calculationModeNames.add(calculationMode.name());
-      if (this.forEdit) {
-        return RollupSummary.toList(
-          this.getLookupRollupSummariesWithParameters(
-            newQueryFactory()
-              .setCondition(
-                'CalculationMode__c in :tmpVar1 and ChildObject__c in :tmpVar2 and Active__c = true'
-              )
-              .addOrdering(
-                LookupRollupSummary2__mdt.ParentObject__c,
-                fflib_QueryFactory.SortOrder.ASCENDING
-              )
-              .addOrdering(
-                LookupRollupSummary2__mdt.RelationshipField__c,
-                fflib_QueryFactory.SortOrder.ASCENDING
-              )
-              .toSOQL(),
-            new List<Object>{ calculationModeNames, childObjectNames }
-          )
-        );
-      } else {
-        List<RollupSummary> summaries = RollupSummary.toList(
-          this.getLookupRollupSummaries()
-        );
-
-        List<RollupSummary> filteredSummaries = new List<RollupSummary>();
-
-        for (RollupSummary summary : summaries) {
-          if (
-            summary != null &&
-            summary.Active &&
-            calculationModeNames.contains(summary.CalculationMode) &&
-            childObjectNames.contains(summary.ChildObject)
-          ) {
-            filteredSummaries.add(summary);
-          }
-        }
-
-        return sortSummaries(
-          filteredSummaries,
-          'ParentObject__c',
-          'RelationshipField__c'
-        );
-      }
-    }
-
-    /**
-     * Returns active lookup rollup summary definitions for the given rollup unique names
-     **/
-    public List<RollupSummary> selectActiveByUniqueName(
-      Set<String> uniqueNames
-    ) {
-      if (this.forEdit) {
-        return RollupSummary.toList(
-          this.getLookupRollupSummariesWithParameters(
-            newQueryFactory()
-              .setCondition('DeveloperName in :tmpVar1 and Active__c = true')
-              .addOrdering(
-                LookupRollupSummary2__mdt.ParentObject__c,
-                fflib_QueryFactory.SortOrder.ASCENDING
-              )
-              .addOrdering(
-                LookupRollupSummary2__mdt.RelationshipField__c,
-                fflib_QueryFactory.SortOrder.ASCENDING
-              )
-              .toSOQL(),
-            new List<Object>{ uniqueNames }
-          )
-        );
-      } else {
-        List<RollupSummary> summaries = new List<RollupSummary>();
-        List<SObject> records = new List<SObject>();
-        for (String uniqueName : uniqueNames) {
-          SObject record = getLookupRollupSummaryByDeveloperNameOrId(
-            uniqueName
-          );
-          if (record != null && (Boolean) record.get('Active__c')) {
-            records.add(record);
-          }
-        }
-
-        return sortSummaries(
-          RollupSummary.toList(records),
-          'ParentObject__c',
-          'RelationshipField__c'
-        );
-      }
-    }
-
-    /**
      * Select all
      **/
     public List<RollupSummary> selectAll() {
@@ -527,29 +404,29 @@ public class RollupSummariesSelector {
     ) {
       return LookupRollupSummary2__mdt.getInstance(developerNameOrId);
     }
+  }
 
-    private List<RollupSummary> sortSummaries(
-      List<RollupSummary> summaries,
-      String sortField,
-      String sortFieldSecondary
-    ) {
-      List<RollupSummaryComparable> rollupSummaryComparables = new List<RollupSummaryComparable>();
-      for (RollupSummary summary : summaries) {
-        rollupSummaryComparables.add(
-          new RollupSummaryComparable(summary, sortField, sortFieldSecondary)
-        );
-      }
-
-      rollupSummaryComparables.sort();
-
-      List<RollupSummary> sortedSummaries = new List<RollupSummary>();
-
-      for (RollupSummaryComparable comparable : rollupSummaryComparables) {
-        sortedSummaries.add(comparable.summary);
-      }
-
-      return sortedSummaries;
+  private static List<RollupSummary> sortSummaries(
+    List<RollupSummary> summaries,
+    String sortField,
+    String sortFieldSecondary
+  ) {
+    List<RollupSummaryComparable> rollupSummaryComparables = new List<RollupSummaryComparable>();
+    for (RollupSummary summary : summaries) {
+      rollupSummaryComparables.add(
+        new RollupSummaryComparable(summary, sortField, sortFieldSecondary)
+      );
     }
+
+    rollupSummaryComparables.sort();
+
+    List<RollupSummary> sortedSummaries = new List<RollupSummary>();
+
+    for (RollupSummaryComparable comparable : rollupSummaryComparables) {
+      sortedSummaries.add(comparable.summary);
+    }
+
+    return sortedSummaries;
   }
 
   private class RollupSummaryComparable implements Comparable {
