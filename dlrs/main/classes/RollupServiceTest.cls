@@ -807,8 +807,7 @@ private with sharing class RollupServiceTest {
     // Assert rollup
     System.assertEquals(
       0,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
 
     // Do an update
@@ -818,8 +817,7 @@ private with sharing class RollupServiceTest {
     // Assert rollup
     System.assertEquals(
       0,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
   }
 
@@ -858,8 +856,7 @@ private with sharing class RollupServiceTest {
     // Assert rollup
     System.assertEquals(
       100,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
 
     // Delete Opportunity
@@ -868,8 +865,7 @@ private with sharing class RollupServiceTest {
     // Assert rollup
     System.assertEquals(
       0,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
   }
 
@@ -917,8 +913,7 @@ private with sharing class RollupServiceTest {
     // Assert rollup
     System.assertEquals(
       200,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
 
     // Delete Opportunity
@@ -927,8 +922,7 @@ private with sharing class RollupServiceTest {
     // Assert rollup
     System.assertEquals(
       100,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
   }
 
@@ -954,8 +948,8 @@ private with sharing class RollupServiceTest {
     update opps;
 
     // Assert no further limits have been used since the field to aggregate on the detail has not changed
-    System.assertEquals(beforeQueries + 1, Limits.getQueries()); // Only tolerate a query for the Lookup definition
-    System.assertEquals(beforeRows + 1, Limits.getQueryRows()); // Only tolerate a row for the Lookup definition
+    System.assertEquals(beforeQueries, Limits.getQueries());
+    System.assertEquals(beforeRows, Limits.getQueryRows());
   }
 
   private testMethod static void testLimitsConsumedWithConditions() {
@@ -1035,7 +1029,8 @@ private with sharing class RollupServiceTest {
     // One query on Opportunity for rollup a
     // One query on Opportunity for rollup b
     // One query on Parent for values to confirm DML needed
-    System.assertEquals(7, Limits.getQueries());
+    Integer queries = Limits.getQueries();
+    System.assertEquals(7, queries);
 
     // One row for ApexTrigger (in the TestContext.isSupported method)
     // One row for ApexTrigger
@@ -1043,7 +1038,8 @@ private with sharing class RollupServiceTest {
     // Two rows for Opportunity for rollup a
     // One rows for Opportunity for rollup b (since its a COUNT and only uses 1 row since Summer'18)
     // One for Parent
-    System.assertEquals(8, Limits.getQueryRows());
+    Integer queryRows = Limits.getQueryRows();
+    System.assertEquals(8, queryRows);
 
     // Assert rollup
     Id accountId = account.Id;
@@ -1062,16 +1058,14 @@ private with sharing class RollupServiceTest {
     update opps;
 
     // + One query for the Account query above
-    // + One query on Rollup object
     // + One query on Opportunity for rollup a
     // + One query on Parent for values to confirm DML needed
-    System.assertEquals(11, Limits.getQueries());
+    System.assertEquals(queries + 3, Limits.getQueries());
 
     // + One query for the Account query above
-    // + Two rows for Rollup object
     // + Two rows for Opportunity for rollup a
     // + One for Parent
-    System.assertEquals(14, Limits.getQueryRows());
+    System.assertEquals(queryRows + 4, Limits.getQueryRows());
 
     // Assert rollup
     accountResult = Database.query(
@@ -1159,14 +1153,16 @@ private with sharing class RollupServiceTest {
     // One query on Rollup object
     // One query on Opportunity for both rollups
     // One query on Parent for values to confirm DML needed
-    System.assertEquals(5, Limits.getQueries());
+    Integer queries = Limits.getQueries();
+    System.assertEquals(5, queries);
 
     // One row for ApexTrigger (in the TestContext.isSupported method)
     // One row for ApexTrigger
     // Two rows for Rollup object
     // Four rows for Opportunity for rollup a and b
     // One for Parent
-    System.assertEquals(9, Limits.getQueryRows());
+    Integer queryRows = Limits.getQueryRows();
+    System.assertEquals(9, queryRows);
 
     // Assert rollup
     Id accountId = account.Id;
@@ -1185,16 +1181,14 @@ private with sharing class RollupServiceTest {
     update opps;
 
     // + One query for the Account query above
-    // + One query on Rollup object
     // + One query on Opportunity for rollup a
     // + One query on Parent for values to confirm DML needed
-    System.assertEquals(9, Limits.getQueries());
+    System.assertEquals(queries + 3, Limits.getQueries());
 
     // + One query for the Account query above
-    // + Two rows for Rollup object
     // + Four rows for Opportunity for rollup a and
     // + One for Parent
-    System.assertEquals(17, Limits.getQueryRows());
+    System.assertEquals(queryRows + 6, Limits.getQueryRows());
 
     // Assert rollup
     accountResult = Database.query(
@@ -1252,8 +1246,7 @@ private with sharing class RollupServiceTest {
     // Assert rollup
     System.assertEquals(
       expectedResult,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
   }
 
@@ -1834,15 +1827,13 @@ private with sharing class RollupServiceTest {
     update oppsToModify;
 
     // Assert limits
-    // + One query on Rollup object
     // + One query on Opportunity for rollup
     // + One query on Parent for values to confirm DML needed
-    System.assertEquals(beforeQueries + 3, Limits.getQueries());
+    System.assertEquals(beforeQueries + 2, Limits.getQueries());
 
-    // + One row for Rollup object
     // + Four rows for Opportunity on Parent 1
     // + One for Parent
-    System.assertEquals(beforeRows + 6, Limits.getQueryRows());
+    System.assertEquals(beforeRows + 5, Limits.getQueryRows());
 
     // + Twelve rows for Oppportunities (from the update statement itself)
     // + One row for Parent Account 1 (from lookup processing)
@@ -1993,15 +1984,13 @@ private with sharing class RollupServiceTest {
     update children;
 
     // Assert limits
-    // + One query on Rollup object
     // + One query on LookupChild__c for rollup
     // + One query on Parent for values to confirm DML needed
-    System.assertEquals(beforeQueries + 3, Limits.getQueries());
+    System.assertEquals(beforeQueries + 2, Limits.getQueries());
 
-    // + Two rows for Rollup object
     // + Two rows for LookupChild__c for rollup B (One on Parent B and One on Parent C)
     // + Two for Parents
-    System.assertEquals(beforeRows + 6, Limits.getQueryRows());
+    System.assertEquals(beforeRows + 4, Limits.getQueryRows());
 
     // + Two rows for LookupChild__c (from the update statement itself)
     // + Two rows for LookupParent__c (One for B and One for C)
@@ -2439,15 +2428,13 @@ private with sharing class RollupServiceTest {
     update childrenToUpdate;
 
     // Assert limits
-    // + One query on Rollup object
     // + One query on LookupChild__c for rollup
     // + One query on Parent for values to confirm DML needed
-    System.assertEquals(beforeQueries + 3, Limits.getQueries());
+    System.assertEquals(beforeQueries + 2, Limits.getQueries());
 
-    // + One row for Rollup object
     // + Nine rows for LookupChild__c for rollup
     // + Three for Parents
-    System.assertEquals(beforeRows + 13, Limits.getQueryRows());
+    System.assertEquals(beforeRows + 12, Limits.getQueryRows());
 
     // + Three rows for LookupChild__c (from the update statement itself)
     // + Three rows for LookupParent__c for the rollup
@@ -2585,13 +2572,11 @@ private with sharing class RollupServiceTest {
     update childrenToUpdate;
 
     // Assert limits
-    // + One query on Rollup object
     // No query on LookupChild__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
-    System.assertEquals(beforeQueries + 1, Limits.getQueries());
+    System.assertEquals(beforeQueries, Limits.getQueries());
 
-    // + One row for Rollup object
     // No rows on LookupChild__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
-    System.assertEquals(beforeRows + 1, Limits.getQueryRows());
+    System.assertEquals(beforeRows, Limits.getQueryRows());
 
     // + Three rows for LookupChild__c (from the update statement itself)
     // No query on LookupParent__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed

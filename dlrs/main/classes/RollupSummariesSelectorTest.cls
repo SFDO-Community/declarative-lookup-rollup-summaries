@@ -51,7 +51,7 @@ private with sharing class RollupSummariesSelectorTest {
 
     try {
       metadataSelector.selectAll();
-    } catch(System.QueryException ex) {
+    } catch (System.QueryException ex) {
       unexpectedEx = ex;
     }
 
@@ -109,11 +109,15 @@ private with sharing class RollupSummariesSelectorTest {
 
   @isTest
   private static void selectActiveByUniqueName_notForEdit_MDT() {
-    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
-    RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
-
-    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, false);
-    rollupSelector.m_customMetadataSelector = mock;
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(
+      false,
+      false
+    );
+    Assert.areEqual(
+      1,
+      Limits.getQueries(),
+      'Expected a single query against the custom object'
+    );
 
     Test.startTest();
 
@@ -121,22 +125,17 @@ private with sharing class RollupSummariesSelectorTest {
       new Set<String>{ 'A_Summary' }
     );
 
+    Assert.areEqual(0, Limits.getQueries(), 'Expected no additional queries');
     Test.stopTest();
-
-    //No query rows exist in org and query invocations not called. Just check that correct method is used
-    System.assert(
-      mock.getLookupRollupSummaryByDeveloperNameOrIdCalled,
-      'no SOQL queries should have been used'
-    );
   }
 
   @isTest
   private static void selectActiveByUniqueName_ForEdit_MDT() {
-    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false, true);
-    RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
-
-    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, true);
-    rollupSelector.m_customMetadataSelector = mock;
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(
+      false,
+      true
+    );
+    Assert.areEqual(2, Limits.getQueries());
 
     Test.startTest();
 
@@ -144,23 +143,29 @@ private with sharing class RollupSummariesSelectorTest {
     List<RollupSummary> summaries = rollupSelector.selectActiveByUniqueName(
       new Set<String>()
     );
-
+    System.assertEquals(0, Limits.getQueries());
     Test.stopTest();
-
-    //No query rows exist in org and query invocations not called. Just check that correct method is used
-    System.assert(
-      mock.getLookupRollupSummariesForEditCalled,
-      'SOQL queries should have been used'
-    );
   }
 
+  // TODO: may not be necessary anymore if it is duplicating work
+  // largely because we don't have a method to inject a mock prior to construction
+  // and now the constructor is building the full object cache and not querying again
   @isTest
   private static void selectActiveByUniqueName_NotForEdit_SortOrder() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
     RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
 
-    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, false);
-    rollupSelector.m_customMetadataSelector = mock;
+    // fill cache
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
+      RollupSummary.toList(mock.summariesByDeveloperName.values())
+    );
+
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(
+      false,
+      false
+    );
 
     Set<String> uniqueNames = new Set<String>{
       'A_Summary',
@@ -206,35 +211,37 @@ private with sharing class RollupSummariesSelectorTest {
 
   @isTest
   private static void selectActiveByChildObject_notForEdit_MDT() {
-    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
-    RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
-
-    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, false);
-    rollupSelector.m_customMetadataSelector = mock;
-
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(
+      false,
+      false
+    );
+    Assert.areEqual(
+      1,
+      Limits.getQueries(),
+      'Expected a single query for SObjects'
+    );
     Test.startTest();
 
     List<RollupSummary> summaries = rollupSelector.selectActiveByChildObject(
       RollupSummaries.CalculationMode.Realtime,
       new Set<String>()
     );
+    Assert.areEqual(0, Limits.getQueries(), 'Expected no additional queries');
 
     Test.stopTest();
-
-    //No query rows exist in org and query invocations not called. Just check that correct method is used
-    System.assert(
-      mock.getLookupRollupSummariesNotForEditCalled,
-      'no SOQL queries should have been used'
-    );
   }
 
   @isTest
   private static void selectActiveByChildObject_ForEdit_MDT() {
-    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false, true);
-    RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
-
-    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, true);
-    rollupSelector.m_customMetadataSelector = mock;
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(
+      false,
+      true
+    );
+    Assert.areEqual(
+      2,
+      Limits.getQueries(),
+      'Expected a single query for SObjects'
+    );
 
     Test.startTest();
 
@@ -243,51 +250,24 @@ private with sharing class RollupSummariesSelectorTest {
       RollupSummaries.CalculationMode.Realtime,
       new Set<String>()
     );
-
+    Assert.areEqual(0, Limits.getQueries(), 'Expected no additional queries');
     Test.stopTest();
-
-    //No query rows exist in org and query invocations not called. Just check that correct method is used
-    System.assert(
-      mock.getLookupRollupSummariesForEditCalled,
-      'SOQL queries should have been used'
-    );
   }
 
-  @isTest
-  private static void selectActiveByChildObject_ForEdit_queryValidation_MDT() {
-    RollupSummariesSelector.CustomMetadataSelector metadataSelector = new RollupSummariesSelector.CustomMetadataSelector(
-      false,
-      true
-    );
-
-    System.QueryException unexpectedEx;
-    Test.startTest();
-
-    try {
-      metadataSelector.selectActiveByChildObject(
-        RollupSummaries.CalculationMode.Realtime,
-        new Set<String>()
-      );
-    } catch(System.QueryException ex) {
-      unexpectedEx = ex;
-    }
-
-    Test.stopTest();
-
-    System.assertEquals(
-      null,
-      unexpectedEx,
-      'SOQL query should not throw an exception'
-    );
-  }
-
+  // Is constructing the mock useful here or maybe should be a list of static returns and a method to populate the cache
   @isTest
   private static void selectActiveByChildObject_NotForEdit_SortOrder_MDT() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
-    RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
 
-    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, false);
-    rollupSelector.m_customMetadataSelector = mock;
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
+      RollupSummary.toList(mock.summariesByDeveloperName.values())
+    );
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(
+      false,
+      false
+    );
 
     Set<String> uniqueNames = new Set<String>{
       'A_Summary',
@@ -298,7 +278,7 @@ private with sharing class RollupSummariesSelectorTest {
     };
 
     Test.startTest();
-    List<RollupSummary> summaries = metadataSelector.selectActiveByChildObject(
+    List<RollupSummary> summaries = rollupSelector.selectActiveByChildObject(
       RollupSummaries.CalculationMode.Realtime,
       new Set<String>{ 'X', 'Y' }
     );
@@ -393,10 +373,8 @@ private with sharing class RollupSummariesSelectorTest {
     Test.startTest();
 
     try {
-      metadataSelector.selectByDeveloperName(
-        new Set<String>{ 'A_Summary' }
-      );
-    } catch(System.QueryException ex) {
+      metadataSelector.selectByDeveloperName(new Set<String>{ 'A_Summary' });
+    } catch (System.QueryException ex) {
       unexpectedEx = ex;
     }
 
@@ -412,25 +390,38 @@ private with sharing class RollupSummariesSelectorTest {
   @isTest
   private static void selectById_notForEdit_MDT() {
     MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false);
-    RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
 
-    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, false);
-    rollupSelector.m_customMetadataSelector = mock;
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
+      RollupSummary.toList(mock.summariesByDeveloperName.values())
+    );
+
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(
+      false,
+      false
+    );
     String idVal = mock.summariesByDeveloperName.get('D_Summary').Id;
+
+    Assert.areEqual(
+      0,
+      Limits.getQueries(),
+      'Expected zero queries because there was a cache value available'
+    );
 
     Test.startTest();
 
     List<RollupSummary> summaries = rollupSelector.selectById(
       new Set<String>{ idVal }
     );
+    Assert.areEqual(
+      0,
+      Limits.getQueries(),
+      'Expected no additional SOQL queries'
+    );
 
     Test.stopTest();
 
-    //No query rows exist in org and query invocations not called. Just check that correct method is used
-    System.assert(
-      mock.getLookupRollupSummaryByDeveloperNameOrIdCalled,
-      'no SOQL queries should have been used'
-    );
     System.assertEquals(
       'D_Summary',
       String.valueOf(summaries[0].record.get('DeveloperName')),
@@ -440,26 +431,24 @@ private with sharing class RollupSummariesSelectorTest {
 
   @isTest
   private static void selectById_ForEdit_MDT() {
-    MockedCustomMetadataSelector mock = new MockedCustomMetadataSelector(false, true);
-    RollupSummariesSelector.CustomMetadataSelector metadataSelector = mock;
-
-    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(false, true);
-    rollupSelector.m_customMetadataSelector = mock;
-
+    RollupSummariesSelector rollupSelector = new RollupSummariesSelector(
+      false,
+      true
+    );
+    Assert.areEqual(
+      2,
+      Limits.getQueries(),
+      'Expected two SOQL queries for SObjects and MDT'
+    );
     Test.startTest();
 
     //There are no records in the database, just use an empty Set to check against query limits
     List<RollupSummary> summaries = rollupSelector.selectById(
       new Set<String>{ '00X00000000000000D' }
     );
+    Assert.areEqual(0, Limits.getQueries(), 'Expected no additional queries');
 
     Test.stopTest();
-
-    //No query rows exist in org and query invocations not called. Just check that correct method is used
-    System.assert(
-      mock.getLookupRollupSummariesForEditCalled,
-      'SOQL queries should have been used'
-    );
   }
 
   @isTest
@@ -473,10 +462,8 @@ private with sharing class RollupSummariesSelectorTest {
     Test.startTest();
 
     try {
-      metadataSelector.selectById(
-        new Set<String>{ '00X00000000000000D' }
-      );
-    } catch(System.QueryException ex) {
+      metadataSelector.selectById(new Set<String>{ '00X00000000000000D' });
+    } catch (System.QueryException ex) {
       unexpectedEx = ex;
     }
 
@@ -488,7 +475,6 @@ private with sharing class RollupSummariesSelectorTest {
       'SOQL query should not throw an exception'
     );
   }
-
 
   private class MockedCustomMetadataSelector extends RollupSummariesSelector.CustomMetadataSelector {
     Boolean getLookupRollupSummariesForEditCalled = false;
