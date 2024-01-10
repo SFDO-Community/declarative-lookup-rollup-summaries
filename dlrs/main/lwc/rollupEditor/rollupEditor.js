@@ -5,11 +5,21 @@ import validateRollupConfig from "@salesforce/apex/RollupEditorController.valida
 import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollupConfig";
 import getFieldOptions from "@salesforce/apex/RollupEditorController.getFieldOptions";
 
+const DEFAULT_ROLLUP_VALUES = { Active__c: false };
+
 export default class RollupEditor extends LightningElement {
   isLoading = false;
-  DEFAULT_ROLLUP_VALUES = { Active__c: false };
+
+  openAccordianSections = [
+    "Information",
+    "Objects",
+    "Relationship",
+    "RollupDetails",
+    "CalculationMode"
+  ];
+
   @track
-  rollup = this.DEFAULT_ROLLUP_VALUES;
+  rollup = DEFAULT_ROLLUP_VALUES;
   errors = {};
 
   @track
@@ -56,7 +66,7 @@ export default class RollupEditor extends LightningElement {
 
   async getRollup() {
     if (!this.rollupName) {
-      this.rollup = this.DEFAULT_ROLLUP_VALUES;
+      this.rollup = DEFAULT_ROLLUP_VALUES;
     } else {
       try {
         this.rollup = await getRollupConfig({
@@ -215,14 +225,6 @@ export default class RollupEditor extends LightningElement {
     this.getParentRelationshipFieldOptions();
   }
 
-  get rollupAsString() {
-    return JSON.stringify(this.rollup, null, 2);
-  }
-
-  get errorsAsString() {
-    return JSON.stringify(this.errors);
-  }
-
   get aggregateOptions() {
     return [
       { label: "Sum", value: "Sum" },
@@ -252,29 +254,5 @@ export default class RollupEditor extends LightningElement {
       { label: "User", value: "User" },
       { label: "System", value: "System" }
     ];
-  }
-
-  onToggleSection(event) {
-    const sectionName = event.currentTarget.getAttribute("data-section-button");
-    const element = this.template.querySelector(
-      `[data-section-name="${sectionName}"]`
-    );
-    const expandClass = "slds-is-open";
-    if (element.className.includes(expandClass)) {
-      element.className = element.className.replace(expandClass, "");
-    } else {
-      element.className += " " + expandClass;
-    }
-  }
-
-  onToggleButtonGroupList() {
-    const elementName = "expandable-button-list";
-    const element = this.template.querySelector(`[data-name="${elementName}"]`);
-    const expandClass = "slds-is-open";
-    if (element.className.includes(expandClass)) {
-      element.className = element.className.replace(expandClass, "");
-    } else {
-      element.className += " " + expandClass;
-    }
   }
 }
