@@ -115,8 +115,8 @@ public class CustomMetadataService {
     for (String customMetadataFullName : customMetadataFullNames)
       qualifiedFullNames.add(
         qualifiedMetadataType.getDescribe().getName() +
-        '.' +
-        customMetadataFullName
+          '.' +
+          customMetadataFullName
       );
     List<MetadataService.DeleteResult> results = service.deleteMetadata(
       'CustomMetadata',
@@ -211,20 +211,20 @@ public class CustomMetadataService {
       List<String> messages = new List<String>();
       messages.add(
         (saveResult.errors.size() == 1 ? 'Error ' : 'Errors ') +
-        'occured processing component ' +
-        saveResult.fullName +
-        '.'
+          'occured processing component ' +
+          saveResult.fullName +
+          '.'
       );
       for (MetadataService.Error error : saveResult.errors)
         messages.add(
           error.message +
-          ' (' +
-          error.statusCode +
-          ').' +
-          (error.fields != null &&
-            error.fields.size() > 0
-            ? ' Fields ' + String.join(error.fields, ',') + '.'
-            : '')
+            ' (' +
+            error.statusCode +
+            ').' +
+            (error.fields != null &&
+              error.fields.size() > 0
+              ? ' Fields ' + String.join(error.fields, ',') + '.'
+              : '')
         );
       if (messages.size() > 0)
         throw new CustomMetadataServiceException(String.join(messages, ' '));
@@ -249,20 +249,20 @@ public class CustomMetadataService {
       List<String> messages = new List<String>();
       messages.add(
         (deleteResult.errors.size() == 1 ? 'Error ' : 'Errors ') +
-        'occured processing component ' +
-        deleteResult.fullName +
-        '.'
+          'occured processing component ' +
+          deleteResult.fullName +
+          '.'
       );
       for (MetadataService.Error error : deleteResult.errors)
         messages.add(
           error.message +
-          ' (' +
-          error.statusCode +
-          ').' +
-          (error.fields != null &&
-            error.fields.size() > 0
-            ? ' Fields ' + String.join(error.fields, ',') + '.'
-            : '')
+            ' (' +
+            error.statusCode +
+            ').' +
+            (error.fields != null &&
+              error.fields.size() > 0
+              ? ' Fields ' + String.join(error.fields, ',') + '.'
+              : '')
         );
       if (messages.size() > 0)
         throw new CustomMetadataServiceException(String.join(messages, ' '));

@@ -27,10 +27,11 @@ export default class ObjectSelector extends LightningElement {
   isSearchLoading = false; // to control loading spinner
   delayTimeout;
   selectedRecord = "";
-  selectedRecordIconName = this.iconName;
+  selectedRecordIconName;
   objects;
   preventBlur = false;
   connectedCallback() {
+    this.selectedRecordIconName = this.iconName;
     this.isSearchLoading = true;
     //GET LIST OF ALL OBJECTS
     getAllObjects()

@@ -1,92 +1,145 @@
 <template>
+  <div
+    class="slds-form-element slds-combobox_container slds-has-selection"
+    style="display: block"
+    onmouseleave={onToggleDropdown}
+    data-source="lookupContainer"
+  >
+    <label class="slds-form-element__label" for="autocomplete-comobobox-id"
+      >{label}</label
+    >
 
-    <div class="slds-form-element slds-combobox_container slds-has-selection" style="display: block;" onmouseleave={onToggleDropdown}  data-source="lookupContainer">
-
-      <label class="slds-form-element__label" for="autocomplete-comobobox-id">{label}</label>
-
-      <!-- Helper Text -->
-      <div if:true={helperText} class="slds-form-element__icon my-helper-text-icon">
-        <button class="slds-button slds-button_icon " aria-describedby="help">
-          <svg class="slds-button__icon" aria-hidden="true">
-            <use xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#info"></use>
-          </svg>
-          <span class="slds-assistive-text">Help</span>
-        </button>
-        <div class="slds-popover slds-popover_tooltip slds-nubbin_bottom-left my-popover" role="tooltip" id="help" style="position:absolute;bottom: 30px;left:-15px;width:170px">
-          <div class="slds-popover__body">{helperText}</div>
-        </div>
+    <!-- Helper Text -->
+    <div
+      if:true={helperText}
+      class="slds-form-element__icon my-helper-text-icon"
+    >
+      <button class="slds-button slds-button_icon" aria-describedby="help">
+        <svg class="slds-button__icon" aria-hidden="true">
+          <use
+            xlink:href="/_slds/icons/utility-sprite/svg/symbols.svg#info"
+          ></use>
+        </svg>
+        <span class="slds-assistive-text">Help</span>
+      </button>
+      <div
+        class="slds-popover slds-popover_tooltip slds-nubbin_bottom-left my-popover"
+        role="tooltip"
+        id="help"
+        style="position: absolute; bottom: 30px; left: -15px; width: 170px"
+      >
+        <div class="slds-popover__body">{helperText}</div>
       </div>
+    </div>
 
-      <div class="slds-form-element__control">
-
-        <div class="lookupInputContainer slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" aria-expanded="false" aria-haspopup="listbox" role="combobox"> 
-          <div class={styleClassCombobox} role="none">
-
-            <!--Lookup Input Field-->
-            <div class="searchBoxWrapper slds-show">
-              <lightning-input                   
-                type="search"
-                data-source="searchInputField"
-                onclick={onToggleDropdown}
-                onchange={onChangeSearchKey}
-                is-loading={isLoading}
-                label={label}
-                variant="label-hidden"
-                placeholder={placeholder}
-                value={searchKey}
-            ></lightning-input>  
-            </div>
-            
-            <!--Lookup Selected record pill container start-->  
-            <div class="pillDiv slds-hide">        
-              <span if:true={selectedOption.icon} class="slds-icon_container slds-combobox__input-entity-icon">
-                  <lightning-icon icon-name={selectedOption.icon} size="x-small" alternative-text="icon"></lightning-icon>  
-              </span>
-
-              <input type="text"
-                    id="autocomplete-comobobox-id"
-                    value={selectedOption.label}       
-                    class="slds-input slds-combobox__input slds-combobox__input-value"
-                    readonly
-                    />
-              <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title="Remove selected option">
-                <lightning-icon icon-name="utility:close" size="x-small" alternative-text="close icon" onclick={onRemoveSelection}></lightning-icon> 
-              </button>
-            </div>  
+    <div class="slds-form-element__control">
+      <div
+        class="lookupInputContainer slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click"
+        aria-expanded="false"
+        aria-haspopup="listbox"
+        role="combobox"
+      >
+        <div class={styleClassCombobox} role="none">
+          <!--Lookup Input Field-->
+          <div class="searchBoxWrapper slds-show">
+            <lightning-input
+              type="search"
+              data-source="searchInputField"
+              onclick={onToggleDropdown}
+              onchange={onChangeSearchKey}
+              is-loading={isLoading}
+              label={label}
+              variant="label-hidden"
+              placeholder={placeholder}
+              value={searchKey}
+            ></lightning-input>
           </div>
 
-          <!-- lookup search result part start-->
-          <div style="margin-top:0px" id="listbox-id-5" class="slds-dropdown slds-dropdown_length-with-icon-7 slds-dropdown_fluid" role="listbox">
-            <ul class="slds-listbox slds-listbox_vertical" role="presentation">
-              <template for:each={filteredOptions} for:item="option">
-                <li key={option.value} role="presentation" class="slds-listbox__item">
-                  <div data-name={option.value} onclick={onSelectOption} class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+          <!--Lookup Selected record pill container start-->
+          <div class="pillDiv slds-hide">
+            <span
+              if:true={selectedOption.icon}
+              class="slds-icon_container slds-combobox__input-entity-icon"
+            >
+              <lightning-icon
+                icon-name={selectedOption.icon}
+                size="x-small"
+                alternative-text="icon"
+              ></lightning-icon>
+            </span>
 
-                    <span if:true={option.icon} style="pointer-events: none;" class="slds-media__figure slds-listbox__option-icon" >
-                      <span class="slds-icon_container" >
-                          <lightning-icon icon-name={option.icon} size="small" alternative-text="icon" ></lightning-icon>  
-                      </span>
-                    </span>
-
-                    <span style="pointer-events: none;" class="slds-media__body" >
-                      <span  class="slds-listbox__option-text slds-listbox__option-text_entity">{option.label}</span>
-                    </span>
-
-                  </div>
-                </li>
-              </template>
-
-              <!--ERROR msg, if there is no records..-->
-              <!-- <template if:false={hasRecords}>
-                <li class="slds-listbox__item" style="text-align: center; font-weight: bold;">No Records Found....</li>
-              </template> -->
-
-            </ul>
-          
+            <input
+              type="text"
+              id="autocomplete-comobobox-id"
+              value={selectedOption.label}
+              class="slds-input slds-combobox__input slds-combobox__input-value"
+              readonly
+            />
+            <button
+              class="slds-button slds-button_icon slds-input__icon slds-input__icon_right"
+              title="Remove selected option"
+            >
+              <lightning-icon
+                icon-name="utility:close"
+                size="x-small"
+                alternative-text="close icon"
+                onclick={onRemoveSelection}
+              ></lightning-icon>
+            </button>
           </div>
         </div>
-      </div>
 
+        <!-- lookup search result part start-->
+        <div
+          style="margin-top: 0px"
+          id="listbox-id-5"
+          class="slds-dropdown slds-dropdown_length-with-icon-7 slds-dropdown_fluid"
+          role="listbox"
+        >
+          <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+            <template for:each={filteredOptions} for:item="option">
+              <li
+                key={option.value}
+                role="presentation"
+                class="slds-listbox__item"
+              >
+                <div
+                  data-name={option.value}
+                  onclick={onSelectOption}
+                  class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta"
+                  role="option"
+                >
+                  <span
+                    if:true={option.icon}
+                    style="pointer-events: none"
+                    class="slds-media__figure slds-listbox__option-icon"
+                  >
+                    <span class="slds-icon_container">
+                      <lightning-icon
+                        icon-name={option.icon}
+                        size="small"
+                        alternative-text="icon"
+                      ></lightning-icon>
+                    </span>
+                  </span>
 
+                  <span style="pointer-events: none" class="slds-media__body">
+                    <span
+                      class="slds-listbox__option-text slds-listbox__option-text_entity"
+                      >{option.label}</span
+                    >
+                  </span>
+                </div>
+              </li>
+            </template>
+
+            <!--ERROR msg, if there is no records..-->
+            <!-- <template if:false={hasRecords}>
+              <li class="slds-listbox__item" style="text-align: center; font-weight: bold;">No Records Found....</li>
+            </template> -->
+          </ul>
+        </div>
       </div>
-  </template>
+    </div>
+  </div>
+</template>

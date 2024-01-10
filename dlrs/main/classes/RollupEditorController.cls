@@ -14,9 +14,7 @@ public with sharing class RollupEditorController {
       .Record;
   }
 
-
   public class SelectOption {
-
     @AuraEnabled
     public String value;
 
@@ -29,19 +27,18 @@ public with sharing class RollupEditorController {
     @AuraEnabled
     public String type;
 
-    public SelectOption(String value, String label){
+    public SelectOption(String value, String label) {
       this.value = value;
       this.label = label;
     }
-
   }
 
   @AuraEnabled
-  public static List<SelectOption> getFieldOptions(String objectName){
-    Map<String, Schema.SobjectField> mapOfFields =  Schema.getGlobalDescribe()
-                                                      .get(objectName)
-                                                      .getDescribe()
-                                                      .fields.getMap();
+  public static List<SelectOption> getFieldOptions(String objectName) {
+    Map<String, Schema.SobjectField> mapOfFields = Schema.getGlobalDescribe()
+      .get(objectName)
+      .getDescribe()
+      .fields.getMap();
 
     SelectOption emptyOption = new SelectOption('', '-- Select --');
 
@@ -61,7 +58,6 @@ public with sharing class RollupEditorController {
     return options;
   }
 
-  
   /**
    * returns a map of fieldname => list<errorstring> to use in displaying error in the UI
    * general errors are applied to the 'record' field name

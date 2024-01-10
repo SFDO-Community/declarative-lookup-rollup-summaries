@@ -24,7 +24,6 @@ export default class AutocompleteCombobox extends LightningElement {
       this.showSearchInput();
     }
   }
-
   _firstTimeSetOptions = true;
   @track filteredOptions = [];
   _options = [];
@@ -44,10 +43,8 @@ export default class AutocompleteCombobox extends LightningElement {
       this.showSearchInput();
     }
   }
-
   @track isLoading = false;
   @track searchKey = "";
-
   get styleClassCombobox() {
     let styleClass =
       "slds-combobox__form-element slds-input-has-icon slds-input-has-icon_left-right";
@@ -59,9 +56,7 @@ export default class AutocompleteCombobox extends LightningElement {
     }
     return styleClass;
   }
-
   // *** EVENT METHODS ***
-
   onToggleDropdown(event) {
     const targetDataSource = event.target.getAttribute("data-source");
     const lookupInputContainer = this.template.querySelector(
@@ -80,7 +75,6 @@ export default class AutocompleteCombobox extends LightningElement {
         break;
     }
   }
-
   onChangeSearchKey(event) {
     // Debouncing this method: Do not update the reactive property as long as this function is
     // being called within a delay of DELAY. This is to avoid a very large number of Apex method calls.
@@ -93,14 +87,12 @@ export default class AutocompleteCombobox extends LightningElement {
       this.isLoading = false;
     }, DELAY);
   }
-
   onSelectOption(event) {
     this._value = event.target.getAttribute("data-name");
     this.selectOptionByValue();
     this.showSelectionInput();
     this.dispatchSelectionEvent();
   }
-
   // method to clear selected lookup record
   onRemoveSelection() {
     this._value = "";
@@ -110,9 +102,7 @@ export default class AutocompleteCombobox extends LightningElement {
     this.showSearchInput();
     this.dispatchSelectionEvent();
   }
-
   // *** CONTROLLER
-
   filterOptions(searchKey) {
     try {
       const lowerCaseSearchKey = searchKey.toLowerCase();
@@ -126,8 +116,12 @@ export default class AutocompleteCombobox extends LightningElement {
       this.filteredOptions = this._options;
     }
   }
-
   selectOptionByValue() {
+    if (!this._value) {
+      this.selectedOptions = {};
+      this.searchKey = "";
+      return;
+    }
     try {
       const lowerCaseValue = this._value.toLowerCase();
       this.selectedOption = this._options.find((option) => {
@@ -139,44 +133,47 @@ export default class AutocompleteCombobox extends LightningElement {
       this.searchKey = "";
     }
   }
-
   dispatchSelectionEvent() {
     const _event = new CustomEvent("changeselection", {
       detail: { selectedOption: this.selectedOption }
     });
     this.dispatchEvent(_event);
   }
-
   // *** UI HELPER ***
-
   showSelectionInput() {
     try {
       if (!this.selectedOption.value) return;
       const inputElement = this.template.querySelector(".lookupInputContainer");
-      inputElement.classList.remove("slds-is-open");
-
+      if (inputElement) {
+        inputElement.classList.remove("slds-is-open");
+      }
       const searchBoxWrapper = this.template.querySelector(".searchBoxWrapper");
-      searchBoxWrapper.classList.remove("slds-show");
-      searchBoxWrapper.classList.add("slds-hide");
-
+      if (searchBoxWrapper) {
+        searchBoxWrapper.classList.remove("slds-show");
+        searchBoxWrapper.classList.add("slds-hide");
+      }
       const pillDiv = this.template.querySelector(".pillDiv");
-      pillDiv.classList.remove("slds-hide");
-      pillDiv.classList.add("slds-show");
+      if (pillDiv) {
+        pillDiv.classList.remove("slds-hide");
+        pillDiv.classList.add("slds-show");
+      }
     } catch (err) {
       console.log(err);
     }
   }
-
   showSearchInput() {
     try {
       // remove selected pill and display input field again
       const searchBoxWrapper = this.template.querySelector(".searchBoxWrapper");
-      searchBoxWrapper.classList.remove("slds-hide");
-      searchBoxWrapper.classList.add("slds-show");
-
+      if (searchBoxWrapper) {
+        searchBoxWrapper.classList.remove("slds-hide");
+        searchBoxWrapper.classList.add("slds-show");
+      }
       const pillDiv = this.template.querySelector(".pillDiv");
-      pillDiv.classList.remove("slds-show");
-      pillDiv.classList.add("slds-hide");
+      if (pillDiv) {
+        pillDiv.classList.remove("slds-show");
+        pillDiv.classList.add("slds-hide");
+      }
     } catch (error) {
       console.log(error);
     }

@@ -60,30 +60,30 @@ public with sharing class LookupRollupStatusCheckController {
    */
   @AuraEnabled(Cacheable=true)
   public static String getScheduledFullCalculates(String lookupID) {
-    try{
-    LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
-          false,
-          true
-        )
-        .selectById(new Set<String>{ lookupID })[0]
-      .Record;
+    try {
+      LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
+            false,
+            true
+          )
+          .selectById(new Set<String>{ lookupID })[0]
+        .Record;
 
-    if (LookupRollupSummary == null) {
+      if (LookupRollupSummary == null) {
+        return 'No Schedule for Rollup';
+      }
+
+      String id = (LookupRollupSummary.id).to15();
+      List<CronTrigger> ct = new CronTriggersSelector()
+        .selectScheduledApexById(id);
+
+      if (ct.isEmpty()) {
+        return 'No Schedule for Rollup';
+      } else {
+        return ct[0].NextFireTime.format();
+      }
+    } catch (Exception e) {
       return 'No Schedule for Rollup';
     }
-
-    String id = (LookupRollupSummary.id).to15();
-    List<CronTrigger> ct = new CronTriggersSelector()
-      .selectScheduledApexById(id);
-
-    if (ct.isEmpty()) {
-      return 'No Schedule for Rollup';
-    } else {
-      return ct[0].NextFireTime.format();
-    }
-  }catch (Exception e){
-    return 'No Schedule for Rollup';
-  }
   }
 
   /**
@@ -91,65 +91,65 @@ public with sharing class LookupRollupStatusCheckController {
    */
   @AuraEnabled(Cacheable=true)
   public static String hasChildTriggerDeployed(String lookupID) {
-    try{
-    LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
-          false,
-          true
-        )
-        .selectById(new Set<String>{ lookupID })[0]
-      .Record;
+    try {
+      LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
+            false,
+            true
+          )
+          .selectById(new Set<String>{ lookupID })[0]
+        .Record;
 
-    if (LookupRollupSummary == null) {
+      if (LookupRollupSummary == null) {
+        return 'Not Deployed';
+      }
+
+      RollupSummary rs = new RollupSummary(LookupRollupSummary);
+      String childTrigger = RollupSummaries.makeTriggerName(rs);
+      ApexTriggersSelector selector = new ApexTriggersSelector();
+      Map<String, ApexTrigger> loadTriggers = selector.selectByName(
+        new Set<String>{ ChildTrigger }
+      );
+
+      if (loadTriggers.size() == 0) {
+        return 'Not Deployed';
+      }
+
+      return 'Deployed';
+    } catch (Exception e) {
       return 'Not Deployed';
     }
-
-    RollupSummary rs = new RollupSummary(LookupRollupSummary);
-    String childTrigger = RollupSummaries.makeTriggerName(rs);
-    ApexTriggersSelector selector = new ApexTriggersSelector();
-    Map<String, ApexTrigger> loadTriggers = selector.selectByName(
-      new Set<String>{ ChildTrigger }
-    );
-
-    if (loadTriggers.size() == 0) {
-      return 'Not Deployed';
-    }
-
-    return 'Deployed';
-  } catch (Exception e){
-    return 'Not Deployed';
   }
-}
 
   @AuraEnabled(Cacheable=true)
   public static String hasParentTriggerDeployed(String lookupID) {
-    try{
-    LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
-          false,
-          true
-        )
-        .selectById(new Set<String>{ lookupID })[0]
-      .Record;
+    try {
+      LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
+            false,
+            true
+          )
+          .selectById(new Set<String>{ lookupID })[0]
+        .Record;
 
-    if (LookupRollupSummary == null) {
+      if (LookupRollupSummary == null) {
+        return 'Not Deployed';
+      }
+
+      RollupSummary rs = new RollupSummary(LookupRollupSummary);
+      String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
+      ApexTriggersSelector selector = new ApexTriggersSelector();
+      Map<String, ApexTrigger> loadTriggers = selector.selectByName(
+        new Set<String>{ ParentTrigger }
+      );
+
+      if (loadTriggers.size() == 0) {
+        return 'Not Deployed';
+      }
+
+      return 'Deployed';
+    } catch (Exception e) {
       return 'Not Deployed';
     }
-
-    RollupSummary rs = new RollupSummary(LookupRollupSummary);
-    String parentTrigger = RollupSummaries.makeParentTriggerName(rs);
-    ApexTriggersSelector selector = new ApexTriggersSelector();
-    Map<String, ApexTrigger> loadTriggers = selector.selectByName(
-      new Set<String>{ ParentTrigger }
-    );
-
-    if (loadTriggers.size() == 0) {
-      return 'Not Deployed';
-    }
-
-    return 'Deployed';
-  } catch (Exception e){
-    return 'Not Deployed';
   }
-}
 
   /*
    * Rollup - General Status Information
@@ -181,7 +181,7 @@ public with sharing class LookupRollupStatusCheckController {
         AND ApexClass.name LIKE '%RollupJob%'
     ];
 
-    if(countScheduled == 0) {
+    if (countScheduled == 0) {
       return 'RollupJob is not scheduled';
     }
 
