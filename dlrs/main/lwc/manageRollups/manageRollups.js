@@ -145,12 +145,6 @@ export default class ManageRollups extends LightningElement {
     this.requestDelete(event.detail.rollupName);
   }
 
-  ////////////////////
-  // Tracks changes to channelName text field
-  handleChannelName(event) {
-    this.channelName = event.target.value;
-  }
-
   disconnectedCallback() {
     this.handleUnsubscribe();
   }

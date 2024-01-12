@@ -11,9 +11,6 @@ import getScheduledJobs from "@salesforce/apex/LookupRollupStatusCheckController
 const mockLookupRollupSummary2 = "";
 
 export default class rollupStatusCheck extends LightningElement {
-  // Khang Ly contribute
-  header = "Status Check";
-
   lookupID;
 
   // General status check variables
@@ -21,12 +18,12 @@ export default class rollupStatusCheck extends LightningElement {
   recordCountAll = "0";
 
   // Rollup Specific Status Check Variables
-  recordCount = "0";
-  nextFullCalculateDate = "NA";
-  triggerCount = "0";
-  parentTrigger = "NA";
-  childTrigger = "NA";
-  calculateJobError = "No Errors Found";
+  recordCount = 0;
+  nextFullCalculateDate;
+  triggerCount = 0;
+  parentTrigger = false;
+  childTrigger = false;
+  calculateJobErrors = 0;
 
   // Error Handling
   error = [];
@@ -48,10 +45,31 @@ export default class rollupStatusCheck extends LightningElement {
     this._name = value;
   }
 
+  get nextFullCalculateAt() {
+    if (this.nextFullCalculateDate) {
+      return this.nextFullCalculateDate;
+    }
+    return "Not Scheduled";
+  }
+
+  get parentTriggerStatus() {
+    if (this.parentTrigger) {
+      return "Deployed";
+    }
+    return "Not Deployed";
+  }
+
+  get childTriggerStatus() {
+    if (this.childTrigger) {
+      return "Deployed";
+    }
+    return "Not Deployed";
+  }
+
   // Method to check if there are any failed calculate jobs for the specific rollup
   @wire(getCalculateJobs, { lookupID: "$_name" })
   wiredGetCalculateJobs({ error, data }) {
-    this.handleApexResponse(data, error, "calculateJobError");
+    this.handleApexResponse(data, error, "calculateJobErrors");
   }
 
   // Method to check if there are any scheduled full calculates for the specific rollup
@@ -101,12 +119,11 @@ export default class rollupStatusCheck extends LightningElement {
 
   // *** Utility ***
   handleApexResponse(data, error, propertyName) {
-    if (data) {
-      console.log(propertyName + "- data: " + data);
-      this[propertyName] = data;
-    } else if (error) {
+    if (error) {
       console.log(propertyName + "- error: " + error);
       this.error.push(error);
     }
+    console.log(propertyName + "- data: " + data);
+    this[propertyName] = data;
   }
 }
