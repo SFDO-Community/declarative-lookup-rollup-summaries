@@ -27,9 +27,13 @@ public with sharing class RollupEditorController {
     @AuraEnabled
     public String type;
 
+    @AuraEnabled
+    public List<String> referencesTo;
+
     public SelectOption(String value, String label) {
       this.value = value;
       this.label = label;
+      this.referencesTo = new List<String>();
     }
   }
 
@@ -50,8 +54,16 @@ public with sharing class RollupEditorController {
       String fieldName = fr.getName();
       String label = fr.getLabel();
 
-      SelectOption option = new SelectOption(fieldName, label);
+      SelectOption option = new SelectOption(
+        fieldName,
+        String.format('{0} ({1})', new List<String>{ label, fieldName })
+      );
       option.type = String.valueof(fr.getType());
+      List<Schema.sObjectType> types = fr.getReferenceTo();
+      // if this fields points to a single SObject, pass that up
+      for (Schema.sObjectType t : types) {
+        option.referencesTo.add(types[0].getDescribe().getName());
+      }
       options.add(option);
     }
 

@@ -57,6 +57,10 @@ export default class ManageRollups extends LightningElement {
     }
   ];
 
+  editorWidth = 1;
+  tableWidth = 12;
+  showEditor = false;
+
   // We only want events for which we've been assigned as the recipient
   channelName = `/event/UserNotification__e?Recipient__c='${USER_ID.substring(
     1,
@@ -104,9 +108,15 @@ export default class ManageRollups extends LightningElement {
     const row = event.detail.row;
     switch (action.name) {
       case "rollup_select":
-        this.template
-          .querySelector("c-rollup-editor")
-          .loadRollup(row.DeveloperName);
+        this.showEditor = true;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        setTimeout(() => {
+          this.template
+            .querySelector("c-rollup-editor")
+            .loadRollup(row.DeveloperName);
+          this.tableWidth = 6;
+          this.editorWidth = 6;
+        }, 0);
         break;
       case "rollup_delete":
         this.requestDelete(row.DeveloperName);
@@ -134,6 +144,16 @@ export default class ManageRollups extends LightningElement {
     }
   }
 
+  runCreateNew() {
+    this.showEditor = true;
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    setTimeout(() => {
+      this.template.querySelector("c-rollup-editor").loadRollup(null);
+      this.tableWidth = 6;
+      this.editorWidth = 6;
+    }, 0);
+  }
+
   handleInputChange() {
     this.searchFilter = this.template
       .querySelector("lightning-input")
@@ -143,6 +163,16 @@ export default class ManageRollups extends LightningElement {
 
   handleRequestDelete(event) {
     this.requestDelete(event.detail.rollupName);
+  }
+
+  handleCancelRequest() {
+    this.tableWidth = 12;
+    this.editorWidth = 1;
+
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
+    setTimeout(() => {
+      this.showEditor = false;
+    }, 500);
   }
 
   disconnectedCallback() {

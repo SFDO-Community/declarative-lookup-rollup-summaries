@@ -5,29 +5,41 @@ import validateRollupConfig from "@salesforce/apex/RollupEditorController.valida
 import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollupConfig";
 import getFieldOptions from "@salesforce/apex/RollupEditorController.getFieldOptions";
 
-const DEFAULT_ROLLUP_VALUES = { Active__c: false };
+const DEFAULT_ROLLUP_VALUES = Object.freeze({
+  Active__c: false,
+  CalculationMode__c: "Scheduled",
+  CalculationSharingMode__c: "System"
+});
 
 export default class RollupEditor extends LightningElement {
   isLoading = false;
 
   openAccordianSections = [
     "Information",
-    "Objects",
+    "ChildObject",
+    "ParentObject",
     "Relationship",
     "RollupDetails",
     "CalculationMode"
   ];
 
   @track
-  rollup = DEFAULT_ROLLUP_VALUES;
+  rollup = { ...DEFAULT_ROLLUP_VALUES };
   errors = {};
 
   @track
   parentRFieldOptions = [];
+
   @track
   childRFieldOptions = [];
 
-  _rollupName;
+  // TODO: adjust steps based on state of the record
+  @track
+  steps = [
+    { label: "Configure", status: "current" },
+    { label: "...", status: "incomplete" }
+  ];
+
   @api
   async loadRollup(rollupName) {
     this.rollupName = rollupName;
@@ -66,7 +78,7 @@ export default class RollupEditor extends LightningElement {
 
   async getRollup() {
     if (!this.rollupName) {
-      this.rollup = DEFAULT_ROLLUP_VALUES;
+      this.rollup = { ...DEFAULT_ROLLUP_VALUES };
     } else {
       try {
         this.rollup = await getRollupConfig({
@@ -111,6 +123,8 @@ export default class RollupEditor extends LightningElement {
   }
 
   cancelClickHandler() {
+    const evt = new CustomEvent("cancel");
+    this.dispatchEvent(evt);
     this.rollupName = undefined;
   }
 
@@ -137,6 +151,10 @@ export default class RollupEditor extends LightningElement {
     this.runSave();
   }
 
+  pathClickHandler(event) {
+    console.log("Path clicked", event.detail.label);
+  }
+
   onLabelBlurHandler(event) {
     const devNameElem = this.template.querySelector(
       '[data-name="rollup_DeveloperName"]'
@@ -146,6 +164,15 @@ export default class RollupEditor extends LightningElement {
     }
     this.rollup.DeveloperName = this._makeApiSafe(event.currentTarget.value);
     devNameElem.value = this.rollup.DeveloperName;
+  }
+
+  relationshipFieldSelectedHandler(event) {
+    console.log("Relationship Field Selected", event.detail.selectedOption);
+    const refs = event.detail?.selectedOption?.referencesTo;
+    if (refs && refs.length === 1) {
+      this.rollup.ParentObject__c = refs[0];
+      this.getParentRelationshipFieldOptions();
+    }
   }
 
   _makeApiSafe(val) {
@@ -242,10 +269,10 @@ export default class RollupEditor extends LightningElement {
 
   get calculationModes() {
     return [
+      { label: "Queued Job", value: "Scheduled" },
       { label: "Realtime", value: "Realtime" },
-      { label: "Scheduled", value: "Scheduled" },
-      { label: "Developer", value: "Developer" },
-      { label: "Process Builder", value: "Process Builder" }
+      { label: "Invocable by Automation", value: "Process Builder" },
+      { label: "Developer", value: "Developer" }
     ];
   }
 

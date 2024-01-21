@@ -3,17 +3,18 @@
     <div slot="actions">
       <lightning-button-group>
         <lightning-button
+          label="Activate"
+          onclick={activateClickHandler}
+          if:true={rollupCanBeActivated}
+        ></lightning-button>
+        <lightning-button
           label={saveButtonLabel}
           onclick={runSave}
         ></lightning-button>
         <lightning-button
           label="Cancel"
+          variant="destructive"
           onclick={cancelClickHandler}
-        ></lightning-button>
-        <lightning-button
-          label="Activate"
-          onclick={activateClickHandler}
-          if:true={rollupCanBeActivated}
         ></lightning-button>
         <lightning-button
           label="Deactivate"
@@ -36,6 +37,14 @@
     </div>
     <!--Name Rollup-->
     <div class="slds-card__body_inner">
+      <lightning-layout class="slds-p-horizontal_medium">
+        <lightning-layout-item size="12">
+          <c-flexible-path
+            steps={steps}
+            onnextactionclick={pathClickHandler}
+          ></c-flexible-path>
+        </lightning-layout-item>
+      </lightning-layout>
       <lightning-layout multiple-rows class="slds-p-horizontal_medium">
         <lightning-layout-item>
           <c-rollup-editor-error errors={errors.record}></c-rollup-editor-error>
@@ -64,7 +73,6 @@
                 placeholder="My Rollup Name"
                 value={rollup.Label}
               ></lightning-input>
-
               <c-rollup-editor-error
                 errors={errors.Label}
               ></c-rollup-editor-error>
@@ -112,12 +120,71 @@
           </lightning-layout>
         </lightning-accordion-section>
         <!--Pick Objects-->
-        <lightning-accordion-section name="Objects" label="Objects">
+        <lightning-accordion-section name="ChildObject" label="Child Object">
+          <lightning-layout multiple-rows class="slds-p-horizontal_medium">
+            <lightning-layout-item size="12" class="slds-form-element_stacked">
+              <p>
+                Pick the child object, the field that holds your data, and the
+                field that holds the reference to the parent.
+              </p>
+            </lightning-layout-item>
+            <lightning-layout-item
+              size="12"
+              large-device-size="6"
+              class="slds-form-element_stacked"
+            >
+              <c-object-selector
+                label="Child Object"
+                placeholder="Child__c"
+                current-selection={rollup.ChildObject__c}
+                onlookupupdate={childObjectSelected}
+              ></c-object-selector>
+              <c-rollup-editor-error
+                errors={errors.ChildObject__c}
+              ></c-rollup-editor-error>
+            </lightning-layout-item>
+            <lightning-layout-item
+              size="12"
+              large-device-size="6"
+              class="slds-form-element_stacked"
+            >
+              <c-autocomplete-combobox
+                data-name="rollup_FieldToAggregate__c"
+                label="Data Field"
+                value={rollup.FieldToAggregate__c}
+                options={childRFieldOptions}
+              ></c-autocomplete-combobox>
+              <c-rollup-editor-error
+                errors={errors.FieldToAggregate__c}
+              ></c-rollup-editor-error>
+            </lightning-layout-item>
+            <lightning-layout-item
+              size="12"
+              medium-device-size="6"
+              class="slds-form-element_stacked"
+            >
+              <c-autocomplete-combobox
+                data-name="rollup_RelationshipField__c"
+                label="Relationship to Parent"
+                value={rollup.RelationshipField__c}
+                options={childRFieldOptions}
+                placeholder="Lookup__c"
+                helper-text="All fields are listed but relationship fields are recommended."
+                onchangeselection={relationshipFieldSelectedHandler}
+              ></c-autocomplete-combobox>
+              <c-rollup-editor-error
+                errors={errors.RelationshipField__c}
+              ></c-rollup-editor-error>
+            </lightning-layout-item>
+          </lightning-layout>
+        </lightning-accordion-section>
+
+        <lightning-accordion-section name="ParentObject" label="Parent Object">
           <lightning-layout class="slds-p-horizontal_medium">
             <lightning-layout-item size="12" class="slds-form-element_stacked">
               <p>
-                Pick the Parent object you want to roll up to, and then the
-                Child object that you want to roll up from
+                Pick the parent object you want to roll up to and the field that
+                will hold the resulting value
               </p>
             </lightning-layout-item>
           </lightning-layout>
@@ -137,50 +204,35 @@
                 errors={errors.ParentObject__c}
               ></c-rollup-editor-error>
             </lightning-layout-item>
+
             <lightning-layout-item
               size="12"
               large-device-size="6"
               class="slds-form-element_stacked"
             >
-              <c-object-selector
-                label="Child Object"
-                placeholder="Child__c"
-                current-selection={rollup.ChildObject__c}
-                onlookupupdate={childObjectSelected}
-              ></c-object-selector>
+              <c-autocomplete-combobox
+                data-name="rollup_AggregateResultField__c"
+                label="Data Result Field"
+                options={parentRFieldOptions}
+                value={rollup.AggregateResultField__c}
+              ></c-autocomplete-combobox>
               <c-rollup-editor-error
-                errors={errors.ChildObject__c}
+                errors={errors.AggregateResultField__c}
               ></c-rollup-editor-error>
             </lightning-layout-item>
           </lightning-layout>
         </lightning-accordion-section>
         <!--Set Relationship-->
-        <lightning-accordion-section name="Relationship" label="Relationship">
-          <lightning-layout class="slds-p-horizontal_medium">
-            <lightning-layout-item
-              size="12"
-              medium-device-size="8"
-              class="slds-form-element_stacked"
-            >
-              <c-autocomplete-combobox
-                data-name="rollup_RelationshipField__c"
-                label="Relationship Field"
-                value={rollup.RelationshipField__c}
-                options={childRFieldOptions}
-                placeholder="Lookup__c"
-                helper-text="All fields are listed. But, relationship fields are recommended."
-              ></c-autocomplete-combobox>
-              <c-rollup-editor-error
-                errors={errors.RelationshipField__c}
-              ></c-rollup-editor-error>
-            </lightning-layout-item>
-          </lightning-layout>
+        <lightning-accordion-section
+          name="Relationship"
+          label="Relationship Criteria"
+        >
           <lightning-layout class="slds-p-horizontal_medium">
             <lightning-layout-item size="12" class="slds-form-element_stacked">
               <lightning-textarea
                 name="rollup_RelationshipCriteria__c"
                 data-name="rollup_RelationshipCriteria__c"
-                label="Relationship Criteria Fields"
+                label="Relationship Criteria"
                 placeholder="Field1__c = TRUE AND Field2__r.Name = 'Parent Value'"
                 value={rollup.RelationshipCriteria__c}
                 maxlength="255"
@@ -217,10 +269,7 @@
         >
           <lightning-layout class="slds-p-horizontal_medium">
             <lightning-layout-item size="12" class="slds-form-element_stacked">
-              <p>
-                Select what field you want to rollup, the type of rollup, and
-                what field on the Parent object to store the result.
-              </p>
+              <p>Select the type and configuration of the rollup action</p>
             </lightning-layout-item>
           </lightning-layout>
           <lightning-layout multiple-rows class="slds-p-horizontal_medium">
@@ -229,16 +278,21 @@
               large-device-size="6"
               class="slds-form-element_stacked"
             >
-              <c-autocomplete-combobox
-                data-name="rollup_FieldToAggregate__c"
-                label="Field to Aggregate"
-                value={rollup.FieldToAggregate__c}
-                options={childRFieldOptions}
-              ></c-autocomplete-combobox>
+              <lightning-combobox
+                name="rollup_AggregateOperation__c"
+                data-name="rollup_AggregateOperation__c"
+                label="Rollup Type"
+                placeholder="Select"
+                options={aggregateOptions}
+                value={rollup.AggregateOperation__c}
+                required
+              ></lightning-combobox>
               <c-rollup-editor-error
-                errors={errors.FieldToAggregate__c}
+                errors={errors.AggregateOperation__c}
               ></c-rollup-editor-error>
             </lightning-layout-item>
+          </lightning-layout>
+          <lightning-layout multiple-rows class="slds-p-horizontal_medium">
             <lightning-layout-item
               size="12"
               large-device-size="6"
@@ -266,7 +320,7 @@
                 type="text"
                 name="rollup_FieldToOrderBy__c"
                 data-name="rollup_FieldToOrderBy__c"
-                label="Field to Order By"
+                label="Field(s) to Order By"
                 value={rollup.FieldToOrderBy__c}
               ></lightning-input>
               <c-rollup-editor-error
@@ -297,51 +351,16 @@
               large-device-size="6"
               class="slds-form-element_stacked"
             >
-              <lightning-combobox
-                name="rollup_AggregateOperation__c"
-                data-name="rollup_AggregateOperation__c"
-                label="Aggregate Operation"
-                placeholder="Select"
-                options={aggregateOptions}
-                value={rollup.AggregateOperation__c}
-                required
-              ></lightning-combobox>
-              <c-rollup-editor-error
-                errors={errors.AggregateOperation__c}
-              ></c-rollup-editor-error>
-            </lightning-layout-item>
-            <lightning-layout-item
-              size="12"
-              large-device-size="6"
-              class="slds-form-element_stacked"
-            >
               <h2 class="header">Aggregate All Rows</h2>
               <lightning-input
                 type="checkbox"
                 name="rollup_AggregateAllRows__c"
                 data-name="rollup_AggregateAllRows__c"
-                label="Include Deleted &amp; Archived"
+                label="Include Deleted &amp; Archived Records"
                 value={rollup.AggregateAllRows__c}
               ></lightning-input>
               <c-rollup-editor-error
                 errors={errors.AggregateAllRows__c}
-              ></c-rollup-editor-error>
-            </lightning-layout-item>
-          </lightning-layout>
-          <lightning-layout multiple-rows class="slds-p-horizontal_medium">
-            <lightning-layout-item
-              size="12"
-              large-device-size="6"
-              class="slds-form-element_stacked"
-            >
-              <c-autocomplete-combobox
-                data-name="rollup_AggregateResultField__c"
-                label="Aggregate Result Field"
-                options={parentRFieldOptions}
-                value={rollup.AggregateResultField__c}
-              ></c-autocomplete-combobox>
-              <c-rollup-editor-error
-                errors={errors.AggregateResultField__c}
               ></c-rollup-editor-error>
             </lightning-layout-item>
           </lightning-layout>

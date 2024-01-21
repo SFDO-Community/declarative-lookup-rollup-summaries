@@ -1,0 +1,105 @@
+<template>
+  <!-- using slot like carousel does, each item provides text and state, maybe a click action handler
+
+    We also need API props for "next action 'text', 'icon', and 'click action handler'"
+
+For "Scheduled" mode we should have Configure, Scheduled RollupCalculate Job, Deploy Child Trigger, and finally Activate -->
+  <div class="slds-path">
+    <div class="slds-grid slds-path__track">
+      <div class="slds-grid slds-path__scroller-container">
+        <div class="slds-path__scroller">
+          <div class="slds-path__scroller_inner">
+            <ul
+              class="slds-path__nav"
+              role="listbox"
+              aria-orientation="horizontal"
+              aria-labelledby="slds-path__stage-name"
+            >
+              <template for:each={steps} for:item="step">
+                <li
+                  class="slds-path__item slds-is-complete"
+                  role="presentation"
+                  lwc:if={step.isComplete}
+                  key={step.label}
+                >
+                  <a
+                    aria-selected="false"
+                    class="slds-path__link"
+                    href="#"
+                    role="option"
+                    tabindex="-1"
+                  >
+                    <span class="slds-path__stage">
+                      <lightning-icon
+                        icon-name="utility:check"
+                        size="x-small"
+                        alternative-text="Stage Complete"
+                      ></lightning-icon>
+                    </span>
+                    <span class="slds-path__title">{step.label}</span>
+                  </a>
+                </li>
+                <li
+                  class="slds-path__item slds-is-current slds-is-active"
+                  role="presentation"
+                  lwc:if={step.isCurrent}
+                  key={step.label}
+                >
+                  <a
+                    aria-selected="false"
+                    class="slds-path__link"
+                    href="#"
+                    role="option"
+                    tabindex="-1"
+                  >
+                    <span class="slds-path__stage">
+                      <lightning-icon
+                        icon-name="utility:check"
+                        size="x-small"
+                        alternative-text="Current Stage:"
+                      ></lightning-icon>
+                    </span>
+                    <span class="slds-path__title">{step.label}</span>
+                  </a>
+                </li>
+                <li
+                  class="slds-path__item slds-is-incomplete"
+                  role="presentation"
+                  lwc:elseif={step.isIncomplete}
+                  key={step.label}
+                >
+                  <a
+                    aria-selected="false"
+                    class="slds-path__link"
+                    href="#"
+                    role="option"
+                    tabindex="-1"
+                  >
+                    <span class="slds-path__stage">
+                      <lightning-icon
+                        icon-name="utility:check"
+                        size="x-small"
+                      ></lightning-icon>
+                    </span>
+                    <span class="slds-path__title">{step.label}</span>
+                  </a>
+                </li>
+              </template>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="slds-grid slds-path__action" lwc:if={nextActionLabel}>
+        <span id="slds-path__stage-name" class="slds-path__stage-name"
+          >Next Action: {nextActionLabel}</span
+        >
+        <button
+          class="slds-button slds-button_brand slds-path__mark-complete"
+          onclick={handleNextActionClick}
+        >
+          {nextActionLabel}
+        </button>
+      </div>
+    </div>
+  </div>
+</template>

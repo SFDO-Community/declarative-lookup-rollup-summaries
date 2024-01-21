@@ -83,6 +83,10 @@ export default class ObjectSelector extends LightningElement {
           const matches = iconNameRegEx.exec(o.iconUrl);
           if (matches) {
             o.iconName = `${matches[1]}:${matches[2]}`;
+            // We just got a new icon for the selected image!
+            if (o.fullName === this._currentSelection) {
+              this.selectedRecordIconName = o.iconName;
+            }
           }
         }
       });
