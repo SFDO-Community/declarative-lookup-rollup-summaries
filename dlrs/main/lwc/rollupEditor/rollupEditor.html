@@ -21,7 +21,11 @@
           onclick={deactivateClickHandler}
           if:true={rollupCanBeDeactivated}
         ></lightning-button>
-        <lightning-button-menu alternative-text="Show more" lwc:if={rollup.Id}>
+        <lightning-button-menu
+          alternative-text="Show more"
+          menu-alignment="right"
+          lwc:if={rollup.Id}
+        >
           <lightning-menu-item
             label="Clone"
             lwc:if={rollup.Id}
