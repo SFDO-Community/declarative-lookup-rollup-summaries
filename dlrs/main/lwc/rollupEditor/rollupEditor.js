@@ -4,6 +4,10 @@ import getRollupConfig from "@salesforce/apex/RollupEditorController.getRollupCo
 import validateRollupConfig from "@salesforce/apex/RollupEditorController.validateRollupConfig";
 import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollupConfig";
 import getFieldOptions from "@salesforce/apex/RollupEditorController.getFieldOptions";
+import getManageTriggerPageUrl from "@salesforce/apex/RollupEditorController.getManageTriggerPageUrl";
+import getFullCalculatePageUrl from "@salesforce/apex/RollupEditorController.getFullCalculatePageUrl";
+import getScheduleCalculatePageUrl from "@salesforce/apex/RollupEditorController.getScheduleCalculatePageUrl";
+import { NavigationMixin } from "lightning/navigation";
 
 const DEFAULT_ROLLUP_VALUES = Object.freeze({
   Active__c: false,
@@ -11,7 +15,7 @@ const DEFAULT_ROLLUP_VALUES = Object.freeze({
   CalculationSharingMode__c: "System"
 });
 
-export default class RollupEditor extends LightningElement {
+export default class RollupEditor extends NavigationMixin(LightningElement) {
   isLoading = false;
 
   openAccordianSections = [
@@ -155,6 +159,36 @@ export default class RollupEditor extends LightningElement {
     console.log("Path clicked", event.detail.label);
   }
 
+  async manageTriggerHandler() {
+    const url = await getManageTriggerPageUrl({ rollupId: this.rollup.Id });
+    this[NavigationMixin.Navigate]({
+      type: "standard__webPage",
+      attributes: {
+        url
+      }
+    });
+  }
+
+  async recalculateNowHandler() {
+    const url = await getFullCalculatePageUrl({ rollupId: this.rollup.Id });
+    this[NavigationMixin.Navigate]({
+      type: "standard__webPage",
+      attributes: {
+        url
+      }
+    });
+  }
+
+  async schedulRecalculateHandler() {
+    const url = await getScheduleCalculatePageUrl({ rollupId: this.rollup.Id });
+    this[NavigationMixin.Navigate]({
+      type: "standard__webPage",
+      attributes: {
+        url
+      }
+    });
+  }
+
   onLabelBlurHandler(event) {
     const devNameElem = this.template.querySelector(
       '[data-name="rollup_DeveloperName"]'
@@ -250,6 +284,13 @@ export default class RollupEditor extends LightningElement {
   parentObjectSelected(event) {
     this.rollup.ParentObject__c = event.detail.selectedRecord;
     this.getParentRelationshipFieldOptions();
+  }
+
+  get supportsTrigger() {
+    return (
+      this.rollup.Id &&
+      ["Scheduled", "Realtime"].includes(this.rollup.CalculationMode__c)
+    );
   }
 
   get aggregateOptions() {

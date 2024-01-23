@@ -1,6 +1,12 @@
 <template>
   <lightning-layout pull-to-boundary="small">
-    <lightning-layout-item size={tableWidth} padding="around-small">
+    <lightning-layout-item
+      size={tableSize.size}
+      small-device-size={tableSize.sizeSmall}
+      medium-device-size={tableSize.sizeMedium}
+      large-device-size={tableSize.sizeLarge}
+      padding="around-small"
+    >
       <lightning-card title="Rollups">
         <div slot="actions">
           <lightning-button
@@ -30,7 +36,10 @@
     </lightning-layout-item>
     <lightning-layout-item
       lwc:if={showEditor}
-      size={editorWidth}
+      size={editorSize.size}
+      small-device-size={editorSize.sizeSmall}
+      medium-device-size={editorSize.sizeMedium}
+      large-device-size={editorSize.sizeLarge}
       padding="around-small"
     >
       <c-rollup-editor

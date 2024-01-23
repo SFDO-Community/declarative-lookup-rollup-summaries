@@ -12,11 +12,52 @@ import {
   isEmpEnabled
 } from "lightning/empApi";
 
+// used to manage the two column widths
+const DISPLAY_SIZES = {
+  table: {
+    editorOpen: {
+      size: 3,
+      sizeSmall: 3,
+      sizeMedium: 6,
+      sizeLarge: 6
+    },
+    editorClosed: {
+      size: 12,
+      sizeSmall: 12,
+      sizeMedium: 12,
+      sizeMarge: 12
+    }
+  },
+  editor: {
+    editorOpen: {
+      size: 9,
+      sizeSmall: 9,
+      sizeMedium: 6,
+      sizeLarge: 6
+    },
+    editorClosed: {
+      size: 1,
+      sizeSmall: 1,
+      sizeMedium: 1,
+      sizeLarge: 1
+    }
+  }
+};
+
 export default class ManageRollups extends LightningElement {
   dtColumns = [
     {
+      type: "button",
       label: "Name",
-      fieldName: "Label"
+      typeAttributes: {
+        label: { fieldName: "Label" },
+        name: "rollup_select",
+        iconName: "utility:edit",
+        title: "Edit",
+        value: "edit",
+        iconPosition: "right",
+        variant: "base"
+      }
     },
     {
       label: "Parent",
@@ -47,18 +88,18 @@ export default class ManageRollups extends LightningElement {
       fieldName: "Active__c"
     },
     {
-      type: "action",
+      type: "button-icon",
       typeAttributes: {
-        rowActions: [
-          { label: "Edit", name: "rollup_select" },
-          { label: "Delete", name: "rollup_delete" }
-        ]
+        name: "rollup_delete",
+        iconName: "action:delete",
+        value: "delete",
+        variant: "natrual"
       }
     }
   ];
 
-  editorWidth = 1;
-  tableWidth = 12;
+  editorSize = DISPLAY_SIZES.editor.editorClosed;
+  tableSize = DISPLAY_SIZES.table.editorClosed;
   showEditor = false;
 
   // We only want events for which we've been assigned as the recipient
@@ -114,8 +155,8 @@ export default class ManageRollups extends LightningElement {
           this.template
             .querySelector("c-rollup-editor")
             .loadRollup(row.DeveloperName);
-          this.tableWidth = 6;
-          this.editorWidth = 6;
+          this.tableSize = DISPLAY_SIZES.table.editorOpen;
+          this.editorSize = DISPLAY_SIZES.editor.editorOpen;
         }, 0);
         break;
       case "rollup_delete":
@@ -149,8 +190,8 @@ export default class ManageRollups extends LightningElement {
     // eslint-disable-next-line @lwc/lwc/no-async-operation
     setTimeout(() => {
       this.template.querySelector("c-rollup-editor").loadRollup(null);
-      this.tableWidth = 6;
-      this.editorWidth = 6;
+      this.tableSize = DISPLAY_SIZES.table.editorOpen;
+      this.editorSize = DISPLAY_SIZES.editor.editorOpen;
     }, 0);
   }
 
@@ -166,8 +207,8 @@ export default class ManageRollups extends LightningElement {
   }
 
   handleCancelRequest() {
-    this.tableWidth = 12;
-    this.editorWidth = 1;
+    this.tableSize = DISPLAY_SIZES.table.editorClosed;
+    this.editorSize = DISPLAY_SIZES.editor.editorClosed;
 
     // eslint-disable-next-line @lwc/lwc/no-async-operation
     setTimeout(() => {

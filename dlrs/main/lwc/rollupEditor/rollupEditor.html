@@ -28,6 +28,21 @@
             onclick={cloneClickHandler}
           ></lightning-menu-item>
           <lightning-menu-item
+            label="Manage Triggers"
+            lwc:if={supportsTrigger}
+            onclick={manageTriggerHandler}
+          ></lightning-menu-item>
+          <lightning-menu-item
+            label="Recalculate Now"
+            lwc:if={rollup.Id}
+            onclick={recalculateNowHandler}
+          ></lightning-menu-item>
+          <lightning-menu-item
+            label="Schedule Reclaculation"
+            lwc:if={rollup.Id}
+            onclick={schedulRecalculateHandler}
+          ></lightning-menu-item>
+          <lightning-menu-item
             label="Delete"
             lwc:if={rollup.Id}
             onclick={deleteClickHandler}
@@ -160,7 +175,7 @@
             </lightning-layout-item>
             <lightning-layout-item
               size="12"
-              medium-device-size="6"
+              large-device-size="6"
               class="slds-form-element_stacked"
             >
               <c-autocomplete-combobox
@@ -227,7 +242,10 @@
           name="Relationship"
           label="Relationship Criteria"
         >
-          <lightning-layout class="slds-p-horizontal_medium">
+          <lightning-layout multiple-rows class="slds-p-horizontal_medium">
+            <lightning-layout-item size="12" class="slds-form-element_stacked">
+              <p>Define how child records will be qualified for the rollup</p>
+            </lightning-layout-item>
             <lightning-layout-item size="12" class="slds-form-element_stacked">
               <lightning-textarea
                 name="rollup_RelationshipCriteria__c"
@@ -241,11 +259,9 @@
                 errors={errors.RelationshipCriteria__c}
               ></c-rollup-editor-error>
             </lightning-layout-item>
-          </lightning-layout>
-          <lightning-layout class="slds-p-horizontal_medium">
             <lightning-layout-item
               size="12"
-              medium-device-size="8"
+              large-device-size="8"
               class="slds-form-element_stacked"
             >
               <lightning-textarea

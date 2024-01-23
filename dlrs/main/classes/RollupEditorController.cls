@@ -120,6 +120,27 @@ public with sharing class RollupEditorController {
     }
   }
 
+  @AuraEnabled(cacheable=true)
+  public static String getManageTriggerPageUrl(Id rollupId) {
+    PageReference pageRef = Page.managetriggermdt;
+    pageRef.getParameters().put('id', rollupId);
+    return pageRef.getUrl();
+  }
+
+  @AuraEnabled(cacheable=true)
+  public static String getFullCalculatePageUrl(Id rollupId) {
+    PageReference pageRef = Page.rollupcalculatemdt;
+    pageRef.getParameters().put('id', rollupId);
+    return pageRef.getUrl();
+  }
+
+  @AuraEnabled(cacheable=true)
+  public static String getScheduleCalculatePageUrl(Id rollupId) {
+    PageReference pageRef = Page.rollupscheduledcalculatemdt;
+    pageRef.getParameters().put('id', rollupId);
+    return pageRef.getUrl();
+  }
+
   private static Map<String, List<String>> collectErrors(RollupSummary rollup) {
     Map<String, List<String>> errorMap = new Map<String, List<String>>();
     if (rollup.Error != null) {
