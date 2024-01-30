@@ -16,16 +16,16 @@
           variant="destructive"
           onclick={cancelClickHandler}
         ></lightning-button>
-        <lightning-button
-          label="Deactivate"
-          onclick={deactivateClickHandler}
-          if:true={rollupCanBeDeactivated}
-        ></lightning-button>
         <lightning-button-menu
           alternative-text="Show more"
           menu-alignment="right"
           lwc:if={rollup.Id}
         >
+          <lightning-menu-item
+            label="Deactiveate"
+            if:true={rollupCanBeDeactivated}
+            onclick={deactivateClickHandler}
+          ></lightning-menu-item>
           <lightning-menu-item
             label="Clone"
             lwc:if={rollup.Id}

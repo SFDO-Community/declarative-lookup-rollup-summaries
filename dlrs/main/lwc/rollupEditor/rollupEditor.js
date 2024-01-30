@@ -1,4 +1,4 @@
-import { api, LightningElement, track } from "lwc";
+import { api, LightningElement, track, wire } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import getRollupConfig from "@salesforce/apex/RollupEditorController.getRollupConfig";
 import validateRollupConfig from "@salesforce/apex/RollupEditorController.validateRollupConfig";
@@ -7,16 +7,49 @@ import getFieldOptions from "@salesforce/apex/RollupEditorController.getFieldOpt
 import getManageTriggerPageUrl from "@salesforce/apex/RollupEditorController.getManageTriggerPageUrl";
 import getFullCalculatePageUrl from "@salesforce/apex/RollupEditorController.getFullCalculatePageUrl";
 import getScheduleCalculatePageUrl from "@salesforce/apex/RollupEditorController.getScheduleCalculatePageUrl";
-import { NavigationMixin } from "lightning/navigation";
+import hasChildTriggerDeployed from "@salesforce/apex/LookupRollupStatusCheckController.hasChildTriggerDeployed";
+import getScheduledJobs from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledJobs";
 
+import { NavigationMixin } from "lightning/navigation";
+const PATH_VALUES = {
+  complete: "complete",
+  current: "current",
+  incomplete: "incomplete"
+};
 const DEFAULT_ROLLUP_VALUES = Object.freeze({
   Active__c: false,
   CalculationMode__c: "Scheduled",
   CalculationSharingMode__c: "System"
 });
 
+const STEP_TEMPLATES = Object.freeze({
+  default: [
+    { label: "Configure", status: PATH_VALUES.current },
+    { label: "...", status: PATH_VALUES.incomplete }
+  ],
+  Realtime: [
+    { label: "Configure", status: PATH_VALUES.complete },
+    { label: "Deploy Trigger", status: PATH_VALUES.incomplete },
+    { label: "Activate", status: PATH_VALUES.incomplete }
+  ],
+  Scheduled: [
+    { label: "Configure", status: PATH_VALUES.complete },
+    { label: "Schedule Job", status: PATH_VALUES.incomplete },
+    { label: "Deploy Trigger", status: PATH_VALUES.incomplete },
+    { label: "Activate", status: PATH_VALUES.incomplete }
+  ],
+  other: [
+    { label: "Configure", status: PATH_VALUES.complete },
+    { label: "Activate", status: PATH_VALUES.incomplete }
+  ]
+});
 export default class RollupEditor extends NavigationMixin(LightningElement) {
   isLoading = false;
+
+  childTriggerIsDeployed = false;
+
+  @wire(getScheduledJobs)
+  scheduledJobCount;
 
   openAccordianSections = [
     "Information",
@@ -37,21 +70,13 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
   @track
   childRFieldOptions = [];
 
-  // TODO: adjust steps based on state of the record
   @track
-  steps = [
-    { label: "Configure", status: "current" },
-    { label: "...", status: "incomplete" }
-  ];
-
-  @api
-  async loadRollup(rollupName) {
-    this.rollupName = rollupName;
-  }
+  steps = [];
 
   get rollupName() {
     return this._rollupName;
   }
+  @api
   set rollupName(val) {
     this.errors = {}; // clear any existing error
     this._rollupName = val;
@@ -92,6 +117,7 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
         this.errors.record = [error.message];
       }
     }
+    this.configureSteps();
     await this.getRelationshipFieldOptions();
   }
 
@@ -108,6 +134,46 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
     } else {
       this.parentRFieldOptions = [];
     }
+  }
+
+  async configureSteps() {
+    const newSteps = [];
+    if (!this.rollup?.Id) {
+      for (let s of STEP_TEMPLATES.default) {
+        newSteps.push(s);
+      }
+      this.steps = newSteps;
+      return;
+    }
+
+    this.childTriggerIsDeployed = await hasChildTriggerDeployed({
+      lookupID: this.rollup.Id
+    });
+    for (let s of STEP_TEMPLATES[this.rollup.CalculationMode__c] ||
+      STEP_TEMPLATES.other) {
+      if (s.label === "Deploy Trigger") {
+        s.status = this.childTriggerIsDeployed
+          ? PATH_VALUES.complete
+          : PATH_VALUES.incomplete;
+      }
+      if (s.label === "Schedule Job") {
+        s.status =
+          this.scheduledJobCount.data > 0
+            ? PATH_VALUES.complete
+            : PATH_VALUES.incomplete;
+      }
+      if (s.label === "Activate") {
+        s.status = this.rollup.Active__c
+          ? PATH_VALUES.complete
+          : PATH_VALUES.incomplete;
+      }
+      newSteps.push(s);
+    }
+
+    // TODO: mark first incomplete as current
+    // TODO: reorder to all complete are on left
+    this.steps = newSteps;
+    console.log("New Steps", JSON.stringify(this.steps));
   }
 
   async getChildRelationshipFieldOptions() {
@@ -129,7 +195,6 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
   cancelClickHandler() {
     const evt = new CustomEvent("cancel");
     this.dispatchEvent(evt);
-    this.rollupName = undefined;
   }
 
   cloneClickHandler() {
@@ -142,7 +207,6 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
       detail: { rollupName: this.rollup.DeveloperName }
     });
     this.dispatchEvent(evt);
-    this.rollupName = undefined;
   }
 
   activateClickHandler() {
@@ -157,9 +221,25 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
 
   pathClickHandler(event) {
     console.log("Path clicked", event.detail.label);
+    switch (event.detail.label) {
+      case "Deploy Trigger":
+        this.manageTriggerHandler();
+        break;
+
+      case "Activate":
+        this.activateClickHandler();
+        break;
+      case "Schedule Job":
+        console.error("Job Schedule UI not implemented");
+        break;
+      default:
+        console.error("Unexpected action", event.detail.label);
+        break;
+    }
   }
 
   async manageTriggerHandler() {
+    // TODO: return to this page, maybe to this rollup??
     const url = await getManageTriggerPageUrl({ rollupId: this.rollup.Id });
     this[NavigationMixin.Navigate]({
       type: "standard__webPage",
@@ -170,6 +250,7 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
   }
 
   async recalculateNowHandler() {
+    // TODO: return to this page, maybe to this rollup??
     const url = await getFullCalculatePageUrl({ rollupId: this.rollup.Id });
     this[NavigationMixin.Navigate]({
       type: "standard__webPage",
@@ -180,6 +261,7 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
   }
 
   async schedulRecalculateHandler() {
+    // TODO: return to this page, maybe to this rollup??
     const url = await getScheduleCalculatePageUrl({ rollupId: this.rollup.Id });
     this[NavigationMixin.Navigate]({
       type: "standard__webPage",
@@ -230,6 +312,14 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
       variant: "info"
     });
     this.dispatchEvent(evt);
+    this.dispatchEvent(
+      new CustomEvent("deploystarted", {
+        detail: {
+          rollup: this.rollup,
+          jobId
+        }
+      })
+    );
     this.isLoading = false;
   }
 

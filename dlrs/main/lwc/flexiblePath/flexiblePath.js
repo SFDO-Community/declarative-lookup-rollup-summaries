@@ -7,6 +7,7 @@ import { LightningElement, api } from "lwc";
  */
 
 export default class FlexiblePath extends LightningElement {
+  _steps;
   /** @type {step[]} */
   @api
   get steps() {

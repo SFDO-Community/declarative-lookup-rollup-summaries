@@ -70,7 +70,7 @@ public with sharing class LookupRollupStatusCheckController {
   /**
    * Check if the rollup has a child/parent trigger
    */
-  @AuraEnabled(Cacheable=true)
+  @AuraEnabled
   public static Boolean hasChildTriggerDeployed(String lookupID) {
     try {
       LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
@@ -88,9 +88,7 @@ public with sharing class LookupRollupStatusCheckController {
           new Set<String>{ ChildTrigger }
         );
 
-        if (loadTriggers.size() > 0) {
-          return true;
-        }
+        return loadTriggers.containsKey(ChildTrigger);
       }
     } catch (Exception e) {
     }

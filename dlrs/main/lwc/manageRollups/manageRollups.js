@@ -4,6 +4,7 @@ import LightningConfirm from "lightning/confirm";
 import getAllRollupConfigs from "@salesforce/apex/RollupEditorController.getAllRollupConfigs";
 import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
 import USER_ID from "@salesforce/user/Id";
+import RollupEditorModal from "c/rollupEditorModal";
 
 import {
   subscribe,
@@ -11,38 +12,6 @@ import {
   onError,
   isEmpEnabled
 } from "lightning/empApi";
-
-// used to manage the two column widths
-const DISPLAY_SIZES = {
-  table: {
-    editorOpen: {
-      size: 3,
-      sizeSmall: 3,
-      sizeMedium: 6,
-      sizeLarge: 6
-    },
-    editorClosed: {
-      size: 12,
-      sizeSmall: 12,
-      sizeMedium: 12,
-      sizeMarge: 12
-    }
-  },
-  editor: {
-    editorOpen: {
-      size: 9,
-      sizeSmall: 9,
-      sizeMedium: 6,
-      sizeLarge: 6
-    },
-    editorClosed: {
-      size: 1,
-      sizeSmall: 1,
-      sizeMedium: 1,
-      sizeLarge: 1
-    }
-  }
-};
 
 export default class ManageRollups extends LightningElement {
   dtColumns = [
@@ -98,10 +67,6 @@ export default class ManageRollups extends LightningElement {
     }
   ];
 
-  editorSize = DISPLAY_SIZES.editor.editorClosed;
-  tableSize = DISPLAY_SIZES.table.editorClosed;
-  showEditor = false;
-
   // We only want events for which we've been assigned as the recipient
   channelName = `/event/UserNotification__e?Recipient__c='${USER_ID.substring(
     1,
@@ -149,21 +114,26 @@ export default class ManageRollups extends LightningElement {
     const row = event.detail.row;
     switch (action.name) {
       case "rollup_select":
-        this.showEditor = true;
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
-        setTimeout(() => {
-          this.template
-            .querySelector("c-rollup-editor")
-            .loadRollup(row.DeveloperName);
-          this.tableSize = DISPLAY_SIZES.table.editorOpen;
-          this.editorSize = DISPLAY_SIZES.editor.editorOpen;
-        }, 0);
+        this.openEditor(row.DeveloperName);
         break;
       case "rollup_delete":
         this.requestDelete(row.DeveloperName);
         break;
       default:
         throw new Error("unexpected action on rollupSelectHandler");
+    }
+  }
+
+  async openEditor(rollupName) {
+    const result = await RollupEditorModal.open({
+      // `label` is not included here in this example.
+      // it is set on lightning-modal-header instead
+      size: "large",
+      description: "Rollup Config Editor",
+      rollupName
+    });
+    if (result?.action === "delete") {
+      this.requestDelete(result.rollupName);
     }
   }
 
@@ -186,13 +156,7 @@ export default class ManageRollups extends LightningElement {
   }
 
   runCreateNew() {
-    this.showEditor = true;
-    // eslint-disable-next-line @lwc/lwc/no-async-operation
-    setTimeout(() => {
-      this.template.querySelector("c-rollup-editor").loadRollup(null);
-      this.tableSize = DISPLAY_SIZES.table.editorOpen;
-      this.editorSize = DISPLAY_SIZES.editor.editorOpen;
-    }, 0);
+    this.openEditor(null);
   }
 
   handleInputChange() {
@@ -204,16 +168,6 @@ export default class ManageRollups extends LightningElement {
 
   handleRequestDelete(event) {
     this.requestDelete(event.detail.rollupName);
-  }
-
-  handleCancelRequest() {
-    this.tableSize = DISPLAY_SIZES.table.editorClosed;
-    this.editorSize = DISPLAY_SIZES.editor.editorClosed;
-
-    // eslint-disable-next-line @lwc/lwc/no-async-operation
-    setTimeout(() => {
-      this.showEditor = false;
-    }, 500);
   }
 
   disconnectedCallback() {
@@ -297,6 +251,7 @@ export default class ManageRollups extends LightningElement {
     // Invoke subscribe method of empApi. Pass reference to messageCallback
     subscribe(this.channelName, -1, messageCallback).then((response) => {
       // Response contains the subscription information on subscribe call
+      console.log("EmpAPI Subscribe", JSON.stringify(response));
       this.subscription = response;
     });
   }
@@ -304,8 +259,8 @@ export default class ManageRollups extends LightningElement {
   // Handles unsubscribe button click
   handleUnsubscribe() {
     // Invoke unsubscribe method of empApi
-    unsubscribe(this.subscription, (/*response*/) => {
-      // console.log("unsubscribe() response: ", JSON.stringify(response));
+    unsubscribe(this.subscription, (response) => {
+      console.log("unsubscribe() response: ", JSON.stringify(response));
       // Response is true for successful unsubscribe
     });
   }
