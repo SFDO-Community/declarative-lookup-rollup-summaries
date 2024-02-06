@@ -1,0 +1,189 @@
+#Standard Data
+- object: Lead
+  count: 20
+  fields:
+    FirstName:
+      fake: first_name
+    LastName:
+      fake: last_name
+    company:
+      fake: Company
+    title:
+      fake.text:
+        max_nb_chars: 15
+    email:
+      fake: email
+    phone:
+      fake: phone_number
+    MobilePhone:
+      fake: phone_number
+    Street:
+      fake: StreetAddress
+    City:
+      fake: City
+    State:
+      fake: State
+    PostalCode:
+      fake: PostalCode
+    Country:
+      fake: Country
+    NumberOfEmployees:
+      random_number:
+        min: 0
+        max: 10000
+    Status:
+      random_choice:
+        Open: 40%
+        Working: 20%
+        Nurturing: 20%
+        Qualified: 10%
+        Unqualified: 10%
+
+- object: Campaign
+  count: 10
+  fields:
+    Name: ${{fake.Text(max_nb_chars = 25)}}
+    IsActive: TRUE
+    Status:
+      random_choice:
+        - In Progress
+        - Completed
+        - Aborted
+        - Planned
+    StartDate:
+      date_between:
+          start_date: -1y
+          end_date: +1y
+    EndDate:
+      date_between:
+          start_date: ${{StartDate}}
+          end_date: +1y
+
+- object: Account
+  count: 20
+  nickname: BusinessOrganization
+  fields:
+    Name:
+      fake: Company
+    BillingStreet:
+      fake: street_address
+    BillingCity:
+      fake: city
+    BillingState:
+      fake: state
+    BillingPostalCode:
+      fake: postalcode
+    BillingCountry: United States
+  
+  friends:
+    - object: Contact
+      count: 2 #   2 contacts for every account
+      nickname: Person
+      fields:
+        Firstname:
+          fake: first_name
+        Lastname:
+          fake: last_name
+        AccountId:
+          reference: Account
+        MobilePhone:
+          random_choice:
+            - choice:
+                probability: 50%
+                pick:
+                  fake: PhoneNumber
+            - choice:
+                probability: 50%
+                pick: "None"
+        MailingStreet:
+          fake: street_address
+        MailingCity:
+          fake: city
+        MailingState:
+          fake: state
+        MailingPostalCode:
+          fake: postalcode
+        MailingCountry: United States
+        Birthdate: 
+          date_between:
+            start_date: -1y
+            end_date: today
+
+      friends:
+        - object: Case
+          count: # between 1 and 3 Opportunities per Contact
+            random_number:
+              min: 1
+              max: 5
+          fields:
+            AccountId:
+              reference: BusinessOrganization
+            ContactId:
+              reference: Person
+            Origin:
+              random_choice:
+                - Phone
+                - Email
+                - Web
+            Reason:
+              random_choice:
+                - Installation
+                - Equipment Complexity
+                - Performance
+                - Breakdown
+                - Equipment Design
+                - Feedback
+                - Other
+            Status:
+              random_choice:
+                New: 20%
+                Working: 30%
+                Escalated: 30% 
+                Closed: 20%
+            Subject: The ${{Contact.Lastname}} Case
+        
+      friends: 
+        - object: CampaignMember
+          count: 3
+          fields:
+            CampaignId:
+              reference: Campaign
+            ContactId:
+              reference: Person
+            Status: Sent
+
+      friends:
+        - object: Opportunity
+          count: # between 1 and 3 Opportunities per Contact
+            random_number:
+              min: 1
+              max: 5
+          fields:
+            Stagename:
+              random_choice:
+                Prospecting: 30%
+                Qualification: 30%
+                Closed Won: 20%
+                Closed Lost: 20%
+            CloseDate: 2022-01-01
+            Amount:
+              random_number:
+                min: 0
+                max: 10000
+            AccountId:
+              reference: BusinessOrganization
+            name: The ${{Contact.Lastname}} Opportunity
+          friends:
+            - object: OpportunityContactRole
+              fields:
+                OpportunityId:
+                  reference: Opportunity
+                ContactId:
+                  reference: Person
+                Role:
+                  random_choice:
+                    Business User: 20%
+                    Decision Maker: 20%
+                    Economic Buyer: 20%
+                    Economic Decision Maker: 20%
+                    Evaluator: 20%
