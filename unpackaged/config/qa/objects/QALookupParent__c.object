@@ -247,4 +247,11 @@
         <type>Number</type>
         <unique>false</unique>
     </fields>
+    <validationRules>
+        <fullName>Not_42</fullName>
+        <active>false</active>
+        <errorConditionFormula>Total__c !=42</errorConditionFormula>
+        <errorDisplayField>Total__c</errorDisplayField>
+        <errorMessage>The answer is not 42!</errorMessage>
+    </validationRules>
 </CustomObject>

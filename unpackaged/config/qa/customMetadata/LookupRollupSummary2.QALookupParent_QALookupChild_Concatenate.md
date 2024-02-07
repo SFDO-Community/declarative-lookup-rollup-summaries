@@ -12,11 +12,11 @@
     </values>
     <values>
         <field>AggregateOperation__c</field>
-        <value xsi:type="xsd:string">Concatenate</value>
+        <value xsi:type="xsd:string">Concatenate Distinct</value>
     </values>
     <values>
         <field>AggregateResultField__c</field>
-        <value xsi:type="xsd:string">Descriptions2__c</value>
+        <value xsi:type="xsd:string">Colours__c</value>
     </values>
     <values>
         <field>CalculationMode__c</field>
@@ -40,7 +40,7 @@
     </values>
     <values>
         <field>FieldToAggregate__c</field>
-        <value xsi:type="xsd:string">Id</value>
+        <value xsi:type="xsd:string">Color__c</value>
     </values>
     <values>
         <field>FieldToOrderBy__c</field>
@@ -64,7 +64,7 @@
     </values>
     <values>
         <field>RowLimit__c</field>
-        <value xsi:type="xsd:double">0.0</value>
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>TestCode2__c</field>
