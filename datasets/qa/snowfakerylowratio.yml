@@ -142,7 +142,7 @@
         MailingPostalCode:
           fake: postalcode
         MailingCountry: United States
-        Birthdate: 
+        Birthdate:
           date_between:
             start_date: -1y
             end_date: today
@@ -158,7 +158,6 @@
                 parent: Person
                 unique: True
             Status: Sent
-      friends:    
         - object: Case
           count: 3 #3 cases for every contact
           fields:
@@ -173,8 +172,8 @@
                 - Web
             Reason:
               random_choice:
-                Installation: 20% 
-                Equipment Complexity: 20% 
+                Installation: 20%
+                Equipment Complexity: 20%
                 Performance: 20%
                 Breakdown: 20%
                 Equipment Design: 20%
@@ -182,10 +181,9 @@
               random_choice:
                 New: 20%
                 Working: 30%
-                Escalated: 30% 
+                Escalated: 30%
                 Closed: 20%
             Subject: The ${{Contact.Lastname}} ${{Case.Reason}} Case
-      friends:
         - object: Opportunity
           count: 3 #5 opportunities for every contact
           fields:
