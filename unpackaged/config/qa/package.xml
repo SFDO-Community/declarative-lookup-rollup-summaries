@@ -64,9 +64,45 @@
         <name>CustomField</name>
     </types>
     <types>
+        <members>LookupRollupSummary2.Account_Account_Concatenate</members>
+        <members>LookupRollupSummary2.Account_Account_Min</members>
+        <members>LookupRollupSummary2.Account_Account_Sum</members>
         <members>LookupRollupSummary2.Account_Case_Concatenate</members>
         <members>LookupRollupSummary2.Account_Case_Count</members>
         <members>LookupRollupSummary2.Account_Case_Min</members>
+        <members>LookupRollupSummary2.Account_Contact_Concatenate</members>
+        <members>LookupRollupSummary2.Account_Contact_Count</members>
+        <members>LookupRollupSummary2.Account_Contact_Min</members>
+        <members>LookupRollupSummary2.Account_Opportunity_Concatenate</members>
+        <members>LookupRollupSummary2.Account_Opportunity_Max</members>
+        <members>LookupRollupSummary2.Account_Opportunity_Sum</members>
+        <members>LookupRollupSummary2.Account_QALookupParent_Concatenate</members>
+        <members>LookupRollupSummary2.Account_QALookupParent_Min</members>
+        <members>LookupRollupSummary2.Account_QALookupParent_Sum</members>
+        <members>LookupRollupSummary2.Campaign_CampaignMember_Concatenate</members>
+        <members>LookupRollupSummary2.Campaign_CampaignMember_Count</members>
+        <members>LookupRollupSummary2.Campaign_CampaignMember_Min</members>
+        <members>LookupRollupSummary2.Case_Case_Concatenate</members>
+        <members>LookupRollupSummary2.Case_Case_Count</members>
+        <members>LookupRollupSummary2.Case_Case_Min</members>
+        <members>LookupRollupSummary2.Case_QALookupParent_Concatenate</members>
+        <members>LookupRollupSummary2.Case_QALookupParent_Min</members>
+        <members>LookupRollupSummary2.Case_QALookupParent_Sum</members>
+        <members>LookupRollupSummary2.Contact_OCR_Concatenate</members>
+        <members>LookupRollupSummary2.Contact_OCR_Count</members>
+        <members>LookupRollupSummary2.Contact_OCR_Min</members>
+        <members>LookupRollupSummary2.Opportunity_OCR_Concatenate</members>
+        <members>LookupRollupSummary2.Opportunity_OCR_Count</members>
+        <members>LookupRollupSummary2.Opportunity_OCR_Min</members>
+        <members>LookupRollupSummary2.QALookupParent_Case_Concatenate</members>
+        <members>LookupRollupSummary2.QALookupParent_Case_Count</members>
+        <members>LookupRollupSummary2.QALookupParent_Case_Min</members>
+        <members>LookupRollupSummary2.QALookupParent_Opportunity_Concatenate</members>
+        <members>LookupRollupSummary2.QALookupParent_Opportunity_Count</members>
+        <members>LookupRollupSummary2.QALookupParent_Opportunity_Min</members>
+        <members>LookupRollupSummary2.QALookupParent_QALookupChild_Concatenate</members>
+        <members>LookupRollupSummary2.QALookupParent_QALookupChild_Min</members>
+        <members>LookupRollupSummary2.QALookupParent_QALookupChild_Sum</members>
         <name>CustomMetadata</name>
     </types>
     <types>
