@@ -130,16 +130,6 @@
         <actionName>View</actionName>
         <type>Default</type>
     </actionOverrides>
-    <actionOverrides>
-        <actionName>View</actionName>
-        <formFactor>Large</formFactor>
-        <type>Default</type>
-    </actionOverrides>
-    <actionOverrides>
-        <actionName>View</actionName>
-        <formFactor>Small</formFactor>
-        <type>Default</type>
-    </actionOverrides>
     <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
@@ -167,18 +157,22 @@
     <fields>
         <fullName>Account__c</fullName>
         <deleteConstraint>SetNull</deleteConstraint>
+        <description>Lookup relationship used to test Custom Object Child to Standard Object Parent scenario</description>
         <externalId>false</externalId>
+        <inlineHelpText>Lookup relationship used to test Custom Object Child to Standard Object Parent scenario</inlineHelpText>
         <label>Account</label>
         <referenceTo>Account</referenceTo>
         <relationshipLabel>QA Lookup Parents</relationshipLabel>
-        <relationshipName>QA_Lookup_Parents</relationshipName>
+        <relationshipName>QA_Lookup_Parents_Account</relationshipName>
         <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Lookup</type>
     </fields>
     <fields>
         <fullName>Case_Concatenate__c</fullName>
+        <description>Populated via QALookupParent_Case_Concatenate Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via QALookupParent_Case_Concatenate Rollup</inlineHelpText>
         <label>Case Concatenate</label>
         <length>255</length>
         <required>false</required>
@@ -188,7 +182,9 @@
     </fields>
     <fields>
         <fullName>Case_Count__c</fullName>
+        <description>Populated via QALookupParent_Case_Count Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via QALookupParent_Case_Count Rollup</inlineHelpText>
         <label>Case Count</label>
         <precision>18</precision>
         <required>false</required>
@@ -199,7 +195,9 @@
     </fields>
     <fields>
         <fullName>Case_Min__c</fullName>
+        <description>Populated via QALookupParent_Case_Min Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via QALookupParent_Case_Min Rollup</inlineHelpText>
         <label>Case Min</label>
         <required>false</required>
         <trackTrending>false</trackTrending>
@@ -208,18 +206,23 @@
     <fields>
         <fullName>Case__c</fullName>
         <deleteConstraint>SetNull</deleteConstraint>
+        <description>Lookup relationship used to test Custom Object Child to Standard Object Parent scenario</description>
         <externalId>false</externalId>
+        <inlineHelpText>Lookup relationship used to test Custom Object Child to Standard Object Parent scenario</inlineHelpText>
         <label>Case</label>
         <referenceTo>Case</referenceTo>
         <relationshipLabel>QA Lookup Parents</relationshipLabel>
-        <relationshipName>QA_Lookup_Parents</relationshipName>
+        <relationshipName>QA_Lookup_Parents_Case</relationshipName>
         <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Lookup</type>
     </fields>
     <fields>
         <fullName>Colours__c</fullName>
+        <description>Populated via QALookupParent_QALookupChild_Concatenate Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via QALookupParent_QALookupChild_Concatenate Rollup
+Show Distinct Values</inlineHelpText>
         <label>Colours</label>
         <required>false</required>
         <trackTrending>false</trackTrending>
@@ -285,7 +288,9 @@
     </fields>
     <fields>
         <fullName>Opportunity_Concatenate__c</fullName>
+        <description>Populated via QALookupParent_Opportunity_Concatenate Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via QALookupParent_Opportunity_Concatenate Rollup</inlineHelpText>
         <label>Opportunity Concatenate</label>
         <length>255</length>
         <required>false</required>
@@ -295,7 +300,9 @@
     </fields>
     <fields>
         <fullName>Opportunity_Count__c</fullName>
+        <description>Populated via QALookupParent_Opportunity_Count Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via QALookupParent_Opportunity_Count Rollup</inlineHelpText>
         <label>Opportunity Count</label>
         <precision>18</precision>
         <required>false</required>
@@ -306,7 +313,9 @@
     </fields>
     <fields>
         <fullName>Opportunity_Min__c</fullName>
+        <description>Populated via QALookupParent_Opportunity_Min Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via QALookupParent_Opportunity_Min Rollup</inlineHelpText>
         <label>Opportunity Min</label>
         <required>false</required>
         <trackTrending>false</trackTrending>
@@ -314,7 +323,9 @@
     </fields>
     <fields>
         <fullName>QA_Lookup_Amount_Min__c</fullName>
+        <description>Populated via QALookupParent_QALookupChild_Min Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via QALookupParent_QALookupChild_Min Rollup</inlineHelpText>
         <label>QA Lookup Amount Min</label>
         <precision>18</precision>
         <required>false</required>
@@ -373,7 +384,9 @@
     </fields>
     <fields>
         <fullName>Total__c</fullName>
+        <description>Populated via QALookupParent_QALookupChild_Sum Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via QALookupParent_QALookupChild_Sum Rollup</inlineHelpText>
         <label>Total</label>
         <precision>18</precision>
         <required>false</required>

@@ -2,7 +2,9 @@
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <fields>
         <fullName>CampaignMember_Concatenate__c</fullName>
+        <description>Populated via Campaign_CampaignMember_Concatenate DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Campaign_CampaignMember_Concatenate DLRS</inlineHelpText>
         <label>CampaignMember Concatenate</label>
         <length>255</length>
         <required>false</required>
@@ -11,7 +13,9 @@
     </fields>
     <fields>
         <fullName>CampaignMember_Count__c</fullName>
+        <description>Populated via Campaign_CampaignMember_Count DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Campaign_CampaignMember_Count DLRS</inlineHelpText>
         <label>CampaignMember Count</label>
         <precision>18</precision>
         <required>false</required>
@@ -21,7 +25,9 @@
     </fields>
     <fields>
         <fullName>CampaignMember_Min__c</fullName>
+        <description>Populated via Campaign_CampaignMember_Min DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Campaign_CampaignMember_Min DLRS</inlineHelpText>
         <label>CampaignMember Min</label>
         <required>false</required>
         <type>DateTime</type>

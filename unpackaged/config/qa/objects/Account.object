@@ -2,7 +2,9 @@
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <fields>
         <fullName>Account_Concatenate__c</fullName>
+        <description>Populated via Account_Account_Concatenate Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_Account_Concatenate Rollup</inlineHelpText>
         <label>Account Concatenate</label>
         <length>255</length>
         <required>false</required>
@@ -12,7 +14,9 @@
     </fields>
     <fields>
         <fullName>Account_Min__c</fullName>
+        <description>Populated via Account_Account_Min Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_Account_Min Rollup</inlineHelpText>
         <label>Account Min</label>
         <precision>18</precision>
         <required>false</required>
@@ -23,7 +27,9 @@
     </fields>
     <fields>
         <fullName>Account_Sum__c</fullName>
+        <description>Populated via Account_Account_Sum Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_Account_Sum Rollup</inlineHelpText>
         <label>Account Sum</label>
         <precision>18</precision>
         <required>false</required>
@@ -34,8 +40,9 @@
     </fields>
     <fields>
         <fullName>Case_Concatenate__c</fullName>
-        <description>for DLRS testing</description>
+        <description>Populated via Account_Case_Concatenate DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_Case_Concatenate DLRS</inlineHelpText>
         <label>Case Concatenate</label>
         <length>255</length>
         <required>false</required>
@@ -45,8 +52,9 @@
     </fields>
     <fields>
         <fullName>Case_Count__c</fullName>
-        <description>for DLRS testing</description>
+        <description>Populated via Account_Case_Count DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_Case_Count DLRS</inlineHelpText>
         <label>Case Count</label>
         <precision>18</precision>
         <required>false</required>
@@ -57,8 +65,9 @@
     </fields>
     <fields>
         <fullName>Case_Min__c</fullName>
-        <description>for DLRS testing</description>
+        <description>Populated via Account_Case_Min DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_Case_Min DLRS</inlineHelpText>
         <label>Case Min</label>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
@@ -66,8 +75,9 @@
     </fields>
     <fields>
         <fullName>Contact_Concatenate__c</fullName>
-        <description>for DLRS testing</description>
+        <description>Populated via Account_Contact_Concatenate DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_Contact_Concatenate DLRS</inlineHelpText>
         <label>Contact_Concatenate</label>
         <length>255</length>
         <required>false</required>
@@ -77,8 +87,9 @@
     </fields>
     <fields>
         <fullName>Contact_Count__c</fullName>
-        <description>for testing new DLRS</description>
+        <description>Populated via Account_Contact_Count DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_Contact_Count DLRS</inlineHelpText>
         <label>Contact_Count</label>
         <precision>8</precision>
         <required>false</required>
@@ -89,8 +100,9 @@
     </fields>
     <fields>
         <fullName>Contact_Min__c</fullName>
-        <description>for DLRS testing</description>
+        <description>Populated via Account_Contact_Min DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_Contact_Min DLRS</inlineHelpText>
         <label>Contact_Min</label>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
@@ -109,9 +121,9 @@
     </fields>
     <fields>
         <fullName>Opportunity_Concatenate__c</fullName>
-        <description>result for DLRS testing</description>
+        <description>Populated via Account_Opportunity_Concatenate DLRS</description>
         <externalId>false</externalId>
-        <inlineHelpText>result for DLRS testing</inlineHelpText>
+        <inlineHelpText>Populated via Account_Opportunity_Concatenate DLRS</inlineHelpText>
         <label>Opportunity_Concatenate</label>
         <length>255</length>
         <required>false</required>
@@ -121,9 +133,9 @@
     </fields>
     <fields>
         <fullName>Opportunity_Max__c</fullName>
-        <description>result field for DLRS testing</description>
+        <description>Populated via Account_Opportunity_Max DLRS</description>
         <externalId>false</externalId>
-        <inlineHelpText>result field for DLRS testing</inlineHelpText>
+        <inlineHelpText>Populated via Account_Opportunity_Max DLRS</inlineHelpText>
         <label>Opportunity_Max</label>
         <precision>18</precision>
         <required>false</required>
@@ -133,7 +145,9 @@
     </fields>
     <fields>
         <fullName>Opportunity_Sum__c</fullName>
+        <description>Populated via Account_Opportunity_Sum DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_Opportunity_Sum DLRS</inlineHelpText>
         <label>Opportunity_Sum</label>
         <precision>18</precision>
         <required>false</required>
@@ -155,7 +169,10 @@
     </fields>
     <fields>
         <fullName>QA_Lookup_Parent_Concatenate__c</fullName>
+        <description>Populated via Account_QALookupParent_Concatenate Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_QALookupParent_Concatenate Rollup
+Shows Distinct Values</inlineHelpText>
         <label>QA Lookup Parent Concatenate</label>
         <length>255</length>
         <required>false</required>
@@ -165,7 +182,9 @@
     </fields>
     <fields>
         <fullName>QA_Lookup_Parent_Min__c</fullName>
+        <description>Populated via Account_QALookupParent_Min Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_QALookupParent_Min Rollup</inlineHelpText>
         <label>QA Lookup Parent Min</label>
         <precision>18</precision>
         <required>false</required>
@@ -176,7 +195,9 @@
     </fields>
     <fields>
         <fullName>QA_Lookup_Parent_Sum__c</fullName>
+        <description>Populated via Account_QALookupParent_Sum Rollup</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Account_QALookupParent_Sum Rollup</inlineHelpText>
         <label>QA Lookup Parent Sum</label>
         <precision>18</precision>
         <required>false</required>
