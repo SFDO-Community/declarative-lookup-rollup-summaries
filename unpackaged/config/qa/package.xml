@@ -64,6 +64,12 @@
         <name>CustomField</name>
     </types>
     <types>
+        <members>LookupRollupSummary2.Account_Case_Concatenate</members>
+        <members>LookupRollupSummary2.Account_Case_Count</members>
+        <members>LookupRollupSummary2.Account_Case_Min</members>
+        <name>CustomMetadata</name>
+    </types>
+    <types>
         <members>QALookupChild__c</members>
         <members>QALookupParent__c</members>
         <name>CustomObject</name>
