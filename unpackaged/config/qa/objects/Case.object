@@ -251,7 +251,9 @@
     </fields>
     <fields>
         <fullName>Case_Concatenate__c</fullName>
+        <description>Populated via Case_Case_Concatenate DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Case_Case_Concatenate DLRS</inlineHelpText>
         <label>Case Concatenate</label>
         <length>255</length>
         <required>false</required>
@@ -263,7 +265,9 @@
     </fields>
     <fields>
         <fullName>Case_Count__c</fullName>
+        <description>Populated via Case_Case_Count DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Case_Case_Count DLRS</inlineHelpText>
         <label>Case Count</label>
         <precision>18</precision>
         <required>false</required>
@@ -276,7 +280,9 @@
     </fields>
     <fields>
         <fullName>Case_Min__c</fullName>
+        <description>Populated via Case_Case_Min DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Case_Case_Min DLRS</inlineHelpText>
         <label>Case Min</label>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
@@ -399,7 +405,9 @@
     </fields>
     <fields>
         <fullName>QA_Lookup_Parent_Concatenate__c</fullName>
+        <description>Populated via Case_QALookupParent_Concatenate DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Case_QALookupParent_Concatenate DLRS</inlineHelpText>
         <label>QA Lookup Parent Concatenate</label>
         <length>255</length>
         <required>false</required>
@@ -411,7 +419,9 @@
     </fields>
     <fields>
         <fullName>QA_Lookup_Parent_Min__c</fullName>
+        <description>Populated via Case_QALookupParent_Min DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Case_QALookupParent_Min DLRS</inlineHelpText>
         <label>QA Lookup Parent Min</label>
         <precision>18</precision>
         <required>false</required>
@@ -424,7 +434,9 @@
     </fields>
     <fields>
         <fullName>QA_Lookup_Parent_Sum__c</fullName>
+        <description>Populated via Case_QALookupParent_Sum DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Case_QALookupParent_Sum DLRS</inlineHelpText>
         <label>QA Lookup Parent Sum</label>
         <precision>18</precision>
         <required>false</required>
@@ -438,11 +450,13 @@
     <fields>
         <fullName>QA_Lookup_Parent__c</fullName>
         <deleteConstraint>SetNull</deleteConstraint>
+        <description>Lookup to create Standard Object Child to Custom Object Parent relationship test</description>
         <externalId>false</externalId>
+        <inlineHelpText>Lookup to create Standard Object Child to Custom Object Parent relationship test</inlineHelpText>
         <label>QA Lookup Parent</label>
         <referenceTo>QALookupParent__c</referenceTo>
         <relationshipLabel>Cases</relationshipLabel>
-        <relationshipName>Cases</relationshipName>
+        <relationshipName>Cases_QA_Lookup_Parent</relationshipName>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
         <trackHistory>false</trackHistory>

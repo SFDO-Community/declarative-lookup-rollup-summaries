@@ -227,7 +227,9 @@
     </fields>
     <fields>
         <fullName>OCR_Concatenate__c</fullName>
+        <description>Populated via Opportunity_OCR_Concatenate DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Opportunity_OCR_Concatenate DLRS</inlineHelpText>
         <label>OCR Concatenate</label>
         <length>255</length>
         <required>false</required>
@@ -238,7 +240,9 @@
     </fields>
     <fields>
         <fullName>OCR_Count__c</fullName>
+        <description>Populated via Opportunity_OCR_Count DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Opportunity_OCR_Count DLRS</inlineHelpText>
         <label>OCR Count</label>
         <precision>18</precision>
         <required>false</required>
@@ -250,7 +254,9 @@
     </fields>
     <fields>
         <fullName>OCR_Min__c</fullName>
+        <description>Populated via Opportunity_OCR_Min DLRS</description>
         <externalId>false</externalId>
+        <inlineHelpText>Populated via Opportunity_OCR_Min DLRS</inlineHelpText>
         <label>OCR Min</label>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
