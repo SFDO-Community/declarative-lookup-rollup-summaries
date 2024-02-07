@@ -258,6 +258,9 @@
                 reference: ParentAccount
               Case__c:
                 reference: ParentCase
+              Colours__c: Red;Yellow;Green;Blue
+              QA_Lookup_Amount_Min__c: 1000
+              Total__c: 5000
         - object: Case
           count: 3 #3 cases for every contact
           nickname: CasewithReferences
