@@ -130,6 +130,16 @@
         <actionName>View</actionName>
         <type>Default</type>
     </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <formFactor>Large</formFactor>
+        <type>Default</type>
+    </actionOverrides>
+    <actionOverrides>
+        <actionName>View</actionName>
+        <formFactor>Small</formFactor>
+        <type>Default</type>
+    </actionOverrides>
     <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
@@ -208,6 +218,72 @@
         <type>Lookup</type>
     </fields>
     <fields>
+        <fullName>Colours__c</fullName>
+        <externalId>false</externalId>
+        <label>Colours</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <valueSet>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Red</fullName>
+                    <default>false</default>
+                    <label>Red</label>
+                </value>
+                <value>
+                    <fullName>Yellow</fullName>
+                    <default>false</default>
+                    <label>Yellow</label>
+                </value>
+                <value>
+                    <fullName>Green</fullName>
+                    <default>false</default>
+                    <label>Green</label>
+                </value>
+                <value>
+                    <fullName>Blue</fullName>
+                    <default>false</default>
+                    <label>Blue</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+        <visibleLines>4</visibleLines>
+    </fields>
+    <fields>
+        <fullName>Count_of_String_Children__c</fullName>
+        <description>Count of LookupChild records for which this is the parent across the Parent_by_String__c field, rather than an actual relationship field.</description>
+        <externalId>false</externalId>
+        <label>Count of String Children</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Descriptions2__c</fullName>
+        <externalId>false</externalId>
+        <label>Descriptions 2</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Descriptions__c</fullName>
+        <externalId>false</externalId>
+        <label>Descriptions</label>
+        <length>255</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>Opportunity_Concatenate__c</fullName>
         <externalId>false</externalId>
         <label>Opportunity Concatenate</label>
@@ -247,6 +323,76 @@
         <type>Number</type>
         <unique>false</unique>
     </fields>
+    <fields>
+        <fullName>Record_Notes__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Use this field to record any additional notes about how this record is going to be used in the test dataset.</inlineHelpText>
+        <label>Record Notes</label>
+        <length>32768</length>
+        <trackTrending>false</trackTrending>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    <fields>
+        <fullName>Self_Relationship_Number_Target__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Number field to serve as the target field for a rollup across Self-Relationship
+        field.</inlineHelpText>
+        <label>Self Relationship Number Target</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Self_Relationship__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <inlineHelpText>Lookup to Lookup Parent. Used to test self-relationship rollups on a custom
+        object.</inlineHelpText>
+        <label>Self Relationship</label>
+        <referenceTo>QALookupParent__c</referenceTo>
+        <relationshipLabel>Lookup Parents</relationshipLabel>
+        <relationshipName>Lookup_Parents</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Total2__c</fullName>
+        <externalId>false</externalId>
+        <label>Total 2</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Total__c</fullName>
+        <externalId>false</externalId>
+        <label>Total</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <listViews>
+        <fullName>All</fullName>
+        <columns>NAME</columns>
+        <columns>CREATED_DATE</columns>
+        <columns>Total__c</columns>
+        <columns>Total2__c</columns>
+        <columns>Descriptions__c</columns>
+        <columns>Descriptions2__c</columns>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
     <validationRules>
         <fullName>Not_42</fullName>
         <active>false</active>
