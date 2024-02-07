@@ -185,6 +185,18 @@
                 Closed: 20%
             Subject: The ${{Contact.Lastname}} ${{Case.Reason}} Case
         - object: Opportunity
+          count: 1
+          fields:
+            Stagename: Closed Won
+            CloseDate:
+              date_between:
+                start_date: -1y
+                end_date: today
+            Amount: 100000
+            AccountId:
+              reference: BusinessOrganization
+            name: The ${{Contact.Lastname}} Biggest Opportunity
+        - object: Opportunity
           count: 3 #5 opportunities for every contact
           fields:
             Stagename:
