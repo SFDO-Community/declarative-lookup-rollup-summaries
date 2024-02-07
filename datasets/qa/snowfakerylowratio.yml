@@ -1,0 +1,338 @@
+#Load Leads to Test Lead Conversion
+- object: Lead
+  count: 20
+  fields:
+    FirstName:
+      fake: first_name
+    LastName:
+      fake: last_name
+    company:
+      fake: Company
+    title:
+      fake.text:
+        max_nb_chars: 15
+    email:
+      fake: email
+    phone:
+      fake: phone_number
+    MobilePhone:
+      fake: phone_number
+    Street:
+      fake: StreetAddress
+    City:
+      fake: City
+    State:
+      fake: State
+    PostalCode:
+      fake: PostalCode
+    Country:
+      fake: Country
+    NumberOfEmployees:
+      random_number:
+        min: 0
+        max: 10000
+    Status:
+      random_choice:
+        Open: 40%
+        Working: 20%
+        Nurturing: 20%
+        Qualified: 10%
+        Unqualified: 10%
+#Outlier Campaign with Responses
+- object: Campaign
+  count: 1
+  nickname: CampaignResponded
+  fields:
+    Name: ${{fake.Text(max_nb_chars = 25)}} Responded
+    IsActive: TRUE
+    Status: Completed
+    StartDate:
+      date_between:
+          start_date: -1y
+          end_date: today
+    EndDate:
+      date_between:
+          start_date: ${{StartDate}}
+          end_date: today
+- object: Campaign
+  count: 10
+  nickname: CampaignSent
+  fields:
+    Name: ${{fake.Text(max_nb_chars = 25)}}
+    IsActive: TRUE
+    Status:
+      random_choice:
+        - In Progress
+        - Completed
+        - Aborted
+        - Planned
+    StartDate:
+      date_between:
+          start_date: -1y
+          end_date: +1y
+    EndDate:
+      date_between:
+          start_date: ${{StartDate}}
+          end_date: +1y
+#QA Lookup Parent Record to be referenced later for Second Lookup on Child
+- object: QALookupParent__c  
+  count: 1
+  nickname: CustomParent2
+  fields:
+    Name: QALookupParent2
+#QA Lookup Parent Record that will have child QA Lookup Parent
+- object: QALookupParent__c
+  count: 1
+  nickname: CustomParentTop
+  fields:
+    Name: QALookupParentTop
+  friends:
+    - object: QALookupParent__c
+      count: 1
+      nickname: CustomParentwithChild
+      fields:
+        Name: QALookupParentwithChild
+        Self_Relationship__c:
+          reference: CustomParentTop
+      friends:
+        #Outlier QA Lookup Child with Low Amount and No Parent Lookup 2
+        - object: QALookupChild__c
+          count: 6
+          nickname: CustomChild
+          fields:
+            Name: ${{fake.Text(max_nb_chars = 25)}}
+            Amount__c: 7
+            Color__c:
+              random_choice:
+                - Red
+                - Yellow
+                - Green
+                - Blue
+            Description__c: ${{fake.Text(max_nb_chars = 200)}}
+            Description2__c: ${{fake.Text(max_nb_chars = 200)}}
+            LookupParent__c:
+              reference: CustomParentwithChild
+        - object: QALookupChild__c
+          count: 5
+          nickname: CustomChild
+          fields:
+            Name: ${{fake.Text(max_nb_chars = 25)}}
+            Amount__c: 1000
+            Color__c:
+              random_choice:
+                - Red
+                - Yellow
+                - Green
+                - Blue
+            Description__c: ${{fake.Text(max_nb_chars = 200)}}
+            Description2__c: ${{fake.Text(max_nb_chars = 200)}}
+            LookupParent__c:
+              reference: CustomParentwithChild
+            LookupParent2__c:
+              reference: CustomParent2
+- object: Account
+  count: 1
+  nickname: ParentAccount
+  fields:
+    Name:
+      fake: Company
+    NumberOfEmployees: 10
+    BillingStreet:
+      fake: street_address
+    BillingCity:
+      fake: city
+    BillingState:
+      fake: state
+    BillingPostalCode:
+      fake: postalcode
+    BillingCountry: United States
+- object: Account
+  count: 20
+  nickname: BusinessOrganization
+  fields:
+    Name:
+      fake: Company
+    ParentId:
+      reference: ParentAccount
+    NumberOfEmployees: 10
+    BillingStreet:
+      fake: street_address
+    BillingCity:
+      fake: city
+    BillingState:
+      fake: state
+    BillingPostalCode:
+      fake: postalcode
+    BillingCountry: United States
+  friends:
+    - object: Contact
+      count: 2 #2 contacts for every account
+      nickname: Person
+      fields:
+        Firstname:
+          fake: first_name
+        Lastname:
+          fake: last_name
+        AccountId:
+          reference: Account
+        MobilePhone:
+          random_choice:
+            - choice:
+                probability: 50%
+                pick:
+                  fake: PhoneNumber
+            - choice:
+                probability: 50%
+                pick: "None"
+        MailingStreet:
+          fake: street_address
+        MailingCity:
+          fake: city
+        MailingState:
+          fake: state
+        MailingPostalCode:
+          fake: postalcode
+        MailingCountry: United States
+        Birthdate:
+          date_between:
+            start_date: -1y
+            end_date: today
+      friends:
+        #Outlier Campaign with Responses
+        - object: CampaignMember
+          count: 1
+          fields:
+            ContactId:
+              reference: Person
+            CampaignId:
+              random_reference:
+                to: CampaignResponded
+                parent: Person
+                unique: True
+            Status: Responded
+        - object: CampaignMember
+          count: 4 #4 campaign members for every contact
+          fields:
+            ContactId:
+              reference: Person
+            CampaignId:
+              random_reference:
+                to: CampaignSent
+                parent: Person
+                unique: True
+            Status: Sent
+        #Outlier Closed Case
+        - object: Case
+          count: 1
+          nickname: ClosedCase
+          fields:
+            AccountId:
+              reference: BusinessOrganization
+            ContactId:
+              reference: Person
+            Origin: Web
+            Reason: Equipment Design
+            Status: Closed
+            Subject: The ${{Contact.Lastname}} Closed Case
+        #Parent Case
+        - object: Case
+          count: 1
+          nickname: ParentCase
+          fields:
+            AccountId:
+              reference: BusinessOrganization
+            ContactId:
+              reference: Person
+            Origin: Web
+            Reason: Equipment Design
+            Status: Closed
+            Subject: The ${{Contact.Lastname}} Parent Case
+          #QA Lookup Parent Record to with lookups to Account and Case
+          friends:
+          - object: QALookupParent__c
+            count: 1
+            nickname: CustomParentAcctCase
+            fields:
+              Name: QALookupParentAcctCase
+              Account__c:
+                reference: ParentAccount
+              Case__c:
+                reference: ParentCase
+              Colours__c: Red;Yellow;Green;Blue
+              QA_Lookup_Amount_Min__c: 1000
+              Total__c: 5000
+        - object: Case
+          count: 3 #3 cases for every contact
+          nickname: CasewithReferences
+          fields:
+            AccountId:
+              reference: BusinessOrganization
+            ContactId:
+              reference: Person
+            ParentId:
+              reference: ParentCase
+            QA_Lookup_Parent__c:
+              reference: CustomParentwithChild
+            Origin:
+              random_choice:
+                - Phone
+                - Email
+                - Web
+            Reason:
+              random_choice:
+                Installation: 20%
+                Equipment Complexity: 20%
+                Performance: 20%
+                Breakdown: 20%
+                Equipment Design: 20%
+            Status:
+              random_choice:
+                New: 30%
+                Working: 35%
+                Escalated: 35%
+            Subject: The ${{Contact.Lastname}} ${{Case.Reason}} Case
+        #Outlier Opportunity with High Amount
+        - object: Opportunity
+          count: 1
+          fields:
+            name: The ${{Contact.Lastname}} Biggest Opportunity
+            AccountId:
+              reference: BusinessOrganization
+            Stagename: Closed Won
+            CloseDate:
+              date_between:
+                start_date: -1y
+                end_date: today
+            Amount: 100000
+        - object: Opportunity
+          count: 3 #3 opportunities for every contact
+          fields:
+            name: The ${{Contact.Lastname}} Opportunity
+            AccountId:
+              reference: BusinessOrganization
+            QA_Lookup_Parent__c:
+              reference: CustomParentwithChild
+            Stagename:
+              random_choice:
+                Prospecting: 40%
+                Qualification: 40%
+                Closed Lost: 20%
+            CloseDate:
+              date_between:
+                start_date: -1y
+                end_date: today
+            Amount: 1000
+          friends:
+            - object: OpportunityContactRole
+              fields:
+                OpportunityId:
+                  reference: Opportunity
+                ContactId:
+                  reference: Person
+                Role:
+                  random_choice:
+                    Business User: 20%
+                    Decision Maker: 20%
+                    Economic Buyer: 20%
+                    Economic Decision Maker: 20%
+                    Evaluator: 20%

@@ -1,0 +1,6 @@
+img {
+  border-radius: var(
+    --slds-c-icon-radius-border,
+    var(--sds-c-icon-radius-border, var(--lwc-borderRadiusMedium, 0.25rem))
+  );
+}

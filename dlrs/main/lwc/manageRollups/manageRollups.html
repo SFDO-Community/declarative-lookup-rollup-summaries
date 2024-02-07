@@ -1,0 +1,32 @@
+<template>
+  <lightning-layout pull-to-boundary="small">
+    <lightning-layout-item size="12" padding="around-small">
+      <lightning-card title="Rollups">
+        <div slot="actions">
+          <lightning-button
+            label="New"
+            onclick={runCreateNew}
+          ></lightning-button>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+          <div class="slds-p-bottom_small">
+            <lightning-input
+              type="search"
+              placeholder="Filter rollups..."
+              value={searchFilter}
+              onchange={handleInputChange}
+            ></lightning-input>
+          </div>
+          <lightning-datatable
+            key-field="DeveloperName"
+            data={rollupList}
+            columns={dtColumns}
+            onrowaction={rollupSelectHandler}
+            hide-checkbox-column
+          >
+          </lightning-datatable>
+        </div>
+      </lightning-card>
+    </lightning-layout-item>
+  </lightning-layout>
+</template>

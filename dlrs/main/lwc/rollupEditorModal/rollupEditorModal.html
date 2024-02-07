@@ -1,0 +1,10 @@
+<template>
+  <lightning-modal-header label="Rollup Editor"></lightning-modal-header>
+  <lightning-modal-body>
+    <c-rollup-editor
+      rollup-name={rollupName}
+      onrequestdelete={handleRequestDelete}
+      oncancel={handleCancelRequest}
+    ></c-rollup-editor>
+  </lightning-modal-body>
+</template>

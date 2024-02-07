@@ -335,12 +335,15 @@ public class RollupSummary {
    **/
   public class FieldData {
     public RecordMetadata RecordMetadata { get; private set; }
+    public List<String> errors { get; private set; }
 
     public FieldData(RecordMetadata recordMetadata) {
       this.RecordMetadata = recordMetadata;
+      this.errors = new List<String>();
     }
 
     public void addError(String errorMessage) {
+      this.errors.add(errorMessage);
       // Field in error?
       String fieldLabelInError;
       if (this === RecordMetadata.Active) {
