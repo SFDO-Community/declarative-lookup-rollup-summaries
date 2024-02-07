@@ -4,7 +4,7 @@
     <protected>false</protected>
     <values>
         <field>Active__c</field>
-        <value xsi:type="xsd:boolean">false</value>
+        <value xsi:type="xsd:boolean">true</value>
     </values>
     <values>
         <field>AggregateAllRows__c</field>
@@ -64,7 +64,7 @@
     </values>
     <values>
         <field>RowLimit__c</field>
-        <value xsi:type="xsd:double">0.0</value>
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>TestCode2__c</field>

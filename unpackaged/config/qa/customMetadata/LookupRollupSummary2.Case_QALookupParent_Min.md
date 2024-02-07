@@ -40,7 +40,7 @@
     </values>
     <values>
         <field>FieldToAggregate__c</field>
-        <value xsi:type="xsd:string">Total__c</value>
+        <value xsi:type="xsd:string">QA_Lookup_Amount_Min__c</value>
     </values>
     <values>
         <field>FieldToOrderBy__c</field>
@@ -64,7 +64,7 @@
     </values>
     <values>
         <field>RowLimit__c</field>
-        <value xsi:type="xsd:double">0.0</value>
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>TestCode2__c</field>

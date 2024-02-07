@@ -40,7 +40,7 @@
     </values>
     <values>
         <field>FieldToAggregate__c</field>
-        <value xsi:type="xsd:string">Type</value>
+        <value xsi:type="xsd:string">Status</value>
     </values>
     <values>
         <field>FieldToOrderBy__c</field>

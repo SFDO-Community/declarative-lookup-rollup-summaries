@@ -16,7 +16,7 @@
     </values>
     <values>
         <field>AggregateResultField__c</field>
-        <value xsi:type="xsd:string">CreatedDate</value>
+        <value xsi:type="xsd:string">OCR_Min__c</value>
     </values>
     <values>
         <field>CalculationMode__c</field>
@@ -60,11 +60,11 @@
     </values>
     <values>
         <field>RelationshipField__c</field>
-        <value xsi:type="xsd:string">Id</value>
+        <value xsi:type="xsd:string">ContactId</value>
     </values>
     <values>
         <field>RowLimit__c</field>
-        <value xsi:type="xsd:double">0.0</value>
+        <value xsi:nil="true"/>
     </values>
     <values>
         <field>TestCode2__c</field>
