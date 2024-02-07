@@ -50,31 +50,93 @@
         <members>Campaign.CampaignMember_Concatenate__c</members>
         <members>Campaign.CampaignMember_Count__c</members>
         <members>Campaign.CampaignMember_Min__c</members>
+        <members>Case.AccountId</members>
+        <members>Case.AssetId</members>
+        <members>Case.AssetWarrantyId</members>
+        <members>Case.BusinessHoursId</members>
         <members>Case.Case_Concatenate__c</members>
         <members>Case.Case_Count__c</members>
         <members>Case.Case_Min__c</members>
+        <members>Case.ClosedDate</members>
+        <members>Case.Comments</members>
+        <members>Case.ContactEmail</members>
+        <members>Case.ContactFax</members>
+        <members>Case.ContactId</members>
+        <members>Case.ContactMobile</members>
+        <members>Case.ContactPhone</members>
+        <members>Case.Description</members>
+        <members>Case.EntitlementId</members>
+        <members>Case.IsClosedOnCreate</members>
+        <members>Case.IsEscalated</members>
+        <members>Case.IsStopped</members>
+        <members>Case.MilestoneStatus</members>
+        <members>Case.MilestoneStatusIcon</members>
+        <members>Case.Origin</members>
+        <members>Case.OwnerId</members>
+        <members>Case.ParentId</members>
+        <members>Case.Priority</members>
+        <members>Case.ProductId</members>
         <members>Case.QA_Lookup_Parent_Concatenate__c</members>
         <members>Case.QA_Lookup_Parent_Min__c</members>
         <members>Case.QA_Lookup_Parent_Sum__c</members>
         <members>Case.QA_Lookup_Parent__c</members>
+        <members>Case.Reason</members>
+        <members>Case.ServiceContractId</members>
+        <members>Case.SlaExitDate</members>
+        <members>Case.SlaStartDate</members>
+        <members>Case.Status</members>
+        <members>Case.StopStartDate</members>
+        <members>Case.Subject</members>
+        <members>Case.SuppliedCompany</members>
+        <members>Case.SuppliedEmail</members>
+        <members>Case.SuppliedName</members>
+        <members>Case.SuppliedPhone</members>
+        <members>Case.Type</members>
         <members>Contact.DLRS_All_OCRs__c</members>
         <members>Contact.DLRS_CountOCRs__c</members>
         <members>Contact.OCR_Concatenate__c</members>
         <members>Contact.OCR_Count__c</members>
         <members>Contact.OCR_Min__c</members>
+        <members>Opportunity.AccountId</members>
+        <members>Opportunity.Amount</members>
+        <members>Opportunity.CampaignId</members>
+        <members>Opportunity.CloseDate</members>
+        <members>Opportunity.ContractId</members>
+        <members>Opportunity.Description</members>
+        <members>Opportunity.ExpectedRevenue</members>
+        <members>Opportunity.IqScore</members>
+        <members>Opportunity.IsPrivate</members>
+        <members>Opportunity.LeadSource</members>
+        <members>Opportunity.Name</members>
+        <members>Opportunity.NextStep</members>
         <members>Opportunity.OCR_Concatenate__c</members>
         <members>Opportunity.OCR_Count__c</members>
         <members>Opportunity.OCR_Min__c</members>
+        <members>Opportunity.OwnerId</members>
+        <members>Opportunity.Pricebook2Id</members>
+        <members>Opportunity.Probability</members>
         <members>Opportunity.QA_Lookup_Parent__c</members>
+        <members>Opportunity.StageName</members>
+        <members>Opportunity.TotalOpportunityQuantity</members>
+        <members>Opportunity.Type</members>
         <members>QALookupParent__c.Account__c</members>
         <members>QALookupParent__c.Case_Concatenate__c</members>
         <members>QALookupParent__c.Case_Count__c</members>
         <members>QALookupParent__c.Case_Min__c</members>
         <members>QALookupParent__c.Case__c</members>
+        <members>QALookupParent__c.Colours__c</members>
+        <members>QALookupParent__c.Count_of_String_Children__c</members>
+        <members>QALookupParent__c.Descriptions2__c</members>
+        <members>QALookupParent__c.Descriptions__c</members>
         <members>QALookupParent__c.Opportunity_Concatenate__c</members>
         <members>QALookupParent__c.Opportunity_Count__c</members>
         <members>QALookupParent__c.Opportunity_Min__c</members>
         <members>QALookupParent__c.QA_Lookup_Amount_Min__c</members>
+        <members>QALookupParent__c.Record_Notes__c</members>
+        <members>QALookupParent__c.Self_Relationship_Number_Target__c</members>
+        <members>QALookupParent__c.Self_Relationship__c</members>
+        <members>QALookupParent__c.Total2__c</members>
+        <members>QALookupParent__c.Total__c</members>
         <name>CustomField</name>
     </types>
     <types>
@@ -125,6 +187,9 @@
         <name>CustomObject</name>
     </types>
     <types>
+        <members>Account-Account %28Marketing%29 Layout</members>
+        <members>Account-Account %28Sales%29 Layout</members>
+        <members>Account-Account %28Support%29 Layout</members>
         <members>Account-Account Layout</members>
         <name>Layout</name>
     </types>
@@ -133,7 +198,13 @@
         <members>Account.QA_Rollup_Annual_Revenue</members>
         <members>Account.QA_Rollup_Salesforce_Count_Negotiation</members>
         <members>Contact.DLRS_QA_List_View</members>
+        <members>Opportunity.Default_Opportunity_Pipeline</members>
+        <members>QALookupParent__c.All</members>
         <name>ListView</name>
+    </types>
+    <types>
+        <members>Admin</members>
+        <name>Profile</name>
     </types>
     <types>
         <members>QALookupParent__c.Not_42</members>
