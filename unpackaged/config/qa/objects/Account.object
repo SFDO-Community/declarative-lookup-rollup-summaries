@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fields>
+        <fullName>Account_Concatenate__c</fullName>
+        <externalId>false</externalId>
+        <label>Account Concatenate</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Account_Min__c</fullName>
+        <externalId>false</externalId>
+        <label>Account Min</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Account_Sum__c</fullName>
+        <externalId>false</externalId>
+        <label>Account Sum</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Case_Concatenate__c</fullName>
+        <description>for DLRS testing</description>
+        <externalId>false</externalId>
+        <label>Case Concatenate</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Case_Count__c</fullName>
+        <description>for DLRS testing</description>
+        <externalId>false</externalId>
+        <label>Case Count</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Case_Min__c</fullName>
+        <description>for DLRS testing</description>
+        <externalId>false</externalId>
+        <label>Case Min</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Contact_Concatenate__c</fullName>
+        <description>for DLRS testing</description>
+        <externalId>false</externalId>
+        <label>Contact_Concatenate</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Contact_Count__c</fullName>
+        <description>for testing new DLRS</description>
+        <externalId>false</externalId>
+        <label>Contact_Count</label>
+        <precision>8</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Contact_Min__c</fullName>
+        <description>for DLRS testing</description>
+        <externalId>false</externalId>
+        <label>Contact_Min</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>NumberOfLocations__c</fullName>
+        <externalId>false</externalId>
+        <label>Number of Locations</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Opportunity_Concatenate__c</fullName>
+        <description>result for DLRS testing</description>
+        <externalId>false</externalId>
+        <inlineHelpText>result for DLRS testing</inlineHelpText>
+        <label>Opportunity_Concatenate</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Opportunity_Max__c</fullName>
+        <description>result field for DLRS testing</description>
+        <externalId>false</externalId>
+        <inlineHelpText>result field for DLRS testing</inlineHelpText>
+        <label>Opportunity_Max</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>Opportunity_Sum__c</fullName>
+        <externalId>false</externalId>
+        <label>Opportunity_Sum</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Currency</type>
+    </fields>
+    <fields>
+        <fullName>OpportuntiyContactRole_Sum__c</fullName>
+        <description>for DLRS testing</description>
+        <externalId>false</externalId>
+        <label>OpportuntiyContactRole_Sum</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>QA_Lookup_Parent_Concatenate__c</fullName>
+        <externalId>false</externalId>
+        <label>QA Lookup Parent Concatenate</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>QA_Lookup_Parent_Min__c</fullName>
+        <externalId>false</externalId>
+        <label>QA Lookup Parent Min</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>QA_Lookup_Parent_Sum__c</fullName>
+        <externalId>false</externalId>
+        <label>QA Lookup Parent Sum</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>2</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>SLAExpirationDate__c</fullName>
+        <externalId>false</externalId>
+        <label>SLA Expiration Date</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Date</type>
+    </fields>
+    <fields>
+        <fullName>Self_Relationship_Number_Target__c</fullName>
+        <externalId>false</externalId>
+        <inlineHelpText>Number field to serve as the target field for a rollup across a self-relationship (such as Parent Account).</inlineHelpText>
+        <label>Self Relationship Number Target</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <listViews>
+        <fullName>All_Accounts</fullName>
+        <columns>ACCOUNT.NAME</columns>
+        <columns>ACCOUNT.SITE</columns>
+        <columns>ACCOUNT.ADDRESS1_STATE</columns>
+        <columns>ACCOUNT.PHONE1</columns>
+        <columns>ACCOUNT.TYPE</columns>
+        <columns>CORE.USERS.ALIAS</columns>
+        <filterScope>Everything</filterScope>
+        <label>All Accounts</label>
+    </listViews>
+    <listViews>
+        <fullName>QA_Rollup_Annual_Revenue</fullName>
+        <columns>ACCOUNT.NAME</columns>
+        <columns>ACCOUNT.SALES</columns>
+        <filterScope>Everything</filterScope>
+        <label>QA Rollup: Annual Revenue</label>
+    </listViews>
+    <listViews>
+        <fullName>QA_Rollup_Salesforce_Count_Negotiation</fullName>
+        <columns>ACCOUNT.NAME</columns>
+        <columns>ACCOUNT.EMPLOYEES</columns>
+        <filterScope>Everything</filterScope>
+        <label>QA Rollup: Salesforce Count Negotiation</label>
+    </listViews>
+</CustomObject>

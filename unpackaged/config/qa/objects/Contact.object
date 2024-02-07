@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fields>
+        <fullName>DLRS_All_OCRs__c</fullName>
+        <description>Target field to be used when hand-creating a DLRS rollup as part of QA testing.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Target field to be used when hand-creating a DLRS rollup as part of QA testing.</inlineHelpText>
+        <label>DLRS_All_OCRs</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>DLRS_CountOCRs__c</fullName>
+        <description>Target field to be used when hand-creating a DLRS rollup as part of QA testing.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Target field to be used when hand-creating a DLRS rollup as part of QA testing.</inlineHelpText>
+        <label>DLRS_CountOCRs</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>OCR_Concatenate__c</fullName>
+        <externalId>false</externalId>
+        <label>OCR Concatenate</label>
+        <length>255</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>OCR_Count__c</fullName>
+        <externalId>false</externalId>
+        <label>OCR Count</label>
+        <precision>18</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>OCR_Min__c</fullName>
+        <externalId>false</externalId>
+        <label>OCR Min</label>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <type>DateTime</type>
+    </fields>
+    <listViews>
+        <fullName>DLRS_QA_List_View</fullName>
+        <columns>FULL_NAME</columns>
+        <columns>ACCOUNT.NAME</columns>
+        <columns>DLRS_All_OCRs__c</columns>
+        <columns>DLRS_CountOCRs__c</columns>
+        <filterScope>Everything</filterScope>
+        <label>DLRS QA List View</label>
+    </listViews>
+</CustomObject>
