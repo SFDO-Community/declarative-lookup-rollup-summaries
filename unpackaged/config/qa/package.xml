@@ -125,6 +125,10 @@
         <name>CustomObject</name>
     </types>
     <types>
+        <members>Account-Account Layout</members>
+        <name>Layout</name>
+    </types>
+    <types>
         <members>Account.All_Accounts</members>
         <members>Account.QA_Rollup_Annual_Revenue</members>
         <members>Account.QA_Rollup_Salesforce_Count_Negotiation</members>
