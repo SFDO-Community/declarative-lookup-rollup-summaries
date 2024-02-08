@@ -1,9 +1,18 @@
 import { LightningElement, api } from "lwc";
 
+export const PATH_STATES = {
+  complete: "complete",
+  current: "current",
+  incomplete: "incomplete",
+  failed: "failed"
+};
+
 /**
  * @typedef step
  * @property {string} label
- * @property {"complete"|"current"|"incomplete"|"failed"} status
+ * @property {string} name
+ * @property {keyof typeof PATH_STATES} status
+ * @property {string?} nextActionLabel
  */
 
 export default class FlexiblePath extends LightningElement {
@@ -25,18 +34,24 @@ export default class FlexiblePath extends LightningElement {
     if (!this.steps) {
       return "unknown";
     }
-    let nextLabel = this.steps.find((s) => s.status === "current")?.label;
-    if (!nextLabel) {
-      nextLabel = this.steps.find((s) => s.status === "incomplete")?.label;
-    }
-    return nextLabel;
+    let nextCurrent = this.nextAction;
+    return nextCurrent?.nextActionLabel ?? nextCurrent?.label;
+  }
+
+  get nextAction() {
+    return (
+      this.steps.find((s) => s.status === "current") ??
+      this.steps.find((s) => s.status === "incomplete")
+    );
   }
 
   handleNextActionClick() {
+    const nextAction = this.nextAction;
     this.dispatchEvent(
       new CustomEvent("nextactionclick", {
         detail: {
-          label: this.nextActionLabel
+          label: nextAction.label,
+          name: nextAction.name
         }
       })
     );

@@ -1,5 +1,9 @@
-import { api, LightningElement, track, wire } from "lwc";
-import { ShowToastEvent } from "lightning/platformShowToastEvent";
+import { api, track, wire } from "lwc";
+
+import LightningModal from "lightning/modal";
+
+import { PATH_STATES } from "c/flexiblePath";
+
 import getRollupConfig from "@salesforce/apex/RollupEditorController.getRollupConfig";
 import validateRollupConfig from "@salesforce/apex/RollupEditorController.validateRollupConfig";
 import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollupConfig";
@@ -9,13 +13,8 @@ import getFullCalculatePageUrl from "@salesforce/apex/RollupEditorController.get
 import getScheduleCalculatePageUrl from "@salesforce/apex/RollupEditorController.getScheduleCalculatePageUrl";
 import hasChildTriggerDeployed from "@salesforce/apex/LookupRollupStatusCheckController.hasChildTriggerDeployed";
 import getScheduledJobs from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledJobs";
+import getOutstandingScheduledItemsForLookup from "@salesforce/apex/LookupRollupStatusCheckController.getOutstandingScheduledItemsForLookup";
 
-import { NavigationMixin } from "lightning/navigation";
-const PATH_VALUES = {
-  complete: "complete",
-  current: "current",
-  incomplete: "incomplete"
-};
 const DEFAULT_ROLLUP_VALUES = Object.freeze({
   Active__c: false,
   CalculationMode__c: "Scheduled",
@@ -24,32 +23,70 @@ const DEFAULT_ROLLUP_VALUES = Object.freeze({
 
 const STEP_TEMPLATES = Object.freeze({
   default: [
-    { label: "Configure", status: PATH_VALUES.current },
-    { label: "...", status: PATH_VALUES.incomplete }
+    {
+      label: "Configure",
+      name: "save",
+      nextActionLabel: "Save",
+      status: PATH_STATES.current
+    },
+    { label: "...", status: PATH_STATES.incomplete }
   ],
   Realtime: [
-    { label: "Configure", status: PATH_VALUES.complete },
-    { label: "Deploy Trigger", status: PATH_VALUES.incomplete },
-    { label: "Activate", status: PATH_VALUES.incomplete }
+    {
+      label: "Configure",
+      name: "save",
+      nextActionLabel: "Save",
+      status: PATH_STATES.complete
+    },
+    {
+      label: "Deploy Trigger",
+      name: "deployTrigger",
+      nextActionLabel: "Manage Triggers",
+      status: PATH_STATES.incomplete
+    },
+    { label: "Activate", name: "activate", status: PATH_STATES.incomplete }
   ],
   Scheduled: [
-    { label: "Configure", status: PATH_VALUES.complete },
-    { label: "Schedule Job", status: PATH_VALUES.incomplete },
-    { label: "Deploy Trigger", status: PATH_VALUES.incomplete },
-    { label: "Activate", status: PATH_VALUES.incomplete }
+    {
+      label: "Configure",
+      name: "save",
+      nextActionLabel: "Save",
+      status: PATH_STATES.complete
+    },
+    {
+      label: "Schedule Job",
+      name: "scheduleJob",
+      nextActionLabel: "Schedule",
+      status: PATH_STATES.incomplete
+    },
+    {
+      label: "Deploy Trigger",
+      name: "deployTrigger",
+      nextActionLabel: "Manage Triggers",
+      status: PATH_STATES.incomplete
+    },
+    { label: "Activate", name: "activate", status: PATH_STATES.incomplete }
   ],
   other: [
-    { label: "Configure", status: PATH_VALUES.complete },
-    { label: "Activate", status: PATH_VALUES.incomplete }
+    {
+      label: "Configure",
+      name: "save",
+      nextActionLabel: "Save",
+      status: PATH_STATES.complete
+    },
+    { label: "Activate", name: "activate", status: PATH_STATES.incomplete }
   ]
 });
-export default class RollupEditor extends NavigationMixin(LightningElement) {
+export default class RollupEditor extends LightningModal {
   isLoading = false;
-
   childTriggerIsDeployed = false;
+  rollupId;
 
   @wire(getScheduledJobs)
   scheduledJobCount;
+
+  @wire(getOutstandingScheduledItemsForLookup, { lookupID: "$rollupId" })
+  outstandingScheduledItems;
 
   openAccordianSections = [
     "Information",
@@ -84,9 +121,7 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
   }
 
   get cardHeader() {
-    return this.rollup.DeveloperName
-      ? this.rollup.DeveloperName
-      : "Lookup Rollup Summary Creation Wizard";
+    return this.rollup.Id ? `Edit ${this.rollup.Label}` : "Create Rollup";
   }
 
   get saveButtonLabel() {
@@ -105,6 +140,21 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
     return this.rollup.Id && this.rollup.Active__c;
   }
 
+  get scheduledItemsError() {
+    if (
+      !this.outstandingScheduledItems ||
+      !this.outstandingScheduledItems?.data
+    ) {
+      return null;
+    }
+
+    return `This rollup has ${this.outstandingScheduledItems} outstanding scheduled items`;
+  }
+
+  get relationshipCriteriaPlaceholder() {
+    return "Status__c\r\nDays__c";
+  }
+
   async getRollup() {
     if (!this.rollupName) {
       this.rollup = { ...DEFAULT_ROLLUP_VALUES };
@@ -113,6 +163,7 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
         this.rollup = await getRollupConfig({
           rollupName: this.rollupName
         });
+        this.rollupId = this.rollup.Id;
       } catch (error) {
         this.errors.record = [error.message];
       }
@@ -151,21 +202,21 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
     });
     for (let s of STEP_TEMPLATES[this.rollup.CalculationMode__c] ||
       STEP_TEMPLATES.other) {
-      if (s.label === "Deploy Trigger") {
+      if (s.name === "deployTrigger") {
         s.status = this.childTriggerIsDeployed
-          ? PATH_VALUES.complete
-          : PATH_VALUES.incomplete;
+          ? PATH_STATES.complete
+          : PATH_STATES.incomplete;
       }
-      if (s.label === "Schedule Job") {
+      if (s.name === "scheduleJob") {
         s.status =
           this.scheduledJobCount.data > 0
-            ? PATH_VALUES.complete
-            : PATH_VALUES.incomplete;
+            ? PATH_STATES.complete
+            : PATH_STATES.incomplete;
       }
-      if (s.label === "Activate") {
+      if (s.name === "activate") {
         s.status = this.rollup.Active__c
-          ? PATH_VALUES.complete
-          : PATH_VALUES.incomplete;
+          ? PATH_STATES.complete
+          : PATH_STATES.incomplete;
       }
       newSteps.push(s);
     }
@@ -193,8 +244,7 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
   }
 
   cancelClickHandler() {
-    const evt = new CustomEvent("cancel");
-    this.dispatchEvent(evt);
+    this.close();
   }
 
   cloneClickHandler() {
@@ -203,10 +253,7 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
   }
 
   deleteClickHandler() {
-    const evt = new CustomEvent("requestdelete", {
-      detail: { rollupName: this.rollup.DeveloperName }
-    });
-    this.dispatchEvent(evt);
+    this.close({ action: "delete", rollupName: this.rollup.DeveloperName });
   }
 
   activateClickHandler() {
@@ -219,18 +266,24 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
     this.runSave();
   }
 
+  rollupTypeChangeHandler(event) {
+    this.rollup.AggregateOperation__c = event.detail.value;
+  }
+
   pathClickHandler(event) {
     console.log("Path clicked", event.detail.label);
-    switch (event.detail.label) {
-      case "Deploy Trigger":
+    switch (event.detail.name) {
+      case "deployTrigger":
         this.manageTriggerHandler();
         break;
-
-      case "Activate":
+      case "activate":
         this.activateClickHandler();
         break;
-      case "Schedule Job":
+      case "scheduleJob":
         console.error("Job Schedule UI not implemented");
+        break;
+      case "save":
+        this.runSave();
         break;
       default:
         console.error("Unexpected action", event.detail.label);
@@ -239,34 +292,40 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
   }
 
   async manageTriggerHandler() {
-    // TODO: return to this page, maybe to this rollup??
     const url = await getManageTriggerPageUrl({ rollupId: this.rollup.Id });
-    this[NavigationMixin.Navigate]({
-      type: "standard__webPage",
-      attributes: {
-        url
+    this.close({
+      action: "navigate",
+      config: {
+        type: "standard__webPage",
+        attributes: {
+          url
+        }
       }
     });
   }
 
   async recalculateNowHandler() {
-    // TODO: return to this page, maybe to this rollup??
     const url = await getFullCalculatePageUrl({ rollupId: this.rollup.Id });
-    this[NavigationMixin.Navigate]({
-      type: "standard__webPage",
-      attributes: {
-        url
+    this.close({
+      action: "navigate",
+      config: {
+        type: "standard__webPage",
+        attributes: {
+          url
+        }
       }
     });
   }
 
   async schedulRecalculateHandler() {
-    // TODO: return to this page, maybe to this rollup??
     const url = await getScheduleCalculatePageUrl({ rollupId: this.rollup.Id });
-    this[NavigationMixin.Navigate]({
-      type: "standard__webPage",
-      attributes: {
-        url
+    this.close({
+      action: "navigate",
+      config: {
+        type: "standard__webPage",
+        attributes: {
+          url
+        }
       }
     });
   }
@@ -306,20 +365,12 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
     const jobId = await saveRollupConfig({
       rollup: JSON.stringify(this.rollup)
     });
-    const evt = new ShowToastEvent({
-      title: "Deployment Started",
-      message: "Started Metadata Record Upates in Deployment " + jobId,
-      variant: "info"
+
+    this.close({
+      action: "deloyStart",
+      jobId,
+      rollupName: this.rollup.DeveloperName
     });
-    this.dispatchEvent(evt);
-    this.dispatchEvent(
-      new CustomEvent("deploystarted", {
-        detail: {
-          rollup: this.rollup,
-          jobId
-        }
-      })
-    );
     this.isLoading = false;
   }
 
@@ -392,7 +443,7 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
       { label: "Count", value: "Count" },
       { label: "Count Distinct", value: "Count Distinct" },
       { label: "Concatenate", value: "Concatenate" },
-      { label: "Concatenate Distinct", value: "	Concatenate Distinct" },
+      { label: "Concatenate Distinct", value: "Concatenate Distinct" },
       { label: "First", value: "First" },
       { label: "Last", value: "Last" }
     ];
@@ -412,5 +463,23 @@ export default class RollupEditor extends NavigationMixin(LightningElement) {
       { label: "User", value: "User" },
       { label: "System", value: "System" }
     ];
+  }
+
+  get shouldDisableConcatDelim() {
+    return !["Concatenate", "Concatenate Distinct"].includes(
+      this.rollup.AggregateOperation__c
+    );
+  }
+
+  get shouldDisableFieldToOrderBy() {
+    return !["Concatenate", "Concatenate Distinct", "First", "Last"].includes(
+      this.rollup.AggregateOperation__c
+    );
+  }
+
+  get shouldDisableRowLimit() {
+    return !["Concatenate", "Concatenate Distinct", "Last"].includes(
+      this.rollup.AggregateOperation__c
+    );
   }
 }
