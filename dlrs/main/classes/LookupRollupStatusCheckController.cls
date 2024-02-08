@@ -41,6 +41,19 @@ public with sharing class LookupRollupStatusCheckController {
   }
 
   /**
+   * Get count of scheduled items older than yesterday
+   * The assumption is that normal processing should have handled these
+   */
+  @AuraEnabled(Cacheable=true)
+  public static Integer getOutstandingScheduledItemsForLookup(String lookupID) {
+    return [
+      SELECT COUNT()
+      FROM LookupRollupSummaryScheduleItems__c
+      WHERE LookupRollupSummary2__c = :lookupID AND LastModifiedDate < YESTERDAY
+    ];
+  }
+
+  /**
    * Check if the rollup has a Full Calculate schedule
    */
   @AuraEnabled(Cacheable=true)

@@ -1,10 +1,12 @@
-import { LightningElement } from "lwc";
+import { LightningElement, wire } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import LightningConfirm from "lightning/confirm";
+import { NavigationMixin, CurrentPageReference } from "lightning/navigation";
+
 import getAllRollupConfigs from "@salesforce/apex/RollupEditorController.getAllRollupConfigs";
 import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
 import USER_ID from "@salesforce/user/Id";
-import RollupEditorModal from "c/rollupEditorModal";
+import RollupEditor from "c/rollupEditor";
 
 import {
   subscribe,
@@ -13,7 +15,7 @@ import {
   isEmpEnabled
 } from "lightning/empApi";
 
-export default class ManageRollups extends LightningElement {
+export default class ManageRollups extends NavigationMixin(LightningElement) {
   dtColumns = [
     {
       type: "button",
@@ -29,20 +31,20 @@ export default class ManageRollups extends LightningElement {
       }
     },
     {
-      label: "Parent",
-      fieldName: "ParentObject__c"
+      label: "Child",
+      fieldName: "ChildObject__c"
     },
     {
       label: "Field To Aggregate",
       fieldName: "FieldToAggregate__c"
     },
     {
-      label: "Child",
-      fieldName: "ChildObject__c"
-    },
-    {
       label: "Relationship Field",
       fieldName: "RelationshipField__c"
+    },
+    {
+      label: "Parent",
+      fieldName: "ParentObject__c"
     },
     {
       label: "Operation",
@@ -54,7 +56,8 @@ export default class ManageRollups extends LightningElement {
     },
     {
       label: "Active",
-      fieldName: "Active__c"
+      fieldName: "Active__c",
+      type: "boolean"
     },
     {
       type: "button-icon",
@@ -66,6 +69,9 @@ export default class ManageRollups extends LightningElement {
       }
     }
   ];
+
+  @wire(CurrentPageReference)
+  pageRef;
 
   // We only want events for which we've been assigned as the recipient
   channelName = `/event/UserNotification__e?Recipient__c='${USER_ID.substring(
@@ -125,15 +131,32 @@ export default class ManageRollups extends LightningElement {
   }
 
   async openEditor(rollupName) {
-    const result = await RollupEditorModal.open({
-      // `label` is not included here in this example.
-      // it is set on lightning-modal-header instead
+    const result = await RollupEditor.open({
       size: "large",
       description: "Rollup Config Editor",
       rollupName
     });
-    if (result?.action === "delete") {
-      this.requestDelete(result.rollupName);
+
+    switch (result?.action) {
+      case "delete":
+        this.requestDelete(result.rollupName);
+        break;
+      case "deloyStart":
+        // const rollupName = result.rollupName;
+        this.dispatchEvent(
+          new ShowToastEvent({
+            title: "Deployment Started",
+            message:
+              "Started Metadata Record Upates in Deployment " + result.jobId,
+            variant: "info"
+          })
+        );
+        break;
+      case "navigate":
+        this[NavigationMixin.Navigate](result.config);
+        break;
+      default:
+        break;
     }
   }
 

@@ -90,9 +90,7 @@ For "Scheduled" mode we should have Configure, Scheduled RollupCalculate Job, De
         </div>
       </div>
       <div class="slds-grid slds-path__action" lwc:if={nextActionLabel}>
-        <span id="slds-path__stage-name" class="slds-path__stage-name"
-          >Next Action: {nextActionLabel}</span
-        >
+        <span id="slds-path__stage-name" class="slds-path__stage-name"></span>
         <button
           class="slds-button slds-button_brand slds-path__mark-complete"
           onclick={handleNextActionClick}
