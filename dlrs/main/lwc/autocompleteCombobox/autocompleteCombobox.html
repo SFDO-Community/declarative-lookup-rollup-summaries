@@ -2,7 +2,6 @@
   <div
     class="slds-form-element slds-combobox_container slds-has-selection"
     style="display: block"
-    onmouseleave={onToggleDropdown}
     data-source="lookupContainer"
   >
     <label class="slds-form-element__label" for="autocomplete-comobobox-id"
@@ -46,6 +45,7 @@
               type="search"
               data-source="searchInputField"
               onclick={onToggleDropdown}
+              onblur={onToggleDropdown}
               onchange={onChangeSearchKey}
               is-loading={isLoading}
               label={label}

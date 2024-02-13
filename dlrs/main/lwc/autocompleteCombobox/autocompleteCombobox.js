@@ -58,21 +58,19 @@ export default class AutocompleteCombobox extends LightningElement {
   }
   // *** EVENT METHODS ***
   onToggleDropdown(event) {
-    const targetDataSource = event.target.getAttribute("data-source");
     const lookupInputContainer = this.template.querySelector(
       ".lookupInputContainer"
     );
     const clsList = lookupInputContainer.classList;
-    const whichEvent = targetDataSource;
-    switch (whichEvent) {
-      case "searchInputField":
-        clsList.add("slds-is-open");
-        break;
-      case "lookupContainer":
+    if (clsList.contains('slds-is-open')) {
+      // Allow enough time for the click handler of the object list to run before we burn the elements
+      // 310 is chosen because on some mobile devices clicks can take up to 300ms to fire
+      // eslint-disable-next-line @lwc/lwc/no-async-operation
+      setTimeout(() => {
         clsList.remove("slds-is-open");
-        break;
-      default:
-        break;
+      }, 310);
+    } else {
+      clsList.add('slds-is-open');
     }
   }
   onChangeSearchKey(event) {
