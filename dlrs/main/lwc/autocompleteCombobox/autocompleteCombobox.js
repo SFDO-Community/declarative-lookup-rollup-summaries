@@ -142,7 +142,7 @@ export default class AutocompleteCombobox extends LightningElement {
     try {
       const lowerCaseValue = this._value.toLowerCase();
       this.selectedOption = this._options.find((option) => {
-        return option.value.toLowerCase().includes(lowerCaseValue);
+        return option.value.toLowerCase() === lowerCaseValue;
       });
       this.searchKey = this.selectedOption.label;
     } catch (error) {
