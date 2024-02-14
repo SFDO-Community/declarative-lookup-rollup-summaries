@@ -155,6 +155,14 @@ export default class RollupEditor extends LightningModal {
     return "Status__c\r\nDays__c";
   }
 
+  get childFieldOptionsPending() {
+    return this.childRFieldOptions.length === 0;
+  }
+
+  get parentFieldOptionsPending() {
+    return this.parentRFieldOptions.length === 0;
+  }
+
   async getRollup() {
     if (!this.rollupName) {
       this.rollup = { ...DEFAULT_ROLLUP_VALUES };
