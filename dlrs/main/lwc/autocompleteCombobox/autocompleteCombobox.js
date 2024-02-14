@@ -8,6 +8,7 @@ export default class AutocompleteCombobox extends LightningElement {
   @api label;
   @api placeholder;
   @api helperText;
+  @api disabled = false;
 
   @track selectedOption = {};
   @track _value = "";
