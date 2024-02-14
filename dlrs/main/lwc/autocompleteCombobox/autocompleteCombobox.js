@@ -9,6 +9,7 @@ export default class AutocompleteCombobox extends LightningElement {
   @api placeholder;
   @api helperText;
   @api disabled = false;
+  @api searchThreshold = 1;
 
   @track selectedOption = {};
   @track _value = "";
@@ -104,13 +105,17 @@ export default class AutocompleteCombobox extends LightningElement {
   // *** CONTROLLER
   filterOptions(searchKey) {
     try {
-      const lowerCaseSearchKey = searchKey.toLowerCase();
-      this.filteredOptions = this._options.filter(({ value, label }) => {
-        return (
-          value.toLowerCase().includes(lowerCaseSearchKey) ||
-          label.toLowerCase().includes(lowerCaseSearchKey)
-        );
-      });
+      if (searchKey.length >= this.searchThreshold) {
+        const lowerCaseSearchKey = searchKey.toLowerCase();
+        this.filteredOptions = this._options.filter(({ value, label }) => {
+          return (
+            value.toLowerCase().includes(lowerCaseSearchKey) ||
+            label.toLowerCase().includes(lowerCaseSearchKey)
+          );
+        });
+      } else {
+        this.filteredOptions = this._options;
+      }
     } catch (error) {
       this.filteredOptions = this._options;
     }
