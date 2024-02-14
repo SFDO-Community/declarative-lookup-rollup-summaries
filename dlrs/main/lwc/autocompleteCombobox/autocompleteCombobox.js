@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from "lwc";
+import jsLevenshtein from "./js-levenshtein";
 
 const DELAY = 100; // timing in miliseconds
 
@@ -111,6 +112,18 @@ export default class AutocompleteCombobox extends LightningElement {
           return (
             value.toLowerCase().includes(lowerCaseSearchKey) ||
             label.toLowerCase().includes(lowerCaseSearchKey)
+          );
+        }).sort((a, b) => {
+          return (
+            // take the nearest of the Label and value
+            Math.min(
+              jsLevenshtein(lowerCaseSearchKey, a.value.toLowerCase()),
+              jsLevenshtein(lowerCaseSearchKey, a.label.toLowerCase())
+            ) -
+            Math.min(
+              jsLevenshtein(lowerCaseSearchKey, b.value.toLowerCase()),
+              jsLevenshtein(lowerCaseSearchKey, b.label.toLowerCase())
+            )
           );
         });
       } else {
