@@ -13,6 +13,7 @@ export default class AutocompleteCombobox extends LightningElement {
   @api searchThreshold = 1;
   @api searchRequired = false;
   @api maxSearchResults = -1;
+  @api noResultsMessage = 'No Results Found...';
 
   @track selectedOption = {};
   @track _value = "";
@@ -72,6 +73,9 @@ export default class AutocompleteCombobox extends LightningElement {
       return [];
     }
     return results;
+  }
+  get optionsAvailable() {
+    return this.visibleOptions.length > 0;
   }
   // *** EVENT METHODS ***
   onToggleDropdown(event) {

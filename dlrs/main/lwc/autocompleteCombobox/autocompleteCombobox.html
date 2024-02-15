@@ -135,9 +135,9 @@
             </template>
 
             <!--ERROR msg, if there is no records..-->
-            <!-- <template if:false={hasRecords}>
-              <li class="slds-listbox__item" style="text-align: center; font-weight: bold;">No Records Found....</li>
-            </template> -->
+            <template if:false={optionsAvailable}>
+              <li class="slds-listbox__item" style="text-align: center; font-weight: bold;">{noResultsMessage}</li>
+            </template>
           </ul>
         </div>
       </div>
