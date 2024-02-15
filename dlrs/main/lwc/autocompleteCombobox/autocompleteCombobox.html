@@ -98,7 +98,7 @@
           role="listbox"
         >
           <ul class="slds-listbox slds-listbox_vertical" role="presentation">
-            <template for:each={filteredOptions} for:item="option">
+            <template for:each={visibleOptions} for:item="option">
               <li
                 key={option.value}
                 role="presentation"
