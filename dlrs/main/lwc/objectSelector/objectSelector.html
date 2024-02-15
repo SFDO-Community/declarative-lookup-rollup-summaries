@@ -2,130 +2,17 @@
 for : DLRS; Opensource commons
 -->
 <template>
-  <div class="slds-form-element" data-source="lookupContainer">
-    <div class="slds-combobox_container slds-has-selection">
-      <label class="slds-form-element__label" for="combobox-id-1"
-        >{label}</label
-      >
-      <div
-        class="lookupInputContainer slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click"
-        aria-expanded="false"
-        aria-haspopup="listbox"
-        role="combobox"
-      >
-        <div
-          class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_left-right"
-          role="none"
-        >
-          <div class="searchBoxWrapper slds-show">
-            <!--Lookup Input Field-->
-            <lightning-input
-              type="search"
-              data-source="searchInputField"
-              onfocus={showResultList}
-              onblur={hideResultList}
-              onchange={handleKeyChange}
-              is-loading={isSearchLoading}
-              value={searchKey}
-              variant="label-hidden"
-              placeholder={placeholder}
-              disabled={isReady}
-            ></lightning-input>
-          </div>
-
-          <!--Lookup Selected record pill container start-->
-          <div class="pillDiv slds-hide">
-            <span class="slds-icon_container slds-combobox__input-entity-icon">
-              <lightning-icon
-                icon-name={selectedRecordIconName}
-                size="x-small"
-                alternative-text="icon"
-              ></lightning-icon>
-            </span>
-            <input
-              type="text"
-              id="combobox-id-1"
-              value={selectedRecord}
-              class="slds-input slds-combobox__input slds-combobox__input-value"
-              readonly
-            />
-            <button
-              class="slds-button slds-button_icon slds-input__icon slds-input__icon_right"
-              title="Remove selected option"
-            >
-              <lightning-icon
-                icon-name="utility:close"
-                size="x-small"
-                alternative-text="close icon"
-                onclick={handleRemove}
-              ></lightning-icon>
-            </button>
-          </div>
-        </div>
-
-        <!-- lookup search result part start-->
-        <div
-          style="margin-top: 0px"
-          id="listbox-id-5"
-          class="slds-dropdown slds-dropdown_length-with-icon-7 slds-dropdown_fluid"
-          role="listbox"
-        >
-          <ul
-            class="slds-listbox slds-listbox_vertical"
-            role="presentation"
-            onclick={handleSelectedRecord}
-          >
-            <template for:each={lstResult} for:item="obj">
-              <li
-                key={obj.fullName}
-                role="presentation"
-                class="slds-listbox__item"
-              >
-                <div
-                  data-objname={obj.fullName}
-                  class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta"
-                  role="option"
-                >
-                  <span
-                    style="pointer-events: none"
-                    class="slds-media__figure slds-listbox__option-icon"
-                  >
-                    <span class="slds-icon_container">
-                      <lightning-icon
-                        if:false={obj.iconUrl}
-                        icon-name={obj.iconName}
-                        size="small"
-                        alternative-text="icon"
-                      ></lightning-icon>
-                      <img
-                        if:true={obj.iconUrl}
-                        alt="object icon"
-                        src={obj.iconUrl}
-                        style={obj.iconStyle}
-                      />
-                    </span>
-                  </span>
-                  <span style="pointer-events: none" class="slds-media__body">
-                    <span
-                      class="slds-listbox__option-text slds-listbox__option-text_entity"
-                      >{obj.label} ({obj.fullName})</span
-                    >
-                  </span>
-                </div>
-              </li>
-            </template>
-            <!--ERROR msg, if there is no records..-->
-            <template if:false={lstResult.length}>
-              <li
-                class="slds-listbox__item"
-                style="text-align: center; font-weight: bold"
-              >
-                Search by Object Label or API Name...
-              </li>
-            </template>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
+  <c-autocomplete-combobox
+    label={label}
+    value={selectedRecord}
+    helper-text={helperText}
+    options={objectOptions}
+    placeholder={placeholder}
+    onchangeselection={handleSelectedRecord}
+    disabled={objectsLoading}
+    search-threshold={searchThreshold}
+    search-required={searchRequired}
+    max-search-results={maxSearchResults}
+    no-results-message="Search by Object Label or API Name..."
+  ></c-autocomplete-combobox>
 </template>

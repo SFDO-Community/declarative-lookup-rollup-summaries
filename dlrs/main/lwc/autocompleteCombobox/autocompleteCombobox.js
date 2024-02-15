@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from "lwc";
+import jsLevenshtein from "./js-levenshtein";
 
 const DELAY = 100; // timing in miliseconds
 
@@ -8,6 +9,11 @@ export default class AutocompleteCombobox extends LightningElement {
   @api label;
   @api placeholder;
   @api helperText;
+  @api disabled = false;
+  @api searchThreshold = 1;
+  @api searchRequired = false;
+  @api maxSearchResults = -1;
+  @api noResultsMessage = 'No Results Found...';
 
   @track selectedOption = {};
   @track _value = "";
@@ -56,23 +62,43 @@ export default class AutocompleteCombobox extends LightningElement {
     }
     return styleClass;
   }
+  get visibleOptions() {
+    let results = this.filteredOptions;
+    if (this.maxSearchResults > 0) {
+      results = results.slice(0, this.maxSearchResults);
+    }
+    if (this.searchRequired) {
+      if (this.searchKey.length >= this.searchThreshold)
+        return results
+      return [];
+    }
+    return results;
+  }
+  get optionsAvailable() {
+    return this.visibleOptions.length > 0;
+  }
   // *** EVENT METHODS ***
-  onToggleDropdown(event) {
-    const targetDataSource = event.target.getAttribute("data-source");
+  showDropdown() {
     const lookupInputContainer = this.template.querySelector(
       ".lookupInputContainer"
     );
     const clsList = lookupInputContainer.classList;
-    const whichEvent = targetDataSource;
-    switch (whichEvent) {
-      case "searchInputField":
-        clsList.add("slds-is-open");
-        break;
-      case "lookupContainer":
+    if (!clsList.contains('slds-is-open')) {
+      clsList.add('slds-is-open');
+    }
+  }
+  hideDropdown() {
+    const lookupInputContainer = this.template.querySelector(
+      ".lookupInputContainer"
+    );
+    const clsList = lookupInputContainer.classList;
+    if (clsList.contains('slds-is-open')) {
+      // Allow enough time for the click handler of the object list to run before we burn the elements
+      // 310 is chosen because on some mobile devices clicks can take up to 300ms to fire
+      // eslint-disable-next-line @lwc/lwc/no-async-operation
+      setTimeout(() => {
         clsList.remove("slds-is-open");
-        break;
-      default:
-        break;
+      }, 310);
     }
   }
   onChangeSearchKey(event) {
@@ -105,13 +131,29 @@ export default class AutocompleteCombobox extends LightningElement {
   // *** CONTROLLER
   filterOptions(searchKey) {
     try {
-      const lowerCaseSearchKey = searchKey.toLowerCase();
-      this.filteredOptions = this._options.filter(({ value, label }) => {
-        return (
-          value.toLowerCase().includes(lowerCaseSearchKey) ||
-          label.toLowerCase().includes(lowerCaseSearchKey)
-        );
-      });
+      if (searchKey.length >= this.searchThreshold) {
+        const lowerCaseSearchKey = searchKey.toLowerCase();
+        this.filteredOptions = this._options.filter(({ value, label }) => {
+          return (
+            value.toLowerCase().includes(lowerCaseSearchKey) ||
+            label.toLowerCase().includes(lowerCaseSearchKey)
+          );
+        }).sort((a, b) => {
+          return (
+            // take the nearest of the Label and value
+            Math.min(
+              jsLevenshtein(lowerCaseSearchKey, a.value.toLowerCase()),
+              jsLevenshtein(lowerCaseSearchKey, a.label.toLowerCase())
+            ) -
+            Math.min(
+              jsLevenshtein(lowerCaseSearchKey, b.value.toLowerCase()),
+              jsLevenshtein(lowerCaseSearchKey, b.label.toLowerCase())
+            )
+          );
+        });
+      } else {
+        this.filteredOptions = this._options;
+      }
     } catch (error) {
       this.filteredOptions = this._options;
     }
@@ -125,7 +167,7 @@ export default class AutocompleteCombobox extends LightningElement {
     try {
       const lowerCaseValue = this._value.toLowerCase();
       this.selectedOption = this._options.find((option) => {
-        return option.value.toLowerCase().includes(lowerCaseValue);
+        return option.value.toLowerCase() === lowerCaseValue;
       });
       this.searchKey = this.selectedOption.label;
     } catch (error) {
