@@ -123,6 +123,7 @@
               helper-text="The field on the child object that holds the data to rollup"
               value={rollup.FieldToAggregate__c}
               options={childRFieldOptions}
+              disabled={childFieldOptionsPending}
             ></c-autocomplete-combobox>
             <c-rollup-editor-error
               errors={errors.FieldToAggregate__c}
@@ -141,6 +142,7 @@
               options={childRFieldOptions}
               placeholder="Lookup__c"
               onchangeselection={relationshipFieldSelectedHandler}
+              disabled={childFieldOptionsPending}
             ></c-autocomplete-combobox>
             <c-rollup-editor-error
               errors={errors.RelationshipField__c}
@@ -187,6 +189,7 @@
               helper-text="The field on the parent object that will hold the result of the rollup calculation"
               options={parentRFieldOptions}
               value={rollup.AggregateResultField__c}
+              disabled={parentFieldOptionsPending}
             ></c-autocomplete-combobox>
             <c-rollup-editor-error
               errors={errors.AggregateResultField__c}
