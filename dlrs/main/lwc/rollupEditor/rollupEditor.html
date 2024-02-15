@@ -1,15 +1,15 @@
 <template>
-  <lightning-modal-header label={cardHeader}></lightning-modal-header>
-  <lightning-modal-body>
-    <!--Name Rollup-->
+  <lightning-modal-header label={cardHeader}>
     <lightning-layout class="slds-p-horizontal_medium" lwc:if={rollup.Id}>
-      <lightning-layout-item size="12">
+      <lightning-layout-item size="12" padding="around-small">
         <c-flexible-path
           steps={steps}
           onnextactionclick={pathClickHandler}
         ></c-flexible-path>
       </lightning-layout-item>
     </lightning-layout>
+  </lightning-modal-header>
+  <lightning-modal-body>
     <lightning-layout multiple-rows class="slds-p-horizontal_medium">
       <lightning-layout-item>
         <c-rollup-editor-error errors={errors.record}></c-rollup-editor-error>
@@ -63,8 +63,6 @@
               errors={errors.DeveloperName}
             ></c-rollup-editor-error>
           </lightning-layout-item>
-        </lightning-layout>
-        <lightning-layout class="slds-p-horizontal_medium">
           <lightning-layout-item size="12" class="slds-form-element_stacked">
             <lightning-textarea
               name="rollup_Description__c"
@@ -77,8 +75,6 @@
               errors={errors.Description__c}
             ></c-rollup-editor-error>
           </lightning-layout-item>
-        </lightning-layout>
-        <lightning-layout class="slds-p-horizontal_medium">
           <lightning-layout-item size="12">
             <c-rollup-status-check
               name={rollup.Id}
@@ -152,15 +148,13 @@
       </lightning-accordion-section>
 
       <lightning-accordion-section name="ParentObject" label="Parent Object">
-        <lightning-layout class="slds-p-horizontal_medium">
+        <lightning-layout multiple-rows class="slds-p-horizontal_medium">
           <lightning-layout-item size="12" class="slds-form-element_stacked">
             <p>
               Pick the parent object you want to roll up to and the field that
               will hold the resulting value
             </p>
           </lightning-layout-item>
-        </lightning-layout>
-        <lightning-layout multiple-rows class="slds-p-horizontal_medium">
           <lightning-layout-item
             size="12"
             large-device-size="6"
@@ -249,7 +243,7 @@
               name="rollup_AggregateAllRows__c"
               data-name="rollup_AggregateAllRows__c"
               label="Include Deleted &amp; Archived Records"
-              field-level-help="If you only want Archived Records add 'IsDeleted = FALSE' to the Relationship Criteria"
+              field-level-help="If you ONLY want Archived Records add 'IsDeleted = FALSE' to the Relationship Criteria"
               checked={rollup.AggregateAllRows__c}
             ></lightning-input>
             <c-rollup-editor-error
@@ -389,8 +383,12 @@
       </lightning-accordion-section>
 
       <lightning-accordion-section name="Advanced" label="Advanced">
-        <lightning-layout class="slds-p-horizontal_medium">
-          <lightning-layout-item size="12" class="slds-form-element_stacked">
+        <lightning-layout multiple-rows class="slds-p-horizontal_medium">
+          <lightning-layout-item
+            size="12"
+            large-device-size="6"
+            class="slds-form-element_stacked"
+          >
             <lightning-textarea
               name="rollup_TestCode2__c"
               data-name="rollup_TestCode2__c"
@@ -398,14 +396,17 @@
               field-level-help="Define a custom method body to be used in the generated test class"
               value={rollup.TestCode2__c}
               maxlength="131072"
+              class="testcodearea"
             ></lightning-textarea>
             <c-rollup-editor-error
               errors={errors.TestCode2__c}
             ></c-rollup-editor-error>
           </lightning-layout-item>
-        </lightning-layout>
-        <lightning-layout class="slds-p-horizontal_medium">
-          <lightning-layout-item size="12" class="slds-form-element_stacked">
+          <lightning-layout-item
+            size="12"
+            large-device-size="6"
+            class="slds-form-element_stacked"
+          >
             <lightning-textarea
               name="rollup_TestCodeParent__c"
               data-name="rollup_TestCodeParent__c"
@@ -413,13 +414,12 @@
               field-level-help="Define a custom method body to be used in the generated test class"
               value={rollup.TestCodeParent__c}
               maxlength="131072"
+              class="testcodearea"
             ></lightning-textarea>
             <c-rollup-editor-error
               errors={errors.TestCodeParent__c}
             ></c-rollup-editor-error>
           </lightning-layout-item>
-        </lightning-layout>
-        <lightning-layout class="slds-p-horizontal_medium">
           <lightning-layout-item class="slds-form-element_stacked">
             <lightning-input
               type="checkbox"
@@ -443,13 +443,18 @@
       <lightning-layout-item>
         <lightning-button-group>
           <lightning-button
-            label="Activate"
+            label="Save &amp; Activate"
             onclick={activateClickHandler}
             if:true={rollupCanBeActivated}
           ></lightning-button>
           <lightning-button
             label={saveButtonLabel}
             onclick={runSave}
+          ></lightning-button>
+          <lightning-button
+            label="Recalculate Now"
+            lwc:if={rollup.Id}
+            onclick={recalculateNowHandler}
           ></lightning-button>
           <lightning-button
             label="Cancel"
@@ -462,14 +467,19 @@
             lwc:if={rollup.Id}
           >
             <lightning-menu-item
-              label="Deactiveate"
+              label="Clone"
+              lwc:if={rollup.Id}
+              onclick={cloneClickHandler}
+            ></lightning-menu-item>
+            <lightning-menu-item
+              label="Deactivate &amp; Save"
               if:true={rollupCanBeDeactivated}
               onclick={deactivateClickHandler}
             ></lightning-menu-item>
             <lightning-menu-item
-              label="Clone"
+              label="Delete"
               lwc:if={rollup.Id}
-              onclick={cloneClickHandler}
+              onclick={deleteClickHandler}
             ></lightning-menu-item>
             <lightning-menu-item
               label="Manage Triggers"
@@ -477,19 +487,9 @@
               onclick={manageTriggerHandler}
             ></lightning-menu-item>
             <lightning-menu-item
-              label="Recalculate Now"
-              lwc:if={rollup.Id}
-              onclick={recalculateNowHandler}
-            ></lightning-menu-item>
-            <lightning-menu-item
-              label="Schedule Reclaculation"
+              label="Schedule Recalculation"
               lwc:if={rollup.Id}
               onclick={schedulRecalculateHandler}
-            ></lightning-menu-item>
-            <lightning-menu-item
-              label="Delete"
-              lwc:if={rollup.Id}
-              onclick={deleteClickHandler}
             ></lightning-menu-item>
           </lightning-button-menu>
         </lightning-button-group>

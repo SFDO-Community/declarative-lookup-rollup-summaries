@@ -9,20 +9,30 @@
           ></lightning-button>
         </div>
         <div class="slds-card__body slds-card__body_inner">
-          <div class="slds-p-bottom_small">
-            <lightning-input
-              type="search"
-              placeholder="Filter rollups..."
-              value={searchFilter}
-              onchange={handleInputChange}
-            ></lightning-input>
-          </div>
+          <lightning-layout>
+            <lightning-layout-item
+              size="12"
+              medium-device-size="6"
+              large-device-size="3"
+              class="slds-p-bottom_small"
+            >
+              <lightning-input
+                type="search"
+                placeholder="Filter rollups..."
+                value={searchFilter}
+                onchange={handleInputChange}
+              ></lightning-input>
+            </lightning-layout-item>
+          </lightning-layout>
           <lightning-datatable
             key-field="DeveloperName"
             data={rollupList}
             columns={dtColumns}
+            sorted-by={sortByField}
+            sorted-direction={sortDirection}
             onrowaction={rollupSelectHandler}
             hide-checkbox-column
+            onsort={handleOnSort}
           >
           </lightning-datatable>
         </div>
