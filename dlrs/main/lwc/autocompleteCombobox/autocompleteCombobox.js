@@ -12,6 +12,7 @@ export default class AutocompleteCombobox extends LightningElement {
   @api disabled = false;
   @api searchThreshold = 1;
   @api searchRequired = false;
+  @api maxSearchResults = -1;
 
   @track selectedOption = {};
   @track _value = "";
@@ -61,12 +62,16 @@ export default class AutocompleteCombobox extends LightningElement {
     return styleClass;
   }
   get visibleOptions() {
+    let results = this.filteredOptions;
+    if (this.maxSearchResults > 0) {
+      results = results.slice(0, this.maxSearchResults);
+    }
     if (this.searchRequired) {
       if (this.searchKey.length >= this.searchThreshold)
-        return this.filteredOptions
+        return results
       return [];
     }
-    return this.filteredOptions;
+    return results;
   }
   // *** EVENT METHODS ***
   onToggleDropdown(event) {
