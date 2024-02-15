@@ -44,8 +44,10 @@
             <lightning-input
               type="search"
               data-source="searchInputField"
-              onfocus={onToggleDropdown}
-              onblur={onToggleDropdown}
+              onclick={showDropdown}
+              onfocus={showDropdown}
+              onkeyup={showDropdown}
+              onblur={hideDropdown}
               onchange={onChangeSearchKey}
               is-loading={isLoading}
               label={label}

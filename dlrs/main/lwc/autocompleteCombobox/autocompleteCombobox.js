@@ -78,7 +78,16 @@ export default class AutocompleteCombobox extends LightningElement {
     return this.visibleOptions.length > 0;
   }
   // *** EVENT METHODS ***
-  onToggleDropdown(event) {
+  showDropdown() {
+    const lookupInputContainer = this.template.querySelector(
+      ".lookupInputContainer"
+    );
+    const clsList = lookupInputContainer.classList;
+    if (!clsList.contains('slds-is-open')) {
+      clsList.add('slds-is-open');
+    }
+  }
+  hideDropdown() {
     const lookupInputContainer = this.template.querySelector(
       ".lookupInputContainer"
     );
@@ -90,8 +99,6 @@ export default class AutocompleteCombobox extends LightningElement {
       setTimeout(() => {
         clsList.remove("slds-is-open");
       }, 310);
-    } else {
-      clsList.add('slds-is-open');
     }
   }
   onChangeSearchKey(event) {
