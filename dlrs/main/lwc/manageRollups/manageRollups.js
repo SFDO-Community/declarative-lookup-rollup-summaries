@@ -20,47 +20,58 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     {
       type: "button",
       label: "Name",
+      sortable: true,
+      fieldName: "Label",
+      initialWidth: 300,
       typeAttributes: {
         label: { fieldName: "Label" },
         name: "rollup_select",
-        iconName: "utility:edit",
         title: "Edit",
         value: "edit",
-        iconPosition: "right",
-        variant: "base"
+        variant: "base",
+        stretch: true
       }
     },
     {
+      label: "Parent",
+      fieldName: "ParentObject__c",
+      sortable: true
+    },
+    {
       label: "Child",
-      fieldName: "ChildObject__c"
+      fieldName: "ChildObject__c",
+      sortable: true
     },
     {
       label: "Field To Aggregate",
-      fieldName: "FieldToAggregate__c"
+      fieldName: "FieldToAggregate__c",
+      sortable: true
     },
     {
-      label: "Relationship Field",
-      fieldName: "RelationshipField__c"
-    },
-    {
-      label: "Parent",
-      fieldName: "ParentObject__c"
+      label: "Aggregate Result Field",
+      fieldName: "AggregateResultField__c",
+      sortable: true
     },
     {
       label: "Operation",
-      fieldName: "AggregateOperation__c"
+      fieldName: "AggregateOperation__c",
+      sortable: true
     },
     {
       label: "Mode",
-      fieldName: "CalculationMode__c"
+      fieldName: "CalculationMode__c",
+      sortable: true
     },
     {
       label: "Active",
       fieldName: "Active__c",
-      type: "boolean"
+      initialWidth: 75,
+      type: "boolean",
+      sortable: true
     },
     {
       type: "button-icon",
+      initialWidth: 50,
       typeAttributes: {
         name: "rollup_delete",
         iconName: "action:delete",
@@ -72,6 +83,9 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   @wire(CurrentPageReference)
   pageRef;
+
+  sortByField = "Active__c";
+  sortDirection = "desc";
 
   // We only want events for which we've been assigned as the recipient
   channelName = `/event/UserNotification__e?Recipient__c='${USER_ID.substring(
@@ -105,13 +119,36 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       for (const c of this.dtColumns) {
         if (
           r[c.fieldName] &&
-          "" + r[c.fieldName].toLowerCase().indexOf(this.searchFilter) >= 0
+          ("" + r[c.fieldName]).toLowerCase().indexOf(this.searchFilter) >= 0
         ) {
           return true;
         }
       }
       // didn't match any of the displayed fields
       return false;
+    });
+    this.rollupList.sort((a, b) => {
+      const dirModifier = this.sortDirection === "asc" ? 1 : -1;
+      const aVal = a[this.sortByField];
+      const bVal = b[this.sortByField];
+      let res = 0;
+      if (typeof aVal === "boolean") {
+        if (aVal) {
+          // pull up
+          res = 1;
+        }
+        if (bVal) {
+          // pull down
+          res = res - 1;
+        }
+      } else {
+        res = aVal.localeCompare(bVal);
+      }
+      if (res === 0) {
+        return a.Label.localeCompare(b.Label) * dirModifier;
+      }
+
+      return res * dirModifier;
     });
   }
 
@@ -191,6 +228,14 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   handleRequestDelete(event) {
     this.requestDelete(event.detail.rollupName);
+  }
+
+  handleOnSort(event) {
+    // The method onsort event handler
+    this.sortByField = event.detail.fieldName;
+    this.sortDirection = event.detail.sortDirection;
+    // assign the latest attribute with the sorted column fieldName and sorted direction
+    this.calcRollupList();
   }
 
   disconnectedCallback() {

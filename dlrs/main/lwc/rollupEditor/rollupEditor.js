@@ -21,62 +21,39 @@ const DEFAULT_ROLLUP_VALUES = Object.freeze({
   CalculationSharingMode__c: "System"
 });
 
-const STEP_TEMPLATES = Object.freeze({
-  default: [
-    {
-      label: "Configure",
-      name: "save",
-      nextActionLabel: "Save",
-      status: PATH_STATES.current
-    },
-    { label: "...", status: PATH_STATES.incomplete }
-  ],
-  Realtime: [
-    {
-      label: "Configure",
-      name: "save",
-      nextActionLabel: "Save",
-      status: PATH_STATES.complete
-    },
-    {
-      label: "Deploy Trigger",
-      name: "deployTrigger",
-      nextActionLabel: "Manage Triggers",
-      status: PATH_STATES.incomplete
-    },
-    { label: "Activate", name: "activate", status: PATH_STATES.incomplete }
-  ],
-  Scheduled: [
-    {
-      label: "Configure",
-      name: "save",
-      nextActionLabel: "Save",
-      status: PATH_STATES.complete
-    },
-    {
-      label: "Schedule Job",
-      name: "scheduleJob",
-      nextActionLabel: "Schedule",
-      status: PATH_STATES.incomplete
-    },
-    {
-      label: "Deploy Trigger",
-      name: "deployTrigger",
-      nextActionLabel: "Manage Triggers",
-      status: PATH_STATES.incomplete
-    },
-    { label: "Activate", name: "activate", status: PATH_STATES.incomplete }
-  ],
-  other: [
-    {
-      label: "Configure",
-      name: "save",
-      nextActionLabel: "Save",
-      status: PATH_STATES.complete
-    },
-    { label: "Activate", name: "activate", status: PATH_STATES.incomplete }
-  ]
+const STEPS = Object.freeze({
+  configure: {
+    label: "Configure",
+    name: "save",
+    nextActionLabel: "Save",
+    status: PATH_STATES.complete
+  },
+  schedule: {
+    label: "Schedule Job",
+    name: "scheduleJob",
+    nextActionLabel: "Schedule",
+    status: PATH_STATES.incomplete
+  },
+  trigger: {
+    label: "Deploy Trigger",
+    name: "deployTrigger",
+    nextActionLabel: "Manage Triggers",
+    status: PATH_STATES.incomplete
+  },
+  activate: {
+    label: "Activate",
+    name: "activate",
+    nextActionLabel: "Save & Activate",
+    status: PATH_STATES.incomplete
+  }
 });
+
+const STEP_TEMPLATES = Object.freeze({
+  Realtime: [STEPS.configure, STEPS.trigger, STEPS.activate],
+  Scheduled: [STEPS.configure, STEPS.schedule, STEPS.trigger, STEPS.activate],
+  other: [STEPS.configure, STEPS.activate]
+});
+
 export default class RollupEditor extends LightningModal {
   isLoading = false;
   childTriggerIsDeployed = false;
@@ -197,14 +174,6 @@ export default class RollupEditor extends LightningModal {
 
   async configureSteps() {
     const newSteps = [];
-    if (!this.rollup?.Id) {
-      for (let s of STEP_TEMPLATES.default) {
-        newSteps.push(s);
-      }
-      this.steps = newSteps;
-      return;
-    }
-
     this.childTriggerIsDeployed = await hasChildTriggerDeployed({
       lookupID: this.rollup.Id
     });
@@ -229,10 +198,15 @@ export default class RollupEditor extends LightningModal {
       newSteps.push(s);
     }
 
-    // TODO: mark first incomplete as current
-    // TODO: reorder to all complete are on left
+    // mark first incomplete as current
+    const firstIncomplete = newSteps.find(
+      (s) => s.status === PATH_STATES.incomplete
+    );
+    if (firstIncomplete) {
+      firstIncomplete.status = PATH_STATES.current;
+    }
+
     this.steps = newSteps;
-    console.log("New Steps", JSON.stringify(this.steps));
   }
 
   async getChildRelationshipFieldOptions() {
