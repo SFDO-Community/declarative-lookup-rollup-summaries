@@ -169,7 +169,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   async openEditor(rollupName) {
     const result = await RollupEditor.open({
-      size: "large",
       description: "Rollup Config Editor",
       rollupName
     });
