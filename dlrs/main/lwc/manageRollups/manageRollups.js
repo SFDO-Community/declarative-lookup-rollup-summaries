@@ -53,12 +53,12 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       sortable: true
     },
     {
-      label: "Operation",
+      label: "Rollup Type",
       fieldName: "AggregateOperation__c",
       sortable: true
     },
     {
-      label: "Mode",
+      label: "Calc Mode",
       fieldName: "CalculationMode__c",
       sortable: true
     },
