@@ -7,6 +7,7 @@ import getAllRollupConfigs from "@salesforce/apex/RollupEditorController.getAllR
 import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
 import USER_ID from "@salesforce/user/Id";
 import RollupEditor from "c/rollupEditor";
+import ClassSchedulerModal from "c/classSchedulerModal";
 
 import {
   subscribe,
@@ -108,6 +109,10 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   async refreshRollups() {
     this.rollups = await getAllRollupConfigs();
+    if (Object.values(this.rollups).length === 0) {
+      // no rollups in the database, start to create a new one
+      this.openEditor(null);
+    }
     this.calcRollupList();
   }
 
@@ -150,6 +155,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
       return res * dirModifier;
     });
+    // TODO: apply re-labeling
   }
 
   rollupSelectHandler(event) {
@@ -216,6 +222,15 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   runCreateNew() {
     this.openEditor(null);
+  }
+
+  async manageRollupJobSchedule() {
+    await ClassSchedulerModal.open({
+      label: "Schedule Rollup Job",
+      description: "Scheduled RollupJob to process Scheduled Items",
+      className: "RollupJob",
+      size: "small"
+    });
   }
 
   handleInputChange() {

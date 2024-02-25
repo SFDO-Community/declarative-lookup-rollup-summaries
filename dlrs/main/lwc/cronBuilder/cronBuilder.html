@@ -1,0 +1,139 @@
+<template>
+  <p>
+    Build a schedule that will run the process each time the clock matches the
+    selected time(s). Use one of the available templates to get started or use
+    Custom for the most flexibility.
+  </p>
+  <lightning-tabset heading-label="Select Template" heading-visible>
+    <lightning-tab
+      label="Every Hour"
+      value="hourly"
+      onactive={handeTabActivate}
+    >
+      <lightning-layout multiple-rows>
+        <lightning-layout-item size="12" medium-device-size="6">
+          <lightning-dual-listbox
+            name="minutes"
+            label="On Minutes"
+            source-label="Available"
+            selected-label="Selected"
+            field-level-help="Select which minutes of the hour the job should be allowed to start"
+            options={minutesOfHourOptions}
+            value={selectedMinutesOfDay}
+            onchange={handleSelectedMinutesOfDayChange}
+          ></lightning-dual-listbox>
+        </lightning-layout-item>
+      </lightning-layout>
+    </lightning-tab>
+    <lightning-tab label="Every Day" value="daily" onactive={handeTabActivate}>
+      <lightning-layout multiple-rows>
+        <lightning-layout-item size="12" medium-device-size="6">
+          <lightning-dual-listbox
+            name="hours"
+            label="Chosen Hours"
+            source-label="Available"
+            selected-label="Selected"
+            field-level-help="Select which hours of the day the job should be allowed to start"
+            options={hoursOfDayOptions}
+            value={selectedHoursOfDay}
+            onchange={handleSelectedHoursOfDayChange}
+          ></lightning-dual-listbox>
+        </lightning-layout-item>
+
+        <lightning-layout-item size="12" medium-device-size="6">
+          <lightning-dual-listbox
+            name="minutes"
+            label="Chosen Minutes"
+            source-label="Available"
+            selected-label="Selected"
+            field-level-help="Select which minutes of the hour the job should be allowed to start"
+            options={minutesOfHourOptions}
+            value={selectedMinutesOfDay}
+            onchange={handleSelectedMinutesOfDayChange}
+          ></lightning-dual-listbox>
+        </lightning-layout-item>
+      </lightning-layout>
+    </lightning-tab>
+    <lightning-tab label="Custom" value="custom" onactive={handeTabActivate}>
+      <lightning-layout multiple-rows>
+        <lightning-layout-item size="12" medium-device-size="6">
+        </lightning-layout-item>
+        <lightning-layout-item size="12" medium-device-size="6">
+          <lightning-input
+            type="toggle"
+            label="Use Week Days"
+            name="dateType"
+            checked={isWeekDayType}
+            onchange={handleDaysTypeChange}
+            field-level-help="Allows Days of Month or Days of Week"
+            message-toggle-inactive="Days of the Month"
+            message-toggle-active="Days of the Week"
+          ></lightning-input>
+        </lightning-layout-item>
+        <lightning-layout-item size="12" medium-device-size="6">
+          <lightning-dual-listbox
+            name="months"
+            label="Choose Months"
+            source-label="Available"
+            selected-label="Selected"
+            field-level-help="Chose which month the job is allowed to start"
+            options={monthOptions}
+            value={selectedMonths}
+            onchange={handleSelectedMonthChange}
+          ></lightning-dual-listbox>
+        </lightning-layout-item>
+        <lightning-layout-item size="12" medium-device-size="6">
+          <lightning-dual-listbox
+            name="daysofweek"
+            label="Chosen Days of the Week"
+            source-label="Available"
+            selected-label="Selected"
+            field-level-help="Mutually exclusive with Days of Month, chose which days of the week the job is allowed to start"
+            options={daysOfWeekOptions}
+            value={selectedDaysOfWeek}
+            onchange={handleSelectedDaysOfWeekChange}
+            lwc:if={isWeekDayType}
+          ></lightning-dual-listbox>
+          <lightning-dual-listbox
+            name="daysofmonth"
+            label="Chosen Days of the Month"
+            source-label="Available"
+            selected-label="Selected"
+            field-level-help="Mutually exclusive with Days of Week, chose which days of the month the job is allowed to start"
+            options={daysOfMonthOptions}
+            value={selectedDaysOfMonth}
+            onchange={handleSelectedDaysOfWeekChange}
+            lwc:else
+          ></lightning-dual-listbox>
+        </lightning-layout-item>
+      </lightning-layout>
+      <lightning-layout multiple-rows>
+        <lightning-layout-item size="12" medium-device-size="6">
+          <lightning-dual-listbox
+            name="hours"
+            label="Chosen Hours"
+            source-label="Available"
+            selected-label="Selected"
+            field-level-help="Select which hours of the day the job should be allowed to start"
+            options={hoursOfDayOptions}
+            value={selectedHoursOfDay}
+            onchange={handleSelectedHoursOfDayChange}
+          ></lightning-dual-listbox>
+        </lightning-layout-item>
+
+        <lightning-layout-item size="12" medium-device-size="6">
+          <lightning-dual-listbox
+            name="minutes"
+            label="Chosen Minutes"
+            source-label="Available"
+            selected-label="Selected"
+            field-level-help="Select which minutes of the hour the job should be allowed to start"
+            options={minutesOfHourOptions}
+            value={selectedMinutesOfDay}
+            onchange={handleSelectedMinutesOfDayChange}
+          ></lightning-dual-listbox>
+        </lightning-layout-item>
+      </lightning-layout>
+    </lightning-tab>
+  </lightning-tabset>
+</template>
