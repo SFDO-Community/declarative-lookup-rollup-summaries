@@ -3,10 +3,16 @@
     <lightning-layout-item size="12" padding="around-small">
       <lightning-card title="Rollups">
         <div slot="actions">
-          <lightning-button
-            label="New"
-            onclick={runCreateNew}
-          ></lightning-button>
+          <lightning-button-group>
+            <lightning-button
+              label="New"
+              onclick={runCreateNew}
+            ></lightning-button>
+            <lightning-button
+              label="Manage Rollup Job"
+              onclick={manageRollupJobSchedule}
+            ></lightning-button>
+          </lightning-button-group>
         </div>
         <div class="slds-card__body slds-card__body_inner">
           <lightning-layout>

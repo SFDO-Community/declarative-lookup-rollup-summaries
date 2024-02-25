@@ -153,14 +153,8 @@ public with sharing class LookupRollupStatusCheckController {
    */
   @AuraEnabled(Cacheable=true)
   public static Integer getScheduledJobs() {
-    // Check if RollupJob is scheduled
-    return [
-      SELECT COUNT()
-      FROM AsyncApexJob
-      WHERE
-        JobType = 'ScheduledApex'
-        AND status = 'Queued'
-        AND ApexClass.name LIKE '%RollupJob%'
-    ];
+    return new AsyncApexJobsSelector()
+      .getScheduledInstancesOfType(RollupJob.class)
+      .size();
   }
 }

@@ -1,0 +1,68 @@
+<template>
+  <lightning-modal-header label={label}></lightning-modal-header>
+  <lightning-modal-body>
+    <lightning-layout multiple-rows>
+      <lightning-layout-item size="12">
+        <c-cron-builder
+          values={cronStrings}
+          oncronupdate={handleOnCronUpdate}
+        ></c-cron-builder>
+      </lightning-layout-item>
+      <lightning-layout-item size="12">
+        <p>
+          Total Scheduled Jobs in the Org
+          ({scheduledJobCount}/{totalAllowedScheduledJobs})
+        </p>
+        <lightning-progress-bar
+          aria-label="Used Scheduled Jobs"
+          value={scheduledJobCount}
+        ></lightning-progress-bar>
+      </lightning-layout-item>
+      <lightning-layout-item size="12">
+        <lightning-layout multiple-rows>
+          <lightning-layout-item size="12">
+            Existing Schedules of {className}
+          </lightning-layout-item>
+          <template for:each={currentSchedule} for:item="sched">
+            <lightning-layout-item key={sched.Id} size="12">
+              <lightning-layout>
+                <lightning-layout-item flexibility="grow">
+                  {sched.CronTrigger.CronExpression}
+                </lightning-layout-item>
+                <lightning-layout-item>
+                  <lightning-button-icon
+                    icon-name="utility:delete"
+                    data-jobid={sched.CronTrigger.Id}
+                    onclick={handleCancelJob}
+                  ></lightning-button-icon>
+                </lightning-layout-item>
+              </lightning-layout>
+            </lightning-layout-item>
+          </template>
+        </lightning-layout>
+      </lightning-layout-item>
+      <lightning-layout-item size="12">
+        <div>Planned New Scheduled Items</div>
+        <template for:each={cronStrings} for:item="cron">
+          <div key={cron}>{cron}</div>
+        </template>
+      </lightning-layout-item>
+    </lightning-layout>
+  </lightning-modal-body>
+  <lightning-modal-footer>
+    <lightning-layout horizontal-align="center">
+      <lightning-layout-item padding="horizontal-small">
+        <lightning-button
+          label="Cancel"
+          onclick={handleCancel}
+        ></lightning-button>
+      </lightning-layout-item>
+      <lightning-layout-item padding="horizontal-small">
+        <lightning-button
+          label="Schedule"
+          onclick={handleSchedule}
+        ></lightning-button>
+      </lightning-layout-item>
+    </lightning-layout>
+  </lightning-modal-footer>
+</template>

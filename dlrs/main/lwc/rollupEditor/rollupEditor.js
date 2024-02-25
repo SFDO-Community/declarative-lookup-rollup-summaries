@@ -14,6 +14,7 @@ import getScheduleCalculatePageUrl from "@salesforce/apex/RollupEditorController
 import hasChildTriggerDeployed from "@salesforce/apex/LookupRollupStatusCheckController.hasChildTriggerDeployed";
 import getScheduledJobs from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledJobs";
 import getOutstandingScheduledItemsForLookup from "@salesforce/apex/LookupRollupStatusCheckController.getOutstandingScheduledItemsForLookup";
+import ClassSchedulerModal from "c/classSchedulerModal";
 
 const DEFAULT_ROLLUP_VALUES = Object.freeze({
   Active__c: false,
@@ -58,9 +59,6 @@ export default class RollupEditor extends LightningModal {
   isLoading = false;
   childTriggerIsDeployed = false;
   rollupId;
-
-  @wire(getScheduledJobs)
-  scheduledJobCount;
 
   @wire(getOutstandingScheduledItemsForLookup, { lookupID: "$rollupId" })
   outstandingScheduledItems;
@@ -174,6 +172,7 @@ export default class RollupEditor extends LightningModal {
 
   async configureSteps() {
     const newSteps = [];
+    const scheduledJobCount = await getScheduledJobs();
     this.childTriggerIsDeployed = await hasChildTriggerDeployed({
       lookupID: this.rollup.Id
     });
@@ -186,9 +185,7 @@ export default class RollupEditor extends LightningModal {
       }
       if (s.name === "scheduleJob") {
         s.status =
-          this.scheduledJobCount.data > 0
-            ? PATH_STATES.complete
-            : PATH_STATES.incomplete;
+          scheduledJobCount > 0 ? PATH_STATES.complete : PATH_STATES.incomplete;
       }
       if (s.name === "activate") {
         s.status = this.rollup.Active__c
@@ -252,7 +249,7 @@ export default class RollupEditor extends LightningModal {
     this.rollup.AggregateOperation__c = event.detail.value;
   }
 
-  pathClickHandler(event) {
+  async pathClickHandler(event) {
     console.log("Path clicked", event.detail.label);
     switch (event.detail.name) {
       case "deployTrigger":
@@ -262,7 +259,14 @@ export default class RollupEditor extends LightningModal {
         this.activateClickHandler();
         break;
       case "scheduleJob":
-        console.error("Job Schedule UI not implemented");
+        await ClassSchedulerModal.open({
+          label: "Schedule Rollup Job",
+          description: "Scheduled RollupJob to process Scheduled Items",
+          className: "RollupJob",
+          size: "small"
+        });
+        // recalculate Path after Schedule is created
+        this.configureSteps();
         break;
       case "save":
         this.runSave();
@@ -433,7 +437,7 @@ export default class RollupEditor extends LightningModal {
 
   get calculationModes() {
     return [
-      { label: "Queued Job", value: "Scheduled" },
+      { label: "Watch for Changes and Process Later", value: "Scheduled" },
       { label: "Realtime", value: "Realtime" },
       { label: "Invocable by Automation", value: "Process Builder" },
       { label: "Developer", value: "Developer" }
