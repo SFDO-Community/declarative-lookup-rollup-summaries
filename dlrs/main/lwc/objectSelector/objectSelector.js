@@ -59,9 +59,9 @@ export default class ObjectSelector extends LightningElement {
           t[v.result.apiName] = v.result?.themeInfo;
           return t;
         }, {});
-      this.objects.forEach((o) => {
+      this.objects = this.objects.map((o) => {
         if (!objectIconCache[o.fullName]?.iconUrl) {
-          return;
+          return o;
         }
         o.iconUrl = objectIconCache[o.fullName].iconUrl;
         o.iconColor = `#${objectIconCache[o.fullName].color}`;
@@ -74,6 +74,7 @@ export default class ObjectSelector extends LightningElement {
             o.iconName = `${matches[1]}:${matches[2]}`;
           }
         }
+        return o;
       });
     }
   }
