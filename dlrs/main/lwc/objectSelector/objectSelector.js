@@ -22,18 +22,9 @@ export default class ObjectSelector extends LightningElement {
   searchRequired = true;
   maxSearchResults = 5;
   objectApiNames = [];
-  objectIconCache;
-  lstResult = []; // to store list of returned records
-  searchKey = ""; // to store input field value
-  isSearchLoading = false; // to control loading spinner
-  delayTimeout;
   selectedRecord = "";
-  selectedRecordIconName;
   objects = [];
-  preventBlur = false;
   connectedCallback() {
-    this.selectedRecordIconName = this.iconName;
-    this.isSearchLoading = true;
     //GET LIST OF ALL OBJECTS
     getAllObjects()
       .then((objects) => {
@@ -51,9 +42,6 @@ export default class ObjectSelector extends LightningElement {
         this.error = error;
         this.objects = {};
       })
-      .finally(() => {
-        this.isSearchLoading = false;
-      });
   }
 
   // use the UI API to determine the iconName for each object
@@ -84,10 +72,6 @@ export default class ObjectSelector extends LightningElement {
           const matches = iconNameRegEx.exec(o.iconUrl);
           if (matches) {
             o.iconName = `${matches[1]}:${matches[2]}`;
-            // We just got a new icon for the selected image!
-            if (o.fullName === this._currentSelection) {
-              this.selectedRecordIconName = o.iconName;
-            }
           }
         }
       });
@@ -110,7 +94,7 @@ export default class ObjectSelector extends LightningElement {
 
   // method to update selected record from search result
   handleSelectedRecord(event) {
-    const selectedName = event.detail.selectedOption.value; // event.target.getAttribute("data-objname"); // get selected record Idrd from list
+    const selectedName = event.detail.selectedOption.value; // get selected record Id from list
     this.selectObject(selectedName);
     this.lookupUpdatehandler(selectedName); // update value on parent component as well from helper function
   }
@@ -125,7 +109,6 @@ export default class ObjectSelector extends LightningElement {
     }
     const obj = this.objects.find((o) => o.fullName === val);
     this.selectedRecord = obj.fullName;
-    this.selectedRecordIconName = obj.iconName;
   }
 
   // send selected lookup record to parent component using custom event
