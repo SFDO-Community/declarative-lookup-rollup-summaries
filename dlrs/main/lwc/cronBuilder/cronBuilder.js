@@ -1,10 +1,40 @@
-import { LightningElement } from "lwc";
+import { LightningElement, api } from "lwc";
+
+const DAY_TYPE = {
+  daysOfMonth: "daysOfMonth",
+  daysOfWeek: "daysOfWeek"
+};
 
 export default class CronBuilder extends LightningElement {
-  isWeekDayType = true;
+  selectedTemplate = "";
 
-  monthOptions = [
-    { label: "Every*", value: "*" },
+  enabledSelectors = [];
+
+  _templates;
+  @api
+  set templates(val) {
+    this._templates = val;
+    this.selectedTemplate = val[0].value;
+  }
+  get templates() {
+    return this._templates;
+  }
+
+  dayTypes = [
+    { label: "Month", value: DAY_TYPE.daysOfMonth },
+    { label: "Week", value: DAY_TYPE.daysOfWeek }
+  ];
+
+  dayType = DAY_TYPE.daysOfMonth;
+
+  monthCols = [
+    {
+      label: "Month",
+      fieldName: "label"
+    }
+  ];
+
+  months = [
     { label: "January", value: "JAN" },
     { label: "February", value: "FEB" },
     { label: "March", value: "MAR" },
@@ -18,21 +48,28 @@ export default class CronBuilder extends LightningElement {
     { label: "November", value: "NOV" },
     { label: "December", value: "DEC" }
   ];
+  allMonths = this.months.map((v) => v.value);
+
+  dayCols = [
+    {
+      label: "Day",
+      fieldName: "label"
+    }
+  ];
 
   // intentionally limited to 28
   // >28 might not run every month (like Feb)
   // need more control? use advanced mode
-  daysOfMonthOptions = [
-    { label: "Every*", value: "*" },
-    { label: "1", value: "01" },
-    { label: "2", value: "02" },
-    { label: "3", value: "03" },
-    { label: "4", value: "04" },
-    { label: "5", value: "05" },
-    { label: "6", value: "06" },
-    { label: "7", value: "07" },
-    { label: "8", value: "08" },
-    { label: "9", value: "09" },
+  days = [
+    { label: "1", value: "1" },
+    { label: "2", value: "2" },
+    { label: "3", value: "3" },
+    { label: "4", value: "4" },
+    { label: "5", value: "5" },
+    { label: "6", value: "6" },
+    { label: "7", value: "7" },
+    { label: "8", value: "8" },
+    { label: "9", value: "9" },
     { label: "10", value: "10" },
     { label: "11", value: "11" },
     { label: "12", value: "12" },
@@ -54,9 +91,9 @@ export default class CronBuilder extends LightningElement {
     { label: "28", value: "28" },
     { label: "Last day of month", value: "L" }
   ];
+  allDays = this.days.map((v) => v.value);
 
-  daysOfWeekOptions = [
-    { label: "Every*", value: "*" },
+  weekdays = [
     { label: "Sunday", value: "SUN" },
     { label: "Monday", value: "MON" },
     { label: "Tuesday", value: "TUE" },
@@ -65,19 +102,26 @@ export default class CronBuilder extends LightningElement {
     { label: "Friday", value: "FRI" },
     { label: "Saturday", value: "SAT" }
   ];
+  allWeekdays = this.weekdays.map((v) => v.value);
 
-  hoursOfDayOptions = [
-    { label: "Every*", value: "*" },
-    { label: "Midnight", value: "00" },
-    { label: "1 AM", value: "01" },
-    { label: "2 AM", value: "02" },
-    { label: "3 AM", value: "03" },
-    { label: "4 AM", value: "04" },
-    { label: "5 AM", value: "05" },
-    { label: "6 AM", value: "06" },
-    { label: "7 AM", value: "07" },
-    { label: "8 AM", value: "08" },
-    { label: "9 AM", value: "09" },
+  hourCols = [
+    {
+      label: "Hour",
+      fieldName: "label"
+    }
+  ];
+
+  hours = [
+    { label: "12 Midnight", value: "0" },
+    { label: "1 AM", value: "1" },
+    { label: "2 AM", value: "2" },
+    { label: "3 AM", value: "3" },
+    { label: "4 AM", value: "4" },
+    { label: "5 AM", value: "5" },
+    { label: "6 AM", value: "6" },
+    { label: "7 AM", value: "7" },
+    { label: "8 AM", value: "8" },
+    { label: "9 AM", value: "9" },
     { label: "10 AM", value: "10" },
     { label: "11 AM", value: "11" },
     { label: "12 Noon", value: "12" },
@@ -93,12 +137,19 @@ export default class CronBuilder extends LightningElement {
     { label: "10 PM", value: "22" },
     { label: "11 PM", value: "23" }
   ];
+  allHours = this.hours.map((v) => v.value);
 
+  minuteCols = [
+    {
+      label: "Minute",
+      fieldName: "label"
+    }
+  ];
   // trying to keep it simple, only 5-min granularity
   // possibly make it configurable later
-  minutesOfHourOptions = [
-    { label: "00", value: "00" },
-    { label: "05", value: "05" },
+  minutes = [
+    { label: "00", value: "0" },
+    { label: "05", value: "5" },
     { label: "10", value: "10" },
     { label: "15", value: "15" },
     { label: "20", value: "20" },
@@ -110,19 +161,17 @@ export default class CronBuilder extends LightningElement {
     { label: "50", value: "50" },
     { label: "55", value: "55" }
   ];
+  allMinutes = this.minutes.map((v) => v.value);
 
-  selectedMonths = ["*"];
+  selectedMonths = [...this.allMonths];
 
-  selectedDaysOfMonth = ["*"];
+  selectedDays = [...this.allDays];
 
-  selectedDaysOfWeek = ["?"];
+  selectedWeekdays = ["?"];
 
-  selectedHoursOfDay = ["*"];
-  selectedMinutesOfDay = ["00"];
+  selectedHours = [...this.allHours];
+  selectedMinutes = ["0"];
 
-  connectedCallback() {
-    this.publishCronString();
-  }
   /**
    * GETTERS
    */
@@ -130,83 +179,117 @@ export default class CronBuilder extends LightningElement {
     return !this.isEveryMonth;
   }
 
-  get chooseIndividualDaysOfMonth() {
-    return this.daysType === "daysofmonth";
+  get shouldDisplaySingleHourSelector() {
+    return this.enabledSelectors.includes("single-hour");
   }
 
-  get chooseIndividualDaysOfWeek() {
-    return this.daysType === "daysofweek";
+  get shouldDisplaySingleMinuteSelector() {
+    return this.enabledSelectors.includes("single-minute");
+  }
+
+  // get the first selected hour of the day for single-select combo boxes
+  get selectedHourOfDay() {
+    return this.selectedHours[0];
+  }
+
+  get selectedMinuteOfTheHour() {
+    return this.selectedMinutes[0];
+  }
+
+  get isWeekDayType() {
+    return this.dayType === DAY_TYPE.daysOfWeek;
   }
 
   /**
    * HANDLERS
    */
 
+  handleTemplateChange(event) {
+    this.selectedTemplate = event.detail.value;
+    this.processTemplate();
+  }
+
   handeTabActivate(event) {
-    this.selectedMonths =
-      this.selectedDaysOfMonth =
-      this.selectedHoursOfDay =
-        ["*"];
-    this.selectedDaysOfWeek = ["?"];
+    if (event.target.value === "templates") {
+      this.processTemplate();
+      return;
+    }
+    this.selectedMonths = [...this.allMonths];
+    this.selectedDays = [...this.allDays];
+    this.selectedHours = [...this.allHours];
+    this.selectedWeekdays = ["?"];
     if (event.target.value === "daily") {
       // default to early hours of the morning for once-daily template
-      this.selectedHoursOfDay = ["03"];
+      this.selectedHours = ["3"];
     }
     this.publishCronString();
   }
 
-  handleSelectedMonthChange(event) {
-    this.selectedMonths = this.processDualBoxEvery(
-      this.selectedMonths,
-      event.detail.value
-    );
+  handleMonthChange(event) {
+    this.selectedMonths = event.detail.selectedRows.map((r) => r.value);
     this.publishCronString();
   }
 
-  handleDaysTypeChange(event) {
-    this.isWeekDayType = event.detail.checked;
-    if (this.isWeekDayType) {
-      this.selectedDaysOfWeek = ["*"];
-      this.selectedDaysOfMonth = ["?"];
+  handleDayTypeChange(event) {
+    this.dayType = event.detail.value;
+    if (this.dayType === DAY_TYPE.daysOfWeek) {
+      this.selectedWeekdays = [...this.allWeekdays];
+      this.selectedDays = ["?"];
     } else {
-      this.selectedDaysOfWeek = ["?"];
-      this.selectedDaysOfMonth = ["*"];
+      this.selectedWeekdays = ["?"];
+      this.selectedDays = [...this.allDays];
     }
     this.publishCronString();
   }
 
-  handleSelectedDaysOfMonthChange(event) {
-    this.selectedDaysOfMonth = this.processDualBoxEvery(
-      this.selectedDaysOfMonth,
-      event.detail.value
-    );
+  handleDayChange(event) {
+    this.selectedDays = event.detail.selectedRows.map((r) => r.value);
     this.publishCronString();
   }
 
-  handleSelectedDaysOfWeekChange(event) {
-    this.selectedDaysOfWeek = this.processDualBoxEvery(
-      this.selectedDaysOfWeek,
-      event.detail.value
-    );
+  handleWeekdayChange(event) {
+    this.selectedWeekdays = event.detail.selectedRows.map((r) => r.value);
     this.publishCronString();
   }
 
-  handleSelectedHoursOfDayChange(event) {
-    this.selectedHoursOfDay = this.processDualBoxEvery(
-      this.selectedHoursOfDay,
-      event.detail.value
-    );
+  handleHourChange(event) {
+    this.selectedHours = event.detail.selectedRows.map((r) => r.value);
     this.publishCronString();
   }
 
-  handleSelectedMinutesOfDayChange(event) {
-    this.selectedMinutesOfDay = event.detail.value;
+  handleSingleHourChange(event) {
+    this.selectedHours = [event.detail.value];
+    this.publishCronString();
+  }
+
+  handleMinuteChange(event) {
+    this.selectedMinutes = event.detail.selectedRows.map((r) => r.value);
+    this.publishCronString();
+  }
+
+  handleSingleMinuteChange(event) {
+    this.selectedMinutes = [event.detail.value];
     this.publishCronString();
   }
 
   /**
    * LOGIC
    */
+
+  processTemplate() {
+    const selectedTemplate = this.templates.find(
+      (t) => t.value === this.selectedTemplate
+    );
+    // can enable/disable various selected
+    this.enabledSelectors = selectedTemplate.selectors ?? [];
+    // take presets from the provided template
+    this.selectedMinutes = selectedTemplate?.presets?.minutes ?? ["0"];
+    this.selectedHours = selectedTemplate?.presets?.hours ?? this.allHours;
+    this.selectedDays = selectedTemplate?.presets?.days ?? this.allDays;
+    this.selectedWeekdays = selectedTemplate?.presets?.weekdays ?? ["?"];
+    this.selectedMonths = selectedTemplate?.presets?.months ?? this.allMonths;
+    this.publishCronString();
+  }
 
   publishCronString() {
     // emit custom event
@@ -220,42 +303,34 @@ export default class CronBuilder extends LightningElement {
   }
 
   buildCronStrings() {
-    // TODO: handle advanced mode
-
     // for minute input, each variation requires a differen Cron String
-    // all others can be common
-    // build strings for each section except min & hour
+    // all others can have multiple values
+    const months =
+      this.selectedMonths.length === this.allMonths.length
+        ? "*"
+        : this.selectedMonths.join(",");
+    const daysOfMonth =
+      this.selectedDays.length === this.allDays.length
+        ? "*"
+        : this.selectedDays.join(",");
+    const daysOfWeek =
+      this.selectedWeekdays.length === this.allWeekdays.length
+        ? "*"
+        : this.selectedWeekdays.join(",");
+    const hours =
+      this.selectedHours.length === this.allHours.length
+        ? "*"
+        : this.selectedHours.join(",");
     const seconds = "0";
-    const daysOfMonth = this.selectedDaysOfMonth.join(",");
-    const months = this.selectedMonths.join(",");
-    const daysOfWeek = this.selectedDaysOfWeek.join(",");
-    const hours = this.selectedHoursOfDay.join(",");
     // TODO: error guards
     const crons = [];
     // for every minute
-    for (let min of this.selectedMinutesOfDay) {
+    for (let min of this.selectedMinutes) {
       crons.push(
         `${seconds} ${min} ${hours} ${daysOfMonth} ${months} ${daysOfWeek}`
       );
     }
     console.log("Calculated Cron strings", JSON.stringify(crons));
     return crons;
-  }
-
-  processDualBoxEvery(oldValues, newValues) {
-    newValues.sort();
-    // used to have Every by itself, now added something
-    if (oldValues.includes("*") && newValues.length > 1) {
-      // filter out "Every"
-      return newValues.filter((v) => v !== "*");
-    }
-    // Every is new, remove everything else
-    if (newValues.includes("*")) {
-      return ["*"];
-    }
-    if (newValues.length === 0) {
-      return ["*"];
-    }
-    return newValues;
   }
 }
