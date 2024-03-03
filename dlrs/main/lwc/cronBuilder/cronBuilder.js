@@ -21,16 +21,18 @@ export default class CronBuilder extends LightningElement {
   }
 
   dayTypes = [
-    { label: "Month", value: DAY_TYPE.daysOfMonth },
-    { label: "Week", value: DAY_TYPE.daysOfWeek }
+    { label: "Days of the Month", value: DAY_TYPE.daysOfMonth },
+    { label: "Days of the Week", value: DAY_TYPE.daysOfWeek }
   ];
 
   dayType = DAY_TYPE.daysOfMonth;
 
-  monthCols = [
+  columns = [
     {
-      label: "Month",
-      fieldName: "label"
+      label: "All",
+      fieldName: "label",
+      wrapText: true,
+      hideDefaultActions: true
     }
   ];
 
