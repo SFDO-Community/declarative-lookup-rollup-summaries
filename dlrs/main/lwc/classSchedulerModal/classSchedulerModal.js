@@ -23,6 +23,9 @@ export default class ClassSchedulerModal extends LightningModal {
   @api
   disableHandleSchedule;
 
+  @api
+  templates;
+
   async connectedCallback() {
     this.currentSchedule = await getCurrentJobs({ className: this.className });
     this.scheduledJobCount = (await getTotalScheduledJobs()).length;
@@ -40,6 +43,7 @@ export default class ClassSchedulerModal extends LightningModal {
 
     // refresh current jobs list
     this.currentSchedule = await getCurrentJobs({ className: this.className });
+    this.scheduledJobCount = (await getTotalScheduledJobs()).length;
   }
 
   async handleSchedule() {

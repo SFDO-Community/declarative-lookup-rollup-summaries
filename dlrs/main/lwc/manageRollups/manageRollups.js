@@ -88,11 +88,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   sortByField = "Active__c";
   sortDirection = "desc";
 
-  // We only want events for which we've been assigned as the recipient
-  channelName = `/event/UserNotification__e?Recipient__c='${USER_ID.substring(
-    1,
-    15
-  )}'`;
+  channelName = "/event/UserNotification__e";
   subscription = {};
 
   rollups = {};
@@ -229,7 +225,26 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       label: "Schedule Rollup Job",
       description: "Scheduled RollupJob to process Scheduled Items",
       className: "RollupJob",
-      size: "small"
+      size: "small",
+      templates: [
+        {
+          label: "Once Every Day",
+          value: "daily",
+          selectors: ["single-hour"],
+          presets: { hours: ["3"] }
+        },
+        {
+          label: "Once Every Hour",
+          value: "hourly",
+          selectors: ["single-minute"]
+        },
+        {
+          label: "Every 15 minutes",
+          value: "every15",
+          selectors: [],
+          presets: { minutes: ["0", "15", "30", "45"] }
+        }
+      ]
     });
   }
 

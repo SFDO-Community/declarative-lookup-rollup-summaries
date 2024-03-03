@@ -3,12 +3,6 @@
   <lightning-modal-body>
     <lightning-layout multiple-rows>
       <lightning-layout-item size="12">
-        <c-cron-builder
-          values={cronStrings}
-          oncronupdate={handleOnCronUpdate}
-        ></c-cron-builder>
-      </lightning-layout-item>
-      <lightning-layout-item size="12">
         <p>
           Total Scheduled Jobs in the Org
           ({scheduledJobCount}/{totalAllowedScheduledJobs})
@@ -20,7 +14,7 @@
       </lightning-layout-item>
       <lightning-layout-item size="12">
         <lightning-layout multiple-rows>
-          <lightning-layout-item size="12">
+          <lightning-layout-item size="12" lwc:if={currentSchedule.length}>
             Existing Schedules of {className}
           </lightning-layout-item>
           <template for:each={currentSchedule} for:item="sched">
@@ -40,6 +34,13 @@
             </lightning-layout-item>
           </template>
         </lightning-layout>
+      </lightning-layout-item>
+      <lightning-layout-item size="12">
+        <c-cron-builder
+          values={cronStrings}
+          oncronupdate={handleOnCronUpdate}
+          templates={templates}
+        ></c-cron-builder>
       </lightning-layout-item>
       <lightning-layout-item size="12">
         <div>Planned New Scheduled Items</div>
