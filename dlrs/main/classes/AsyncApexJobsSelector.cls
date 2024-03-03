@@ -91,7 +91,8 @@ public class AsyncApexJobsSelector extends fflib_SObjectSelector {
         new List<String>{
           'ApexClass.Name',
           'CronTrigger.CronJobDetail.Name',
-          'CronTrigger.CronExpression'
+          'CronTrigger.CronExpression',
+          'CronTrigger.NextFireTime'
         }
       )
       .setCondition(
@@ -99,6 +100,10 @@ public class AsyncApexJobsSelector extends fflib_SObjectSelector {
           'JobType = \'ScheduledApex\' AND ' +
           'ApexClass.Name = :className AND ' +
           'ApexClass.NamespacePrefix = :namespace'
+      )
+      .addOrdering(
+        'CronTrigger.NextFireTime',
+        fflib_QueryFactory.SortOrder.ASCENDING
       )
       .toSOQL();
     return Database.query(query);
