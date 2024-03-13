@@ -1,5 +1,7 @@
 import { api } from "lwc";
 import LightningModal from "lightning/modal";
+import dlrs from "@salesforce/resourceUrl/dlrs";
+import { loadScript } from "lightning/platformResourceLoader";
 
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import LightningConfirm from "lightning/confirm";
@@ -14,7 +16,13 @@ export default class ClassSchedulerModal extends LightningModal {
   // async apex jobs
   currentSchedule = [];
   currentColumns = [
-    { label: "Name", fieldName: "name" },
+    {
+      label: "Name",
+      fieldName: "name",
+      initialWidth: 150,
+      wrapText: true,
+      hideDefaultActions: true
+    },
     {
       label: "Next Run At",
       fieldName: "nextRunAt",
@@ -25,9 +33,21 @@ export default class ClassSchedulerModal extends LightningModal {
         hour: "2-digit",
         minute: "2-digit"
       },
-      hideDefaultActions: true
+      hideDefaultActions: true,
+      initialWidth: 150
     },
-    { label: "Cron String", fieldName: "cronString", hideDefaultActions: true },
+    {
+      label: "Frequency",
+      fieldName: "humanReadable",
+      hideDefaultActions: true,
+      wrapText: true
+    },
+    {
+      label: "Cron String",
+      fieldName: "cronString",
+      hideDefaultActions: true,
+      initialWidth: 100
+    },
     {
       type: "action",
       typeAttributes: { rowActions: [{ label: "Delete", name: "delete" }] },
@@ -54,11 +74,32 @@ export default class ClassSchedulerModal extends LightningModal {
   templates;
 
   connectedCallback() {
+    loadScript(this, dlrs + "/js/cronstrue/dist/cronstrue.min.js").then(() => {
+      // your code with calls to the JS library
+      console.log("construe loaded");
+      this.cronStrings.forEach((v) => {
+        v.humanReadable = window.cronstrue.toString(v.cronString, {
+          verbose: true
+        });
+      });
+    });
     this.updateScheduledData();
   }
 
   handleOnCronUpdate(event) {
-    this.cronStrings = event.detail.value;
+    // see if this library is globally loaded yet
+
+    this.cronStrings = event.detail.value.map((v) => ({
+      cronString: v,
+      humanReadable: ""
+    }));
+    if (window.cronstrue) {
+      this.cronStrings.forEach((v) => {
+        v.humanReadable = cronstrue.toString(v.cronString, {
+          verbose: true
+        });
+      });
+    }
   }
 
   handleRowAction(event) {
@@ -91,7 +132,10 @@ export default class ClassSchedulerModal extends LightningModal {
         id: j.CronTrigger.Id,
         name: j.CronTrigger.CronJobDetail.Name,
         nextRunAt: j.CronTrigger.NextFireTime,
-        cronString: j.CronTrigger.CronExpression
+        cronString: j.CronTrigger.CronExpression,
+        humanReadable: cronstrue.toString(j.CronTrigger.CronExpression, {
+          verbose: true
+        })
       }));
       console.log(this.currentSchedule);
     });
@@ -105,7 +149,7 @@ export default class ClassSchedulerModal extends LightningModal {
     try {
       await scheduleJobs({
         className: this.className,
-        newSchedules: this.cronStrings
+        newSchedules: this.cronStrings.map((c) => c.cronString)
       });
       const evt = new ShowToastEvent({
         title: "Succesfully Added Jobs",

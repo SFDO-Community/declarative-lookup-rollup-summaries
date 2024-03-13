@@ -102,5 +102,16 @@
 				<p style="color:gray">DEBUG USE ONLY: {!metadataApiException}</p>
 			</apex:outputPanel>
 		</apex:form>
+		<apex:outputPanel>
+			<div>Special thank you to the open source projects used in DLRS</div>
+			<ul>
+				<li>
+					<a href="https://github.com/gustf/js-levenshtein" target="_blank" rel="noopener noreferrer">https://github.com/gustf/js-levenshtein</a>
+				</li>
+				<li>
+					<a href="https://github.com/bradymholt/cronstrue" target="_blank" rel="noopener noreferrer">https://github.com/bradymholt/cronstrue</a>
+				</li>
+			</ul>
+		</apex:outputPanel>
 	</body>
 </apex:page>

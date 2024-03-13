@@ -1,46 +1,58 @@
 <template>
   <lightning-modal-header label={label}></lightning-modal-header>
   <lightning-modal-body>
-    <lightning-layout multiple-rows>
-      <lightning-layout-item size="12">
-        <div class="slds-section slds-is-open">
-          <h3 class="slds-section__title">
-            Total Scheduled Jobs in the Org
-            ({scheduledJobCount}/{totalAllowedScheduledJobs})
-          </h3>
-          <div class="slds-section__content">
-            <lightning-progress-bar
-              aria-label="Used Scheduled Jobs"
-              value={scheduledJobCount}
-            ></lightning-progress-bar>
-          </div>
-        </div>
-      </lightning-layout-item>
-      <lightning-layout-item size="12">
+    <lightning-accordion
+      allow-multiple-sections-open
+      active-section-name="current"
+    >
+      <lightning-accordion-section
+        name="current"
+        label="Current Scheduled Jobs"
+      >
         <lightning-layout multiple-rows>
-          <lightning-layout-item
-            size="12"
-            lwc:if={currentSchedule.length}
-            class="slds-p-vertical_small"
-          >
+          <lightning-layout-item size="12">
             <div class="slds-section slds-is-open">
               <h3 class="slds-section__title">
-                Existing Schedules of {className}
+                Total Scheduled Jobs in the Org
+                ({scheduledJobCount}/{totalAllowedScheduledJobs})
               </h3>
               <div class="slds-section__content">
-                <lightning-datatable
-                  id="currentscheduledatatable"
-                  data={currentSchedule}
-                  columns={currentColumns}
-                  key-field="Id"
-                  onrowaction={handleRowAction}
-                  hide-checkbox-column
-                ></lightning-datatable>
+                <lightning-progress-bar
+                  aria-label="Used Scheduled Jobs"
+                  value={scheduledJobCount}
+                ></lightning-progress-bar>
               </div>
             </div>
           </lightning-layout-item>
+          <lightning-layout-item size="12">
+            <lightning-layout multiple-rows>
+              <lightning-layout-item
+                size="12"
+                lwc:if={currentSchedule.length}
+                class="slds-p-vertical_small"
+              >
+                <div class="slds-section slds-is-open">
+                  <h3 class="slds-section__title">
+                    Existing Schedules of {className}
+                  </h3>
+                  <div class="slds-section__content">
+                    <lightning-datatable
+                      id="currentscheduledatatable"
+                      data={currentSchedule}
+                      columns={currentColumns}
+                      key-field="Id"
+                      onrowaction={handleRowAction}
+                      hide-checkbox-column
+                    ></lightning-datatable>
+                  </div>
+                </div>
+              </lightning-layout-item>
+            </lightning-layout>
+          </lightning-layout-item>
         </lightning-layout>
-      </lightning-layout-item>
+      </lightning-accordion-section>
+    </lightning-accordion>
+    <lightning-layout multiple-rows>
       <lightning-layout-item size="12" class="slds-p-vertical_medium">
         <c-cron-builder
           values={cronStrings}
@@ -50,13 +62,24 @@
       </lightning-layout-item>
       <lightning-layout-item size="12">
         <div class="slds-section slds-is-open">
-          <h3 class="slds-section__title">New schedule patterns</h3>
+          <h3 class="slds-section__title">New Scheduled Jobs to Add</h3>
           <div class="slds-section__content">
             <lightning-layout>
               <lightning-layout-item flexibility="shrink">
                 <ul class="slds-has-dividers_around-space">
                   <template for:each={cronStrings} for:item="cron">
-                    <li key={cron} class="slds-item">{cron}</li>
+                    <li key={cron} class="slds-item">
+                      <lightning-layout vertical-align="center">
+                        <lightning-layout-item flexibility="grow"
+                          >{cron.humanReadable}</lightning-layout-item
+                        >
+                        <lightning-layout-item padding="around-small"
+                          ><lightning-helptext
+                            content={cron.cronString}
+                          ></lightning-helptext
+                        ></lightning-layout-item>
+                      </lightning-layout>
+                    </li>
                   </template>
                 </ul>
               </lightning-layout-item>
