@@ -12,6 +12,7 @@ import getManageTriggerPageUrl from "@salesforce/apex/RollupEditorController.get
 import getFullCalculatePageUrl from "@salesforce/apex/RollupEditorController.getFullCalculatePageUrl";
 import getScheduleCalculatePageUrl from "@salesforce/apex/RollupEditorController.getScheduleCalculatePageUrl";
 import hasChildTriggerDeployed from "@salesforce/apex/LookupRollupStatusCheckController.hasChildTriggerDeployed";
+import getScheduledFullCalculates from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledFullCalculates";
 import getScheduledJobs from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledJobs";
 import getOutstandingScheduledItemsForLookup from "@salesforce/apex/LookupRollupStatusCheckController.getOutstandingScheduledItemsForLookup";
 import ClassSchedulerModal from "c/classSchedulerModal";
@@ -59,6 +60,7 @@ export default class RollupEditor extends LightningModal {
   isLoading = false;
   childTriggerIsDeployed = false;
   rollupId;
+  nextFullCalculateAt = "";
 
   @wire(getOutstandingScheduledItemsForLookup, { lookupID: "$rollupId" })
   outstandingScheduledItems;
@@ -147,6 +149,10 @@ export default class RollupEditor extends LightningModal {
           rollupName: this.rollupName
         });
         this.rollupId = this.rollup.Id;
+        this.nextFullCalculateAt =
+          (await getScheduledFullCalculates({
+            lookupId: this.rollupId
+          })) ?? "Not Scheduled";
       } catch (error) {
         this.errors.record = [error.message];
       }
@@ -263,7 +269,26 @@ export default class RollupEditor extends LightningModal {
           label: "Schedule Rollup Job",
           description: "Scheduled RollupJob to process Scheduled Items",
           className: "RollupJob",
-          size: "small"
+          size: "small",
+          templates: [
+            {
+              label: "Once Every Day",
+              value: "daily",
+              selectors: ["single-hour"],
+              presets: { hours: ["3"] }
+            },
+            {
+              label: "Once Every Hour",
+              value: "hourly",
+              selectors: ["single-minute"]
+            },
+            {
+              label: "Every 15 minutes",
+              value: "every15",
+              selectors: [],
+              presets: { minutes: ["0", "15", "30", "45"] }
+            }
+          ]
         });
         // recalculate Path after Schedule is created
         this.configureSteps();
