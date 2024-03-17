@@ -101,6 +101,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   rollups = {};
   rollupList = [];
   searchFilter = "";
+  isLoading = true;
   selectedRollup = undefined;
 
   connectedCallback() {
@@ -111,6 +112,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   }
 
   async refreshRollups() {
+    this.isLoading = true;
     this.rollups = await getAllRollupConfigs();
 
     Object.keys(this.rollups).forEach((k) => {
@@ -127,6 +129,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       this.openEditor(null);
     }
     this.calcRollupList();
+    this.isLoading = false;
   }
 
   calcRollupList() {

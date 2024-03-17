@@ -45,6 +45,22 @@ export default class FlexiblePath extends LightningElement {
     );
   }
 
+  handlePathStepClick(event) {
+    const step = this.steps.find(
+      (s) => s.name === event.currentTarget.dataset.step
+    );
+    if (step) {
+      this.dispatchEvent(
+        new CustomEvent("nextactionclick", {
+          detail: {
+            label: step.label,
+            name: step.name
+          }
+        })
+      );
+    }
+  }
+
   handleNextActionClick() {
     const nextAction = this.nextAction;
     this.dispatchEvent(

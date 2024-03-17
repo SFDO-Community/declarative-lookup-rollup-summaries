@@ -75,11 +75,23 @@
               errors={errors.Description__c}
             ></c-rollup-editor-error>
           </lightning-layout-item>
-          <lightning-layout-item size="12">
-            <c-rollup-status-check
-              name={rollup.Id}
-              lwc:if={rollup.Id}
-            ></c-rollup-status-check>
+          <lightning-layout-item
+            size="12"
+            large-device-size="6"
+            lwc:if={rollup.Id}
+          >
+            Outstanding Scheduled Items
+            <lightning-badge
+              label={outstandingScheduledItems.data}
+            ></lightning-badge>
+          </lightning-layout-item>
+          <lightning-layout-item
+            size="12"
+            large-device-size="6"
+            lwc:if={rollup.Id}
+          >
+            Next Full Calculate
+            <lightning-badge label={nextFullCalculateAt}></lightning-badge>
           </lightning-layout-item>
         </lightning-layout>
       </lightning-accordion-section>
