@@ -366,6 +366,7 @@
               placeholder="Select"
               options={calculationModes}
               value={rollup.CalculationMode__c}
+              onchange={calculationModeChangeHandler}
               required
             ></lightning-combobox>
             <c-rollup-editor-error
