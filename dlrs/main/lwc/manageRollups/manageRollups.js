@@ -16,6 +16,13 @@ import {
   isEmpEnabled
 } from "lightning/empApi";
 
+const STATUS_LABELS = {
+  Scheduled: "Watch and Process",
+  Realtime: "Realtime",
+  "Process Builder": "Automatable",
+  Developer: "Developer"
+};
+
 export default class ManageRollups extends NavigationMixin(LightningElement) {
   dtColumns = [
     {
@@ -105,6 +112,16 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   async refreshRollups() {
     this.rollups = await getAllRollupConfigs();
+
+    Object.keys(this.rollups).forEach((k) => {
+      this.rollups[k] = {
+        ...this.rollups[k],
+        CalculationMode__c:
+          STATUS_LABELS[this.rollups[k].CalculationMode__c] ??
+          this.rollups[k].CalculationMode__c
+      };
+    });
+
     if (Object.values(this.rollups).length === 0) {
       // no rollups in the database, start to create a new one
       this.openEditor(null);
