@@ -361,6 +361,11 @@ export default class RollupEditor extends LightningModal {
     }
   }
 
+  calculationModeChangeHandler(event) {
+    this.rollup.CalculationMode__c = event.detail.value;
+    this.configureSteps();
+  }
+
   _makeApiSafe(val) {
     return val.replace(/^([0-9])/, "X$1").replace(/[^0-9a-zA-Z]+/g, "_");
   }
