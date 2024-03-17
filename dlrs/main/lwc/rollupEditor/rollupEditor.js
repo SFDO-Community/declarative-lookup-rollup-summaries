@@ -357,6 +357,7 @@ export default class RollupEditor extends LightningModal {
     const refs = event.detail?.selectedOption?.referencesTo;
     if (refs && refs.length === 1) {
       this.rollup.ParentObject__c = refs[0];
+      this.rollup.AggregateResultField__c = undefined;
       this.getParentRelationshipFieldOptions();
     }
   }
@@ -436,11 +437,16 @@ export default class RollupEditor extends LightningModal {
   childObjectSelected(event) {
     this.rollup.ChildObject__c = event.detail.selectedRecord;
     this.getChildRelationshipFieldOptions();
+    this.rollup.FieldToAggregate__c = undefined;
+    this.rollup.RelationshipField__c = undefined;
+    this.configureSteps();
   }
 
   parentObjectSelected(event) {
     this.rollup.ParentObject__c = event.detail.selectedRecord;
     this.getParentRelationshipFieldOptions();
+    this.rollup.AggregateResultField__c = undefined;
+    this.configureSteps();
   }
 
   get supportsTrigger() {
