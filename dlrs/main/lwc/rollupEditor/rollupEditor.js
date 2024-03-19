@@ -168,9 +168,11 @@ export default class RollupEditor extends LightningModal {
 
   async getParentRelationshipFieldOptions() {
     if (this.rollup.ParentObject__c) {
-      this.parentRFieldOptions = await getFieldOptions({
-        objectName: this.rollup.ParentObject__c
-      });
+      this.parentRFieldOptions = (
+        await getFieldOptions({
+          objectName: this.rollup.ParentObject__c
+        })
+      ).sort((a, b) => a.label.localeCompare(b.label));
     } else {
       this.parentRFieldOptions = [];
     }
@@ -214,9 +216,11 @@ export default class RollupEditor extends LightningModal {
 
   async getChildRelationshipFieldOptions() {
     if (this.rollup.ChildObject__c) {
-      this.childRFieldOptions = await getFieldOptions({
-        objectName: this.rollup.ChildObject__c
-      });
+      this.childRFieldOptions = (
+        await getFieldOptions({
+          objectName: this.rollup.ChildObject__c
+        })
+      ).sort((a, b) => a.label.localeCompare(b.label));
     } else {
       this.childRFieldOptions = [];
     }
