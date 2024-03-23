@@ -1,0 +1,5 @@
+lightning-datatable {
+  max-height: 300px;
+  display: block;
+  overflow-y: auto;
+}

@@ -1,0 +1,18 @@
+<!--
+for : DLRS; Opensource commons
+-->
+<template>
+  <c-autocomplete-combobox
+    label={label}
+    value={selectedRecord}
+    helper-text={helperText}
+    options={objectOptions}
+    placeholder={placeholder}
+    onchangeselection={handleSelectedRecord}
+    disabled={objectsLoading}
+    search-threshold={searchThreshold}
+    search-required={searchRequired}
+    max-search-results={maxSearchResults}
+    no-results-message="Search by Object Label or API Name..."
+  ></c-autocomplete-combobox>
+</template>
