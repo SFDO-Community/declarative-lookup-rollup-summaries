@@ -1,0 +1,143 @@
+<template>
+  <div class="slds-section slds-is-open">
+    <h3 class="slds-section__title">Configure New Job Frequencies</h3>
+    <div class="slds-section__content">
+      <lightning-tabset>
+        <lightning-tab
+          label="Templates"
+          value="templates"
+          onactive={handeTabActivate}
+          lwc:if={templates}
+        >
+          <lightning-layout multiple-rows>
+            <lightning-layout-item size="12" medium-device-size="6">
+              <lightning-combobox
+                label="Template"
+                value={selectedTemplate}
+                options={templates}
+                onchange={handleTemplateChange}
+              ></lightning-combobox>
+
+              <lightning-combobox
+                label="Hour of the day"
+                options={hours}
+                value={selectedHourOfDay}
+                onchange={handleSingleHourChange}
+                lwc:if={shouldDisplaySingleHourSelector}
+              ></lightning-combobox>
+
+              <lightning-combobox
+                label="Minute of the Hour"
+                options={minutes}
+                value={selectedMinuteOfTheHour}
+                onchange={handleSingleMinuteChange}
+                lwc:if={shouldDisplaySingleMinuteSelector}
+              ></lightning-combobox>
+            </lightning-layout-item>
+          </lightning-layout>
+        </lightning-tab>
+        <lightning-tab
+          label="Custom"
+          value="custom"
+          onactive={handeTabActivate}
+        >
+          <lightning-layout multiple-rows horizontal-align="center">
+            <lightning-layout-item size="12">
+              <p>
+                The process will run when the current time matches at least one
+                chosen value from each column
+              </p>
+            </lightning-layout-item>
+            <lightning-layout-item padding="around-small">
+              <lightning-radio-group
+                type="button"
+                options={dayTypes}
+                value={dayType}
+                onchange={handleDayTypeChange}
+              ></lightning-radio-group>
+            </lightning-layout-item>
+          </lightning-layout>
+          <lightning-layout multiple-rows>
+            <lightning-layout-item
+              size="6"
+              medium-device-size="3"
+              padding="around-small"
+            >
+              <label class="slds-form-element__label" for="monthsdatatable"
+                >Months</label
+              >
+              <lightning-datatable
+                id="monthsdatatable"
+                data={months}
+                columns={columns}
+                key-field="value"
+                selected-rows={selectedMonths}
+                onrowselection={handleMonthChange}
+              ></lightning-datatable>
+            </lightning-layout-item>
+            <lightning-layout-item
+              size="6"
+              medium-device-size="3"
+              padding="around-small"
+            >
+              <label class="slds-form-element__label" for="daysdatatable"
+                >Days</label
+              >
+              <lightning-datatable
+                id="daysdatatable"
+                lwc:if={isWeekDayType}
+                data={weekdays}
+                columns={columns}
+                key-field="value"
+                selected-rows={selectedWeekdays}
+                onrowselection={handleWeekdayChange}
+              ></lightning-datatable>
+              <lightning-datatable
+                lwc:else
+                data={days}
+                columns={columns}
+                key-field="value"
+                selected-rows={selectedDays}
+                onrowselection={handleDayChange}
+              ></lightning-datatable>
+            </lightning-layout-item>
+            <lightning-layout-item
+              size="6"
+              medium-device-size="3"
+              padding="around-small"
+            >
+              <label class="slds-form-element__label" for="hoursdatatable"
+                >Hours</label
+              >
+              <lightning-datatable
+                id="hoursdatatable"
+                data={hours}
+                columns={columns}
+                key-field="value"
+                selected-rows={selectedHours}
+                onrowselection={handleHourChange}
+              ></lightning-datatable>
+            </lightning-layout-item>
+            <lightning-layout-item
+              size="6"
+              medium-device-size="3"
+              padding="around-small"
+            >
+              <label class="slds-form-element__label" for="minutesdatatable"
+                >Minutes</label
+              >
+              <lightning-datatable
+                id="minutesdatatable"
+                data={minutes}
+                columns={columns}
+                key-field="value"
+                selected-rows={selectedMinutes}
+                onrowselection={handleMinuteChange}
+              ></lightning-datatable>
+            </lightning-layout-item>
+          </lightning-layout>
+        </lightning-tab>
+      </lightning-tabset>
+    </div>
+  </div>
+</template>
