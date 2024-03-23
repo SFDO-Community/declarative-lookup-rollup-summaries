@@ -1,0 +1,110 @@
+# Macros to reduce duplicate field definitions. All non-reference fields for
+# each object type should be listed here. We don't bother with Account since
+# we just set the Name field.
+
+# Fields to use on all Contacts
+- macro: contact_base
+  fields:
+    Firstname:
+      fake: first_name
+    Lastname:
+      fake: last_name
+
+# Fields to use on Cases
+- macro: case_base
+  fields:
+    Subject: ${{fake.Text(max_nb_chars = 20)}}
+    Description: ${{fake.Paragraph(nb_sentences=5)}}
+
+# Fields to use on Opportunities
+- macro: opp_base
+  fields:
+    Name: ${{fake.Word}} Opportunity
+    Stagename:
+      random_choice:
+        Prospecting: 5%
+        Qualification: 5%
+        Closed Won: 80%
+        Closed Lost: 10%
+    CloseDate:
+      date_between:
+        start_date: -1y
+        end_date: today
+    Amount:
+      random_number:
+        min: 1000
+        max: 10000
+        step: 50
+
+- object: Account
+  count: 1
+  nickname: TopLevelAccount
+  fields:
+    Name:
+      fake: Company
+  friends:
+    - object: Account
+      nickname: ChildAccount
+      fields:
+        Name:
+          fake: Company
+      friends:
+        - object: Contact # Contacts for the child account
+          count: 50
+          include: contact_base
+          fields:
+            AccountId:
+              reference: ChildAccount
+        - object: Case # Case for child Account
+          count: 500
+          include: case_base
+          fields:
+            AccountId:
+              reference: ChildAccount
+            ContactId:
+              random_reference:
+              to: Contact
+              unique: False
+    - object: Contact # Contacts for the top level account.
+      count: 50
+      include: contact_base
+      fields:
+        AccountId:
+          reference: TopLevelAccount
+    - object: Case # Case for Parent Account
+      count: 500
+      include: case_base
+      fields:
+        AccountId:
+          reference: TopLevelAccount
+        ContactId:
+          random_reference:
+          to: Contact
+          unique: False
+    - object: Opportunity
+      count: 500
+      include: opp_base
+      fields:
+        AccountId:
+          reference: TopLevelAccount
+        ContactId:
+          random_reference:
+          to: Contact
+          unique: False
+      friends:
+        - object: OpportunityContactRole
+          count: 2
+          fields:
+            OpportunityId:
+              reference: Opportunity
+            ContactId:
+              random_reference:
+              to: Contact
+              unique: False
+            Role:
+              random_choice:
+                Business User: 20%
+                Decision Maker: 20%
+                Economic Buyer: 20%
+                Economic Decision Maker: 20%
+                Evaluator: 20%
