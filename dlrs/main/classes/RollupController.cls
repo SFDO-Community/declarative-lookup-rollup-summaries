@@ -542,26 +542,20 @@ public with sharing class RollupController {
       ApexPages.addMessage(
         new ApexPages.Message(
           ApexPages.Severity.Info,
-          'Apex Trigger <b>' +
-          RollupTriggerName +
-          '</b> is installed.'
+          'Apex Trigger <b>' + RollupTriggerName + '</b> is installed.'
         )
       );
       ApexPages.addMessage(
         new ApexPages.Message(
           ApexPages.Severity.Info,
-          'Apex Class <b>' +
-          RollupTriggerTestName +
-          '</b> is installed.'
+          'Apex Class <b>' + RollupTriggerTestName + '</b> is installed.'
         )
       );
       if (RollupParentTrigger != null) {
         ApexPages.addMessage(
           new ApexPages.Message(
             ApexPages.Severity.Info,
-            'Apex Trigger <b>' +
-            RollupParentTriggerName +
-            '</b> is installed.'
+            'Apex Trigger <b>' + RollupParentTriggerName + '</b> is installed.'
           )
         );
       }
