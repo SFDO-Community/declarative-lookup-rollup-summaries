@@ -1,0 +1,49 @@
+<template>
+  <lightning-layout pull-to-boundary="small">
+    <lightning-layout-item size="12" padding="around-small">
+      <lightning-card title="Rollups">
+        <div slot="actions">
+          <lightning-button-group>
+            <lightning-button
+              label="New"
+              onclick={runCreateNew}
+            ></lightning-button>
+            <lightning-button
+              label="Manage Rollup Job"
+              onclick={manageRollupJobSchedule}
+            ></lightning-button>
+          </lightning-button-group>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+          <lightning-layout>
+            <lightning-layout-item
+              size="12"
+              medium-device-size="6"
+              large-device-size="3"
+              class="slds-p-bottom_small"
+            >
+              <lightning-input
+                type="search"
+                placeholder="Filter rollups..."
+                value={searchFilter}
+                onchange={handleInputChange}
+              ></lightning-input>
+            </lightning-layout-item>
+          </lightning-layout>
+          <lightning-datatable
+            key-field="DeveloperName"
+            data={rollupList}
+            columns={dtColumns}
+            sorted-by={sortByField}
+            sorted-direction={sortDirection}
+            onrowaction={rollupSelectHandler}
+            hide-checkbox-column
+            onsort={handleOnSort}
+          >
+          </lightning-datatable>
+          <lightning-spinner lwc:if={isLoading}></lightning-spinner>
+        </div>
+      </lightning-card>
+    </lightning-layout-item>
+  </lightning-layout>
+</template>
