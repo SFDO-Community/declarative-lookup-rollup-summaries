@@ -334,8 +334,11 @@ public with sharing class ManageLookupRollupSummariesController {
 
   public PageReference newWizard() {
     try {
+      String namespace = Utilities.namespace();
       PageReference newPage = new PageReference(
-        '/lightning/n/ManageLookupRollupSummaries2'
+        '/lightning/n/' +
+          (namespace.length() > 0 ? namespace + '__' : '') +
+          'ManageLookupRollupSummaries2'
       );
       newPage.setRedirect(true);
       return newPage;
