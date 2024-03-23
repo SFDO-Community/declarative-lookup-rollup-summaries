@@ -31,6 +31,7 @@ public class AsyncApexJobsSelector extends fflib_SObjectSelector {
       AsyncApexJob.Status,
       AsyncApexJob.ExtendedStatus,
       AsyncApexJob.CreatedDate,
+      AsyncApexJob.CronTriggerId,
       AsyncApexJob.CompletedDate,
       AsyncApexJob.JobItemsProcessed,
       AsyncApexJob.TotalJobItems,
@@ -63,11 +64,59 @@ public class AsyncApexJobsSelector extends fflib_SObjectSelector {
     String query = newQueryFactory()
       .setCondition(
         'JobType = :jobType And ' +
-        'ApexClass.Name in :classNames And ' +
-        'Status in :statuses'
+          'ApexClass.Name in :classNames And ' +
+          'Status in :statuses'
       )
       .toSOQL();
     List<AsyncApexJob> jobs = (List<AsyncApexJob>) Database.query(query);
     return jobs.size() > 0;
+  }
+
+  /**
+   * Get all scheduled instances of a class
+   **/
+  public List<AsyncApexJob> getScheduledInstancesOfType(Type classType) {
+    String classFullyQualifiedName = classType.getName();
+    List<String> nameParts = classFullyQualifiedName.split('\\.');
+
+    // Probably doesn't work for inner-classes in this format
+    String namespace;
+    if (nameParts.size() > 1) {
+      namespace = nameParts.remove(0);
+    }
+    String className = nameParts.remove(0);
+
+    String query = newQueryFactory()
+      .selectFields(
+        new List<String>{
+          'ApexClass.Name',
+          'CronTrigger.CronJobDetail.Name',
+          'CronTrigger.CronExpression',
+          'CronTrigger.NextFireTime'
+        }
+      )
+      .setCondition(
+        'Status != \'Aborted\' AND ' +
+          'JobType = \'ScheduledApex\' AND ' +
+          'ApexClass.Name = :className AND ' +
+          'ApexClass.NamespacePrefix = :namespace'
+      )
+      .addOrdering(
+        'CronTrigger.NextFireTime',
+        fflib_QueryFactory.SortOrder.ASCENDING
+      )
+      .toSOQL();
+    return Database.query(query);
+  }
+
+  /**
+   * Get all scheduled instances of a class
+   **/
+  public List<AsyncApexJob> getAllScheduledJobs() {
+    String query = newQueryFactory()
+      .selectField('CronTrigger.CronJobDetail.Name')
+      .setCondition('JobType = \'ScheduledApex\' AND Status != \'Aborted\'')
+      .toSOQL();
+    return Database.query(query);
   }
 }
