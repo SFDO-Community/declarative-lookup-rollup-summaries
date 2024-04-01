@@ -9,10 +9,10 @@ import USER_ID from "@salesforce/user/Id";
 import RollupEditor from "c/rollupEditor";
 import ClassSchedulerModal from "c/classSchedulerModal";
 
-import USER_NOTIFICATION_OBJECT from "@salesforce/schema/UserNotification__e";
-import PE_USER_RECIP_FIELD from "@salesforce/schema/UserNotification__e.Recipient__c";
-import PE_PAYLOAD_FIELD from "@salesforce/schema/UserNotification__e.Payload__c";
-import PE_TYPE_FIELD from "@salesforce/schema/UserNotification__e.Type__c";
+// import so we can get a namespace from it
+// can't import the Platform Event or CMDT directly
+// because they get corrupted
+import SCHEDULE_ITEMS_OBJECT from "@salesforce/schema/LookupRollupSummaryScheduleItems__c";
 
 import {
   subscribe,
@@ -100,10 +100,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   sortByField = "active";
   sortDirection = "desc";
 
-  channelName = `/event/${USER_NOTIFICATION_OBJECT.objectApiName.replace(
-    "__c",
-    "__e"
-  )}`;
+  channelName = `/event/${this._buildApiName("UserNotification__e")}`;
   subscription = {};
 
   rollups = {};
@@ -132,7 +129,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       };
     });
 
-    if (Object.values(this.rollups).length === 0) {
+    if (this.rollups.length === 0) {
       // no rollups in the database, start to create a new one
       this.openEditor(null);
     }
@@ -311,7 +308,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       this.refreshRollups();
       if (
         !USER_ID.startsWith(
-          response.data.payload[PE_USER_RECIP_FIELD.fieldApiName]
+          response.data.payload[this._buildApiName("Recipient__c")]
         )
       ) {
         // This message isn't for us, don't do anything
@@ -319,10 +316,10 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       }
       let title, message, messageData, variant, mode;
       const deploymentData = JSON.parse(
-        response.data.payload[PE_PAYLOAD_FIELD.fieldApiName]
+        response.data.payload[this._buildApiName("Payload__c")]
       );
 
-      switch (response.data.payload[PE_TYPE_FIELD.fieldApiName]) {
+      switch (response.data.payload[this._buildApiName("Type__c")]) {
         case "DeleteRequestResult":
           if (deploymentData.success) {
             title = "Delete Completed!";
@@ -401,5 +398,13 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       console.error("Received error from server: ", JSON.stringify(error));
       // Error contains the server-side error
     });
+  }
+
+  // use an imported API name and swap parts to apply namespace to other API names that we can't import correctly
+  _buildApiName(value) {
+    return SCHEDULE_ITEMS_OBJECT.objectApiName.replace(
+      "LookupRollupSummaryScheduleItems__c",
+      value
+    );
   }
 }
