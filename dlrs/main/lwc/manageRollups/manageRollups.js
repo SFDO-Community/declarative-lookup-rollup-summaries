@@ -9,6 +9,11 @@ import USER_ID from "@salesforce/user/Id";
 import RollupEditor from "c/rollupEditor";
 import ClassSchedulerModal from "c/classSchedulerModal";
 
+import USER_NOTIFICATION_OBJECT from "@salesforce/schema/UserNotification__e";
+import PE_USER_RECIP_FIELD from "@salesforce/schema/UserNotification__e.Recipient__c";
+import PE_PAYLOAD_FIELD from "@salesforce/schema/UserNotification__e.Payload__c";
+import PE_TYPE_FIELD from "@salesforce/schema/UserNotification__e.Type__c";
+
 import {
   subscribe,
   unsubscribe,
@@ -29,10 +34,10 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       type: "button",
       label: "Name",
       sortable: true,
-      fieldName: "Label",
+      fieldName: "label",
       initialWidth: 300,
       typeAttributes: {
-        label: { fieldName: "Label" },
+        label: { fieldName: "label" },
         name: "rollup_select",
         title: "Edit",
         value: "edit",
@@ -42,37 +47,37 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     },
     {
       label: "Parent",
-      fieldName: "ParentObject__c",
+      fieldName: "parentObject",
       sortable: true
     },
     {
       label: "Child",
-      fieldName: "ChildObject__c",
+      fieldName: "childObject",
       sortable: true
     },
     {
       label: "Field To Aggregate",
-      fieldName: "FieldToAggregate__c",
+      fieldName: "fieldToAggregate",
       sortable: true
     },
     {
       label: "Aggregate Result Field",
-      fieldName: "AggregateResultField__c",
+      fieldName: "aggregateResultField",
       sortable: true
     },
     {
       label: "Rollup Type",
-      fieldName: "AggregateOperation__c",
+      fieldName: "aggregateOperation",
       sortable: true
     },
     {
       label: "Calc Mode",
-      fieldName: "CalculationMode__c",
+      fieldName: "calculationMode",
       sortable: true
     },
     {
       label: "Active",
-      fieldName: "Active__c",
+      fieldName: "active",
       initialWidth: 75,
       type: "boolean",
       sortable: true
@@ -92,10 +97,13 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   @wire(CurrentPageReference)
   pageRef;
 
-  sortByField = "Active__c";
+  sortByField = "active";
   sortDirection = "desc";
 
-  channelName = "/event/UserNotification__e";
+  channelName = `/event/${USER_NOTIFICATION_OBJECT.objectApiName.replace(
+    "__c",
+    "__e"
+  )}`;
   subscription = {};
 
   rollups = {};
@@ -118,9 +126,9 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     Object.keys(this.rollups).forEach((k) => {
       this.rollups[k] = {
         ...this.rollups[k],
-        CalculationMode__c:
-          STATUS_LABELS[this.rollups[k].CalculationMode__c] ??
-          this.rollups[k].CalculationMode__c
+        calculationMode:
+          STATUS_LABELS[this.rollups[k].calculationMode] ??
+          this.rollups[k].calculationMode
       };
     });
 
@@ -166,12 +174,11 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
         res = aVal.localeCompare(bVal);
       }
       if (res === 0) {
-        return a.Label.localeCompare(b.Label) * dirModifier;
+        return a.label.localeCompare(b.label) * dirModifier;
       }
 
       return res * dirModifier;
     });
-    // TODO: apply re-labeling
   }
 
   rollupSelectHandler(event) {
@@ -179,10 +186,10 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     const row = event.detail.row;
     switch (action.name) {
       case "rollup_select":
-        this.openEditor(row.DeveloperName);
+        this.openEditor(row.developerName);
         break;
       case "rollup_delete":
-        this.requestDelete(row.DeveloperName);
+        this.requestDelete(row.developerName);
         break;
       default:
         throw new Error("unexpected action on rollupSelectHandler");
@@ -302,14 +309,20 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       // console.log("New message received: ", JSON.stringify(response));
       // deployment probably changed the rollup definitions, should refresh
       this.refreshRollups();
-      if (!USER_ID.startsWith(response.data.payload.Recipient__c)) {
+      if (
+        !USER_ID.startsWith(
+          response.data.payload[PE_USER_RECIP_FIELD.fieldApiName]
+        )
+      ) {
         // This message isn't for us, don't do anything
         return;
       }
       let title, message, messageData, variant, mode;
-      const deploymentData = JSON.parse(response.data.payload.Payload__c);
+      const deploymentData = JSON.parse(
+        response.data.payload[PE_PAYLOAD_FIELD.fieldApiName]
+      );
 
-      switch (response.data.payload.Type__c) {
+      switch (response.data.payload[PE_TYPE_FIELD.fieldApiName]) {
         case "DeleteRequestResult":
           if (deploymentData.success) {
             title = "Delete Completed!";

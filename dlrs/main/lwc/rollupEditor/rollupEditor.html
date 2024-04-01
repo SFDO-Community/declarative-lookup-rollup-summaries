@@ -1,6 +1,6 @@
 <template>
   <lightning-modal-header label={cardHeader}>
-    <lightning-layout class="slds-p-horizontal_medium" lwc:if={rollup.Id}>
+    <lightning-layout class="slds-p-horizontal_medium" lwc:if={rollup.id}>
       <lightning-layout-item size="12" padding="around-small">
         <c-flexible-path
           steps={steps}
@@ -13,9 +13,7 @@
     <lightning-layout multiple-rows class="slds-p-horizontal_medium">
       <lightning-layout-item>
         <c-rollup-editor-error errors={errors.record}></c-rollup-editor-error>
-        <c-rollup-editor-error
-          errors={errors.Active__c}
-        ></c-rollup-editor-error>
+        <c-rollup-editor-error errors={errors.active}></c-rollup-editor-error>
         <c-rollup-editor-error
           errors={scheduledItemsError}
         ></c-rollup-editor-error>
@@ -34,15 +32,15 @@
           >
             <lightning-input
               type="text"
-              name="rollup_Label"
-              data-name="rollup_Label"
+              name="rollup_label"
+              data-name="rollup_label"
               onblur={onLabelBlurHandler}
               label="Lookup Rollup Summary Label"
               placeholder="My Rollup Name"
-              value={rollup.Label}
+              value={rollup.label}
             ></lightning-input>
             <c-rollup-editor-error
-              errors={errors.Label}
+              errors={errors.label}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item
@@ -52,33 +50,33 @@
           >
             <lightning-input
               type="text"
-              name="rollup_DeveloperName"
-              data-name="rollup_DeveloperName"
+              name="rollup_developerName"
+              data-name="rollup_developerName"
               label="Lookup Rollup Summary API Name"
               placeholder="My_Rollup_Name"
-              disabled={rollup.Id}
-              value={rollup.DeveloperName}
+              disabled={rollup.id}
+              value={rollup.developerName}
             ></lightning-input>
             <c-rollup-editor-error
-              errors={errors.DeveloperName}
+              errors={errors.developerName}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item size="12" class="slds-form-element_stacked">
             <lightning-textarea
-              name="rollup_Description__c"
-              data-name="rollup_Description__c"
+              name="rollup_description"
+              data-name="rollup_description"
               label="Description"
-              value={rollup.Description__c}
+              value={rollup.description}
               maxlength="255"
             ></lightning-textarea>
             <c-rollup-editor-error
-              errors={errors.Description__c}
+              errors={errors.description}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item
             size="12"
             large-device-size="6"
-            lwc:if={rollup.Id}
+            lwc:if={rollup.id}
           >
             Outstanding Scheduled Items
             <lightning-badge
@@ -88,7 +86,7 @@
           <lightning-layout-item
             size="12"
             large-device-size="6"
-            lwc:if={rollup.Id}
+            lwc:if={rollup.id}
           >
             Next Full Calculate
             <lightning-badge label={nextFullCalculateAt}></lightning-badge>
@@ -113,11 +111,11 @@
               label="Child Object"
               placeholder="Child__c"
               helper-text="The object that holds the data that needs to be rolled up"
-              current-selection={rollup.ChildObject__c}
+              current-selection={rollup.childObject}
               onlookupupdate={childObjectSelected}
             ></c-object-selector>
             <c-rollup-editor-error
-              errors={errors.ChildObject__c}
+              errors={errors.childObject}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item
@@ -126,15 +124,15 @@
             class="slds-form-element_stacked"
           >
             <c-autocomplete-combobox
-              data-name="rollup_FieldToAggregate__c"
+              data-name="rollup_fieldToAggregate"
               label="Field to Aggregate"
               helper-text="The field on the child object that holds the data to rollup"
-              value={rollup.FieldToAggregate__c}
+              value={rollup.fieldToAggregate}
               options={childRFieldOptions}
               disabled={childFieldOptionsPending}
             ></c-autocomplete-combobox>
             <c-rollup-editor-error
-              errors={errors.FieldToAggregate__c}
+              errors={errors.fieldToAggregate}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item
@@ -143,9 +141,9 @@
             class="slds-form-element_stacked"
           >
             <c-autocomplete-combobox
-              data-name="rollup_RelationshipField__c"
+              data-name="rollup_relationshipField"
               label="Relationship Field"
-              value={rollup.RelationshipField__c}
+              value={rollup.relationshipField}
               helper-text="The field on the child object that holds Id values for the parent object (doesn't have to be a lookup)"
               options={childRFieldOptions}
               placeholder="Lookup__c"
@@ -153,7 +151,7 @@
               disabled={childFieldOptionsPending}
             ></c-autocomplete-combobox>
             <c-rollup-editor-error
-              errors={errors.RelationshipField__c}
+              errors={errors.relationshipField}
             ></c-rollup-editor-error>
           </lightning-layout-item>
         </lightning-layout>
@@ -176,11 +174,11 @@
               label="Parent Object"
               placeholder="Parent__c"
               helper-text="The object that will hold the result of the rollup calculation"
-              current-selection={rollup.ParentObject__c}
+              current-selection={rollup.parentObject}
               onlookupupdate={parentObjectSelected}
             ></c-object-selector>
             <c-rollup-editor-error
-              errors={errors.ParentObject__c}
+              errors={errors.parentObject}
             ></c-rollup-editor-error>
           </lightning-layout-item>
 
@@ -190,15 +188,15 @@
             class="slds-form-element_stacked"
           >
             <c-autocomplete-combobox
-              data-name="rollup_AggregateResultField__c"
+              data-name="rollup_aggregateResultField"
               label="Aggregate Result Field"
               helper-text="The field on the parent object that will hold the result of the rollup calculation"
               options={parentRFieldOptions}
-              value={rollup.AggregateResultField__c}
+              value={rollup.aggregateResultField}
               disabled={parentFieldOptionsPending}
             ></c-autocomplete-combobox>
             <c-rollup-editor-error
-              errors={errors.AggregateResultField__c}
+              errors={errors.aggregateResultField}
             ></c-rollup-editor-error>
           </lightning-layout-item>
         </lightning-layout>
@@ -214,16 +212,16 @@
           </lightning-layout-item>
           <lightning-layout-item size="12" class="slds-form-element_stacked">
             <lightning-textarea
-              name="rollup_RelationshipCriteria__c"
-              data-name="rollup_RelationshipCriteria__c"
+              name="rollup_relationshipCriteria"
+              data-name="rollup_relationshipCriteria"
               label="Relationship Criteria"
               field-level-help="The WHERE portion of a SOQL query, records that match the clause will be included in the rollup data"
               placeholder="Field1__c = TRUE AND Field2__r.Name = 'Parent Value'"
-              value={rollup.RelationshipCriteria__c}
+              value={rollup.relationshipCriteria}
               maxlength="255"
             ></lightning-textarea>
             <c-rollup-editor-error
-              errors={errors.RelationshipCriteria__c}
+              errors={errors.relationshipCriteria}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item
@@ -232,16 +230,16 @@
             class="slds-form-element_stacked"
           >
             <lightning-textarea
-              name="rollup_relationship_criteria_fields"
-              data-name="rollup_relationship_criteria_fields"
+              name="rollup_relationshipCriteriaFields"
+              data-name="rollup_relationshipCriteriaFields"
               label="Relationship Criteria Fields"
               field-level-help="Field API names on the child object which when changed will trigger recalculation, each on a new line (Field to Aggregate and Relationship Field are implicitly included)"
               placeholder={relationshipCriteriaPlaceholder}
-              value={rollup.RelationshipCriteriaFields__c}
+              value={rollup.relationshipCriteriaFields}
               maxlength="255"
             ></lightning-textarea>
             <c-rollup-editor-error
-              errors={errors.RelationshipCriteriaFields__c}
+              errors={errors.relationshipCriteriaFields}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item
@@ -252,14 +250,14 @@
             <h3 class="slds-form-element__label">Aggregate All Rows</h3>
             <lightning-input
               type="checkbox"
-              name="rollup_AggregateAllRows__c"
-              data-name="rollup_AggregateAllRows__c"
+              name="rollup_aggregateAllRows"
+              data-name="rollup_aggregateAllRows"
               label="Include Deleted &amp; Archived Records"
               field-level-help="If you ONLY want Archived Records add 'IsDeleted = FALSE' to the Relationship Criteria"
-              checked={rollup.AggregateAllRows__c}
+              checked={rollup.aggregateAllRows}
             ></lightning-input>
             <c-rollup-editor-error
-              errors={errors.AggregateAllRows__c}
+              errors={errors.aggregateAllRows}
             ></c-rollup-editor-error>
           </lightning-layout-item>
         </lightning-layout>
@@ -278,17 +276,17 @@
             class="slds-form-element_stacked"
           >
             <lightning-combobox
-              name="rollup_AggregateOperation__c"
-              data-name="rollup_AggregateOperation__c"
+              name="rollup_aggregateOperation"
+              data-name="rollup_aggregateOperation"
               label="Rollup Type"
               placeholder="Select"
               options={aggregateOptions}
-              value={rollup.AggregateOperation__c}
+              value={rollup.aggregateOperation}
               onchange={rollupTypeChangeHandler}
               required
             ></lightning-combobox>
             <c-rollup-editor-error
-              errors={errors.AggregateOperation__c}
+              errors={errors.aggregateOperation}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item
@@ -298,15 +296,15 @@
           >
             <lightning-input
               type="text"
-              name="rollup_ConcatenateDelimiter__c"
-              data-name="rollup_ConcatenateDelimiter__c"
+              name="rollup_concatenateDelimiter"
+              data-name="rollup_concatenateDelimiter"
               label="Concatenate Delimiter"
               field-level-help="For Rollup Types Concatenate and Concatenate Distinct, used to separate values in the output"
-              value={rollup.ConcatenateDelimiter__c}
+              value={rollup.concatenateDelimiter}
               disabled={shouldDisableConcatDelim}
             ></lightning-input>
             <c-rollup-editor-error
-              errors={errors.ConcatenateDelimiter__c}
+              errors={errors.concatenateDelimiter}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item
@@ -316,15 +314,15 @@
           >
             <lightning-input
               type="text"
-              name="rollup_FieldToOrderBy__c"
-              data-name="rollup_FieldToOrderBy__c"
+              name="rollup_fieldToOrderBy"
+              data-name="rollup_fieldToOrderBy"
               label="Field(s) to Order By"
               field-level-help="Applies to First, Last, and Concatenate (Distinct) rollups, a SOQL ORDER BY clause, may order by multiple fields ASC or DESC"
-              value={rollup.FieldToOrderBy__c}
+              value={rollup.fieldToOrderBy}
               disabled={shouldDisableFieldToOrderBy}
             ></lightning-input>
             <c-rollup-editor-error
-              errors={errors.FieldToOrderBy__c}
+              errors={errors.fieldToOrderBy}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item
@@ -334,15 +332,15 @@
           >
             <lightning-input
               type="number"
-              name="rollup_RowLimit__c"
-              data-name="rollup_RowLimit__c"
+              name="rollup_rowLimit"
+              data-name="rollup_rowLimit"
               label="Row Limit"
               field-level-help="Applies to Last and Concatentate (Distinct) operators"
-              value={rollup.RowLimit__c}
+              value={rollup.rowLimit}
               disabled={shouldDisableRowLimit}
             ></lightning-input>
             <c-rollup-editor-error
-              errors={errors.RowLimit__c}
+              errors={errors.rowLimit}
             ></c-rollup-editor-error>
           </lightning-layout-item>
         </lightning-layout>
@@ -359,18 +357,18 @@
             class="slds-form-element_stacked"
           >
             <lightning-combobox
-              name="rollup_CalculationMode__c"
-              data-name="rollup_CalculationMode__c"
+              name="rollup_calculationMode"
+              data-name="rollup_calculationMode"
               label="Calculation Mode"
               field-level-help="Control how DLRS checks for changes and when/how the parent record is updated"
               placeholder="Select"
               options={calculationModes}
-              value={rollup.CalculationMode__c}
+              value={rollup.calculationMode}
               onchange={calculationModeChangeHandler}
               required
             ></lightning-combobox>
             <c-rollup-editor-error
-              errors={errors.CalculationMode__c}
+              errors={errors.calculationMode}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item
@@ -379,17 +377,17 @@
             class="slds-form-element_stacked"
           >
             <lightning-combobox
-              name="rollup_CalculationSharingMode__c"
-              data-name="rollup_CalculationSharingMode__c"
+              name="rollup_calculationSharingMode"
+              data-name="rollup_calculationSharingMode"
               label="Calculation Sharing Mode"
               field-level-help="Choose which Apex Sharing mode should be used when the rollup value is calculated"
               placeholder="Select"
               options={calculationSharingModes}
-              value={rollup.CalculationSharingMode__c}
+              value={rollup.calculationSharingMode}
               required
             ></lightning-combobox>
             <c-rollup-editor-error
-              errors={errors.CalculationSharingMode__c}
+              errors={errors.calculationSharingMode}
             ></c-rollup-editor-error>
           </lightning-layout-item>
         </lightning-layout>
@@ -403,16 +401,16 @@
             class="slds-form-element_stacked"
           >
             <lightning-textarea
-              name="rollup_TestCode2__c"
-              data-name="rollup_TestCode2__c"
+              name="rollup_testCode"
+              data-name="rollup_testCode"
               label="Test Code (Child Object)"
               field-level-help="Define a custom method body to be used in the generated test class"
-              value={rollup.TestCode2__c}
+              value={rollup.testCode}
               maxlength="131072"
               class="testcodearea"
             ></lightning-textarea>
             <c-rollup-editor-error
-              errors={errors.TestCode2__c}
+              errors={errors.testCode}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item
@@ -421,30 +419,30 @@
             class="slds-form-element_stacked"
           >
             <lightning-textarea
-              name="rollup_TestCodeParent__c"
-              data-name="rollup_TestCodeParent__c"
+              name="rollup_testCodeParent"
+              data-name="rollup_testCodeParent"
               label="Test Code (Parent Object)"
               field-level-help="Define a custom method body to be used in the generated test class"
-              value={rollup.TestCodeParent__c}
+              value={rollup.testCodeParent}
               maxlength="131072"
               class="testcodearea"
             ></lightning-textarea>
             <c-rollup-editor-error
-              errors={errors.TestCodeParent__c}
+              errors={errors.testCodeParent}
             ></c-rollup-editor-error>
           </lightning-layout-item>
           <lightning-layout-item class="slds-form-element_stacked">
             <lightning-input
               type="checkbox"
-              name="rollup_TestCodeSeeAllData__c"
-              data-name="rollup_TestCodeSeeAllData__c"
+              name="rollup_testCodeSeeAllData"
+              data-name="rollup_testCodeSeeAllData"
               label="Test Code Sees All Data?"
-              value={rollup.TestCodeSeeAllData__c}
+              checked={rollup.testCodeSeeAllData}
               variant="label-stacked"
               style="padding-left: 0px !important"
             ></lightning-input>
             <c-rollup-editor-error
-              errors={errors.TestCodeSeeAllData__c}
+              errors={errors.testCodeSeeAllData}
             ></c-rollup-editor-error>
           </lightning-layout-item>
         </lightning-layout>
@@ -466,7 +464,7 @@
           ></lightning-button>
           <lightning-button
             label="Recalculate Now"
-            lwc:if={rollup.Id}
+            lwc:if={rollup.id}
             onclick={recalculateNowHandler}
           ></lightning-button>
           <lightning-button
@@ -477,11 +475,11 @@
           <lightning-button-menu
             alternative-text="Show more"
             menu-alignment="bottom-right"
-            lwc:if={rollup.Id}
+            lwc:if={rollup.id}
           >
             <lightning-menu-item
               label="Clone"
-              lwc:if={rollup.Id}
+              lwc:if={rollup.id}
               onclick={cloneClickHandler}
             ></lightning-menu-item>
             <lightning-menu-item
@@ -491,7 +489,7 @@
             ></lightning-menu-item>
             <lightning-menu-item
               label="Delete"
-              lwc:if={rollup.Id}
+              lwc:if={rollup.id}
               onclick={deleteClickHandler}
             ></lightning-menu-item>
             <lightning-menu-item
@@ -501,7 +499,7 @@
             ></lightning-menu-item>
             <lightning-menu-item
               label="Schedule Recalculation"
-              lwc:if={rollup.Id}
+              lwc:if={rollup.id}
               onclick={schedulRecalculateHandler}
             ></lightning-menu-item>
           </lightning-button-menu>

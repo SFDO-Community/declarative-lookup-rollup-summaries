@@ -18,9 +18,9 @@ import getOutstandingScheduledItemsForLookup from "@salesforce/apex/LookupRollup
 import ClassSchedulerModal from "c/classSchedulerModal";
 
 const DEFAULT_ROLLUP_VALUES = Object.freeze({
-  Active__c: false,
-  CalculationMode__c: "Scheduled",
-  CalculationSharingMode__c: "System"
+  active: false,
+  calculationMode: "Scheduled",
+  calculationSharingMode: "System"
 });
 
 const STEPS = Object.freeze({
@@ -98,11 +98,11 @@ export default class RollupEditor extends LightningModal {
   }
 
   get cardHeader() {
-    return this.rollup.Id ? `Edit ${this.rollup.Label}` : "Create Rollup";
+    return this.rollup.id ? `Edit ${this.rollup.label}` : "Create Rollup";
   }
 
   get saveButtonLabel() {
-    return this.rollup.Id ? "Save" : "Create";
+    return this.rollup.id ? "Save" : "Create";
   }
 
   async connectedCallback() {
@@ -110,11 +110,11 @@ export default class RollupEditor extends LightningModal {
   }
 
   get rollupCanBeActivated() {
-    return this.rollup.Id && !this.rollup.Active__c;
+    return this.rollup.id && !this.rollup.active;
   }
 
   get rollupCanBeDeactivated() {
-    return this.rollup.Id && this.rollup.Active__c;
+    return this.rollup.id && this.rollup.active;
   }
 
   get scheduledItemsError() {
@@ -148,7 +148,8 @@ export default class RollupEditor extends LightningModal {
         this.rollup = await getRollupConfig({
           rollupName: this.rollupName
         });
-        this.rollupId = this.rollup.Id;
+
+        this.rollupId = this.rollup.id;
         this.nextFullCalculateAt =
           (await getScheduledFullCalculates({
             lookupId: this.rollupId
@@ -167,10 +168,10 @@ export default class RollupEditor extends LightningModal {
   }
 
   async getParentRelationshipFieldOptions() {
-    if (this.rollup.ParentObject__c) {
+    if (this.rollup.parentObject) {
       this.parentRFieldOptions = (
         await getFieldOptions({
-          objectName: this.rollup.ParentObject__c
+          objectName: this.rollup.parentObject
         })
       ).sort((a, b) => a.label.localeCompare(b.label));
     } else {
@@ -182,9 +183,9 @@ export default class RollupEditor extends LightningModal {
     const newSteps = [];
     const scheduledJobCount = await getScheduledJobs();
     this.childTriggerIsDeployed = await hasChildTriggerDeployed({
-      lookupID: this.rollup.Id
+      lookupID: this.rollup.id
     });
-    for (let s of STEP_TEMPLATES[this.rollup.CalculationMode__c] ||
+    for (let s of STEP_TEMPLATES[this.rollup.calculationMode] ||
       STEP_TEMPLATES.other) {
       if (s.name === "deployTrigger") {
         s.status = this.childTriggerIsDeployed
@@ -196,7 +197,7 @@ export default class RollupEditor extends LightningModal {
           scheduledJobCount > 0 ? PATH_STATES.complete : PATH_STATES.incomplete;
       }
       if (s.name === "activate") {
-        s.status = this.rollup.Active__c
+        s.status = this.rollup.active
           ? PATH_STATES.complete
           : PATH_STATES.incomplete;
       }
@@ -215,10 +216,10 @@ export default class RollupEditor extends LightningModal {
   }
 
   async getChildRelationshipFieldOptions() {
-    if (this.rollup.ChildObject__c) {
+    if (this.rollup.childObject) {
       this.childRFieldOptions = (
         await getFieldOptions({
-          objectName: this.rollup.ChildObject__c
+          objectName: this.rollup.childObject
         })
       ).sort((a, b) => a.label.localeCompare(b.label));
     } else {
@@ -237,26 +238,26 @@ export default class RollupEditor extends LightningModal {
   }
 
   cloneClickHandler() {
-    this.rollup.DeveloperName = undefined;
-    this.rollup.Id = undefined;
+    this.rollup.developerName = undefined;
+    this.rollup.id = undefined;
   }
 
   deleteClickHandler() {
-    this.close({ action: "delete", rollupName: this.rollup.DeveloperName });
+    this.close({ action: "delete", rollupName: this.rollup.developerName });
   }
 
   activateClickHandler() {
-    this.rollup.Active__c = true;
+    this.rollup.active = true;
     this.runSave();
   }
 
   deactivateClickHandler() {
-    this.rollup.Active__c = false;
+    this.rollup.active = false;
     this.runSave();
   }
 
   rollupTypeChangeHandler(event) {
-    this.rollup.AggregateOperation__c = event.detail.value;
+    this.rollup.aggregateOperation = event.detail.value;
   }
 
   async pathClickHandler(event) {
@@ -307,7 +308,7 @@ export default class RollupEditor extends LightningModal {
   }
 
   async manageTriggerHandler() {
-    const url = await getManageTriggerPageUrl({ rollupId: this.rollup.Id });
+    const url = await getManageTriggerPageUrl({ rollupId: this.rollup.id });
     this.close({
       action: "navigate",
       config: {
@@ -320,7 +321,7 @@ export default class RollupEditor extends LightningModal {
   }
 
   async recalculateNowHandler() {
-    const url = await getFullCalculatePageUrl({ rollupId: this.rollup.Id });
+    const url = await getFullCalculatePageUrl({ rollupId: this.rollup.id });
     this.close({
       action: "navigate",
       config: {
@@ -333,7 +334,7 @@ export default class RollupEditor extends LightningModal {
   }
 
   async schedulRecalculateHandler() {
-    const url = await getScheduleCalculatePageUrl({ rollupId: this.rollup.Id });
+    const url = await getScheduleCalculatePageUrl({ rollupId: this.rollup.id });
     this.close({
       action: "navigate",
       config: {
@@ -347,27 +348,27 @@ export default class RollupEditor extends LightningModal {
 
   onLabelBlurHandler(event) {
     const devNameElem = this.template.querySelector(
-      '[data-name="rollup_DeveloperName"]'
+      '[data-name="rollup_developerName"]'
     );
     if (!devNameElem || devNameElem.value.trim().length > 0) {
       return;
     }
-    this.rollup.DeveloperName = this._makeApiSafe(event.currentTarget.value);
-    devNameElem.value = this.rollup.DeveloperName;
+    this.rollup.developerName = this._makeApiSafe(event.currentTarget.value);
+    devNameElem.value = this.rollup.developerName;
   }
 
   relationshipFieldSelectedHandler(event) {
     console.log("Relationship Field Selected", event.detail.selectedOption);
     const refs = event.detail?.selectedOption?.referencesTo;
     if (refs && refs.length === 1) {
-      this.rollup.ParentObject__c = refs[0];
-      this.rollup.AggregateResultField__c = undefined;
+      this.rollup.parentObject = refs[0];
+      this.rollup.aggregateResultField = undefined;
       this.getParentRelationshipFieldOptions();
     }
   }
 
   calculationModeChangeHandler(event) {
-    this.rollup.CalculationMode__c = event.detail.value;
+    this.rollup.calculationMode = event.detail.value;
     this.configureSteps();
   }
 
@@ -390,39 +391,35 @@ export default class RollupEditor extends LightningModal {
     this.close({
       action: "deloyStart",
       jobId,
-      rollupName: this.rollup.DeveloperName
+      rollupName: this.rollup.developerName
     });
     this.isLoading = false;
   }
 
   assembleRollupFromForm() {
     const fieldNames = [
-      "Label",
-      "DeveloperName",
-      "Description__c",
-      "RelationshipField__c",
-      "RelationshipCriteria__c",
-      "RelationshipCriteriaFields__c",
-      "FieldToAggregate__c",
-      "FieldToOrderBy__c",
-      "AggregateOperation__c",
-      "AggregateResultField__c",
-      "AggregateAllRows__c",
-      "RowLimit__c",
-      "Active__c", // No Input Element for this field
-      "CalculationMode__c",
-      "CalculationSharingMode__c",
-      "ConcatenateDelimiter__c",
-      "TestCode2__c",
-      "TestCodeParent__c",
-      "TestCodeSeeAllData__c"
+      "label",
+      "developerName",
+      "description",
+      "relationshipField",
+      "relationshipCriteria",
+      "relationshipCriteriaFields",
+      "fieldToAggregate",
+      "fieldToOrderBy",
+      "aggregateOperation",
+      "aggregateResultField",
+      "aggregateAllRows",
+      "rowLimit",
+      "active", // No Input Element for this field
+      "calculationMode",
+      "calculationSharingMode",
+      "concatenateDelimiter",
+      "testCode",
+      "testCodeParent",
+      "testCodeSeeAllData"
     ];
 
-    const checkboxFields = [
-      "Active__c",
-      "AggregateAllRows__c",
-      "TestCodeSeeAllData__c"
-    ];
+    const checkboxFields = ["active", "aggregateAllRows", "testCodeSeeAllData"];
 
     fieldNames.forEach((fieldName) => {
       const inputElement = this.template.querySelector(
@@ -433,30 +430,36 @@ export default class RollupEditor extends LightningModal {
           ? "checked"
           : "value";
         this.rollup[fieldName] = inputElement[attribute];
-        console.log(`fieldName (${fieldName}) :  ${inputElement[attribute]}`);
+        if (
+          typeof this.rollup[fieldName] == "string" &&
+          this.rollup[fieldName].trim().length === 0
+        ) {
+          this.rollup[fieldName] = undefined;
+        }
+        console.log(`fieldName (${fieldName}) :  ${this.rollup[fieldName]}`);
       }
     });
   }
 
   childObjectSelected(event) {
-    this.rollup.ChildObject__c = event.detail.selectedRecord;
+    this.rollup.childObject = event.detail.selectedRecord;
     this.getChildRelationshipFieldOptions();
-    this.rollup.FieldToAggregate__c = undefined;
-    this.rollup.RelationshipField__c = undefined;
+    this.rollup.fieldToAggregate = undefined;
+    this.rollup.relationshipField = undefined;
     this.configureSteps();
   }
 
   parentObjectSelected(event) {
-    this.rollup.ParentObject__c = event.detail.selectedRecord;
+    this.rollup.parentObject = event.detail.selectedRecord;
     this.getParentRelationshipFieldOptions();
-    this.rollup.AggregateResultField__c = undefined;
+    this.rollup.aggregateResultField = undefined;
     this.configureSteps();
   }
 
   get supportsTrigger() {
     return (
-      this.rollup.Id &&
-      ["Scheduled", "Realtime"].includes(this.rollup.CalculationMode__c)
+      this.rollup.id &&
+      ["Scheduled", "Realtime"].includes(this.rollup.calculationMode)
     );
   }
 
@@ -493,19 +496,19 @@ export default class RollupEditor extends LightningModal {
 
   get shouldDisableConcatDelim() {
     return !["Concatenate", "Concatenate Distinct"].includes(
-      this.rollup.AggregateOperation__c
+      this.rollup.aggregateOperation
     );
   }
 
   get shouldDisableFieldToOrderBy() {
     return !["Concatenate", "Concatenate Distinct", "First", "Last"].includes(
-      this.rollup.AggregateOperation__c
+      this.rollup.aggregateOperation
     );
   }
 
   get shouldDisableRowLimit() {
     return !["Concatenate", "Concatenate Distinct", "Last"].includes(
-      this.rollup.AggregateOperation__c
+      this.rollup.aggregateOperation
     );
   }
 }
