@@ -125,7 +125,9 @@ export default class RollupEditor extends LightningModal {
       return null;
     }
 
-    return `This rollup has ${this.outstandingScheduledItems} outstanding scheduled items`;
+    return [
+      `This rollup has ${this.outstandingScheduledItems.data} outstanding scheduled items`
+    ];
   }
 
   get relationshipCriteriaPlaceholder() {
