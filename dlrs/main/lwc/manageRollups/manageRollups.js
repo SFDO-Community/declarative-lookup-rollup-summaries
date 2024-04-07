@@ -99,6 +99,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   sortByField = "active";
   sortDirection = "desc";
+  pendingSaveRollupName;
 
   channelName = `/event/${this._buildApiName("UserNotification__e")}`;
   subscription = {};
@@ -204,7 +205,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
         this.requestDelete(result.rollupName);
         break;
       case "deloyStart":
-        // const rollupName = result.rollupName;
+        this.isLoading = true;
         this.dispatchEvent(
           new ShowToastEvent({
             title: "Deployment Started",
@@ -213,6 +214,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
             variant: "info"
           })
         );
+        this.pendingSaveRollupName = result.rollupName;
         break;
       case "navigate":
         this[NavigationMixin.Navigate](result.config);
@@ -236,6 +238,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
           variant: "info"
         })
       );
+      this.isLoading = true;
       deleteRollupConfig({ rollupName: rollupName });
     }
   }
@@ -305,6 +308,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     const messageCallback = (response) => {
       // console.log("New message received: ", JSON.stringify(response));
       // deployment probably changed the rollup definitions, should refresh
+      this.isLoading = false;
       this.refreshRollups();
       if (
         !USER_ID.startsWith(
@@ -321,6 +325,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
       switch (response.data.payload[this._buildApiName("Type__c")]) {
         case "DeleteRequestResult":
+          this.pendingSaveRollupName = undefined;
           if (deploymentData.success) {
             title = "Delete Completed!";
             message = `${deploymentData.metadataNames} deleted successfully`;
@@ -334,6 +339,11 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
           }
           break;
         case "DeploymentResult":
+          if (this.pendingSaveRollupName) {
+            const pendingRollupName = this.pendingSaveRollupName;
+            this.pendingSaveRollupName = undefined;
+            this.openEditor(pendingRollupName);
+          }
           if (deploymentData.status === "Succeeded") {
             title = "Deployment Completed!";
             message = "Metadata saved successfully";
