@@ -1,7 +1,7 @@
 import { api } from "lwc";
 import LightningModal from "lightning/modal";
-import dlrs from "@salesforce/resourceUrl/dlrs";
-import { loadScript } from "lightning/platformResourceLoader";
+// import dlrs from "@salesforce/resourceUrl/dlrs";
+// import { loadScript } from "lightning/platformResourceLoader";
 
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import LightningConfirm from "lightning/confirm";
@@ -11,10 +11,14 @@ import getTotalScheduledJobs from "@salesforce/apex/SchedulerController.getAllSc
 import scheduleJobs from "@salesforce/apex/SchedulerController.scheduleJobs";
 import cancelScheduledJob from "@salesforce/apex/SchedulerController.cancelScheduledJob";
 
+import CronstrueFactory from "./cronstrue";
+
 export default class ClassSchedulerModal extends LightningModal {
+  cronstrue;
   cronStrings = [];
   // async apex jobs
   currentSchedule = [];
+  isLoadingCurrentSchedule = true;
   currentColumns = [
     {
       label: "Name",
@@ -74,16 +78,24 @@ export default class ClassSchedulerModal extends LightningModal {
   templates;
 
   connectedCallback() {
-    loadScript(this, dlrs + "/js/cronstrue/dist/cronstrue.min.js").then(() => {
-      // your code with calls to the JS library
-      console.log("construe loaded");
-      this.cronStrings.forEach((v) => {
-        v.humanReadable = window.cronstrue.toString(v.cronString, {
-          verbose: true
-        });
+    this.cronstrue = CronstrueFactory();
+    // TODO: when LWS is everywhere then we can go back to loading from Static Resource
+    // loadScript(this, dlrs + "/js/cronstrue/dist/cronstrue.js")
+    //   .then(() => {
+    // your code with calls to the JS library
+    console.log("construe loaded");
+    this.cronStrings.forEach((v) => {
+      v.humanReadable = this.cronstrue.toString(v.cronString, {
+        verbose: true
       });
     });
+    // })
+    // .catch((err) => {
+    //   console.error("Failed to load static resource: cronstrue", err);
+    // })
+    // .finally(() => {
     this.updateScheduledData();
+    // });
   }
 
   handleOnCronUpdate(event) {
@@ -91,15 +103,14 @@ export default class ClassSchedulerModal extends LightningModal {
 
     this.cronStrings = event.detail.value.map((v) => ({
       cronString: v,
-      humanReadable: ""
+      humanReadable: v
     }));
-    if (window.cronstrue) {
-      this.cronStrings.forEach((v) => {
-        v.humanReadable = cronstrue.toString(v.cronString, {
-          verbose: true
-        });
+
+    this.cronStrings.forEach((v) => {
+      v.humanReadable = this.cronstrue.toString(v.cronString, {
+        verbose: true
       });
-    }
+    });
   }
 
   handleRowAction(event) {
@@ -125,6 +136,7 @@ export default class ClassSchedulerModal extends LightningModal {
   }
 
   updateScheduledData() {
+    this.isLoadingCurrentSchedule = true;
     getCurrentJobs({
       className: this.className
     }).then((jobs) => {
@@ -133,11 +145,11 @@ export default class ClassSchedulerModal extends LightningModal {
         name: j.CronTrigger.CronJobDetail.Name,
         nextRunAt: j.CronTrigger.NextFireTime,
         cronString: j.CronTrigger.CronExpression,
-        humanReadable: cronstrue.toString(j.CronTrigger.CronExpression, {
+        humanReadable: this.cronstrue.toString(j.CronTrigger.CronExpression, {
           verbose: true
         })
       }));
-      console.log(this.currentSchedule);
+      this.isLoadingCurrentSchedule = false;
     });
 
     getTotalScheduledJobs().then((jobs) => {
