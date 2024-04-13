@@ -25,6 +25,9 @@
             </div>
           </lightning-layout-item>
           <lightning-layout-item size="12">
+            <lightning-spinner
+              lwc:if={isLoadingCurrentSchedule}
+            ></lightning-spinner>
             <lightning-layout multiple-rows>
               <lightning-layout-item
                 size="12"
@@ -55,7 +58,6 @@
     <lightning-layout multiple-rows>
       <lightning-layout-item size="12" class="slds-p-vertical_medium">
         <c-cron-builder
-          values={cronStrings}
           oncronupdate={handleOnCronUpdate}
           templates={templates}
         ></c-cron-builder>
@@ -68,7 +70,7 @@
               <lightning-layout-item flexibility="shrink">
                 <ul class="slds-has-dividers_around-space">
                   <template for:each={cronStrings} for:item="cron">
-                    <li key={cron} class="slds-item">
+                    <li key={cron.cronString} class="slds-item">
                       <lightning-layout vertical-align="center">
                         <lightning-layout-item flexibility="grow"
                           >{cron.humanReadable}</lightning-layout-item
