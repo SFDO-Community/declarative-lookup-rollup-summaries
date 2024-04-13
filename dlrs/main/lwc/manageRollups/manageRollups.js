@@ -272,6 +272,16 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
           presets: { minutes: ["0", "15", "30", "45"] }
         }
       ]
+    }).then((results) => {
+      if (results) {
+        try {
+          const evt = new ShowToastEvent(results);
+          this.dispatchEvent(evt);
+        } catch (err) {
+          // known issue with Lighting Locker can cause this to fail
+          console.error("Failed to create toast with outcome", err);
+        }
+      }
     });
   }
 
