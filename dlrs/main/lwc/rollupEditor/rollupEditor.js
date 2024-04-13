@@ -1,6 +1,7 @@
 import { api, track, wire } from "lwc";
 
 import LightningModal from "lightning/modal";
+import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
 import { PATH_STATES } from "c/flexiblePath";
 
@@ -296,6 +297,16 @@ export default class RollupEditor extends LightningModal {
               presets: { minutes: ["0", "15", "30", "45"] }
             }
           ]
+        }).then((results) => {
+          if (results) {
+            try {
+              const evt = new ShowToastEvent(results);
+              this.dispatchEvent(evt);
+            } catch (err) {
+              // known issue with Lighting Locker can cause this to fail
+              console.error("Failed to create toast with outcome", err);
+            }
+          }
         });
         // recalculate Path after Schedule is created
         this.configureSteps();

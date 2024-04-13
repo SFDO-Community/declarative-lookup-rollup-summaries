@@ -3,7 +3,6 @@ import LightningModal from "lightning/modal";
 // import dlrs from "@salesforce/resourceUrl/dlrs";
 // import { loadScript } from "lightning/platformResourceLoader";
 
-import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import LightningConfirm from "lightning/confirm";
 
 import getCurrentJobs from "@salesforce/apex/SchedulerController.getCurrentJobs";
@@ -83,7 +82,6 @@ export default class ClassSchedulerModal extends LightningModal {
     // loadScript(this, dlrs + "/js/cronstrue/dist/cronstrue.js")
     //   .then(() => {
     // your code with calls to the JS library
-    console.log("construe loaded");
     this.cronStrings.forEach((v) => {
       v.humanReadable = this.cronstrue.toString(v.cronString, {
         verbose: true
@@ -163,12 +161,10 @@ export default class ClassSchedulerModal extends LightningModal {
         className: this.className,
         newSchedules: this.cronStrings.map((c) => c.cronString)
       });
-      const evt = new ShowToastEvent({
+      this.close({
         title: "Succesfully Added Jobs",
         variant: "success"
       });
-      this.dispatchEvent(evt);
-      this.close();
     } catch (error) {
       // TODO: handle the error better
       console.error(error);
