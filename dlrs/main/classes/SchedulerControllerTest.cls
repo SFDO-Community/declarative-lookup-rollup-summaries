@@ -41,8 +41,6 @@ public with sharing class SchedulerControllerTest {
       }
     }
     Assert.isFalse(includesJob, 'Expected job to be cancelled');
-
-    System.abortJob(jobId);
   }
 
   @IsTest
