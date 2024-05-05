@@ -210,7 +210,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
           new ShowToastEvent({
             title: "Deployment Started",
             message:
-              "Started Metadata Record Upates in Deployment " + result.jobId,
+              "Started Metadata Record Updates in Deployment " + result.jobId,
             variant: "info"
           })
         );
