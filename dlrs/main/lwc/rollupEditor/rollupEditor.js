@@ -90,7 +90,7 @@ export default class RollupEditor extends LightningModal {
   }
 
   get cardHeader() {
-    return this.rollup.id ? `Edit ${this.rollup.label}` : "Create Rollup";
+    return this.rollup.id ? `Edit ${this.rollup.label}` : "New Rollup";
   }
 
   get saveButtonLabel() {
@@ -118,7 +118,7 @@ export default class RollupEditor extends LightningModal {
   }
 
   get relationshipCriteriaPlaceholder() {
-    return "Status__c\r\nDays__c";
+    return "Example_Field1__c\r\nExample_Field2__c";
   }
 
   get childFieldOptionsPending() {
@@ -376,6 +376,10 @@ export default class RollupEditor extends LightningModal {
   }
 
   async runSave() {
+    if (!this.assembleRollupFromForm()) {
+      console.error("data form is invalid");
+      return;
+    }
     this.isLoading = true;
     this.assembleRollupFromForm();
     await this.runValidate();
@@ -418,6 +422,8 @@ export default class RollupEditor extends LightningModal {
       "testCodeSeeAllData"
     ];
 
+    let isValid = true;
+
     const checkboxFields = ["active", "aggregateAllRows", "testCodeSeeAllData"];
 
     fieldNames.forEach((fieldName) => {
@@ -425,6 +431,19 @@ export default class RollupEditor extends LightningModal {
         `[data-name="rollup_${fieldName}"]`
       );
       if (inputElement) {
+        if (inputElement.checkValidity) {
+          if (!inputElement.checkValidity()) {
+            isValid = false;
+
+            // had a weird problem where I couldn't do multiple fields in the same loop, had to separate them
+            // probably a better way to do this
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            setTimeout(() => {
+              inputElement.reportValidity();
+            }, 20);
+          }
+        }
+
         const attribute = checkboxFields.includes(fieldName)
           ? "checked"
           : "value";
@@ -438,6 +457,7 @@ export default class RollupEditor extends LightningModal {
         console.log(`fieldName (${fieldName}) :  ${this.rollup[fieldName]}`);
       }
     });
+    return isValid;
   }
 
   childObjectSelected(event) {
@@ -509,5 +529,9 @@ export default class RollupEditor extends LightningModal {
     return !["Concatenate", "Concatenate Distinct", "Last"].includes(
       this.rollup.aggregateOperation
     );
+  }
+
+  get hasErrors() {
+    return Object.keys(this.errors).length > 0;
   }
 }

@@ -34,6 +34,8 @@
           onblur={onLabelBlurHandler}
           label="Lookup Rollup Summary Label"
           placeholder="My Rollup Name"
+          max-length="40"
+          required
           value={rollup.label}
         ></lightning-input>
         <c-rollup-editor-error errors={errors.label}></c-rollup-editor-error>
@@ -50,6 +52,9 @@
           label="Lookup Rollup Summary API Name"
           placeholder="My_Rollup_Name"
           disabled={rollup.id}
+          max-length="40"
+          required
+          pattern="[a-zA-Z](_?[0-9a-zA-Z])*"
           value={rollup.developerName}
         ></lightning-input>
         <c-rollup-editor-error

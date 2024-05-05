@@ -2,6 +2,10 @@
   --slds-c-textarea-sizing-min-height: 300px;
 }
 
+.record-has-errors {
+  color: var(--lwc-colorTextError);
+}
+
 summary {
   cursor: pointer;
 }
