@@ -76,6 +76,9 @@ export default class ClassSchedulerModal extends LightningModal {
   @api
   templates;
 
+  @api
+  description;
+
   connectedCallback() {
     this.cronstrue = CronstrueFactory();
     // TODO: when LWS is everywhere then we can go back to loading from Static Resource
