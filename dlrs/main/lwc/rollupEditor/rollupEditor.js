@@ -66,15 +66,6 @@ export default class RollupEditor extends LightningModal {
   @wire(getOutstandingScheduledItemsForLookup, { lookupID: "$rollupId" })
   outstandingScheduledItems;
 
-  openAccordianSections = [
-    "Information",
-    "ChildObject",
-    "ParentObject",
-    "Relationship",
-    "RollupDetails",
-    "CalculationMode"
-  ];
-
   @track
   rollup = { ...DEFAULT_ROLLUP_VALUES };
   errors = {};
