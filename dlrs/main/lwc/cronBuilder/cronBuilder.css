@@ -3,3 +3,7 @@ lightning-datatable {
   display: block;
   overflow-y: auto;
 }
+
+.error {
+  color: var(--lwc-colorTextError);
+}

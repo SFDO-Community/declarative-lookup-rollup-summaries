@@ -138,6 +138,15 @@
           </lightning-layout>
         </lightning-tab>
       </lightning-tabset>
+      <div
+        class="error"
+        for:each={errors}
+        for:item="error"
+        key={error}
+        if:true={errors.length}
+      >
+        {error}
+      </div>
     </div>
   </div>
 </template>
