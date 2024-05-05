@@ -14,9 +14,6 @@
       <lightning-layout-item>
         <c-rollup-editor-error errors={errors.record}></c-rollup-editor-error>
         <c-rollup-editor-error errors={errors.active}></c-rollup-editor-error>
-        <c-rollup-editor-error
-          errors={scheduledItemsError}
-        ></c-rollup-editor-error>
       </lightning-layout-item>
     </lightning-layout>
     <h3 class="slds-section__title slds-theme--shade">
@@ -538,5 +535,12 @@
       </lightning-layout-item>
     </lightning-layout>
 
+    <lightning-layout horizontal-align="center">
+      <lightning-layout-item lwc:if={hasErrors}>
+        <span class="record-has-errors"
+          >Rollup was unable to save, please review record</span
+        >
+      </lightning-layout-item>
+    </lightning-layout>
   </lightning-modal-footer>
 </template>

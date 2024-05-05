@@ -109,17 +109,12 @@ export default class RollupEditor extends LightningModal {
     return this.rollup.id && this.rollup.active;
   }
 
-  get scheduledItemsError() {
-    if (
-      !this.outstandingScheduledItems ||
-      !this.outstandingScheduledItems?.data
-    ) {
-      return null;
+  get scheduledItemsIcon() {
+    if (!this.rollup.id || !this.outstandingScheduledItems?.data) {
+      return "";
     }
 
-    return [
-      `This rollup has ${this.outstandingScheduledItems.data} outstanding scheduled items`
-    ];
+    return "utility:warning";
   }
 
   get relationshipCriteriaPlaceholder() {
