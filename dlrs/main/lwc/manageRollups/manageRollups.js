@@ -6,7 +6,7 @@ import { NavigationMixin, CurrentPageReference } from "lightning/navigation";
 import getAllRollupConfigs from "@salesforce/apex/RollupEditorController.getAllRollupConfigs";
 import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
 import USER_ID from "@salesforce/user/Id";
-import RollupEditor from "c/rollupEditor";
+import RollupEditor, { CLASS_SCHEDULER_CONFIG } from "c/rollupEditor";
 import ClassSchedulerModal from "c/classSchedulerModal";
 
 // import so we can get a namespace from it
@@ -248,31 +248,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   }
 
   async manageRollupJobSchedule() {
-    await ClassSchedulerModal.open({
-      label: "Schedule Rollup Job",
-      description: "Scheduled RollupJob to process Scheduled Items",
-      className: "RollupJob",
-      size: "small",
-      templates: [
-        {
-          label: "Once Every Day",
-          value: "daily",
-          selectors: ["single-hour"],
-          presets: { hours: ["3"] }
-        },
-        {
-          label: "Once Every Hour",
-          value: "hourly",
-          selectors: ["single-minute"]
-        },
-        {
-          label: "Every 15 minutes",
-          value: "every15",
-          selectors: [],
-          presets: { minutes: ["0", "15", "30", "45"] }
-        }
-      ]
-    }).then((results) => {
+    await ClassSchedulerModal.open(CLASS_SCHEDULER_CONFIG).then((results) => {
       if (results) {
         try {
           const evt = new ShowToastEvent(results);
@@ -349,11 +325,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
           }
           break;
         case "DeploymentResult":
-          if (this.pendingSaveRollupName) {
-            const pendingRollupName = this.pendingSaveRollupName;
-            this.pendingSaveRollupName = undefined;
-            this.openEditor(pendingRollupName);
-          }
           if (deploymentData.status === "Succeeded") {
             title = "Deployment Completed!";
             message = "Metadata saved successfully";
@@ -378,6 +349,16 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
             ];
             variant = "error";
             mode = "sticky";
+          }
+
+          if (this.pendingSaveRollupName) {
+            let pendingRollupName = this.pendingSaveRollupName;
+            if (deploymentData.status !== "Succeeded") {
+              // allows for recovery of non-saved rollup editor state
+              pendingRollupName = "pending-" + pendingRollupName;
+            }
+            this.pendingSaveRollupName = undefined;
+            this.openEditor(pendingRollupName);
           }
           break;
         default:

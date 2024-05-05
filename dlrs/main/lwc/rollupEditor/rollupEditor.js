@@ -57,6 +57,33 @@ const STEP_TEMPLATES = Object.freeze({
   other: [STEPS.configure, STEPS.activate]
 });
 
+export const CLASS_SCHEDULER_CONFIG = {
+  label: "Process Scheduled Items",
+  description:
+    "Manage RollupJob schedules to process all pending Scheduled Item records for all rollups",
+  className: "RollupJob",
+  size: "small",
+  templates: [
+    {
+      label: "Once Every Day",
+      value: "daily",
+      selectors: ["single-hour"],
+      presets: { hours: ["3"] }
+    },
+    {
+      label: "Once Every Hour",
+      value: "hourly",
+      selectors: ["single-minute"]
+    },
+    {
+      label: "Every 15 minutes",
+      value: "every15",
+      selectors: [],
+      presets: { minutes: ["0", "15", "30", "45"] }
+    }
+  ]
+};
+
 export default class RollupEditor extends LightningModal {
   isLoading = false;
   childTriggerIsDeployed = false;
@@ -84,9 +111,7 @@ export default class RollupEditor extends LightningModal {
   }
   @api
   set rollupName(val) {
-    this.errors = {}; // clear any existing error
     this._rollupName = val;
-    this.getRollup();
   }
 
   get cardHeader() {
@@ -134,9 +159,17 @@ export default class RollupEditor extends LightningModal {
       this.rollup = { ...DEFAULT_ROLLUP_VALUES };
     } else {
       try {
-        this.rollup = await getRollupConfig({
-          rollupName: this.rollupName
-        });
+        this.rollup = window.sessionStorage.getItem(this.rollupName);
+        if (this.rollup) {
+          window.sessionStorage.removeItem(this.rollupName);
+          this.rollup = JSON.parse(this.rollup);
+        } else {
+          // necessary to prevent HTML from trying to access a null object
+          this.rollup = { ...DEFAULT_ROLLUP_VALUES };
+          this.rollup = await getRollupConfig({
+            rollupName: this.rollupName
+          });
+        }
 
         this.rollupId = this.rollup.id;
         this.nextFullCalculateAt = await getScheduledFullCalculates({
@@ -226,8 +259,10 @@ export default class RollupEditor extends LightningModal {
   }
 
   cloneClickHandler() {
-    this.rollup.developerName = undefined;
-    this.rollup.id = undefined;
+    delete this.rollup.developerName;
+    delete this.rollup.id;
+    this.rollupId = undefined;
+    this.errors = {};
   }
 
   deleteClickHandler() {
@@ -258,41 +293,19 @@ export default class RollupEditor extends LightningModal {
         this.activateClickHandler();
         break;
       case "scheduleJob":
-        await ClassSchedulerModal.open({
-          label: "Schedule Rollup Job",
-          description: "Scheduled RollupJob to process Scheduled Items",
-          className: "RollupJob",
-          size: "small",
-          templates: [
-            {
-              label: "Once Every Day",
-              value: "daily",
-              selectors: ["single-hour"],
-              presets: { hours: ["3"] }
-            },
-            {
-              label: "Once Every Hour",
-              value: "hourly",
-              selectors: ["single-minute"]
-            },
-            {
-              label: "Every 15 minutes",
-              value: "every15",
-              selectors: [],
-              presets: { minutes: ["0", "15", "30", "45"] }
-            }
-          ]
-        }).then((results) => {
-          if (results) {
-            try {
-              const evt = new ShowToastEvent(results);
-              this.dispatchEvent(evt);
-            } catch (err) {
-              // known issue with Lighting Locker can cause this to fail
-              console.error("Failed to create toast with outcome", err);
+        await ClassSchedulerModal.open(CLASS_SCHEDULER_CONFIG).then(
+          (results) => {
+            if (results) {
+              try {
+                const evt = new ShowToastEvent(results);
+                this.dispatchEvent(evt);
+              } catch (err) {
+                // known issue with Lighting Locker can cause this to fail
+                console.error("Failed to create toast with outcome", err);
+              }
             }
           }
-        });
+        );
         // recalculate Path after Schedule is created
         this.configureSteps();
         break;
@@ -380,7 +393,6 @@ export default class RollupEditor extends LightningModal {
       return;
     }
     this.isLoading = true;
-    this.assembleRollupFromForm();
     await this.runValidate();
     if (Object.keys(this.errors).length > 0) {
       console.error("Record has errors", this.errors);
@@ -389,6 +401,15 @@ export default class RollupEditor extends LightningModal {
     const jobId = await saveRollupConfig({
       rollup: JSON.stringify(this.rollup)
     });
+
+    try {
+      window.sessionStorage.setItem(
+        "pending-" + this.rollup.developerName,
+        JSON.stringify(this.rollup)
+      );
+    } catch (err) {
+      console.error("Error setting session storage", err);
+    }
 
     this.close({
       action: "deloyStart",
