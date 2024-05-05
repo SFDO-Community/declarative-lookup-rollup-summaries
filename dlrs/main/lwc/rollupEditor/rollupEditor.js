@@ -139,10 +139,9 @@ export default class RollupEditor extends LightningModal {
         });
 
         this.rollupId = this.rollup.id;
-        this.nextFullCalculateAt =
-          (await getScheduledFullCalculates({
-            lookupId: this.rollupId
-          })) ?? "Not Scheduled";
+        this.nextFullCalculateAt = await getScheduledFullCalculates({
+          lookupID: this.rollupId
+        });
       } catch (error) {
         this.errors.record = [error.message];
       }
