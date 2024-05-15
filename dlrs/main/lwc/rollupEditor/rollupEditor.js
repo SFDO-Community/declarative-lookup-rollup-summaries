@@ -57,6 +57,33 @@ const STEP_TEMPLATES = Object.freeze({
   other: [STEPS.configure, STEPS.activate]
 });
 
+export const CLASS_SCHEDULER_CONFIG = {
+  label: "Process Scheduled Items",
+  description:
+    "Manage RollupJob schedules to process all pending Scheduled Item records for all rollups",
+  className: "RollupJob",
+  size: "small",
+  templates: [
+    {
+      label: "Once Every Day",
+      value: "daily",
+      selectors: ["single-hour"],
+      presets: { hours: ["3"] }
+    },
+    {
+      label: "Once Every Hour",
+      value: "hourly",
+      selectors: ["single-minute"]
+    },
+    {
+      label: "Every 15 minutes",
+      value: "every15",
+      selectors: [],
+      presets: { minutes: ["0", "15", "30", "45"] }
+    }
+  ]
+};
+
 export default class RollupEditor extends LightningModal {
   isLoading = false;
   childTriggerIsDeployed = false;
@@ -65,15 +92,6 @@ export default class RollupEditor extends LightningModal {
 
   @wire(getOutstandingScheduledItemsForLookup, { lookupID: "$rollupId" })
   outstandingScheduledItems;
-
-  openAccordianSections = [
-    "Information",
-    "ChildObject",
-    "ParentObject",
-    "Relationship",
-    "RollupDetails",
-    "CalculationMode"
-  ];
 
   @track
   rollup = { ...DEFAULT_ROLLUP_VALUES };
@@ -93,13 +111,11 @@ export default class RollupEditor extends LightningModal {
   }
   @api
   set rollupName(val) {
-    this.errors = {}; // clear any existing error
     this._rollupName = val;
-    this.getRollup();
   }
 
   get cardHeader() {
-    return this.rollup.id ? `Edit ${this.rollup.label}` : "Create Rollup";
+    return this.rollup.id ? `Edit ${this.rollup.label}` : "New Rollup";
   }
 
   get saveButtonLabel() {
@@ -118,21 +134,16 @@ export default class RollupEditor extends LightningModal {
     return this.rollup.id && this.rollup.active;
   }
 
-  get scheduledItemsError() {
-    if (
-      !this.outstandingScheduledItems ||
-      !this.outstandingScheduledItems?.data
-    ) {
-      return null;
+  get scheduledItemsIcon() {
+    if (!this.rollup.id || !this.outstandingScheduledItems?.data) {
+      return "";
     }
 
-    return [
-      `This rollup has ${this.outstandingScheduledItems.data} outstanding scheduled items`
-    ];
+    return "utility:warning";
   }
 
   get relationshipCriteriaPlaceholder() {
-    return "Status__c\r\nDays__c";
+    return "Example_Field1__c\r\nExample_Field2__c";
   }
 
   get childFieldOptionsPending() {
@@ -148,15 +159,22 @@ export default class RollupEditor extends LightningModal {
       this.rollup = { ...DEFAULT_ROLLUP_VALUES };
     } else {
       try {
-        this.rollup = await getRollupConfig({
-          rollupName: this.rollupName
-        });
+        this.rollup = window.sessionStorage.getItem(this.rollupName);
+        if (this.rollup) {
+          window.sessionStorage.removeItem(this.rollupName);
+          this.rollup = JSON.parse(this.rollup);
+        } else {
+          // necessary to prevent HTML from trying to access a null object
+          this.rollup = { ...DEFAULT_ROLLUP_VALUES };
+          this.rollup = await getRollupConfig({
+            rollupName: this.rollupName
+          });
+        }
 
         this.rollupId = this.rollup.id;
-        this.nextFullCalculateAt =
-          (await getScheduledFullCalculates({
-            lookupId: this.rollupId
-          })) ?? "Not Scheduled";
+        this.nextFullCalculateAt = await getScheduledFullCalculates({
+          lookupID: this.rollupId
+        });
       } catch (error) {
         this.errors.record = [error.message];
       }
@@ -241,8 +259,10 @@ export default class RollupEditor extends LightningModal {
   }
 
   cloneClickHandler() {
-    this.rollup.developerName = undefined;
-    this.rollup.id = undefined;
+    delete this.rollup.developerName;
+    delete this.rollup.id;
+    this.rollupId = undefined;
+    this.errors = {};
   }
 
   deleteClickHandler() {
@@ -273,41 +293,19 @@ export default class RollupEditor extends LightningModal {
         this.activateClickHandler();
         break;
       case "scheduleJob":
-        await ClassSchedulerModal.open({
-          label: "Schedule Rollup Job",
-          description: "Scheduled RollupJob to process Scheduled Items",
-          className: "RollupJob",
-          size: "small",
-          templates: [
-            {
-              label: "Once Every Day",
-              value: "daily",
-              selectors: ["single-hour"],
-              presets: { hours: ["3"] }
-            },
-            {
-              label: "Once Every Hour",
-              value: "hourly",
-              selectors: ["single-minute"]
-            },
-            {
-              label: "Every 15 minutes",
-              value: "every15",
-              selectors: [],
-              presets: { minutes: ["0", "15", "30", "45"] }
-            }
-          ]
-        }).then((results) => {
-          if (results) {
-            try {
-              const evt = new ShowToastEvent(results);
-              this.dispatchEvent(evt);
-            } catch (err) {
-              // known issue with Lighting Locker can cause this to fail
-              console.error("Failed to create toast with outcome", err);
+        await ClassSchedulerModal.open(CLASS_SCHEDULER_CONFIG).then(
+          (results) => {
+            if (results) {
+              try {
+                const evt = new ShowToastEvent(results);
+                this.dispatchEvent(evt);
+              } catch (err) {
+                // known issue with Lighting Locker can cause this to fail
+                console.error("Failed to create toast with outcome", err);
+              }
             }
           }
-        });
+        );
         // recalculate Path after Schedule is created
         this.configureSteps();
         break;
@@ -390,8 +388,11 @@ export default class RollupEditor extends LightningModal {
   }
 
   async runSave() {
+    if (!this.assembleRollupFromForm()) {
+      console.error("data form is invalid");
+      return;
+    }
     this.isLoading = true;
-    this.assembleRollupFromForm();
     await this.runValidate();
     if (Object.keys(this.errors).length > 0) {
       console.error("Record has errors", this.errors);
@@ -400,6 +401,15 @@ export default class RollupEditor extends LightningModal {
     const jobId = await saveRollupConfig({
       rollup: JSON.stringify(this.rollup)
     });
+
+    try {
+      window.sessionStorage.setItem(
+        "pending-" + this.rollup.developerName,
+        JSON.stringify(this.rollup)
+      );
+    } catch (err) {
+      console.error("Error setting session storage", err);
+    }
 
     this.close({
       action: "deloyStart",
@@ -432,6 +442,8 @@ export default class RollupEditor extends LightningModal {
       "testCodeSeeAllData"
     ];
 
+    let isValid = true;
+
     const checkboxFields = ["active", "aggregateAllRows", "testCodeSeeAllData"];
 
     fieldNames.forEach((fieldName) => {
@@ -439,6 +451,19 @@ export default class RollupEditor extends LightningModal {
         `[data-name="rollup_${fieldName}"]`
       );
       if (inputElement) {
+        if (inputElement.checkValidity) {
+          if (!inputElement.checkValidity()) {
+            isValid = false;
+
+            // had a weird problem where I couldn't do multiple fields in the same loop, had to separate them
+            // probably a better way to do this
+            // eslint-disable-next-line @lwc/lwc/no-async-operation
+            setTimeout(() => {
+              inputElement.reportValidity();
+            }, 20);
+          }
+        }
+
         const attribute = checkboxFields.includes(fieldName)
           ? "checked"
           : "value";
@@ -452,6 +477,7 @@ export default class RollupEditor extends LightningModal {
         console.log(`fieldName (${fieldName}) :  ${this.rollup[fieldName]}`);
       }
     });
+    return isValid;
   }
 
   childObjectSelected(event) {
@@ -523,5 +549,9 @@ export default class RollupEditor extends LightningModal {
     return !["Concatenate", "Concatenate Distinct", "Last"].includes(
       this.rollup.aggregateOperation
     );
+  }
+
+  get hasErrors() {
+    return Object.keys(this.errors).length > 0;
   }
 }
