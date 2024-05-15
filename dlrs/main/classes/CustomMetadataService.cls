@@ -273,6 +273,7 @@ public class CustomMetadataService {
       );
   }
 
+  @TestVisible
   class ApexMdApiDeployCallback implements Metadata.DeployCallback {
     public void handleResult(
       Metadata.DeployResult result,
@@ -286,6 +287,7 @@ public class CustomMetadataService {
     }
   }
 
+  @TestVisible
   class DeleteMetadataQueueable implements Queueable, Database.AllowsCallouts {
     SObjectType qualifiedMetadataType;
     List<String> customMetadataFullNames;
