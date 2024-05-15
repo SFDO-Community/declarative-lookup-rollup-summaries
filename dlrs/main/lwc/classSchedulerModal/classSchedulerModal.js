@@ -18,6 +18,8 @@ export default class ClassSchedulerModal extends LightningModal {
   // async apex jobs
   currentSchedule = [];
   isLoadingCurrentSchedule = true;
+  errors;
+
   currentColumns = [
     {
       label: "Name",
@@ -75,6 +77,9 @@ export default class ClassSchedulerModal extends LightningModal {
 
   @api
   templates;
+
+  @api
+  description;
 
   connectedCallback() {
     this.cronstrue = CronstrueFactory();
@@ -157,6 +162,7 @@ export default class ClassSchedulerModal extends LightningModal {
 
   async handleSchedule() {
     try {
+      this.errors = undefined;
       await scheduleJobs({
         className: this.className,
         newSchedules: this.cronStrings.map((c) => c.cronString)
@@ -168,10 +174,15 @@ export default class ClassSchedulerModal extends LightningModal {
     } catch (error) {
       // TODO: handle the error better
       console.error(error);
+      this.errors = error.body.message;
     }
   }
 
   handleCancel() {
     this.close();
+  }
+
+  get scheduleIsDisabled() {
+    return this.cronStrings.length === 0;
   }
 }
