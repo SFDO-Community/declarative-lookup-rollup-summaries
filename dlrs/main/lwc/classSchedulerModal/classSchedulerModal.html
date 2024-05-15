@@ -1,5 +1,7 @@
 <template>
-  <lightning-modal-header label={label}></lightning-modal-header>
+  <lightning-modal-header label={label}>
+    <p class="slds-m-top_x-small" lwc:if={description}>{description}</p>
+  </lightning-modal-header>
   <lightning-modal-body>
     <lightning-accordion
       allow-multiple-sections-open
@@ -13,7 +15,7 @@
           <lightning-layout-item size="12">
             <div class="slds-section slds-is-open">
               <h3 class="slds-section__title">
-                Total Scheduled Jobs in the Org
+                Total Scheduled Jobs
                 ({scheduledJobCount}/{totalAllowedScheduledJobs})
               </h3>
               <div class="slds-section__content">
@@ -103,7 +105,13 @@
         <lightning-button
           label="Schedule"
           onclick={handleSchedule}
+          disabled={scheduleIsDisabled}
         ></lightning-button>
+      </lightning-layout-item>
+    </lightning-layout>
+    <lightning-layout horizontal-align="center" lwc:if={errors}>
+      <lightning-layout-item padding="horizontal-small">
+        <span style="color: var(--lwc-colorTextError)">Error: {errors}</span>
       </lightning-layout-item>
     </lightning-layout>
   </lightning-modal-footer>

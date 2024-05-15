@@ -103,8 +103,25 @@ public with sharing class RollupEditorController {
     RollupSummaries rollupSummaries = new RollupSummaries(mdtRecords);
     rollupSummaries.onValidate();
     Map<String, List<String>> errorMap;
+
     for (RollupSummary rollupSummaryRecord : rollupSummaries.Records) {
       errorMap = collectErrors(rollupSummaryRecord);
+    }
+
+    LookupRollupSummary2__mdt existing = LookupRollupSummary2__mdt.getInstance(
+      lookupConfig.DeveloperName
+    );
+    if (existing != null && existing.Id != lookupConfig.Id) {
+      if (errorMap == null) {
+        errorMap = new Map<String, List<String>>();
+      }
+
+      if (!errorMap.containsKey('developerName')) {
+        errorMap.put('developerName', new List<String>());
+      }
+
+      errorMap.get('developerName')
+        .add('API name already in use by ' + existing.Id);
     }
 
     return errorMap;

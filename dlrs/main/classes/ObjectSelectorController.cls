@@ -9,7 +9,7 @@ public with sharing class ObjectSelectorController {
     return objects;
   }
 
-  class SObjectInfo {
+  public class SObjectInfo {
     @AuraEnabled
     public String fullName;
     @AuraEnabled

@@ -1,7 +1,5 @@
 <template>
-  <template if:true={hasErrors}>
-    <div style="color: red" for:each={errors} for:item="error" key={error}>
-      {error}
-    </div>
+  <template lwc:if={hasErrors}>
+    <div for:each={errors} for:item="error" key={error}>{error}</div>
   </template>
 </template>

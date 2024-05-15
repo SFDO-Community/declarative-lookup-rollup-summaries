@@ -9,6 +9,7 @@ export default class CronBuilder extends LightningElement {
   selectedTemplate = "";
 
   enabledSelectors = [];
+  errors = [];
 
   _templates;
   @api
@@ -305,27 +306,49 @@ export default class CronBuilder extends LightningElement {
   }
 
   buildCronStrings() {
+    this.errors = [];
     // for minute input, each variation requires a differen Cron String
     // all others can have multiple values
+    if (this.selectedMonths.length === 0) {
+      this.errors.push("Must select at least one month");
+    }
     const months =
       this.selectedMonths.length === this.allMonths.length
         ? "*"
         : this.selectedMonths.join(",");
+
+    if (this.selectedDays.length === 0) {
+      this.errors.push("Must select at least one day");
+    }
     const daysOfMonth =
       this.selectedDays.length === this.allDays.length
         ? "*"
         : this.selectedDays.join(",");
+
+    if (this.selectedWeekdays.length === 0) {
+      this.errors.push("Must select at least one weekday");
+    }
     const daysOfWeek =
       this.selectedWeekdays.length === this.allWeekdays.length
         ? "*"
         : this.selectedWeekdays.join(",");
+
+    if (this.selectedHours.length === 0) {
+      this.errors.push("Must select at least one hour");
+    }
     const hours =
       this.selectedHours.length === this.allHours.length
         ? "*"
         : this.selectedHours.join(",");
     const seconds = "0";
-    // TODO: error guards
     const crons = [];
+
+    if (this.selectedMinutes.length === 0) {
+      this.errors.push("Must select at least one minute");
+    }
+    if (this.errors.length > 0) {
+      return crons;
+    }
     // for every minute
     for (let min of this.selectedMinutes) {
       crons.push(
