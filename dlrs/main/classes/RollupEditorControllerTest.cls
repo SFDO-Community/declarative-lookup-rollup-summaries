@@ -94,7 +94,7 @@ public with sharing class RollupEditorControllerTest {
       JSON.serialize(cfg)
     );
     Assert.areEqual(
-      '{"rowLimit":["Row Limit is only supported on Last and Concatentate operators."],"parentObject":["Object does not exist."],"childObject":["Object does not exist."]}',
+      '{"rowLimit":["Row Limit is only supported on Last and Concatenate operators."],"parentObject":["Object does not exist."],"childObject":["Object does not exist."]}',
       JSON.serialize(errors)
     );
   }
