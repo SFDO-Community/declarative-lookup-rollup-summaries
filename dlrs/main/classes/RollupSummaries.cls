@@ -399,7 +399,7 @@ public class RollupSummaries extends fflib_SObjectDomain {
         if (!operationsSupportingRowLimit.contains(operation)) {
           lookupRollupSummary.Fields.RowLimit.addError(
             error(
-              'Row Limit is only supported on Last and Concatentate operators.',
+              'Row Limit is only supported on Last and Concatenate operators.',
               lookupRollupSummary.Record,
               LookupRollupSummary__c.RowLimit__c
             )
