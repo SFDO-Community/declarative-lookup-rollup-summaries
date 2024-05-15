@@ -13,8 +13,12 @@ public with sharing class SchedulerController {
   }
 
   @AuraEnabled
-  public static void scheduleJobs(String className, List<String> newSchedules) {
+  public static List<Id> scheduleJobs(
+    String className,
+    List<String> newSchedules
+  ) {
     Integer counter = 1;
+    List<Id> jobIds = new List<Id>();
     Schedulable clsInstance = (Schedulable) Type.forName(className)
       .newInstance();
     List<AsyncApexJob> currentJobs = new AsyncApexJobsSelector()
@@ -29,8 +33,9 @@ public with sharing class SchedulerController {
         // if this name is taken, get the next
         scheduledName = className + ' ' + counter++;
       }
-      System.schedule(scheduledName, cron, clsInstance);
+      jobIds.add(System.schedule(scheduledName, cron, clsInstance));
     }
+    return jobIds;
   }
 
   @AuraEnabled
