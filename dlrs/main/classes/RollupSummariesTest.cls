@@ -768,7 +768,7 @@ private class RollupSummariesTest {
     fflib_SObjectDomain.triggerHandler(RollupSummaries.class);
     System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());
     System.assertEquals(
-      'Row Limit is only supported on Last and Concatentate operators.',
+      'Row Limit is only supported on Last and Concatenate operators.',
       fflib_SObjectDomain.Errors.getAll()[0].message
     );
     System.assertEquals(
