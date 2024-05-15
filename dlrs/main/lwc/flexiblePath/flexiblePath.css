@@ -1,3 +1,7 @@
 * {
   --slds-c-icon-color-foreground-default: white;
 }
+
+.slds-path {
+  min-height: 2rem;
+}
