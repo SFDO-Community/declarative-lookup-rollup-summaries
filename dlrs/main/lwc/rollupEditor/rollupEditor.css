@@ -1,3 +1,16 @@
 .testcodearea {
   --slds-c-textarea-sizing-min-height: 300px;
 }
+
+.record-has-errors {
+  color: var(--lwc-colorTextError);
+}
+
+summary {
+  cursor: pointer;
+}
+
+details:not([open]) .summary-down,
+details[open] .summary-right {
+  display: none;
+}
