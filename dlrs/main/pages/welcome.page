@@ -2,7 +2,7 @@
  tabStyle="LookupRollupSummary__c" standardStylesheets="true" lightningStylesheets="true" action="{!checkMetadataAPIConnection}">
 	<script>
 		function createRemoteSite() {
-			// Disable button 
+			// Disable button
 			document.getElementById('createremotesitebtn').disabled = true;
 			// Calls the Metdata API from JavaScript to create the Remote Site Setting to permit Apex callouts
 			var binding = new XMLHttpRequest();
@@ -58,7 +58,7 @@
 			<table>
 				<tr>
 					<td>
-						<apex:image url="{!$Resource.DLRS_Logo}" width="200" height="200"/>
+						<apex:image url="{!$Resource.DLRS_Logo}" width="200" height="200" />
 					</td>
 					<td>
 						<p>
@@ -106,10 +106,22 @@
 			<div>Special thank you to the open source projects used in DLRS</div>
 			<ul>
 				<li>
-					<a href="https://github.com/gustf/js-levenshtein" target="_blank" rel="noopener noreferrer">https://github.com/gustf/js-levenshtein</a>
+					<a href="https://github.com/certinia/apex-mdapi" target="_blank" rel="noopener noreferrer">https://github.com/certinia/apex-mdapi</a>
 				</li>
 				<li>
 					<a href="https://github.com/bradymholt/cronstrue" target="_blank" rel="noopener noreferrer">https://github.com/bradymholt/cronstrue</a>
+				</li>
+				<li>
+					<a href="https://github.com/apex-enterprise-patterns/fflib-apex-mocks" target="_blank" rel="noopener noreferrer">https://github.com/apex-enterprise-patterns/fflib-apex-mocks</a>
+				</li>
+				<li>
+					<a href="https://github.com/apex-enterprise-patterns/fflib-apex-common" target="_blank" rel="noopener noreferrer">https://github.com/apex-enterprise-patterns/fflib-apex-common</a>
+				</li>
+				<li>
+					<a href="https://github.com/gustf/js-levenshtein" target="_blank" rel="noopener noreferrer">https://github.com/gustf/js-levenshtein</a>
+				</li>
+				<li>
+					<a href="https://github.com/abhinavguptas/Salesforce-Lookup-Rollup-Summaries" target="_blank" rel="noopener noreferrer">https://github.com/abhinavguptas/Salesforce-Lookup-Rollup-Summaries</a>
 				</li>
 			</ul>
 		</apex:outputPanel>
