@@ -1270,7 +1270,32 @@ global with sharing class RollupService {
         }
       }
       // These records drive the work done by the RollupJob Scheduled Apex Class
-      upsert scheduledItems QualifiedParentID__c;
+      List<Database.UpsertResult> results = Database.upsert(
+        scheduledItems,
+        LookupRollupSummaryScheduleItems__c.QualifiedParentID__c,
+        false /* allOrNone */,
+        AccessLevel.SYSTEM_MODE
+      );
+      // iterate through errors, only return an exception for something other than DUPLICATE_VALUE
+      // because DUPLICATE_VALUE errors are usually sharing problems and we're happy as long as the record is in the database
+      for (Integer i = 0, j = results.size(); i < j; i++) {
+        if (!results[i].isSuccess()) {
+          for (Database.Error err : results[i].getErrors()) {
+            if (err.getStatusCode() != System.StatusCode.DUPLICATE_VALUE) {
+              throw new DmlException(
+                'Upsert failed. First exception on row ' +
+                  i +
+                  '; first error: ' +
+                  err.getStatusCode() +
+                  ', ' +
+                  err.getMessage() +
+                  ': ' +
+                  err.getFields()
+              );
+            }
+          }
+        }
+      }
     }
 
     // Process each context (parent child relationship) and its associated rollups
