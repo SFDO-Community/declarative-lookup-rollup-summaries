@@ -68,19 +68,44 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     {
       label: "Rollup Type",
       fieldName: "aggregateOperation",
-      sortable: true
+      sortable: true,
+      actions: [
+        { label: 'All', checked: true, name: 'All' },
+        { label: "Sum", checked: false, name: "Sum" },
+        { label: "Max", checked: false, name: "Max" },
+        { label: "Min", checked: false, name: "Min" },
+        { label: "Avg", checked: false, name: "Avg" },
+        { label: "Count", checked: false, name: "Count" },
+        { label: "Count Distinct", checked: false, name: "Count Distinct" },
+        { label: "Concatenate", checked: false, name: "Concatenate" },
+        { label: "Concatenate Distinct", checked: false, name: "Concatenate Distinct" },
+        { label: "First", checked: false, name: "First" },
+        { label: "Last", checked: false, name: "Last" }
+      ]
     },
     {
       label: "Calc Mode",
       fieldName: "calculationMode",
-      sortable: true
+      sortable: true,
+      actions: [
+        { label: 'All', checked: true, name: 'All' },
+        { label: "Watch for Changes and Process Later", checked: false, name: "Watch and Process" },
+        { label: "Realtime", checked: false, name: "Realtime" },
+        { label: "Invocable by Automation", checked: false, name: "Process Builder" },
+        { label: "Developer", checked: false, name: "Developer" }
+      ]
     },
     {
       label: "Active",
       fieldName: "active",
       initialWidth: 75,
       type: "boolean",
-      sortable: true
+      sortable: true,
+      actions: [
+        { label: 'All', checked: true, name: 'All' },
+        { label: 'Active', checked: false, name: 'checked' },
+        { label: 'Inactive', checked: false, name: 'unchecked' },
+      ]
     },
     {
       type: "button-icon",
@@ -109,12 +134,29 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   searchFilter = "";
   isLoading = true;
   selectedRollup = undefined;
+  filters = {};
 
   connectedCallback() {
     this.refreshRollups();
     // Register error listener
     this.registerErrorListener();
     this.handleSubscribe();
+  }
+
+  get visibleRollups() {
+    return this.rollupList.filter(rollup => {
+      let filteredFieldNames = Object.keys(this.filters).filter(fieldName => this.filters[fieldName].value !== 'All');
+
+      return filteredFieldNames.every(fieldName => {
+        switch (this.filters[fieldName].type) {
+          case 'boolean':
+            return rollup[fieldName] === (this.filters[fieldName].value === 'checked' ? true : false)
+        
+          default:
+            return rollup[fieldName] === this.filters[fieldName].value
+        }
+      })
+    });
   }
 
   async refreshRollups() {
@@ -278,6 +320,18 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     this.sortDirection = event.detail.sortDirection;
     // assign the latest attribute with the sorted column fieldName and sorted direction
     this.calcRollupList();
+  }
+
+  handleHeaderAction(event) {
+    let filters = {
+      ...this.filters,
+      [event.detail.columnDefinition.fieldName]: {
+        type: event.detail.columnDefinition.type,
+        value: event.detail.action.name
+      }
+    }
+
+    this.filters = filters;
   }
 
   disconnectedCallback() {

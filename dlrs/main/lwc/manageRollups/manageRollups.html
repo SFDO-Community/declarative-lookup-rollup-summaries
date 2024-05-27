@@ -32,13 +32,14 @@
           </lightning-layout>
           <lightning-datatable
             key-field="DeveloperName"
-            data={rollupList}
+            data={visibleRollups}
             columns={dtColumns}
             sorted-by={sortByField}
             sorted-direction={sortDirection}
             onrowaction={rollupSelectHandler}
             hide-checkbox-column
             onsort={handleOnSort}
+            onheaderaction={handleHeaderAction}
           >
           </lightning-datatable>
           <lightning-spinner lwc:if={isLoading}></lightning-spinner>
