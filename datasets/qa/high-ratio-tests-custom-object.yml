@@ -1,0 +1,43 @@
+# Section uses the QA Lookup Parent object to create high ratio data.
+# There is one parent, with 25,000 sub-parents each with 1 child.
+# There is a second top level parent with all 25,000 children attached.
+#QA Lookup Parent Record to be referenced later for Second Lookup on Child
+- object: QALookupParent__c
+  nickname: TopLevelParent
+  count: 1
+  fields:
+    Name: Top Level Parent High Ratio
+#QA Lookup Parent Record that will have child QA Lookup Parent
+- object: QALookupParent__c
+  nickname: TopHierarchyParent
+  count: 1
+  fields:
+    Name: Top Level of a wide hierarchy
+  friends:
+    - object: QALookupParent__c
+      nickname: CustomParentwithChild
+      count: 25000
+      fields:
+        Name: QALookupParentwithChild
+        Self_Relationship__c:
+          reference: TopHierarchyParent
+      friends:
+        - object: QALookupChild__c
+          nickname: CustomChild
+          count: 1
+          fields:
+            Name: ${{fake.Text(max_nb_chars = 25)}}
+            Amount__c: 1000
+            Color__c:
+              random_choice:
+                - Red
+                - Yellow
+                - Green
+                - Blue
+            Description__c: ${{fake.Text(max_nb_chars = 200)}}
+            Description2__c: ${{fake.Text(max_nb_chars = 200)}}
+            LookupParent__c:
+              reference: CustomParentwithChild
+
+            LookupParent2__c:
+              reference: TopLevelParent
