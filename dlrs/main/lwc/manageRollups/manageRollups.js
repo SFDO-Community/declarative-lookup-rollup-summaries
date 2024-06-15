@@ -70,17 +70,17 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       fieldName: "aggregateOperation",
       sortable: true,
       actions: [
-        { label: 'All', checked: true, name: 'All' },
-        { label: "Sum", checked: false, name: "Sum" },
-        { label: "Max", checked: false, name: "Max" },
-        { label: "Min", checked: false, name: "Min" },
-        { label: "Avg", checked: false, name: "Avg" },
-        { label: "Count", checked: false, name: "Count" },
-        { label: "Count Distinct", checked: false, name: "Count Distinct" },
-        { label: "Concatenate", checked: false, name: "Concatenate" },
-        { label: "Concatenate Distinct", checked: false, name: "Concatenate Distinct" },
-        { label: "First", checked: false, name: "First" },
-        { label: "Last", checked: false, name: "Last" }
+        { type:"filter", label: 'All', checked: true, name: 'All' },
+        { type:"filter", label: "Sum", checked: false, name: "Sum" },
+        { type:"filter", label: "Max", checked: false, name: "Max" },
+        { type:"filter", label: "Min", checked: false, name: "Min" },
+        { type:"filter", label: "Avg", checked: false, name: "Avg" },
+        { type:"filter", label: "Count", checked: false, name: "Count" },
+        { type:"filter", label: "Count Distinct", checked: false, name: "Count Distinct" },
+        { type:"filter", label: "Concatenate", checked: false, name: "Concatenate" },
+        { type:"filter", label: "Concatenate Distinct", checked: false, name: "Concatenate Distinct" },
+        { type:"filter", label: "First", checked: false, name: "First" },
+        { type:"filter", label: "Last", checked: false, name: "Last" }
       ]
     },
     {
@@ -88,11 +88,11 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       fieldName: "calculationMode",
       sortable: true,
       actions: [
-        { label: 'All', checked: true, name: 'All' },
-        { label: "Watch for Changes and Process Later", checked: false, name: "Watch and Process" },
-        { label: "Realtime", checked: false, name: "Realtime" },
-        { label: "Invocable by Automation", checked: false, name: "Process Builder" },
-        { label: "Developer", checked: false, name: "Developer" }
+        { type:"filter", label: 'All', checked: true, name: 'All' },
+        { type:"filter", label: "Watch and Process", checked: false, name: "Watch and Process" },
+        { type:"filter", label: "Realtime", checked: false, name: "Realtime" },
+        { type:"filter", label: "Automatable", checked: false, name: "Automatable" },
+        { type:"filter", label: "Developer", checked: false, name: "Developer" }
       ]
     },
     {
@@ -102,9 +102,9 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       type: "boolean",
       sortable: true,
       actions: [
-        { label: 'All', checked: true, name: 'All' },
-        { label: 'Active', checked: false, name: 'checked' },
-        { label: 'Inactive', checked: false, name: 'unchecked' },
+        { type:"filter", label: 'All', checked: true, name: 'All' },
+        { type:"filter", label: 'Active', checked: false, name: 'checked' },
+        { type:"filter", label: 'Inactive', checked: false, name: 'unchecked' },
       ]
     },
     {
@@ -143,22 +143,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     this.handleSubscribe();
   }
 
-  get visibleRollups() {
-    return this.rollupList.filter(rollup => {
-      let filteredFieldNames = Object.keys(this.filters).filter(fieldName => this.filters[fieldName].value !== 'All');
-
-      return filteredFieldNames.every(fieldName => {
-        switch (this.filters[fieldName].type) {
-          case 'boolean':
-            return rollup[fieldName] === (this.filters[fieldName].value === 'checked' ? true : false)
-        
-          default:
-            return rollup[fieldName] === this.filters[fieldName].value
-        }
-      })
-    });
-  }
-
   async refreshRollups() {
     this.isLoading = true;
     this.rollups = await getAllRollupConfigs();
@@ -182,19 +166,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   calcRollupList() {
     this.rollupList = Object.values(this.rollups).filter((r) => {
-      if (this.searchFilter.trim().length === 0) {
-        return true;
-      }
-      for (const c of this.dtColumns) {
-        if (
-          r[c.fieldName] &&
-          ("" + r[c.fieldName]).toLowerCase().indexOf(this.searchFilter) >= 0
-        ) {
-          return true;
-        }
-      }
-      // didn't match any of the displayed fields
-      return false;
+      return this.meetsSearchFilter(r) && this.meetsColumnFilters(r);
     });
     this.rollupList.sort((a, b) => {
       const dirModifier = this.sortDirection === "asc" ? 1 : -1;
@@ -219,6 +191,34 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
       return res * dirModifier;
     });
+  }
+
+  meetsSearchFilter(rollup) {
+    if (this.searchFilter.trim().length === 0) {
+      return true;
+    }
+    for (const c of this.dtColumns) {
+      if (
+        rollup[c.fieldName] &&
+        ("" + rollup[c.fieldName]).toLowerCase().indexOf(this.searchFilter) >= 0
+      ) {
+        return true;
+      }
+    }
+    // didn't match any of the displayed fields
+    return false;
+  }
+
+  meetsColumnFilters(rollup) {
+    return Object.keys(this.filters).every(fieldName => {
+      switch (this.filters[fieldName].type) {
+        case 'boolean':
+          return rollup[fieldName] === (this.filters[fieldName].value === 'checked' ? true : false)
+      
+        default:
+          return rollup[fieldName] === this.filters[fieldName].value
+      }
+    })
   }
 
   rollupSelectHandler(event) {
@@ -323,15 +323,33 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   }
 
   handleHeaderAction(event) {
-    let filters = {
-      ...this.filters,
-      [event.detail.columnDefinition.fieldName]: {
-        type: event.detail.columnDefinition.type,
-        value: event.detail.action.name
+    const filteredFieldName = event.detail.columnDefinition.fieldName;
+    const columnRef = [...this.dtColumns];
+    const currentColumn = columnRef.find(f => f.fieldName === filteredFieldName);
+    const previousAction = currentColumn.actions.find(action => action.checked);
+    const currentAction = currentColumn.actions.find(action => action.name === event.detail.action.name);
+
+    if (event.detail.action.type === 'filter') {
+      if (event.detail.action.name === 'All') {
+        delete this.filters[filteredFieldName];
+        delete currentColumn.iconName;
+      } else {
+        this.filters = {
+          ...this.filters,
+          [filteredFieldName]: {
+            type: event.detail.columnDefinition.type,
+            value: event.detail.action.name
+          }
+        }
+        currentColumn.iconName = 'utility:filterList';
       }
+
+      this.calcRollupList();
     }
 
-    this.filters = filters;
+    previousAction.checked = false;
+    currentAction.checked = true;
+    this.dtColumns = columnRef;
   }
 
   disconnectedCallback() {
