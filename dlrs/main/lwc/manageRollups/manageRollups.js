@@ -69,31 +69,13 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       label: "Rollup Type",
       fieldName: "aggregateOperation",
       sortable: true,
-      actions: [
-        { type:"filter", label: 'All', checked: true, name: 'All' },
-        { type:"filter", label: "Sum", checked: false, name: "Sum" },
-        { type:"filter", label: "Max", checked: false, name: "Max" },
-        { type:"filter", label: "Min", checked: false, name: "Min" },
-        { type:"filter", label: "Avg", checked: false, name: "Avg" },
-        { type:"filter", label: "Count", checked: false, name: "Count" },
-        { type:"filter", label: "Count Distinct", checked: false, name: "Count Distinct" },
-        { type:"filter", label: "Concatenate", checked: false, name: "Concatenate" },
-        { type:"filter", label: "Concatenate Distinct", checked: false, name: "Concatenate Distinct" },
-        { type:"filter", label: "First", checked: false, name: "First" },
-        { type:"filter", label: "Last", checked: false, name: "Last" }
-      ]
+      filterable: true
     },
     {
       label: "Calc Mode",
       fieldName: "calculationMode",
       sortable: true,
-      actions: [
-        { type:"filter", label: 'All', checked: true, name: 'All' },
-        { type:"filter", label: "Watch and Process", checked: false, name: "Watch and Process" },
-        { type:"filter", label: "Realtime", checked: false, name: "Realtime" },
-        { type:"filter", label: "Automatable", checked: false, name: "Automatable" },
-        { type:"filter", label: "Developer", checked: false, name: "Developer" }
-      ]
+      filterable: true
     },
     {
       label: "Active",
@@ -101,11 +83,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       initialWidth: 75,
       type: "boolean",
       sortable: true,
-      actions: [
-        { type:"filter", label: 'All', checked: true, name: 'All' },
-        { type:"filter", label: 'Active', checked: false, name: 'checked' },
-        { type:"filter", label: 'Inactive', checked: false, name: 'unchecked' },
-      ]
+      filterable: true
     },
     {
       type: "button-icon",
@@ -160,8 +138,50 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       // no rollups in the database, start to create a new one
       this.openEditor(null);
     }
+    this.updateColumnFilters();
     this.calcRollupList();
     this.isLoading = false;
+  }
+
+  updateColumnFilters() {
+    this.dtColumns = [...this.dtColumns].map(conf => {
+      if (conf.filterable) {
+        // reset actions
+        if (conf.actions) {
+          conf.actions = conf.actions.filter(action => action.type !== "filter");
+        } else {
+          conf.actions = [];
+        }
+  
+        const availableValues = this.rollups.reduce((result, rollup) => {
+          const fieldValue = rollup[conf.fieldName];
+  
+          if (!result.includes(fieldValue)) {
+            result.push(fieldValue)
+          }
+  
+          return result;
+        }, []);
+  
+        conf.actions.push({
+          type: "filter",
+          label: "All",
+          checked: true,
+          name: "All"
+        });
+  
+        availableValues.sort().forEach(val => {
+          conf.actions.push({
+            type: "filter",
+            label: val,
+            checked: false,
+            name: val
+          });
+        });
+      }
+  
+      return conf;
+    });
   }
 
   calcRollupList() {
@@ -211,13 +231,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   meetsColumnFilters(rollup) {
     return Object.keys(this.filters).every(fieldName => {
-      switch (this.filters[fieldName].type) {
-        case 'boolean':
-          return rollup[fieldName] === (this.filters[fieldName].value === 'checked' ? true : false)
-      
-        default:
-          return rollup[fieldName] === this.filters[fieldName].value
-      }
+      return rollup[fieldName] === this.filters[fieldName].value
     })
   }
 
