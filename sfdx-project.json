@@ -28,5 +28,5 @@
   ],
   "namespace": "dlrs",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "60.0"
+  "sourceApiVersion": "61.0"
 }
