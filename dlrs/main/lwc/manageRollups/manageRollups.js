@@ -178,6 +178,20 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
             name: val
           });
         });
+
+        if (conf.fieldName in this.filters) {
+          const filteredValue = this.filters[conf.fieldName].value;
+
+          // check if currently filtered value is still relevant
+          if (availableValues.includes(filteredValue)) {
+            conf.actions.find(a => a.type === "filter" && a.name === "All").checked = false;
+            conf.actions.find(a => a.type === "filter" && a.name === filteredValue).checked = true;
+          } else {
+            // remove filter
+            delete this.filters[conf.fieldName];
+            conf.iconName = '';
+          }
+        }
       }
   
       return conf;
