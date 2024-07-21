@@ -28,6 +28,7 @@
  * Handles the Manage Trigger and Calculate Custom Buttons
  **/
 public with sharing class RollupController {
+
   @TestVisible
   private static String FALLBACK_COMPONENT_API_VERSION = '61.0';
 
