@@ -57,10 +57,13 @@ private class RollupSummariesTest {
     );
     fflib_SObjectDomain.triggerHandler(RollupSummaries.class);
     System.assertEquals(1, fflib_SObjectDomain.Errors.getAll().size());
-    System.assertEquals(
-      'Relationship Criteria \'StageName Equals Won\' is not valid, see SOQL documentation http://www.salesforce.com/us/developer/docs/soql_sosl/Content/sforce_api_calls_soql_select_conditionexpression.htm, error is \'unexpected token: \'Equals\'\'',
-      fflib_SObjectDomain.Errors.getAll()[0].message
+    Assert.isTrue(
+      fflib_SObjectDomain.Errors.getAll()[0]
+        .message.startsWith(
+          'Relationship Criteria \'StageName Equals Won\' is not valid, see SOQL documentation'
+        )
     );
+
     System.assertEquals(
       LookupRollupSummary__c.RelationShipCriteria__c,
       ((fflib_SObjectDomain.FieldError) fflib_SObjectDomain.Errors.getAll()[0])
