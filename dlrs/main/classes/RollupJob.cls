@@ -48,6 +48,25 @@ global with sharing class RollupJob implements Schedulable, Database.Batchable<s
         (List<LookupRollupSummaryScheduleItems__c>) rollupSummaryScheduleItems
       );
     } catch (Exception e) {
+      LookupRollupSummaryLog__c logEntry = new LookupRollupSummaryLog__c();
+      logEntry.ParentId__c = 'RollupJob';
+      logEntry.ParentObject__c = 'RollupJob';
+
+      logEntry.ErrorMessage__c =
+        e.getMessage() +
+        ' : ' +
+        e.getStackTraceString();
+
+      upsert logEntry ParentId__c;
+
+      if (
+        DeclarativeLookupRollupSummaries__c.getInstance()
+          .DisableProblemEmails__c
+      ) {
+        // if emails are disabled then bail out
+        return;
+      }
+
       // Ids in scope
       List<String> ids = new List<String>();
       for (
@@ -74,7 +93,7 @@ global with sharing class RollupJob implements Schedulable, Database.Batchable<s
           new List<String>{ e.getMessage(), String.join(ids, ',') }
         )
       );
-      Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
+      MessageService.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
     }
   }
 
