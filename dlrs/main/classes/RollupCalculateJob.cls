@@ -59,6 +59,32 @@ public with sharing class RollupCalculateJob implements Database.Batchable<sObje
         new Map<Id, Sobject>(masterRecords).keySet()
       );
     } catch (Exception e) {
+      LookupRollupSummaryLog__c logEntry = new LookupRollupSummaryLog__c();
+      List<RollupSummary> rollup = new RollupSummariesSelector()
+        .selectById(new Set<String>{ lookupId });
+      logEntry.ParentId__c = lookupId;
+      if (!rollup.isEmpty()) {
+        // Log the failure updating the master record for review
+        logEntry.ParentObject__c = rollup[0]
+          .Record.getSObjectType()
+          .getDescribe()
+          .getName();
+      }
+
+      logEntry.ErrorMessage__c =
+        e.getMessage() +
+        ' : ' +
+        e.getStackTraceString();
+
+      upsert logEntry ParentId__c;
+
+      if (
+        DeclarativeLookupRollupSummaries__c.getInstance()
+          .DisableProblemEmails__c
+      ) {
+        // if emails are disabled then bail out
+        return;
+      }
       // Ids in scope
       List<String> ids = new List<String>();
       for (Id recordId : new Map<Id, SObject>(masterRecords).keySet()) {
@@ -82,7 +108,7 @@ public with sharing class RollupCalculateJob implements Database.Batchable<sObje
           new List<String>{ e.getMessage(), String.join(ids, ',') }
         )
       );
-      Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
+      MessageService.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
     }
   }
 
