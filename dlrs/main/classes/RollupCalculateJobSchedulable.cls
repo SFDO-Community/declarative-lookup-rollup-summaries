@@ -15,6 +15,33 @@ public with sharing class RollupCalculateJobSchedulable implements Schedulable {
       // Enqueue the job to recalcualte the given rollup parent records
       RollupService.runJobToCalculate(rollupRecordId, masterWhereClause);
     } catch (Exception e) {
+      LookupRollupSummaryLog__c logEntry = new LookupRollupSummaryLog__c();
+      List<RollupSummary> rollup = new RollupSummariesSelector()
+        .selectById(new Set<String>{ rollupRecordId });
+      logEntry.ParentId__c = rollupRecordId;
+      if (!rollup.isEmpty()) {
+        // Log the failure updating the master record for review
+        logEntry.ParentObject__c = rollup[0]
+          .Record.getSObjectType()
+          .getDescribe()
+          .getName();
+      }
+
+      logEntry.ErrorMessage__c =
+        e.getMessage() +
+        ' : ' +
+        e.getStackTraceString();
+
+      upsert logEntry ParentId__c;
+
+      if (
+        DeclarativeLookupRollupSummaries__c.getInstance()
+          .DisableProblemEmails__c
+      ) {
+        // if emails are disabled then bail out
+        return;
+      }
+
       // Resolve the name of this job
       Id triggerId = sc.getTriggerId();
       Map<Id, String> jobNameByTriggerId = new CronJobDetailsSelector()
@@ -34,12 +61,12 @@ public with sharing class RollupCalculateJobSchedulable implements Schedulable {
       mail.setPlainTextBody(
         String.format(
           'Error: {0} ' +
-          'Review the error, rollup definition and/or delete the Apex Scheduled job under Setup. ' +
-          'Check if the rollup still exists via the Manage Rollup Summaries and/or Lookup Rollup Summaries tabs. ',
+            'Review the error, rollup definition and/or delete the Apex Scheduled job under Setup. ' +
+            'Check if the rollup still exists via the Manage Rollup Summaries and/or Lookup Rollup Summaries tabs. ',
           new List<String>{ e.getMessage() }
         )
       );
-      Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
+      MessageService.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
     }
   }
 }
