@@ -26,4 +26,186 @@
 
 @IsTest
 private class RollupJobTest {
+  @IsTest
+  static void testSchedule() {
+    RollupJob job = new RollupJob();
+    Test.startTest();
+    Id schedId = System.schedule('TestSchedRollupJob8724', '0 0 * * * ?', job);
+    Test.stopTest();
+  }
+
+  @IsTest
+  static void testRunJob() {
+    String prefix = LookupRollupSummary2__mdt.sObjectType.getDescribe()
+      .getKeyPrefix();
+
+    LookupRollupSummary2__mdt rollupCfg = new LookupRollupSummary2__mdt(
+      Id = prefix + '00000000000000D',
+      Label = 'A Summary',
+      DeveloperName = 'A_Summary',
+      ParentObject__c = 'Account',
+      ChildObject__c = 'Contact',
+      RelationshipField__c = 'AccountId',
+      AggregateOperation__c = RollupSummaries.AggregateOperation.Count.name(),
+      AggregateResultField__c = 'Description',
+      FieldToAggregate__c = 'Id',
+      CalculationMode__c = 'Realtime',
+      AggregateAllRows__c = false,
+      Active__c = true
+    );
+
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
+      RollupSummary.toList(new List<LookupRollupSummary2__mdt>{ rollupCfg })
+    );
+
+    Account a = new Account(Name = 'Test');
+    insert a;
+
+    DeclarativeLookupRollupSummaries__c settings = new DeclarativeLookupRollupSummaries__c(
+      DisableProblemEmails__c = true
+    );
+    insert settings;
+
+    List<LookupRollupSummaryScheduleItems__c> items = new List<LookupRollupSummaryScheduleItems__c>();
+
+    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
+    scheduledItem.Name = a.Id;
+    scheduledItem.LookupRollupSummary2__c = rollupCfg.Id;
+    scheduledItem.ParentId__c = a.Id;
+    scheduledItem.QualifiedParentID__c = a.Id + '#' + rollupCfg.Id;
+
+    items.add(scheduledItem);
+
+    insert items;
+
+    RollupJob job = new RollupJob();
+    Test.startTest();
+    Database.executeBatch(job);
+    Test.stopTest();
+
+    List<LookupRollupSummaryLog__c> logs = [
+      SELECT Id, ParentId__c, ParentObject__c
+      FROM LookupRollupSummaryLog__c
+    ];
+    Assert.areEqual(0, logs.size());
+  }
+
+  @IsTest
+  static void testFailureWithEmail() {
+    String prefix = LookupRollupSummary2__mdt.sObjectType.getDescribe()
+      .getKeyPrefix();
+
+    LookupRollupSummary2__mdt rollupCfg = new LookupRollupSummary2__mdt(
+      Id = prefix + '00000000000000D',
+      Label = 'A Summary',
+      DeveloperName = 'A_Summary',
+      ParentObject__c = 'A',
+      ChildObject__c = 'X',
+      RelationshipField__c = '1',
+      CalculationMode__c = 'Realtime',
+      Active__c = true
+    );
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
+      RollupSummary.toList(new List<LookupRollupSummary2__mdt>{ rollupCfg })
+    );
+
+    Account a = new Account(Name = 'Test');
+    insert a;
+
+    List<LookupRollupSummaryScheduleItems__c> items = new List<LookupRollupSummaryScheduleItems__c>();
+
+    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
+    scheduledItem.Name = a.Id;
+    scheduledItem.LookupRollupSummary2__c = rollupCfg.Id;
+    scheduledItem.ParentId__c = a.Id;
+    scheduledItem.QualifiedParentID__c = a.Id + '#' + rollupCfg.Id;
+
+    items.add(scheduledItem);
+
+    insert items;
+
+    RollupJob job = new RollupJob();
+    Test.startTest();
+    job.execute(new MockBatchableContext(), items);
+    Test.stopTest();
+
+    List<LookupRollupSummaryLog__c> logs = [
+      SELECT Id, ParentId__c, ParentObject__c
+      FROM LookupRollupSummaryLog__c
+    ];
+    Assert.areEqual(1, logs.size());
+    Assert.areEqual('RollupJob', logs[0].ParentObject__c);
+    Assert.areEqual('RollupJob', logs[0].ParentId__c);
+    Assert.areEqual(1, MessageService.sentEmailList.size());
+  }
+
+  @IsTest
+  static void testFailureWithoutEmail() {
+    String prefix = LookupRollupSummary2__mdt.sObjectType.getDescribe()
+      .getKeyPrefix();
+
+    LookupRollupSummary2__mdt rollupCfg = new LookupRollupSummary2__mdt(
+      Id = prefix + '00000000000000D',
+      Label = 'A Summary',
+      DeveloperName = 'A_Summary',
+      ParentObject__c = 'A',
+      ChildObject__c = 'X',
+      RelationshipField__c = '1',
+      CalculationMode__c = 'Realtime',
+      Active__c = true
+    );
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
+      RollupSummary.toList(new List<LookupRollupSummary2__mdt>{ rollupCfg })
+    );
+
+    Account a = new Account(Name = 'Test');
+    insert a;
+
+    DeclarativeLookupRollupSummaries__c settings = new DeclarativeLookupRollupSummaries__c(
+      DisableProblemEmails__c = true
+    );
+    insert settings;
+
+    List<LookupRollupSummaryScheduleItems__c> items = new List<LookupRollupSummaryScheduleItems__c>();
+
+    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
+    scheduledItem.Name = a.Id;
+    scheduledItem.LookupRollupSummary2__c = rollupCfg.Id;
+    scheduledItem.ParentId__c = a.Id;
+    scheduledItem.QualifiedParentID__c = a.Id + '#' + rollupCfg.Id;
+
+    items.add(scheduledItem);
+
+    insert items;
+
+    RollupJob job = new RollupJob();
+    Test.startTest();
+    job.execute(new MockBatchableContext(), items);
+    Test.stopTest();
+
+    List<LookupRollupSummaryLog__c> logs = [
+      SELECT Id, ParentId__c, ParentObject__c
+      FROM LookupRollupSummaryLog__c
+    ];
+    Assert.areEqual(1, logs.size());
+    Assert.areEqual('RollupJob', logs[0].ParentObject__c);
+    Assert.areEqual('RollupJob', logs[0].ParentId__c);
+    Assert.areEqual(0, MessageService.sentEmailList.size());
+  }
+
+  public class MockBatchableContext implements Database.BatchableContext {
+    public Id getJobId() {
+      return '100000000000000';
+    }
+
+    public Id getChildJobId() {
+      return '100000000000000';
+    }
+  }
 }
