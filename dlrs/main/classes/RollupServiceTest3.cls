@@ -430,6 +430,8 @@ private with sharing class RollupServiceTest3 {
     rollupSummary.CalculationMode__c = 'Scheduled';
     insert rollupSummary;
 
+    RollupSummariesSelector.clearRollupCache();
+
     ApexPages.StandardController standardController = new ApexPages.StandardController(
       rollupSummary
     );
@@ -492,6 +494,9 @@ private with sharing class RollupServiceTest3 {
         WHERE ApexClass.Name = 'RollupCalculateJobSchedulable'
       ] > 0
     );
+
+    Assert.areEqual(0, [SELECT COUNT() FROM LookupRollupSummaryLog__c]);
+    Assert.areEqual(0, MessageService.sentEmailList.size());
   }
 
   private testMethod static void testDeveloperAPI() {
