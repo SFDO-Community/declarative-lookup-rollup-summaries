@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>CampaignMember_Min__c</fullName>
+    <description>Populated via Campaign_CampaignMember_Min DLRS</description>
+    <inlineHelpText>Populated via Campaign_CampaignMember_Min DLRS</inlineHelpText>
+    <label>CampaignMember Min</label>
+    <required>false</required>
+    <type>DateTime</type>
+</CustomField>
