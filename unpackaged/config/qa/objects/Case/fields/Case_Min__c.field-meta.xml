@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Case_Min__c</fullName>
+    <description>Populated via Case_Case_Min DLRS</description>
+    <inlineHelpText>Populated via Case_Case_Min DLRS</inlineHelpText>
+    <label>Case Min</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>DateTime</type>
+</CustomField>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Opportunity_Count__c</fullName>
+    <description>Populated via QALookupParent_Opportunity_Count Rollup</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Populated via QALookupParent_Opportunity_Count Rollup</inlineHelpText>
+    <label>Opportunity Count</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>
