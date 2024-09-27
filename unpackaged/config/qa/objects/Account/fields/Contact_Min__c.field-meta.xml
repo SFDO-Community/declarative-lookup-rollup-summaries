@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Contact_Min__c</fullName>
+    <description>Populated via Account_Contact_Min DLRS</description>
+    <inlineHelpText>Populated via Account_Contact_Min DLRS</inlineHelpText>
+    <label>Contact_Min</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>DateTime</type>
+</CustomField>

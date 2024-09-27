@@ -2,7 +2,6 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>LookupParent2__c</fullName>
     <deleteConstraint>SetNull</deleteConstraint>
-    <externalId>false</externalId>
     <label>QA Lookup Parent 2</label>
     <referenceTo>QALookupParent__c</referenceTo>
     <relationshipLabel>QALookup Children (Lookup Parent 2)</relationshipLabel>
