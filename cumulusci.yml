@@ -28,6 +28,12 @@ tasks:
     options:
       path: unpackaged/config/qa
 
+  snowfakery_lowratio:
+    description: Create a sample dataset for main objects in CSOM EDA org
+    class_path: cumulusci.tasks.bulkdata.snowfakery.Snowfakery
+    options:
+        recipe: datasets/qa/snowfakerylowratio.yml
+
   robot:
     options:
       suites: robot/DLRS/tests
@@ -128,6 +134,7 @@ orgs:
       config_file: orgs/dev.json
       namespaced: True
       days: 7
+
 plans:
   install:
     slug: install

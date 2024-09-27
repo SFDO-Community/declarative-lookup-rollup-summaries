@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>QA_Lookup_Amount_Min__c</fullName>
+    <description>Populated via QALookupParent_QALookupChild_Min Rollup</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Populated via QALookupParent_QALookupChild_Min Rollup</inlineHelpText>
+    <label>QA Lookup Amount Min</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>
