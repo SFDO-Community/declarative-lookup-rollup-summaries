@@ -210,5 +210,5 @@
         <members>QALookupParent__c.Not_42</members>
         <name>ValidationRule</name>
     </types>
-    <version>59.0</version>
+    <version>61.0</version>
 </Package>
