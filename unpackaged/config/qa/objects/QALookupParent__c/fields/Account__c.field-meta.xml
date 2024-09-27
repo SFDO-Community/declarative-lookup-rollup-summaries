@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Account__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Lookup relationship used to test Custom Object Child to Standard Object Parent scenario</description>
+    <inlineHelpText>Lookup relationship used to test Custom Object Child to Standard Object Parent scenario</inlineHelpText>
+    <label>Account</label>
+    <referenceTo>Account</referenceTo>
+    <relationshipLabel>QA Lookup Parents</relationshipLabel>
+    <relationshipName>QA_Lookup_Parents_Account</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>
