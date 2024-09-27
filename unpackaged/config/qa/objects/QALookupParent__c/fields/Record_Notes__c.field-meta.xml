@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Record_Notes__c</fullName>
-    <externalId>false</externalId>
     <inlineHelpText>Use this field to record any additional notes about how this record is going to be used in the test dataset.</inlineHelpText>
     <label>Record Notes</label>
     <length>32768</length>
