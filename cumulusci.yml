@@ -128,13 +128,6 @@ flows:
         options:
           extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
 
-  config_dev:
-    steps:
-      1.1:
-        task: deploy
-        options:
-          path: unpackaged/config/qa
-
 orgs:
   scratch:
     dev_prerelease:
