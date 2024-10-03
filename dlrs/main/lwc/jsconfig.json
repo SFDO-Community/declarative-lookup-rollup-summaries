@@ -1,25 +1,10 @@
-{
-    "compilerOptions": {
-        "experimentalDecorators": true,
-        "baseUrl": ".",
-        "paths": {
-            "c/*": [
-                "*"
-            ]
-        }
-    },
-    "include": [
-        "**/*",
-        "../../../.sfdx/typings/lwc/**/*.d.ts"
-    ],
-    "paths": {
-        "c/*": [
-            "*"
-        ]
-    },
-    "typeAcquisition": {
-        "include": [
-            "jest"
-        ]
-    }
-}
+"compilerOptions": {
+    "experimentalDecorators": true
+  },
+  "include": ["**/*", "../../../.sfdx/typings/lwc/**/*.d.ts"],
+  "paths": {
+    "c/*": ["*"]
+  },
+  "typeAcquisition": {
+    "include": ["jest"]
+  }

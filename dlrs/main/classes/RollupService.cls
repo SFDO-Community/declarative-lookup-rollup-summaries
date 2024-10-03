@@ -1671,7 +1671,6 @@ global with sharing class RollupService {
 
       // Bypass duplicate rules
 
-      // dmlOptions.duplicateRuleHeader.duplicateRuleBypassFlow = true;
 
       try {
         // Perform the update operation with Dmloptions
