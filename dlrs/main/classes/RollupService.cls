@@ -1673,8 +1673,9 @@ global with sharing class RollupService {
 
 
       try {
-        // Perform the update operation with Dmloptions
-        return Database.update(masterRecords, dmlOptions);
+        return Database.update(masterRecords, allOrNothing);
+
+     
       } catch (DMLException e) {
         // Determine if the exception is due to parent record/s having been deleted
         Boolean throwException = true;
