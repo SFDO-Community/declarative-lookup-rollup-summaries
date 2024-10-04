@@ -30,8 +30,8 @@
     "eslint-plugin-jest": "^24.7.0",
     "husky": "^6.0.0",
     "lint-staged": "^11.2.6",
-    "prettier": "2.5.0",
-    "prettier-plugin-apex": "1.10.0"
+    "prettier": "^2.5.0",
+    "prettier-plugin-apex": "^1.10.0"
   },
   "resolutions": {
     "minimist": "^1.2.6",
