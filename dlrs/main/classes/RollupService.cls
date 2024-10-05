@@ -1661,6 +1661,20 @@ global with sharing class RollupService {
         masterRecords.set(outerIndex, masterRecords.get(indexOfMin));
         masterRecords.set(indexOfMin, temp);
       }
+      // Create DmlOptions instance
+      Database.DMLOptions dml = new Database.DMLOptions();
+
+      // Allow save even if duplicates are detected
+      dml.DuplicateRuleHeader.allowSave = true;
+
+      // Run as current user to enforce sharing rules
+      dml.DuplicateRuleHeader.runAsCurrentUser = true;
+
+      // Apply DmlOptions to each record
+      for (SObject record : masterRecords) {
+        record.setOptions(dml);
+      }
+
       try {
         return Database.update(masterRecords, allOrNothing);
       } catch (DMLException e) {
