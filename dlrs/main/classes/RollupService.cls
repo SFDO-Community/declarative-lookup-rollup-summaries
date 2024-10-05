@@ -1663,19 +1663,16 @@ global with sharing class RollupService {
       }
 
       // Create DmlOptions instance
+      Database.DMLOptions dml = new Database.DMLOptions();
+      dml.DuplicateRuleHeader.allowSave = true;
+      dml.DuplicateRuleHeader.runAsCurrentUser = true;
 
-      Database.DmlOptions dmlOptions = new Database.DmlOptions();
-
-      // Allows save even if duplicated are detected
-      dmlOptions.duplicateRuleHeader.allowSave = true;
-
-      // Bypass duplicate rules
-
-
+      // Apply DmlOptions to each record
+      for (SObject record : masterRecords) {
+        record.setOptions(dml);
+      }
       try {
         return Database.update(masterRecords, allOrNothing);
-
-     
       } catch (DMLException e) {
         // Determine if the exception is due to parent record/s having been deleted
         Boolean throwException = true;
