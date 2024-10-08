@@ -1670,13 +1670,10 @@ global with sharing class RollupService {
       // Run as current user to enforce sharing rules
       dml.DuplicateRuleHeader.runAsCurrentUser = true;
 
-      // Apply DmlOptions to each record
-      for (SObject record : masterRecords) {
-        record.setOptions(dml);
-      }
+      dml.OptAllOrNone = allOrNothing;
 
       try {
-        return Database.update(masterRecords, allOrNothing);
+        return Database.update(masterRecords, dml);
       } catch (DMLException e) {
         // Determine if the exception is due to parent record/s having been deleted
         Boolean throwException = true;
@@ -1699,6 +1696,7 @@ global with sharing class RollupService {
           return new List<Database.Saveresult>();
         }
         // Throw on as normal
+
         throw e;
       }
     }
