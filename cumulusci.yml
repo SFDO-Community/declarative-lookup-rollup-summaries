@@ -28,6 +28,18 @@ tasks:
     options:
       path: unpackaged/config/qa
 
+  snowfakery_highratio_custom:
+    description: Create a sample dataset for main objects in CSOM EDA org
+    class_path: cumulusci.tasks.bulkdata.snowfakery.Snowfakery
+    options:
+        recipe: datasets/qa/high-ratio-tests-custom-object.yml
+
+  snowfakery_highratio_standard:
+    description: Create a sample dataset for main objects in CSOM EDA org
+    class_path: cumulusci.tasks.bulkdata.snowfakery.Snowfakery
+    options:
+        recipe: datasets/qa/high-ratio-tests-stand-object.yml
+
   snowfakery_lowratio:
     description: Create a sample dataset for main objects in CSOM EDA org
     class_path: cumulusci.tasks.bulkdata.snowfakery.Snowfakery
@@ -85,10 +97,11 @@ flows:
         options:
           apex: QAHelper.updateAppMenuOrdering();
       7:
-        task: load_dataset
-        options:
-          mapping: datasets/qa/mapping.yml
-          sql_path: datasets/qa/qa_data.sql
+        task: snowfakery_lowratio
+      8:
+        task: snowfakery_highratio_standard
+      9:
+        task: snowfakery_highratio_custom
 
   customer_org:
     steps:
@@ -114,13 +127,6 @@ flows:
         task: dx_convert_from
         options:
           extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
-
-  config_dev:
-    steps:
-      1.1:
-        task: deploy
-        options:
-          path: unpackaged/config/qa
 
 orgs:
   scratch:
