@@ -1661,8 +1661,19 @@ global with sharing class RollupService {
         masterRecords.set(outerIndex, masterRecords.get(indexOfMin));
         masterRecords.set(indexOfMin, temp);
       }
+      // Create DmlOptions instance
+      Database.DMLOptions dml = new Database.DMLOptions();
+
+      // Allow save even if duplicates are detected
+      dml.DuplicateRuleHeader.allowSave = true;
+
+      // Run as current user to enforce sharing rules
+      dml.DuplicateRuleHeader.runAsCurrentUser = true;
+
+      dml.OptAllOrNone = allOrNothing;
+
       try {
-        return Database.update(masterRecords, allOrNothing);
+        return Database.update(masterRecords, dml);
       } catch (DMLException e) {
         // Determine if the exception is due to parent record/s having been deleted
         Boolean throwException = true;
@@ -1685,6 +1696,7 @@ global with sharing class RollupService {
           return new List<Database.Saveresult>();
         }
         // Throw on as normal
+
         throw e;
       }
     }
