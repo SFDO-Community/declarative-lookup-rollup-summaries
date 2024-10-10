@@ -31,30 +31,31 @@
  * The bypass and removebypass method return the result of the default Set object operations.
  **/
 public without sharing class BypassHandler {
-  private static Set<String> bypassedRollups;
-
-  /**
-   * Initialize the set if necessary for adding rollups to the bypass list.
-   */
-  private static void init() {
-    if (bypassedRollups == null) {
-      bypassedRollups = new Set<String>();
-    }
-  }
+  private static Set<String> bypassedRollups = new Set<String>();
+  private static Boolean bypassAll = false;
 
   /**
    * Checks if the rollup is bypassed or not. Returns true if it is. False otherwise.
+   * Could be bypassed by custom setting, bypass all, or specific named bypass
    */
   public static Boolean isBypassed(String handlerName) {
-    return bypassedRollups != null && bypassedRollups.contains(handlerName);
+    return DeclarativeLookupRollupSummaries__c.getInstance()
+        .DisableDLRSGlobally__c == true ||
+      bypassAll ||
+      bypassedRollups.contains(handlerName);
+  }
+
+  /**
+   * Sets a global bypass value, if true all rollups will be disabled for execution
+   */
+  public static void setBypassAll(Boolean val) {
+    bypassAll = val;
   }
 
   /**
    * Adds a rollup to the bypassed rollups list.
    */
   public static Boolean bypass(String handlerName) {
-    init();
-
     if (handlerName != null) {
       System.debug(
         LoggingLevel.INFO,
@@ -75,7 +76,7 @@ public without sharing class BypassHandler {
    * Clears the bypass for a single rollup.
    */
   public static Boolean clearBypass(String handlerName) {
-    if (bypassedRollups != null && handlerName != null) {
+    if (handlerName != null) {
       System.debug(
         LoggingLevel.INFO,
         'DLRS trigger handler is no longer bypassed: ' + handlerName
@@ -95,6 +96,7 @@ public without sharing class BypassHandler {
    * Clears all bypasses, if any.
    */
   public static void clearAllBypasses() {
+    bypassAll = false;
     if (bypassedRollups != null) {
       bypassedRollups.clear();
     }

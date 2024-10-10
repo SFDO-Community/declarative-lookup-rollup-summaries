@@ -271,6 +271,8 @@ public with sharing class RollupEditorController {
     @AuraEnabled
     public String aggregateResultField;
     @AuraEnabled
+    public String bypassPermissionApiName;
+    @AuraEnabled
     public String calculationMode;
     @AuraEnabled
     public String calculationSharingMode;
@@ -309,6 +311,7 @@ public with sharing class RollupEditorController {
       this.aggregateAllRows = record.AggregateAllRows__c;
       this.aggregateOperation = record.AggregateOperation__c;
       this.aggregateResultField = record.AggregateResultField__c;
+      this.bypassPermissionApiName = record.BypassPermissionApiName__c;
       this.calculationMode = record.CalculationMode__c;
       this.calculationSharingMode = record.CalculationSharingMode__c;
       this.childObject = record.ChildObject__c;
@@ -335,6 +338,7 @@ public with sharing class RollupEditorController {
       record.AggregateAllRows__c = this.aggregateAllRows;
       record.AggregateOperation__c = this.aggregateOperation;
       record.AggregateResultField__c = this.aggregateResultField;
+      record.BypassPermissionApiName__c = this.bypassPermissionApiName;
       record.CalculationMode__c = this.calculationMode;
       record.CalculationSharingMode__c = this.calculationSharingMode;
       record.ChildObject__c = this.childObject;

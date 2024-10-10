@@ -382,6 +382,13 @@ global with sharing class RollupService {
   }
 
   /**
+   * Allow the bypass of all rollups for this transaction, can be cleared with "clearAllBypasses" method
+   */
+  global static void bypassAll() {
+    BypassHandler.setBypassAll(true);
+  }
+
+  /**
    * Clears the bypass of a rollup, given its unique name.
    */
   global static Boolean clearBypass(String rollupName) {
@@ -964,7 +971,10 @@ global with sharing class RollupService {
       // this avoids having to re-parse RelationshipCriteria & OrderBy fields during field change detection
       Map<Id, Set<String>> fieldsInvolvedInLookup = new Map<Id, Set<String>>();
       for (RollupSummary lookup : lookups) {
-        if (BypassHandler.isBypassed(lookup.UniqueName)) {
+        if (
+          Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+          BypassHandler.isBypassed(lookup.UniqueName)
+        ) {
           continue;
         }
 
@@ -1099,7 +1109,10 @@ global with sharing class RollupService {
       // Build a revised list of lookups to process that includes only where fields used in the rollup have changed
       List<RollupSummary> lookupsToProcess = new List<RollupSummary>();
       for (RollupSummary lookup : lookups) {
-        if (BypassHandler.isBypassed(lookup.UniqueName)) {
+        if (
+          Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+          BypassHandler.isBypassed(lookup.UniqueName)
+        ) {
           continue;
         }
 
@@ -1134,7 +1147,10 @@ global with sharing class RollupService {
       : existingRecords;
     for (SObject childRecord : recordsToProcess.values()) {
       for (RollupSummary lookup : lookups) {
-        if (BypassHandler.isBypassed(lookup.UniqueName)) {
+        if (
+          Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+          BypassHandler.isBypassed(lookup.UniqueName)
+        ) {
           continue;
         }
 
@@ -1179,7 +1195,10 @@ global with sharing class RollupService {
     List<RollupSummary> runnowLookups = new List<RollupSummary>();
     List<LookupRollupSummaryScheduleItems__c> scheduledItems = new List<LookupRollupSummaryScheduleItems__c>();
     for (RollupSummary lookup : lookups) {
-      if (BypassHandler.isBypassed(lookup.UniqueName)) {
+      if (
+        Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+        BypassHandler.isBypassed(lookup.UniqueName)
+      ) {
         continue;
       }
 

@@ -28,54 +28,85 @@ private class BypassHandlerTest {
   @IsTest
   static void testApi() {
     String rollupUniqueName = 'SampleRollup';
-    Boolean bypassResult;
-
-    Test.startTest();
-    System.assertEquals(
-      false,
+    Assert.isFalse(
       BypassHandler.isBypassed(rollupUniqueName),
       'The rollup should not be bypassed yet.'
     );
-    bypassResult = BypassHandler.bypass(rollupUniqueName);
-    System.assert(
-      bypassResult,
+
+    Assert.isTrue(
+      BypassHandler.bypass(rollupUniqueName),
       'Should have modified the bypassed rollups set.'
     );
-    System.assertEquals(
-      true,
+    Assert.isTrue(
       BypassHandler.isBypassed(rollupUniqueName),
       'The rollup should be bypassed.'
     );
-    bypassResult = BypassHandler.clearBypass(rollupUniqueName);
-    System.assert(
-      bypassResult,
+
+    Assert.isTrue(
+      BypassHandler.clearBypass(rollupUniqueName),
       'Should have modified the bypassed rollups set.'
     );
-    System.assertEquals(
-      false,
+    Assert.isFalse(
       BypassHandler.isBypassed(rollupUniqueName),
       'The rollup should not be bypassed anymore.'
     );
     BypassHandler.bypass(rollupUniqueName);
     BypassHandler.clearAllBypasses();
-    System.assertEquals(
-      false,
+    Assert.isFalse(
       BypassHandler.isBypassed(rollupUniqueName),
       'The rollup should not be bypassed anymore.'
     );
 
-    bypassResult = BypassHandler.bypass(null);
-    System.assertEquals(
-      false,
-      bypassResult,
+    Assert.isFalse(
+      BypassHandler.bypass(null),
       'Should return "false" for a null rollup name.'
     );
-    bypassResult = BypassHandler.clearBypass(null);
-    System.assertEquals(
-      false,
-      bypassResult,
+
+    Assert.isFalse(
+      BypassHandler.clearBypass(null),
       'Should return "false" for a null rollup name.'
     );
-    Test.stopTest();
+
+    BypassHandler.setBypassAll(true);
+    Assert.isTrue(
+      BypassHandler.isBypassed(rollupUniqueName),
+      'Should return "true" for all rollup names.'
+    );
+    Assert.isTrue(
+      BypassHandler.isBypassed('new name'),
+      'Should return "true" for all rollup names.'
+    );
+    BypassHandler.setBypassAll(false);
+
+    Assert.isFalse(
+      BypassHandler.isBypassed(rollupUniqueName),
+      'Should return "false" for all rollup names.'
+    );
+    Assert.isFalse(
+      BypassHandler.isBypassed('new name'),
+      'Should return "false" for all rollup names.'
+    );
+    BypassHandler.setBypassAll(true);
+    Assert.isTrue(
+      BypassHandler.isBypassed('new name'),
+      'Should return "true" for all rollup names.'
+    );
+    BypassHandler.clearAllBypasses();
+    Assert.isFalse(
+      BypassHandler.isBypassed('new name'),
+      'Should return "false" for all rollup names.'
+    );
+  }
+
+  @IsTest
+  static void testCustomSettingDisable() {
+    String rollupUniqueName = 'Rollup1';
+    Assert.isFalse(BypassHandler.isBypassed(rollupUniqueName));
+
+    DeclarativeLookupRollupSummaries__c settings = DeclarativeLookupRollupSummaries__c.getInstance();
+    settings.DisableDLRSGlobally__c = true;
+    insert settings;
+
+    Assert.isTrue(BypassHandler.isBypassed(rollupUniqueName));
   }
 }

@@ -279,6 +279,7 @@ public class RollupSummariesSelector {
         LookupRollupSummary2__mdt.Active__c,
         LookupRollupSummary2__mdt.AggregateOperation__c,
         LookupRollupSummary2__mdt.AggregateResultField__c,
+        LookupRollupSummary2__mdt.BypassPermissionApiName__c,
         LookupRollupSummary2__mdt.CalculationMode__c,
         LookupRollupSummary2__mdt.ChildObject__c,
         LookupRollupSummary2__mdt.ConcatenateDelimiter__c,
