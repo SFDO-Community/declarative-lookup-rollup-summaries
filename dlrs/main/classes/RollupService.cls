@@ -96,6 +96,14 @@ global with sharing class RollupService {
       // Already running?
       checkJobAlreadyRunning(lookupId, lookup.Name);
 
+      if (
+        DeclarativeLookupRollupSummaries__c.getInstance()
+          .DisableDLRSGlobally__c == true
+      ) {
+        throw new RollupServiceException(
+          'DLRS is disabled through Custom Settings, unable to run job.'
+        );
+      }
       // Already active?
       if (
         (lookup.Active == null || lookup.Active == false) &&
@@ -396,7 +404,7 @@ global with sharing class RollupService {
   }
 
   /**
-   * Clears the bypass of aall rollups.
+   * Clears the bypass of all rollups.
    */
   global static void clearAllBypasses() {
     BypassHandler.clearAllBypasses();
@@ -498,10 +506,17 @@ global with sharing class RollupService {
       } else {
         lookup = lookups.get(scheduleItem.LookupRollupSummary2__c);
       }
-      if (lookup == null) {
+
+      if (
+        // sched item is for a non-existent rollup definition
+        lookup == null ||
+        // running user has a custom perm that disables this rollup
+        Utilities.userHasCustomPermission(lookup.BypassCustPermApiName)
+      ) {
+        // do not process this item, item will still be deleted
         continue;
       }
-      // The lookup definition could have been changed or due to a historic bug in correctly associated
+      // The lookup definition could have been changed or due to a historic bug incorrectly associated
       if (parentId.getSobjectType() != gd.get(lookup.ParentObject))
         continue;
       Set<Id> parentIds = parentIdsByParentType.get(lookup.ParentObject);
