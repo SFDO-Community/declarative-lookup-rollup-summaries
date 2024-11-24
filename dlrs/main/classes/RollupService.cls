@@ -96,6 +96,14 @@ global with sharing class RollupService {
       // Already running?
       checkJobAlreadyRunning(lookupId, lookup.Name);
 
+      if (
+        DeclarativeLookupRollupSummaries__c.getInstance()
+          .DisableDLRSGlobally__c == true
+      ) {
+        throw new RollupServiceException(
+          'DLRS is disabled through Custom Settings, unable to run job.'
+        );
+      }
       // Already active?
       if (
         (lookup.Active == null || lookup.Active == false) &&
@@ -382,6 +390,13 @@ global with sharing class RollupService {
   }
 
   /**
+   * Allow the bypass of all rollups for this transaction, can be cleared with "clearAllBypasses" method
+   */
+  global static void bypassAll() {
+    BypassHandler.setBypassAll(true);
+  }
+
+  /**
    * Clears the bypass of a rollup, given its unique name.
    */
   global static Boolean clearBypass(String rollupName) {
@@ -389,7 +404,7 @@ global with sharing class RollupService {
   }
 
   /**
-   * Clears the bypass of aall rollups.
+   * Clears the bypass of all rollups.
    */
   global static void clearAllBypasses() {
     BypassHandler.clearAllBypasses();
@@ -491,10 +506,17 @@ global with sharing class RollupService {
       } else {
         lookup = lookups.get(scheduleItem.LookupRollupSummary2__c);
       }
-      if (lookup == null) {
+
+      if (
+        // sched item is for a non-existent rollup definition
+        lookup == null ||
+        // running user has a custom perm that disables this rollup
+        Utilities.userHasCustomPermission(lookup.BypassCustPermApiName)
+      ) {
+        // do not process this item, item will still be deleted
         continue;
       }
-      // The lookup definition could have been changed or due to a historic bug in correctly associated
+      // The lookup definition could have been changed or due to a historic bug incorrectly associated
       if (parentId.getSobjectType() != gd.get(lookup.ParentObject))
         continue;
       Set<Id> parentIds = parentIdsByParentType.get(lookup.ParentObject);
@@ -964,7 +986,10 @@ global with sharing class RollupService {
       // this avoids having to re-parse RelationshipCriteria & OrderBy fields during field change detection
       Map<Id, Set<String>> fieldsInvolvedInLookup = new Map<Id, Set<String>>();
       for (RollupSummary lookup : lookups) {
-        if (BypassHandler.isBypassed(lookup.UniqueName)) {
+        if (
+          Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+          BypassHandler.isBypassed(lookup.UniqueName)
+        ) {
           continue;
         }
 
@@ -1099,7 +1124,10 @@ global with sharing class RollupService {
       // Build a revised list of lookups to process that includes only where fields used in the rollup have changed
       List<RollupSummary> lookupsToProcess = new List<RollupSummary>();
       for (RollupSummary lookup : lookups) {
-        if (BypassHandler.isBypassed(lookup.UniqueName)) {
+        if (
+          Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+          BypassHandler.isBypassed(lookup.UniqueName)
+        ) {
           continue;
         }
 
@@ -1134,7 +1162,10 @@ global with sharing class RollupService {
       : existingRecords;
     for (SObject childRecord : recordsToProcess.values()) {
       for (RollupSummary lookup : lookups) {
-        if (BypassHandler.isBypassed(lookup.UniqueName)) {
+        if (
+          Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+          BypassHandler.isBypassed(lookup.UniqueName)
+        ) {
           continue;
         }
 
@@ -1179,7 +1210,10 @@ global with sharing class RollupService {
     List<RollupSummary> runnowLookups = new List<RollupSummary>();
     List<LookupRollupSummaryScheduleItems__c> scheduledItems = new List<LookupRollupSummaryScheduleItems__c>();
     for (RollupSummary lookup : lookups) {
-      if (BypassHandler.isBypassed(lookup.UniqueName)) {
+      if (
+        Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+        BypassHandler.isBypassed(lookup.UniqueName)
+      ) {
         continue;
       }
 
