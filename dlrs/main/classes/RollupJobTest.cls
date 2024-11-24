@@ -93,6 +93,191 @@ private class RollupJobTest {
   }
 
   @IsTest
+  static void testDisabledRunJob() {
+    String prefix = LookupRollupSummary2__mdt.sObjectType.getDescribe()
+      .getKeyPrefix();
+
+    LookupRollupSummary2__mdt rollupCfg = new LookupRollupSummary2__mdt(
+      Id = prefix + '00000000000000D',
+      Label = 'A Summary',
+      DeveloperName = 'A_Summary',
+      ParentObject__c = 'Account',
+      ChildObject__c = 'Contact',
+      RelationshipField__c = 'AccountId',
+      AggregateOperation__c = RollupSummaries.AggregateOperation.Count.name(),
+      AggregateResultField__c = 'Description',
+      FieldToAggregate__c = 'Id',
+      CalculationMode__c = 'Realtime',
+      AggregateAllRows__c = false,
+      Active__c = true
+    );
+
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
+      RollupSummary.toList(new List<LookupRollupSummary2__mdt>{ rollupCfg })
+    );
+
+    Account a = new Account(Name = 'Test');
+    insert a;
+
+    // globally disable DLRS
+    DeclarativeLookupRollupSummaries__c settings = new DeclarativeLookupRollupSummaries__c(
+      DisableDLRSGlobally__c = true
+    );
+    insert settings;
+
+    List<LookupRollupSummaryScheduleItems__c> items = new List<LookupRollupSummaryScheduleItems__c>();
+
+    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
+    scheduledItem.Name = a.Id;
+    scheduledItem.LookupRollupSummary2__c = rollupCfg.Id;
+    scheduledItem.ParentId__c = a.Id;
+    scheduledItem.QualifiedParentID__c = a.Id + '#' + rollupCfg.Id;
+
+    items.add(scheduledItem);
+
+    insert items;
+
+    RollupJob job = new RollupJob();
+    Test.startTest();
+    String jobId = Database.executeBatch(job);
+    Test.stopTest();
+
+    AsyncApexJob asyncJob = [
+      SELECT Id, Status, JobItemsProcessed, TotalJobItems
+      FROM AsyncApexJob
+      WHERE Id = :jobId
+    ];
+
+    Assert.areEqual('Completed', asyncJob.Status);
+    Assert.areEqual(0, asyncJob.JobItemsProcessed);
+    Assert.areEqual(0, asyncJob.TotalJobItems);
+
+    List<LookupRollupSummaryLog__c> logs = [
+      SELECT Id, ParentId__c, ParentObject__c
+      FROM LookupRollupSummaryLog__c
+    ];
+    Assert.areEqual(0, logs.size());
+  }
+
+  @IsTest
+  static void testDisabledSpecificRollupRunJob() {
+    // find the profile that has access to the Custom Permission we want to use to check (if it even exists in the system)
+    List<SetupEntityAccess> permSetsWithAccess = [
+      SELECT ParentId
+      FROM SetupEntityAccess
+      WHERE
+        SetupEntityId IN (
+          SELECT Id
+          FROM CustomPermission
+          WHERE DeveloperName = 'DisableDLRS'
+        )
+        AND Parent.IsOwnedByProfile = FALSE
+    ];
+    if (permSetsWithAccess.isEmpty()) {
+      return; // this org doesn't have the necessary metadata to test this feature
+    }
+    // see if the running user already has that permission set
+    List<PermissionSetAssignment> assignments = [
+      SELECT Id
+      FROM PermissionSetAssignment
+      WHERE
+        AssigneeId = :UserInfo.getUserId()
+        AND PermissionSetId = :permSetsWithAccess[0].ParentId
+    ];
+    if (assignments.isEmpty()) {
+      // user doesn't have the necessary perm set to grant it to them.
+      System.runAs(new User(Id = UserInfo.getUserId())) {
+        insert new PermissionSetAssignment(
+          AssigneeId = UserInfo.getUserId(),
+          PermissionSetId = permSetsWithAccess[0].ParentId
+        );
+      }
+    }
+    String prefix = LookupRollupSummary2__mdt.sObjectType.getDescribe()
+      .getKeyPrefix();
+
+    LookupRollupSummary2__mdt rollupCfg = new LookupRollupSummary2__mdt(
+      Id = prefix + '00000000000000D',
+      Label = 'A Summary',
+      DeveloperName = 'A_Summary',
+      ParentObject__c = 'Account',
+      ChildObject__c = 'Contact',
+      RelationshipField__c = 'AccountId',
+      AggregateOperation__c = RollupSummaries.AggregateOperation.Count.name(),
+      AggregateResultField__c = 'NumberOfEmployees',
+      FieldToAggregate__c = 'Id',
+      CalculationMode__c = 'Realtime',
+      AggregateAllRows__c = false,
+      Active__c = true,
+      BypassPermissionApiName__c = 'DisableDLRS'
+    );
+
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
+      RollupSummary.toList(new List<LookupRollupSummary2__mdt>{ rollupCfg })
+    );
+
+    Account a = new Account(Name = 'Test');
+    insert a;
+
+    Contact c = new Contact(LastName = 'Test', AccountId = a.Id);
+    insert c;
+
+    List<LookupRollupSummaryScheduleItems__c> items = new List<LookupRollupSummaryScheduleItems__c>();
+
+    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
+    scheduledItem.Name = a.Id;
+    scheduledItem.LookupRollupSummary2__c = rollupCfg.Id;
+    scheduledItem.ParentId__c = a.Id;
+    scheduledItem.QualifiedParentID__c = a.Id + '#' + rollupCfg.Id;
+
+    items.add(scheduledItem);
+
+    insert items;
+
+    String jobId;
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      Test.startTest();
+      Assert.isTrue(FeatureManagement.checkPermission('DisableDLRS'));
+      // go into runAs because we need to get the perms recalculated
+      jobId = Database.executeBatch(new RollupJob());
+      Test.stopTest();
+    }
+
+    AsyncApexJob asyncJob = [
+      SELECT Id, Status, JobItemsProcessed, TotalJobItems
+      FROM AsyncApexJob
+      WHERE Id = :jobId
+    ];
+
+    Assert.areEqual('Completed', asyncJob.Status);
+    Assert.areEqual(1, asyncJob.JobItemsProcessed);
+    Assert.areEqual(1, asyncJob.TotalJobItems);
+
+    a = [SELECT Id, Description FROM Account WHERE Id = :a.Id];
+
+    Assert.isNull(a.Description);
+
+    items = [
+      SELECT Id, ParentId__c, LookupRollupSummary2__c
+      FROM LookupRollupSummaryScheduleItems__c
+    ];
+    Assert.isTrue(
+      items.isEmpty(),
+      'Expected empty but found' + JSON.serialize(items)
+    );
+
+    List<LookupRollupSummaryLog__c> logs = [
+      SELECT Id, ParentId__c, ParentObject__c
+      FROM LookupRollupSummaryLog__c
+    ];
+    Assert.areEqual(0, logs.size());
+  }
+
+  @IsTest
   static void testFailureWithEmail() {
     String prefix = LookupRollupSummary2__mdt.sObjectType.getDescribe()
       .getKeyPrefix();

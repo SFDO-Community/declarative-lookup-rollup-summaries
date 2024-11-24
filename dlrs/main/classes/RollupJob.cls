@@ -34,6 +34,21 @@ global with sharing class RollupJob implements Schedulable, Database.Batchable<s
   }
 
   public Database.QueryLocator start(Database.BatchableContext BC) {
+    if (
+      DeclarativeLookupRollupSummaries__c.getInstance()
+        .DisableDLRSGlobally__c == true
+    ) {
+      System.debug('DLRS is disabled, will not execute');
+      // return an "empty" iteration so it doesn't run the execute method
+      return Database.getQueryLocator(
+        [
+          SELECT Id
+          FROM LookupRollupSummaryScheduleItems__c
+          LIMIT 0
+        ]
+      );
+    }
+
     // Query all the currently available scheduled records indicating records requiring rollups
     return new RollupSummaryScheduleItemsSelector().selectAllQueryLocator();
   }

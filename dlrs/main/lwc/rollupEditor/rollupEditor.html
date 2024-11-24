@@ -465,7 +465,11 @@
             errors={errors.testCodeParent}
           ></c-rollup-editor-error>
         </lightning-layout-item>
-        <lightning-layout-item class="slds-form-element_stacked">
+        <lightning-layout-item
+          size="12"
+          large-device-size="6"
+          class="slds-form-element_stacked"
+        >
           <lightning-input
             type="checkbox"
             name="rollup_testCodeSeeAllData"
@@ -477,6 +481,23 @@
           ></lightning-input>
           <c-rollup-editor-error
             errors={errors.testCodeSeeAllData}
+          ></c-rollup-editor-error>
+        </lightning-layout-item>
+        <lightning-layout-item
+          size="12"
+          large-device-size="6"
+          class="slds-form-element_stacked"
+        >
+          <lightning-input
+            max-length="255"
+            name="rollup_bypassPermissionApiName"
+            data-name="rollup_bypassPermissionApiName"
+            label="Custom Permission name to bypass this rollup"
+            field-level-help="API Name of a Custom Permission that when held by the running user will prevent this rollup from processing"
+            value={rollup.bypassPermissionApiName}
+          ></lightning-input>
+          <c-rollup-editor-error
+            errors={errors.bypassPermissionApiName}
           ></c-rollup-editor-error>
         </lightning-layout-item>
       </lightning-layout>
