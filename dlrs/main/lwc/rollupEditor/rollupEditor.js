@@ -439,7 +439,8 @@ export default class RollupEditor extends LightningModal {
       "concatenateDelimiter",
       "testCode",
       "testCodeParent",
-      "testCodeSeeAllData"
+      "testCodeSeeAllData",
+      "bypassPermissionApiName"
     ];
 
     let isValid = true;
