@@ -100,6 +100,21 @@ public class RollupSummary {
     }
   }
 
+  public String BypassCustPermApiName {
+    get {
+      if (Record instanceof LookupRollupSummary2__mdt) {
+        return (String) Record.get('BypassPermissionApiName__c');
+      } else {
+        return null;
+      }
+    }
+    set {
+      if (Record instanceof LookupRollupSummary2__mdt) {
+        Record.put('BypassPermissionApiName__c', value);
+      }
+    }
+  }
+
   public String CalculationMode {
     get {
       return (String) Record.get('CalculationMode__c');
