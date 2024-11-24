@@ -85,6 +85,24 @@ public class Utilities {
     return orderByFields;
   }
 
+  /**
+   * permissionNames is null or comma-separated list of Custom Permissions
+   * returns `true` if user has any of those custom permissions
+   */
+  public static Boolean userHasCustomPermission(String permissionNames) {
+    if (String.isBlank(permissionNames)) {
+      return false;
+    }
+
+    for (String permName : permissionNames.split(',')) {
+      if (FeatureManagement.checkPermission(permName.trim())) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   // Regular expression for Order By Clause
   // Case-Insensitive pattern
   // Group 1 - Field Name (required)
