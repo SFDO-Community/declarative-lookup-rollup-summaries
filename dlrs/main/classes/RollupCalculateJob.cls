@@ -41,6 +41,26 @@ public with sharing class RollupCalculateJob implements Database.Batchable<sObje
   }
 
   public Database.QueryLocator start(Database.BatchableContext BC) {
+    List<RollupSummary> lookups = new RollupSummariesSelector()
+      .selectById(new Set<String>{ (String) lookupId });
+
+    if (lookups.size() == 0) {
+      throw RollupServiceException.rollupNotFound(lookupId);
+    }
+
+    RollupSummary lookup = lookups[0];
+
+    if (
+      Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+      BypassHandler.isBypassed(lookup.UniqueName)
+    ) {
+      System.debug('Rollup is disabled, will not execute ' + lookupId);
+      // return an "empty" iteration so it doesn't run the execute method
+      return Database.getQueryLocator(
+        'SELECT Id FROM ' + lookup.ParentObject + ' LIMIT 0'
+      );
+    }
+
     // Query all the parent records as per the lookup definition
     return RollupService.masterRecordsAsQueryLocator(
       lookupId,
