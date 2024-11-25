@@ -189,7 +189,7 @@ private class RollupCalculateJobTest {
   static void testRunBatchWithCustPermDisable() {
     // find the profile that has access to the Custom Permission we want to use to check (if it even exists in the system)
     List<SetupEntityAccess> permSetsWithAccess = [
-      SELECT ParentId
+      SELECT ParentId, SetupEntityId
       FROM SetupEntityAccess
       WHERE
         SetupEntityId IN (
