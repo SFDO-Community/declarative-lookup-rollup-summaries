@@ -44,7 +44,11 @@ public class UtilitiesTest {
       if (String.isNotBlank(perm.NamespacePrefix)) {
         permName = perm.NamespacePrefix + '__' + perm.DeveloperName;
       }
-      Assert.areEqual(false, Utilities.userHasCustomPermission(permName));
+      Assert.areEqual(
+        true,
+        Utilities.userHasCustomPermission(permName),
+        'Expected user to have ' + permName
+      );
     }
 
     Assert.areEqual(false, Utilities.userHasCustomPermission(null));

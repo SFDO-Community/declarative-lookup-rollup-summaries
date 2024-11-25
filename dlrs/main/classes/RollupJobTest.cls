@@ -178,6 +178,18 @@ private class RollupJobTest {
     if (permSetsWithAccess.isEmpty()) {
       return; // this org doesn't have the necessary metadata to test this feature
     }
+
+    CustomPermission perm = [
+      SELECT DeveloperName, NamespacePrefix
+      FROM CustomPermission
+      WHERE Id = :permSetsWithAccess[0].SetupEntityId
+    ];
+
+    String permName = perm.DeveloperName;
+    if (String.isNotBlank(perm.NamespacePrefix)) {
+      permName = perm.NamespacePrefix + '__' + perm.DeveloperName;
+    }
+
     // see if the running user already has that permission set
     List<PermissionSetAssignment> assignments = [
       SELECT Id
@@ -211,7 +223,7 @@ private class RollupJobTest {
       CalculationMode__c = 'Realtime',
       AggregateAllRows__c = false,
       Active__c = true,
-      BypassPermissionApiName__c = 'DisableDLRS'
+      BypassPermissionApiName__c = permName
     );
 
     RollupSummariesSelector.setRollupCache(
@@ -241,7 +253,10 @@ private class RollupJobTest {
     String jobId;
     System.runAs(new User(Id = UserInfo.getUserId())) {
       Test.startTest();
-      Assert.isTrue(FeatureManagement.checkPermission('DisableDLRS'));
+      Assert.isTrue(
+        FeatureManagement.checkPermission(permName),
+        'Expected user to have the ' + permName + ' permission set'
+      );
       // go into runAs because we need to get the perms recalculated
       jobId = Database.executeBatch(new RollupJob());
       Test.stopTest();
