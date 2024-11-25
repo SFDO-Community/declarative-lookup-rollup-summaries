@@ -136,7 +136,7 @@ public class Utilities {
         WHERE Id IN :customPermIds
       ]) {
         String permName = perm.DeveloperName;
-        if (!String.isBlank(perm.NamespacePrefix)) {
+        if (String.isNotBlank(perm.NamespacePrefix)) {
           // if this has a namespace prefix we should build a unified string
           permName = String.format(
             '{0}__{1}',

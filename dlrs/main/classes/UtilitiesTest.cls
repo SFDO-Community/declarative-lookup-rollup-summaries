@@ -4,7 +4,7 @@ public class UtilitiesTest {
   static void testUserHasCustomPermission() {
     // find the permission set that has access to the Custom Permission we want to use to check (if it even exists in the system)
     List<SetupEntityAccess> permSetsWithAccess = [
-      SELECT ParentId
+      SELECT ParentId, SetupEntityId
       FROM SetupEntityAccess
       WHERE
         SetupEntityId IN (
@@ -15,6 +15,11 @@ public class UtilitiesTest {
         AND Parent.IsOwnedByProfile = FALSE
     ];
     if (!permSetsWithAccess.isEmpty()) {
+      CustomPermission perm = [
+        SELECT DeveloperName, NamespacePrefix
+        FROM CustomPermission
+        WHERE Id = :permSetsWithAccess[0].SetupEntityId
+      ];
       // there is a compatible permission set that we can use for testing
       // see if the running user already has that permission set
       List<PermissionSetAssignment> assignments = [
@@ -35,7 +40,11 @@ public class UtilitiesTest {
       }
       // make sure the utility can see the perm set correctly
       // (we do it here because any earlier and the utility would have built the cache already)
-      Assert.areEqual(false, Utilities.userHasCustomPermission('DisableDLRS'));
+      String permName = perm.DeveloperName;
+      if (String.isNotBlank(perm.NamespacePrefix)) {
+        permName = perm.NamespacePrefix + '__' + perm.DeveloperName;
+      }
+      Assert.areEqual(false, Utilities.userHasCustomPermission(permName));
     }
 
     Assert.areEqual(false, Utilities.userHasCustomPermission(null));
