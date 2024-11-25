@@ -189,7 +189,7 @@ private class RollupCalculateJobTest {
   static void testRunBatchWithCustPermDisable() {
     // find the profile that has access to the Custom Permission we want to use to check (if it even exists in the system)
     List<SetupEntityAccess> permSetsWithAccess = [
-      SELECT ParentId
+      SELECT ParentId, SetupEntityId
       FROM SetupEntityAccess
       WHERE
         SetupEntityId IN (
@@ -202,6 +202,18 @@ private class RollupCalculateJobTest {
     if (permSetsWithAccess.isEmpty()) {
       return; // this org doesn't have the necessary metadata to test this feature
     }
+
+    CustomPermission perm = [
+      SELECT DeveloperName, NamespacePrefix
+      FROM CustomPermission
+      WHERE Id = :permSetsWithAccess[0].SetupEntityId
+    ];
+
+    String permName = perm.DeveloperName;
+    if (String.isNotBlank(perm.NamespacePrefix)) {
+      permName = perm.NamespacePrefix + '__' + perm.DeveloperName;
+    }
+
     // see if the running user already has that permission set
     List<PermissionSetAssignment> assignments = [
       SELECT Id
@@ -236,7 +248,7 @@ private class RollupCalculateJobTest {
       CalculationMode__c = 'Realtime',
       AggregateAllRows__c = false,
       Active__c = true,
-      BypassPermissionApiName__c = 'DisableDLRS'
+      BypassPermissionApiName__c = permName
     );
     RollupSummariesSelector.setRollupCache(
       false,
@@ -251,7 +263,7 @@ private class RollupCalculateJobTest {
     String jobId;
     System.runAs(new User(Id = UserInfo.getUserId())) {
       Test.startTest();
-      Assert.isTrue(FeatureManagement.checkPermission('DisableDLRS'));
+      Assert.isTrue(FeatureManagement.checkPermission(permName));
       // go into runAs because we need to get the perms recalculated
       jobId = Database.executeBatch(job);
       Test.stopTest();
