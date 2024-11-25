@@ -25,6 +25,8 @@
  **/
 
 public class Utilities {
+  static Set<String> permsHeldByUser;
+
   /**
    * Get the namespace of this package
    **/
@@ -90,17 +92,63 @@ public class Utilities {
    * returns `true` if user has any of those custom permissions
    */
   public static Boolean userHasCustomPermission(String permissionNames) {
+    // early out to avoid performance overhead, most rollups probably don't need to check perms
     if (String.isBlank(permissionNames)) {
       return false;
     }
+    Set<String> userPerms = getUserCustomPerms();
 
     for (String permName : permissionNames.split(',')) {
-      if (FeatureManagement.checkPermission(permName.trim())) {
+      // match lowercase because the index was built lowercase
+      if (userPerms.contains(permName.trim().toLowerCase())) {
         return true;
       }
     }
 
     return false;
+  }
+
+  private static Set<String> getUserCustomPerms() {
+    if (permsHeldByUser == null) {
+      permsHeldByUser = new Set<String>();
+      // need to init the list of perms held by the user
+
+      // Get the list of CustomPermission Ids that the user has access to
+      // this respects Perm Sets, Perm Set Groups, and Profiles
+      List<Id> customPermIds = new List<Id>();
+      for (SetupEntityAccess entity : [
+        SELECT SetupEntityId
+        FROM SetupEntityAccess
+        WHERE
+          SetupEntityType = 'CustomPermission'
+          AND ParentId IN (
+            SELECT PermissionSetId
+            FROM PermissionSetAssignment
+            WHERE AssigneeId = :UserInfo.getUserId()
+          )
+      ]) {
+        customPermIds.add(entity.SetupEntityId);
+      }
+      // resolve the Custom Permission Id into string names
+      for (CustomPermission perm : [
+        SELECT Id, DeveloperName, NamespacePrefix
+        FROM CustomPermission
+        WHERE Id IN :customPermIds
+      ]) {
+        String permName = perm.DeveloperName;
+        if (!String.isBlank(perm.NamespacePrefix)) {
+          // if this has a namespace prefix we should build a unified string
+          permName = String.format(
+            '{0}__{1}',
+            new List<String>{ perm.NamespacePrefix, permName }
+          );
+        }
+        // normalize to lowercase for matching purposes
+        permsHeldByUser.add(permName.toLowerCase());
+      }
+    }
+
+    return permsHeldByUser;
   }
 
   // Regular expression for Order By Clause
