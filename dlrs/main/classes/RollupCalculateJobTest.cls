@@ -263,7 +263,11 @@ private class RollupCalculateJobTest {
     String jobId;
     System.runAs(new User(Id = UserInfo.getUserId())) {
       Test.startTest();
-      Assert.isTrue(FeatureManagement.checkPermission(permName));
+      Assert.areEqual(
+        true,
+        Utilities.userHasCustomPermission(permName),
+        'Expected user to have ' + permName
+      );
       // go into runAs because we need to get the perms recalculated
       jobId = Database.executeBatch(job);
       Test.stopTest();
