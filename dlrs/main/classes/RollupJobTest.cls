@@ -251,17 +251,14 @@ private class RollupJobTest {
     insert items;
 
     String jobId;
-    System.runAs(new User(Id = UserInfo.getUserId())) {
-      Test.startTest();
-      Assert.areEqual(
-        true,
-        Utilities.userHasCustomPermission(permName),
-        'Expected user to have ' + permName
-      );
-      // go into runAs because we need to get the perms recalculated
-      jobId = Database.executeBatch(new RollupJob());
-      Test.stopTest();
-    }
+    Test.startTest();
+    Assert.isTrue(
+      Utilities.userHasCustomPermission(permName),
+      'Expected user to have ' + permName
+    );
+    // go into runAs because we need to get the perms recalculated
+    jobId = Database.executeBatch(new RollupJob());
+    Test.stopTest();
 
     AsyncApexJob asyncJob = [
       SELECT Id, Status, JobItemsProcessed, TotalJobItems
