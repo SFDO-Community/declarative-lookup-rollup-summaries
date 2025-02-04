@@ -1,9 +1,7 @@
 {
   "orgName": "Declarative Lookup Rollup Summaries Tool - Dev Org",
   "edition": "Developer",
-  "features": [
-    "EnableSetPasswordInApi"
-  ],
+  "features": ["EnableSetPasswordInApi"],
   "country": "US",
   "language": "en_US",
   "release": "Preview",
@@ -25,6 +23,9 @@
     },
     "languageSettings": {
       "enableTranslationWorkbench": true
+    },
+    "caseSettings": {
+      "caseMergeInLightning": true
     }
   }
 }
