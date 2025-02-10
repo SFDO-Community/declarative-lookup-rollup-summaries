@@ -84,6 +84,11 @@ private class RollupServiceMergeTest {
    */
   @IsTest
   static void testMergeCaseWithDelete() {
+    if (!Schema.Case.SObjectType.getDescribe().isMergeable()) {
+      // if case merging is disabled then don't run this test
+      return;
+    }
+
     mockCaseRollupCache();
 
     // simulate a record with a merged record id
@@ -123,6 +128,11 @@ private class RollupServiceMergeTest {
   // case w/ keep
   @IsTest
   static void testMergeCaseWithKeep() {
+    if (!Schema.Case.SObjectType.getDescribe().isMergeable()) {
+      // if case merging is disabled then don't run this test
+      return;
+    }
+
     mockCaseRollupCache();
 
     // simulate a record with a merged record id
@@ -171,6 +181,11 @@ private class RollupServiceMergeTest {
   // case w/ edit on keep
   @IsTest
   static void testEditMergedCase() {
+    if (!Schema.Case.SObjectType.getDescribe().isMergeable()) {
+      // if case merging is disabled then don't run this test
+      return;
+    }
+
     mockCaseRollupCache();
 
     // simulate a record with a merged record id
