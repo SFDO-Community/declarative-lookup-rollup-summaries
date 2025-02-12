@@ -935,242 +935,77 @@ global with sharing class RollupService {
 
     // Its possible for the user to deploy a trigger on parent objects, to monitor for merge operations...
     DescribeSObjectResult sObjectDescribe = sObjectType.getDescribe();
+    Boolean isDeleting = newRecords.isEmpty();
+    Boolean sObjectCanMerge = sObjectDescribe.isMergeable();
+
     Set<Id> masterRecordIdsFromMerge = new Set<Id>();
-    if (sObjectDescribe.isMergeable()) {
-      for (SObject existingRecord : existingRecords.values()) {
-        Id masterRecordId = null;
-        try {
-          masterRecordId = (Id) existingRecord.get('MasterRecordId');
-        } catch (Exception e) {
-        }
-        if (masterRecordId != null) {
-          masterRecordIdsFromMerge.add(masterRecordId);
-        }
-      }
-    }
 
     // If this is a parent record merge operation, determine child object rollups to recalculate...
     Boolean scheduleAllRollups = false;
     Set<SObjectType> childObjects = new Set<SObjectType>();
     childObjects.add(sObjectType);
-    if (masterRecordIdsFromMerge.size() > 0) {
-      // If a parent record is being merged, include a recalc of any related child rollups
-      List<Schema.ChildRelationship> childRelationships = sObjectDescribe.getChildRelationships();
-      for (Schema.ChildRelationship childRelationship : childRelationships) {
-        childObjects.add(childRelationship.getChildSObject());
-      }
-      // Any rollups associated with these child objects will need to done in async,
-      //   as parent records cannot be updated realtime since the platform is also updating them
-      scheduleAllRollups = true;
-    }
 
     // Are there any rollups to process?
-    List<RollupSummary> lookups = describeRollups(
-      childObjects,
-      calculationModes
-    );
-    if (lookups.isEmpty())
-      return; // Nothing to see here! :)
+    RollupSummariesSelector selector = new RollupSummariesSelector(false);
 
-    // if records exist in both maps, then we need to go through change detection.
-    // Has anything changed on the child records in respect to the fields referenced on the lookup definition?
-    // Or does a record exist in one map but not the other
-    if (!existingRecords.isEmpty() && !newRecords.isEmpty()) {
-      // Master records to update
-      Set<Id> masterRecordIds = new Set<Id>();
-
-      // Set of field names from the child used in the rollup to search for changes on
-      Set<String> fieldsToSearchForChanges = new Set<String>();
-      Set<String> relationshipFields = new Set<String>();
-      // keep track of fields that should trigger a rollup to be processed
-      // this avoids having to re-parse RelationshipCriteria & OrderBy fields during field change detection
-      Map<Id, Set<String>> fieldsInvolvedInLookup = new Map<Id, Set<String>>();
-      for (RollupSummary lookup : lookups) {
-        if (
-          Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
-          BypassHandler.isBypassed(lookup.UniqueName)
-        ) {
-          continue;
-        }
-
-        Set<String> lookupFields = new Set<String>();
-        lookupFields.add(lookup.FieldToAggregate);
-        if (!String.isBlank(lookup.RelationshipCriteriaFields)) {
-          for (
-            String criteriaField : lookup.RelationshipCriteriaFields.split(
-              '[\r\n]+'
-            )
-          ) {
-            lookupFields.add(criteriaField);
-          }
-        }
-        // only include order by fields when query based rollup (concat, first, last, etc.) since changes to them
-        // will not impact the outcome of an aggregate based rollup (sum, count, etc.)
-        if (
-          LREngine.isQueryBasedRollup(
-            RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(
-              lookup.AggregateOperation
-            )
-          ) && !String.isBlank(lookup.FieldToOrderBy)
-        ) {
-          List<Utilities.Ordering> orderByFields = Utilities.parseOrderByClause(
-            lookup.FieldToOrderBy
-          );
-          if (orderByFields != null && !orderByFields.isEmpty()) {
-            for (Utilities.Ordering orderByField : orderByFields) {
-              lookupFields.add(orderByField.getField());
-            }
-          }
-        }
-
-        // add all lookup fields to our master list of fields to search for
-        fieldsToSearchForChanges.addAll(lookupFields);
-
-        // add relationshipfield to fields for this lookup
-        // this comes after adding to fieldsToSearchForChanges because we handle
-        // change detection separately for non-relationship fields and relationship fields
-        lookupFields.add(lookup.RelationShipField);
-
-        // add to map for later use
-        fieldsInvolvedInLookup.put(lookup.Id, lookupFields);
-
-        // add relationship field to master list of relationship fields
-        relationshipFields.add(lookup.RelationShipField);
+    List<RollupSummary> lookups = new List<RollupSummary>();
+    for (
+      RollupSummary lookup : selector.selectActiveByChildObject(
+        calculationModes,
+        new Set<String>{ sObjectDescribe.getName() }
+      )
+    ) {
+      if (
+        Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+        BypassHandler.isBypassed(lookup.UniqueName)
+      ) {
+        continue;
       }
-
-      // merge all record Id's
-      Set<Id> mergedRecordIds = new Set<Id>(existingRecords.keySet());
-      mergedRecordIds.addAll(newRecords.keySet());
-
-      // Determine if a a field referenced on the lookup has changed and thus if the lookup itself needs recalculating
-      Set<String> fieldsChanged = new Set<String>();
-      for (Id recordId : mergedRecordIds) {
-        // keep track of whether or not this child has changed in any of the fields involved in
-        // lookups that are NOT relationship fields themselves.  We'll check relationship fields
-        // separately to avoid unnecessary rollups firing on master records that don't require updating
-        Boolean nonRelationshipFieldsChanged = false;
-
-        // Determine if any of the fields referenced on our selected rollups have changed on this record
-        for (String fieldToSearch : fieldsToSearchForChanges) {
-          // retrieve old and new records and values if they exist
-          SObject oldRecord = existingRecords.get(recordId);
-          Object oldValue = oldRecord == null
-            ? null
-            : oldRecord.get(fieldToSearch);
-          SObject newRecord = newRecords.get(recordId);
-          Object newValue = newRecord == null
-            ? null
-            : newRecord.get(fieldToSearch);
-
-          // Register this field as having changed?
-          // if in old but not in new then its a delete and rollup should be processed
-          // if in new but not in old then its an insert and rollup should be processed
-          // if in both then its an update and field change detection should occur and rollup should be processed if different
-          if (
-            (oldRecord == null) ||
-            (newRecord == null) ||
-            (newValue != oldValue)
-          ) {
-            fieldsChanged.add(fieldToSearch);
-            // mark record as having a non-relationship field changed
-            nonRelationshipFieldsChanged = true;
-          }
-        }
-
-        // iterate relationship fields looking and track old/new master id
-        // if there were changes to the relationship field itself or any
-        // other fields involved in a lookup
-        for (String relationshipField : relationshipFields) {
-          // should we add associated master to list?
-          // default to whether or not a non-relationship field on record has changed
-          Boolean addMasterIds = nonRelationshipFieldsChanged;
-
-          // retrieve old and new records and values if they exist
-          SObject oldRecord = existingRecords.get(recordId);
-          Object oldValue = oldRecord == null
-            ? null
-            : oldRecord.get(relationshipField);
-          SObject newRecord = newRecords.get(recordId);
-          Object newValue = newRecord == null
-            ? null
-            : newRecord.get(relationshipField);
-
-          // Register this field as having changed?
-          // if in old but not in new then its a delete and rollup should be processed and master ids included
-          // if in new but not in old then its an insert and rollup should be processed and master ids included
-          // if in both then its an update and field change detection should occur and rollup should be processed and master ids included if different
-          if (
-            (oldRecord == null) ||
-            (newRecord == null) ||
-            (newValue != oldValue)
-          ) {
-            fieldsChanged.add(relationshipField);
-            // master field itself changed so we force old/new master ids to be added for processing
-            addMasterIds = true;
-          }
-
-          // if relationship field itself changed or if change in another non-relationship field
-          // Add both old and new value to master record Id list for relationship fields
-          // to ensure old and new parent master records are updated (re-parenting)
-          if (addMasterIds) {
-            if (newValue != null)
-              masterRecordIds.add((Id) newValue);
-            if (oldValue != null)
-              masterRecordIds.add((Id) oldValue);
-          }
-        }
-      }
-
-      // Build a revised list of lookups to process that includes only where fields used in the rollup have changed
-      List<RollupSummary> lookupsToProcess = new List<RollupSummary>();
-      for (RollupSummary lookup : lookups) {
-        if (
-          Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
-          BypassHandler.isBypassed(lookup.UniqueName)
-        ) {
-          continue;
-        }
-
-        // Are any of the changed fields used by this lookup?
-        Set<String> lookupFields = fieldsInvolvedInLookup.get(lookup.Id);
-        for (String lookupField : lookupFields) {
-          if (fieldsChanged.contains(lookupField)) {
-            // add lookup to be processed and exit for loop since we have our answer
-            lookupsToProcess.add(lookup);
-            break;
-          }
-        }
-      }
-      lookups = lookupsToProcess;
-
-      // Rollup child records and update master records
-      if (lookupsToProcess.size() > 0)
-        updateRecords(
-          updateMasterRollupsTrigger(lookups, masterRecordIds, false),
-          false,
-          true
-        );
-      return;
+      lookups.add(lookup);
     }
 
-    // Rollup whichever side has records and update master records
-    // only one map should have records at this point
-    Boolean isDeleting = newRecords.isEmpty();
-    Set<Id> masterRecordIds = new Set<Id>(masterRecordIdsFromMerge);
-    Map<Id, SObject> recordsToProcess = existingRecords.isEmpty()
-      ? newRecords
-      : existingRecords;
-    for (SObject childRecord : recordsToProcess.values()) {
-      for (RollupSummary lookup : lookups) {
-        if (
-          Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
-          BypassHandler.isBypassed(lookup.UniqueName)
-        ) {
-          continue;
-        }
+    List<RollupSummary> parentLookups = new List<RollupSummary>();
+    for (
+      RollupSummary lookup : selector.selectActiveByParentObject(
+        calculationModes,
+        new Set<String>{ sObjectDescribe.getName() }
+      )
+    ) {
+      if (
+        Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+        BypassHandler.isBypassed(lookup.UniqueName)
+      ) {
+        continue;
+      }
+      parentLookups.add(lookup);
+    }
 
-        // Does this rollup apply to this child record?
-        if (lookup.ChildObject.equalsIgnoreCase(sObjectDescribe.getName())) {
+    // if this object isn't involved in any rollups then we can ignore it
+    if (lookups.isEmpty() && parentLookups.isEmpty()) {
+      return; // Nothing to see here! :)
+    }
+
+    // this is either create or delete
+    // adding as a hot path to reduce overhead even though it duplicates
+    if (newRecords.isEmpty() || existingRecords.isEmpty()) {
+      // Rollup whichever side has records and update master records
+      // only one map should have records at this point
+      Set<Id> masterRecordIds = new Set<Id>();
+      Map<Id, SObject> recordsToProcess = existingRecords.isEmpty()
+        ? newRecords
+        : existingRecords;
+      for (SObject childRecord : recordsToProcess.values()) {
+        if (sObjectCanMerge) {
+          Id masterRecordId = null;
+          try {
+            masterRecordId = (Id) childRecord.get('MasterRecordId');
+          } catch (Exception e) {
+          }
+          if (masterRecordId != null) {
+            masterRecordIdsFromMerge.add(masterRecordId);
+          }
+        }
+        for (RollupSummary lookup : lookups) {
           if (childRecord.get(lookup.RelationShipField) != null) {
             // Check for self referencing rollups, https://github.com/afawcett/declarative-lookup-rollup-summaries/issues/39
             Id masterRecordId = (Id) childRecord.get(lookup.RelationShipField);
@@ -1181,14 +1016,208 @@ global with sharing class RollupService {
           }
         }
       }
+
+      // Process the rollups and update the master records
+      // TODO: if we have merge IDs then we need to combine lookups and parentLookups and
+
+      if (!masterRecordIdsFromMerge.isEmpty()) {
+        lookups.addAll(parentLookups);
+        masterRecordIds.addAll(masterRecordIdsFromMerge);
+        scheduleAllRollups = true;
+      }
+      updateRecords(
+        updateMasterRollupsTrigger(
+          lookups,
+          masterRecordIds,
+          scheduleAllRollups
+        ),
+        false,
+        true
+      );
+      // this is our hot path that doesn't need per-record field checks, no need for additional checking and work
+      return;
     }
 
-    // Process the rollups and update the master records
-    updateRecords(
-      updateMasterRollupsTrigger(lookups, masterRecordIds, scheduleAllRollups),
-      false,
-      true
-    );
+    // if records exist in both maps, then we need to go through change detection.
+    // Has anything changed on the child records in respect to the fields referenced on the lookup definition?
+    // Or does a record exist in one map but not the other
+    // Master records to update
+    Set<Id> masterRecordIds = new Set<Id>();
+
+    // Set of field names from the child used in the rollup to search for changes on
+    Set<String> fieldsToSearchForChanges = new Set<String>();
+    Set<String> relationshipFields = new Set<String>();
+    // keep track of fields that should trigger a rollup to be processed
+    // this avoids having to re-parse RelationshipCriteria & OrderBy fields during field change detection
+    Map<Id, Set<String>> fieldsInvolvedInLookup = new Map<Id, Set<String>>();
+    for (RollupSummary lookup : lookups) {
+      Set<String> lookupFields = new Set<String>();
+      lookupFields.add(lookup.FieldToAggregate);
+      if (!String.isBlank(lookup.RelationshipCriteriaFields)) {
+        for (
+          String criteriaField : lookup.RelationshipCriteriaFields.split(
+            '[\r\n]+'
+          )
+        ) {
+          lookupFields.add(criteriaField);
+        }
+      }
+      // only include order by fields when query based rollup (concat, first, last, etc.) since changes to them
+      // will not impact the outcome of an aggregate based rollup (sum, count, etc.)
+      if (
+        LREngine.isQueryBasedRollup(
+          RollupSummaries.OPERATION_PICKLIST_TO_ENUMS.get(
+            lookup.AggregateOperation
+          )
+        ) && !String.isBlank(lookup.FieldToOrderBy)
+      ) {
+        List<Utilities.Ordering> orderByFields = Utilities.parseOrderByClause(
+          lookup.FieldToOrderBy
+        );
+        if (orderByFields != null && !orderByFields.isEmpty()) {
+          for (Utilities.Ordering orderByField : orderByFields) {
+            lookupFields.add(orderByField.getField());
+          }
+        }
+      }
+
+      // add all lookup fields to our master list of fields to search for
+      fieldsToSearchForChanges.addAll(lookupFields);
+
+      // add relationshipfield to fields for this lookup
+      // this comes after adding to fieldsToSearchForChanges because we handle
+      // change detection separately for non-relationship fields and relationship fields
+      lookupFields.add(lookup.RelationShipField);
+
+      // add to map for later use
+      fieldsInvolvedInLookup.put(lookup.Id, lookupFields);
+
+      // add relationship field to master list of relationship fields
+      relationshipFields.add(lookup.RelationShipField);
+    }
+
+    // merge all record Id's
+    Set<Id> mergedRecordIds = new Set<Id>(existingRecords.keySet());
+    mergedRecordIds.addAll(newRecords.keySet());
+
+    // Determine if a a field referenced on the lookup has changed and thus if the lookup itself needs recalculating
+    Set<String> fieldsChanged = new Set<String>();
+    for (Id recordId : mergedRecordIds) {
+      // keep track of whether or not this child has changed in any of the fields involved in
+      // lookups that are NOT relationship fields themselves.  We'll check relationship fields
+      // separately to avoid unnecessary rollups firing on master records that don't require updating
+      Boolean nonRelationshipFieldsChanged = false;
+      // retrieve old and new records and values if they exist
+      SObject oldRecord = existingRecords.get(recordId);
+      SObject newRecord = newRecords.get(recordId);
+
+      // Determine if any of the fields referenced on our selected rollups have changed on this record
+      for (String fieldToSearch : fieldsToSearchForChanges) {
+        Object oldValue = oldRecord?.get(fieldToSearch);
+        Object newValue = newRecord?.get(fieldToSearch);
+
+        // Register this field as having changed?
+        // if in old but not in new then its a delete and rollup should be processed
+        // if in new but not in old then its an insert and rollup should be processed
+        // if in both then its an update and field change detection should occur and rollup should be processed if different
+        if (
+          (oldRecord == null) ||
+          (newRecord == null) ||
+          (newValue != oldValue)
+        ) {
+          fieldsChanged.add(fieldToSearch);
+          // mark record as having a non-relationship field changed
+          nonRelationshipFieldsChanged = true;
+        }
+      }
+
+      // check for merged records that are newly merged in this transaction
+      if (sObjectCanMerge) {
+        for (SObject existingRecord : existingRecords.values()) {
+          Id masterRecordId = null;
+          Id oldValue;
+          Id newValue;
+          try {
+            oldValue = (Id) oldRecord?.get('MasterRecordId');
+            newValue = (Id) newRecord?.get('MasterRecordId');
+          } catch (Exception e) {
+          }
+          if (String.isNotBlank(newValue) && oldValue != newValue) {
+            masterRecordIdsFromMerge.add(newValue);
+          }
+        }
+      }
+
+      // iterate relationship fields looking and track old/new master id
+      // if there were changes to the relationship field itself or any
+      // other fields involved in a lookup
+      for (String relationshipField : relationshipFields) {
+        // should we add associated master to list?
+        // default to whether or not a non-relationship field on record has changed
+        Boolean addMasterIds = nonRelationshipFieldsChanged;
+
+        // retrieve old and new records and values if they exist
+        Object oldValue = oldRecord?.get(relationshipField);
+        Object newValue = newRecord?.get(relationshipField);
+
+        // Register this field as having changed?
+        // if in old but not in new then its a delete and rollup should be processed and master ids included
+        // if in new but not in old then its an insert and rollup should be processed and master ids included
+        // if in both then its an update and field change detection should occur and rollup should be processed and master ids included if different
+        if (
+          (oldRecord == null) ||
+          (newRecord == null) ||
+          (newValue != oldValue)
+        ) {
+          fieldsChanged.add(relationshipField);
+          // master field itself changed so we force old/new master ids to be added for processing
+          addMasterIds = true;
+        }
+
+        // if relationship field itself changed or if change in another non-relationship field
+        // Add both old and new value to master record Id list for relationship fields
+        // to ensure old and new parent master records are updated (re-parenting)
+        if (addMasterIds) {
+          if (newValue != null)
+            masterRecordIds.add((Id) newValue);
+          if (oldValue != null)
+            masterRecordIds.add((Id) oldValue);
+        }
+      }
+    }
+
+    // Build a revised list of lookups to process that includes only where fields used in the rollup have changed
+    List<RollupSummary> lookupsToProcess = new List<RollupSummary>();
+    for (RollupSummary lookup : lookups) {
+      // Are any of the changed fields used by this lookup?
+      Set<String> lookupFields = fieldsInvolvedInLookup.get(lookup.Id);
+      for (String lookupField : lookupFields) {
+        if (fieldsChanged.contains(lookupField)) {
+          // add lookup to be processed and exit for loop since we have our answer
+          lookupsToProcess.add(lookup);
+          break;
+        }
+      }
+    }
+    lookups = lookupsToProcess;
+    // check if we encountered any merged records and enqueue them for recalc as parents
+    if (!masterRecordIdsFromMerge.isEmpty()) {
+      lookups.addAll(parentLookups);
+      masterRecordIds.addAll(masterRecordIdsFromMerge);
+      scheduleAllRollups = true;
+    }
+
+    // Rollup child records and update master records
+    if (lookupsToProcess.size() > 0)
+      updateRecords(
+        updateMasterRollupsTrigger(
+          lookups,
+          masterRecordIds,
+          scheduleAllRollups
+        ),
+        false,
+        true
+      );
   }
 
   /**
