@@ -132,7 +132,7 @@ public class RollupSummariesSelector {
   }
 
   /**
-   * Returns active lookup rollup summary definitions for thr given calculation modes and child object
+   * Returns active lookup rollup summary definitions for the given calculation modes and child object
    **/
   public List<RollupSummary> selectActiveByChildObject(
     List<RollupSummaries.CalculationMode> calculationModes,
@@ -147,6 +147,30 @@ public class RollupSummariesSelector {
       if (
         rs.Active &&
         containsIgnoreCase(childObjectNames, rs.ChildObject) &&
+        containsIgnoreCase(rollupSummaryNames, rs.CalculationMode)
+      ) {
+        records.add(rs);
+      }
+    }
+    return sortSummaries(records, 'ParentObject__c', 'RelationshipField__c');
+  }
+
+  /**
+   * Returns active lookup rollup summary definitions for the given calculation modes and child or parent object
+   **/
+  public List<RollupSummary> selectActiveByParentObject(
+    List<RollupSummaries.CalculationMode> calculationModes,
+    Set<String> objectNames
+  ) {
+    List<String> rollupSummaryNames = new List<String>();
+    for (RollupSummaries.CalculationMode cm : calculationModes) {
+      rollupSummaryNames.add(cm.name());
+    }
+    List<RollupSummary> records = new List<RollupSummary>();
+    for (RollupSummary rs : this.allSummaries) {
+      if (
+        rs.Active &&
+        containsIgnoreCase(objectNames, rs.ParentObject) &&
         containsIgnoreCase(rollupSummaryNames, rs.CalculationMode)
       ) {
         records.add(rs);
