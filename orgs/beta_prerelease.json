@@ -1,9 +1,7 @@
 {
   "orgName": "Declarative Lookup Rollup Summaries Tool - Beta Test Org",
   "edition": "Developer",
-  "features": [
-    "EnableSetPasswordInApi"
-  ],
+  "features": ["EnableSetPasswordInApi"],
   "country": "US",
   "language": "en_US",
   "release": "Preview",
@@ -22,6 +20,9 @@
       "sessionSettings": {
         "forceRelogin": false
       }
+    },
+    "caseSettings": {
+      "caseMergeInLightning": true
     }
   }
 }
