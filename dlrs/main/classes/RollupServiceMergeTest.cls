@@ -9,6 +9,10 @@ private class RollupServiceMergeTest {
   */
   @IsTest
   static void testMergeWithMergedObjectBothParentAndChild() {
+    // Test supported?
+    if (!TestContext.isSupported())
+      return;
+
     mockContactRollupCache();
     // create a few contacts, merge them together
     Contact c1 = new Contact(LastName = 'Test1');
