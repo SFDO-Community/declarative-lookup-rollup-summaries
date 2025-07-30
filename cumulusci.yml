@@ -4,7 +4,7 @@ project:
   package:
     name: Declarative Lookup Rollup Summaries Tool
     namespace: dlrs
-    api_version: "63.0"
+    api_version: "64.0"
   git:
     repo_url: https://github.com/SFDO-Community/declarative-lookup-rollup-summaries
     prefix_beta: beta/
