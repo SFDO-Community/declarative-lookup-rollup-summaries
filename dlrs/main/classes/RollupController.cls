@@ -29,7 +29,7 @@
  **/
 public with sharing class RollupController {
   @TestVisible
-  private static String FALLBACK_COMPONENT_API_VERSION = '63.0';
+  private static String FALLBACK_COMPONENT_API_VERSION = '64.0';
 
   public String ZipData { get; set; }
 
