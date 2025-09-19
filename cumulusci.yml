@@ -116,6 +116,10 @@ flows:
         task: dx_convert_from
         options:
           extra: "--sourcepath ./dlrs/libs/fflib-apexmocks,./dlrs/libs/fflib-common,./dlrs/libs/lrengine,./dlrs/libs/metadataservice,./dlrs/main"
+      3.1:
+        task: dx
+        options:
+          command: "project deploy start"
       3.2:
         task: deploy_test_triggers
 
