@@ -4,7 +4,7 @@ project:
   package:
     name: Declarative Lookup Rollup Summaries Tool
     namespace: dlrs
-    api_version: "64.0"
+    api_version: "65.0"
   git:
     repo_url: https://github.com/SFDO-Community/declarative-lookup-rollup-summaries
     prefix_beta: beta/
@@ -27,19 +27,19 @@ tasks:
     description: Create a sample dataset for main objects in CSOM EDA org
     class_path: cumulusci.tasks.bulkdata.snowfakery.Snowfakery
     options:
-        recipe: datasets/qa/high-ratio-tests-custom-object.yml
+      recipe: datasets/qa/high-ratio-tests-custom-object.yml
 
   snowfakery_highratio_standard:
     description: Create a sample dataset for main objects in CSOM EDA org
     class_path: cumulusci.tasks.bulkdata.snowfakery.Snowfakery
     options:
-        recipe: datasets/qa/high-ratio-tests-stand-object.yml
+      recipe: datasets/qa/high-ratio-tests-stand-object.yml
 
   snowfakery_lowratio:
     description: Create a sample dataset for main objects in CSOM EDA org
     class_path: cumulusci.tasks.bulkdata.snowfakery.Snowfakery
     options:
-        recipe: datasets/qa/snowfakerylowratio.yml
+      recipe: datasets/qa/snowfakerylowratio.yml
 
   robot:
     options:
