@@ -44,10 +44,6 @@ public class TestContext {
   }
 
   public static String applyNamespacePrefixIfAvailable(String ref) {
-    String namespace = Utilities.namespace();
-    if (String.isNotBlank(namespace)) {
-      return String.format('{0}__{1}', new List<String>{ namespace, ref });
-    }
-    return ref;
+    return Utilities.objectPrefix() + ref;
   }
 }
