@@ -226,38 +226,28 @@ private with sharing class fflib_SObjectSelectorTest {
     String expected = prefixString + 'AccountNumber';
     System.assert(
       fieldSet.contains(expected),
-      expected +
-      ' missing from field list string: ' +
-      fieldListString
+      expected + ' missing from field list string: ' + fieldListString
     );
     expected = prefixString + 'AnnualRevenue';
     System.assert(
       fieldSet.contains(expected),
-      expected +
-      ' missing from field list string: ' +
-      fieldListString
+      expected + ' missing from field list string: ' + fieldListString
     );
     expected = prefixString + 'Id';
     System.assert(
       fieldSet.contains(expected),
-      expected +
-      ' missing from field list string: ' +
-      fieldListString
+      expected + ' missing from field list string: ' + fieldListString
     );
     expected = prefixString + 'Name';
     System.assert(
       fieldSet.contains(expected),
-      expected +
-      ' missing from field list string: ' +
-      fieldListString
+      expected + ' missing from field list string: ' + fieldListString
     );
     if (UserInfo.isMultiCurrencyOrganization()) {
       expected = prefixString + 'CurrencyIsoCode';
       System.assert(
         fieldSet.contains(expected),
-        expected +
-        ' missing from field list string: ' +
-        fieldListString
+        expected + ' missing from field list string: ' + fieldListString
       );
     }
   }
@@ -330,7 +320,7 @@ private with sharing class fflib_SObjectSelectorTest {
       super(includeFieldSetFields, enforceCRUD, enforceFLS, sortSelectFields);
     }
 
-    public List<Schema.SObjectField> getSObjectFieldList() {
+    public override List<Schema.SObjectField> getSObjectFieldList() {
       return new List<Schema.SObjectField>{
         Account.Name,
         Account.Id,
@@ -339,7 +329,7 @@ private with sharing class fflib_SObjectSelectorTest {
       };
     }
 
-    public Schema.SObjectType getSObjectType() {
+    public override Schema.SObjectType getSObjectType() {
       return Account.sObjectType;
     }
 
