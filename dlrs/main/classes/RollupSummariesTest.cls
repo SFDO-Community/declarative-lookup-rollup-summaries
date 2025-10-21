@@ -499,7 +499,9 @@ private class RollupSummariesTest {
     rollupSummary.RelationShipCriteria__c = null;
     rollupSummary.FieldToAggregate__c = 'CloseDate';
     rollupSummary.AggregateOperation__c = 'Sum';
-    rollupSummary.AggregateResultField__c = 'SLAExpirationDate__c';
+    rollupSummary.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+      'SLAExpirationDate__c'
+    );
     rollupSummary.Active__c = true;
     rollupSummary.CalculationMode__c = 'Realtime';
     fflib_SObjectDomain.Test.Database.onInsert(
@@ -738,7 +740,9 @@ private class RollupSummariesTest {
     rollupSummary.RelationShipCriteria__c = null;
     rollupSummary.FieldToAggregate__c = 'CloseDate';
     rollupSummary.AggregateOperation__c = 'Count';
-    rollupSummary.AggregateResultField__c = 'SLAExpirationDate__c';
+    rollupSummary.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+      'SLAExpirationDate__c'
+    );
     rollupSummary.Active__c = true;
     rollupSummary.CalculationMode__c = 'Realtime';
     fflib_SObjectDomain.Test.Database.onInsert(
