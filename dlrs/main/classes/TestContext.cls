@@ -42,4 +42,8 @@ public class TestContext {
       .selectByName(new Set<String>{ 'UnpackagedRollupServiceTestTrigger' })
       .size() > 0);
   }
+
+  public static String applyNamespacePrefixIfAvailable(String ref) {
+    return Utilities.objectPrefix() + ref;
+  }
 }
