@@ -25,7 +25,7 @@
  **/
 
 public class AsyncApexJobsSelector extends fflib_SObjectSelector {
-  List<Schema.SObjectField> getSObjectFieldList() {
+  public override List<Schema.SObjectField> getSObjectFieldList() {
     return new List<Schema.SObjectField>{
       AsyncApexJob.Id,
       AsyncApexJob.Status,
@@ -39,7 +39,7 @@ public class AsyncApexJobsSelector extends fflib_SObjectSelector {
     };
   }
 
-  Schema.SObjectType getSObjectType() {
+  public override Schema.SObjectType getSObjectType() {
     return AsyncApexJob.sObjectType;
   }
 
