@@ -80,7 +80,9 @@ private with sharing class RollupServiceTest2 {
     rollupSummaryB.RelationShipCriteria__c = conditionB;
     rollupSummaryB.FieldToAggregate__c = 'CloseDate';
     rollupSummaryB.AggregateOperation__c = operationB.name();
-    rollupSummaryB.AggregateResultField__c = 'NumberOfLocations__c';
+    rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+      'NumberOfLocations__c'
+    );
     rollupSummaryB.Active__c = true;
     rollupSummaryB.CalculationMode__c = 'Scheduled';
 
@@ -185,7 +187,9 @@ private with sharing class RollupServiceTest2 {
     rollupSummaryB.RelationShipCriteria__c = conditionB;
     rollupSummaryB.FieldToAggregate__c = 'CloseDate';
     rollupSummaryB.AggregateOperation__c = operationB.name();
-    rollupSummaryB.AggregateResultField__c = 'NumberOfLocations__c';
+    rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+      'NumberOfLocations__c'
+    );
     rollupSummaryB.Active__c = true;
     rollupSummaryB.CalculationMode__c = 'Scheduled';
 
@@ -345,8 +349,8 @@ private with sharing class RollupServiceTest2 {
     System.assertEquals(1, logs.size());
     System.assertEquals(
       'The answer is not 42! : FIELD_CUSTOM_VALIDATION_EXCEPTION (' +
-      aggregateResultField +
-      ')',
+        aggregateResultField +
+        ')',
       logs[0].ErrorMessage__c
     );
     System.assertEquals(
@@ -617,7 +621,9 @@ private with sharing class RollupServiceTest2 {
     rollupSummaryA.RelationShipCriteria__c = null;
     rollupSummaryA.FieldToAggregate__c = 'NumberOfEmployees';
     rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
-    rollupSummaryA.AggregateResultField__c = 'NumberofLocations__c';
+    rollupSummaryA.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+      'NumberOfLocations__c'
+    );
     rollupSummaryA.Active__c = true;
     rollupSummaryA.CalculationMode__c = 'Realtime';
 
