@@ -27,15 +27,19 @@
 public class Utilities {
   static Set<String> permsHeldByUser;
 
+  private static String namespacePrefix;
+
   /**
    * Get the namespace of this package
    **/
   public static String namespace() {
-    Schema.DescribeSObjectResult describe = LookupRollupSummary__c.sObjectType.getDescribe();
-    String name = describe.getName();
-    String localName = describe.getLocalName();
-    String namespace = name.removeEnd(localName).removeEnd('__');
-    return namespace;
+    if (namespacePrefix == null) {
+      Schema.DescribeSObjectResult describe = LookupRollupSummary__c.sObjectType.getDescribe();
+      String name = describe.getName();
+      String localName = describe.getLocalName();
+      namespacePrefix = name.removeEnd(localName).removeEnd('__');
+    }
+    return namespacePrefix;
   }
 
   /**
