@@ -28,7 +28,7 @@
  * Performs various queries on the ApexTrigger object
  **/
 public class ApexTriggersSelector extends fflib_SObjectSelector {
-  public List<Schema.SObjectField> getSObjectFieldList() {
+  public override List<Schema.SObjectField> getSObjectFieldList() {
     return new List<Schema.SObjectField>{
       ApexTrigger.Name,
       ApexTrigger.UsageIsBulk,
@@ -56,7 +56,7 @@ public class ApexTriggersSelector extends fflib_SObjectSelector {
     };
   }
 
-  public Schema.SObjectType getSObjectType() {
+  public override Schema.SObjectType getSObjectType() {
     return ApexTrigger.sObjectType;
   }
 

@@ -25,7 +25,7 @@
  **/
 
 public class CronJobDetailsSelector extends fflib_SObjectSelector {
-  List<Schema.SObjectField> getSObjectFieldList() {
+  public override List<Schema.SObjectField> getSObjectFieldList() {
     return new List<Schema.SObjectField>{
       CronJobDetail.Id,
       CronJobDetail.JobType,
@@ -33,7 +33,7 @@ public class CronJobDetailsSelector extends fflib_SObjectSelector {
     };
   }
 
-  Schema.SObjectType getSObjectType() {
+  public override Schema.SObjectType getSObjectType() {
     return AsyncApexJob.sObjectType;
   }
 
