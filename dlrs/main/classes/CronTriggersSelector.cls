@@ -1,5 +1,5 @@
 public with sharing class CronTriggersSelector extends fflib_SObjectSelector {
-  public List<Schema.SObjectField> getSObjectFieldList() {
+  public override List<Schema.SObjectField> getSObjectFieldList() {
     return new List<Schema.SObjectField>{
       CronTrigger.CronExpression,
       CronTrigger.CronJobDetailId,
@@ -14,17 +14,19 @@ public with sharing class CronTriggersSelector extends fflib_SObjectSelector {
     };
   }
 
-  public Schema.SObjectType getSObjectType() {
+  public override Schema.SObjectType getSObjectType() {
     return CronTrigger.sObjectType;
   }
 
   public List<CronTrigger> selectAllScheduledApex() {
-    List<String> omittedStates = new List<String>{'DELETED'};
+    List<String> omittedStates = new List<String>{ 'DELETED' };
 
     List<CronTrigger> ct = Database.query(
       newQueryFactory()
         .selectfield('CronJobDetail.Name')
-        .setCondition('CronJobDetail.JobType = \'7\' AND State NOT IN :omittedStates')
+        .setCondition(
+          'CronJobDetail.JobType = \'7\' AND State NOT IN :omittedStates'
+        )
         .tosoql()
     );
 
@@ -37,7 +39,9 @@ public with sharing class CronTriggersSelector extends fflib_SObjectSelector {
     List<CronTrigger> ct = Database.query(
       newQueryFactory()
         .selectfield('CronJobDetail.Name')
-        .setCondition('CronJobDetail.JobType = \'7\' AND CronJobDetail.Name LIKE :id')
+        .setCondition(
+          'CronJobDetail.JobType = \'7\' AND CronJobDetail.Name LIKE :id'
+        )
         .setLimit(1)
         .tosoql()
     );

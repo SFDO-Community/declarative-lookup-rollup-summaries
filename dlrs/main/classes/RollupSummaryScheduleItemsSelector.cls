@@ -25,7 +25,7 @@
  **/
 
 public class RollupSummaryScheduleItemsSelector extends fflib_SObjectSelector {
-  public List<Schema.SObjectField> getSObjectFieldList() {
+  public override List<Schema.SObjectField> getSObjectFieldList() {
     List<Schema.SObjectField> fields = new List<Schema.SObjectField>{
       LookupRollupSummaryScheduleItems__c.Name,
       LookupRollupSummaryScheduleItems__c.ParentId__c,
@@ -45,7 +45,7 @@ public class RollupSummaryScheduleItemsSelector extends fflib_SObjectSelector {
     return fields;
   }
 
-  public Schema.SObjectType getSObjectType() {
+  public override Schema.SObjectType getSObjectType() {
     return LookupRollupSummaryScheduleItems__c.sObjectType;
   }
 
