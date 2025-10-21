@@ -85,12 +85,12 @@ public abstract with sharing class fflib_SObjectSelector implements fflib_ISObje
   /**
    * Implement this method to inform the base class of the SObject (custom or standard) to be queried
    **/
-  abstract Schema.SObjectType getSObjectType();
+  public abstract Schema.SObjectType getSObjectType();
 
   /**
    * Implement this method to inform the base class of the common fields to be queried or listed by the base class methods
    **/
-  abstract List<Schema.SObjectField> getSObjectFieldList();
+  public abstract List<Schema.SObjectField> getSObjectFieldList();
 
   /**
    * Constructs the Selector, defaults to not including any FieldSet fields automatically
@@ -266,8 +266,8 @@ public abstract with sharing class fflib_SObjectSelector implements fflib_ISObje
     if (!getSObjectType().getDescribe().isAccessible())
       throw new fflib_SObjectDomain.DomainException(
         'Permission to access an ' +
-        getSObjectType().getDescribe().getName() +
-        ' denied.'
+          getSObjectType().getDescribe().getName() +
+          ' denied.'
       );
   }
 
@@ -331,9 +331,7 @@ public abstract with sharing class fflib_SObjectSelector implements fflib_ISObje
     // Add fields from selector prefixing the relationship path
     for (SObjectField field : getSObjectFieldList())
       queryFactory.selectField(
-        relationshipFieldPath +
-        '.' +
-        field.getDescribe().getName()
+        relationshipFieldPath + '.' + field.getDescribe().getName()
       );
     // Automatically select the CurrencyIsoCode for MC orgs (unless the object is a known exception to the rule)
     if (Userinfo.isMultiCurrencyOrganization() && CURRENCY_ISO_CODE_ENABLED)
@@ -421,8 +419,8 @@ public abstract with sharing class fflib_SObjectSelector implements fflib_ISObje
         // Marshal exception into DomainException for backwards compatability
         throw new fflib_SObjectDomain.DomainException(
           'Permission to access an ' +
-          getSObjectType().getDescribe().getName() +
-          ' denied.'
+            getSObjectType().getDescribe().getName() +
+            ' denied.'
         );
       }
     }
