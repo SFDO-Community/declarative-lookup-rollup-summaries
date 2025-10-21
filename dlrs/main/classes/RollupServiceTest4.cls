@@ -65,11 +65,15 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField = LookupParent__c.Total2__c.getDescribe()
-      .getName();
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
 
     // Configure rollup
     LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
@@ -204,17 +208,26 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Total__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
-    String condition = 'Amount__c > 1';
-    String relationshipCriteriaFields = 'Amount__c';
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String condition = relationshipCriteriaFields + ' > 1';
     String sharingMode = LREngine.SharingMode.User.name();
-    String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
+    String fieldToOrderBy = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
 
     // Configure rollups
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -361,17 +374,26 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Total__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
-    String condition = 'Amount__c > 1';
-    String relationshipCriteriaFields = 'Amount__c';
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String condition = relationshipCriteriaFields + ' > 1';
     String sharingMode = LREngine.SharingMode.User.name();
-    String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
+    String fieldToOrderBy = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
 
     // Configure rollups
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -522,15 +544,23 @@ private class RollupServiceTest4 {
     String childObjectName = childType.getDescribe().getName();
     String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
       .getName();
-    String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Total__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
-    String condition = 'Amount__c > 1';
-    String relationshipCriteriaFields = 'Amount__c';
+    String aggregateField = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String condition = relationshipCriteriaFields + ' > 1';
     String sharingMode = LREngine.SharingMode.User.name();
-    String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
+    String fieldToOrderBy = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
 
     // Configure rollups
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -679,15 +709,23 @@ private class RollupServiceTest4 {
     String childObjectName = childType.getDescribe().getName();
     String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
       .getName();
-    String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Total__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
-    String condition = 'Amount__c > 1';
-    String relationshipCriteriaFields = 'Amount__c';
+    String aggregateField = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String condition = relationshipCriteriaFields + ' > 1';
     String sharingMode = LREngine.SharingMode.User.name();
-    String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
+    String fieldToOrderBy = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
 
     // Configure rollups
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -837,18 +875,27 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField1 = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateField2 = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Colours__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
-    String condition = 'Amount__c > 1';
-    String relationshipCriteriaFields = 'Amount__c';
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Color__c'
+    );
+    String aggregateField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Colours__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String condition = relationshipCriteriaFields + ' > 1';
     String sharingMode = LREngine.SharingMode.User.name();
-    String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
+    String fieldToOrderBy = relationshipCriteriaFields;
 
     // Configure rollups
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -1000,18 +1047,27 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField1 = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateField2 = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Colours__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
-    String condition = 'Amount__c > 1';
-    String relationshipCriteriaFields = 'Amount__c';
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Color__c'
+    );
+    String aggregateField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Colours__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String condition = relationshipCriteriaFields + ' > 1';
     String sharingMode = LREngine.SharingMode.User.name();
-    String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
+    String fieldToOrderBy = relationshipCriteriaFields;
 
     // Configure rollups
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -1164,19 +1220,30 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField1 = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateField2 = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Colours__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
-    String condition = 'Amount__c > 1';
-    String relationshipCriteriaFields = 'Amount__c';
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Color__c'
+    );
+    String aggregateField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Colours__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String condition = relationshipCriteriaFields + ' > 1';
     String sharingMode = LREngine.SharingMode.User.name();
-    String fieldToOrderBy1 = LookupChild__c.Amount__c.getDescribe().getName();
-    String fieldToOrderBy2 = LookupChild__c.Name.getDescribe().getName();
+    String fieldToOrderBy1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String fieldToOrderBy2 = 'Name';
 
     // Configure rollups
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -1336,18 +1403,29 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField1 = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateField2 = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Colours__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
-    String condition = 'Amount__c > 1';
-    String relationshipCriteriaFields = 'Amount__c';
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Color__c'
+    );
+    String aggregateField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Colours__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String condition = relationshipCriteriaFields + ' > 1';
     String sharingMode = LREngine.SharingMode.User.name();
-    String fieldToOrderBy = LookupChild__c.Amount__c.getDescribe().getName();
+    String fieldToOrderBy = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
 
     // Configure rollups
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -1506,23 +1584,33 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField1 = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateField2 = LookupChild__c.Description__c.getDescribe()
-      .getName();
-    String aggregateField3 = LookupChild__c.Description__c.getDescribe()
-      .getName();
-    String aggregateResultField1 = LookupParent__c.Colours__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Descriptions__c.getDescribe()
-      .getName();
-    String aggregateResultField3 = LookupParent__c.Descriptions2__c.getDescribe()
-      .getName();
-    String condition = 'Description__c != null';
-    String relationshipCriteriaFields = 'Description__c';
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Color__c'
+    );
+    String aggregateField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Description__c'
+    );
+    String aggregateField3 = TestContext.applyNamespacePrefixIfAvailable(
+      'Description__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Colours__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Descriptions__c'
+    );
+    String aggregateResultField3 = TestContext.applyNamespacePrefixIfAvailable(
+      'Descriptions2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Description__c'
+    );
+    String condition = relationshipCriteriaFields + ' != null';
     String sharingMode = LREngine.SharingMode.User.name();
-    String fieldToOrderBy = LookupChild__c.Name.getDescribe().getName();
+    String fieldToOrderBy = 'Name';
 
     // Configure rollups
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -1714,24 +1802,35 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField1 = LookupChild__c.Description__c.getDescribe()
-      .getName();
-    String aggregateField2 = LookupChild__c.Description__c.getDescribe()
-      .getName();
-    String aggregateField3 = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Descriptions__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Descriptions2__c.getDescribe()
-      .getName();
-    String aggregateResultField3 = LookupParent__c.Colours__c.getDescribe()
-      .getName();
-    String condition = 'Description__c != null';
-    String relationshipCriteriaFields = 'Description__c';
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Description__c'
+    );
+    String aggregateField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Description__c'
+    );
+    String aggregateField3 = TestContext.applyNamespacePrefixIfAvailable(
+      'Color__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Descriptions__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Descriptions2__c'
+    );
+    String aggregateResultField3 = TestContext.applyNamespacePrefixIfAvailable(
+      'Colours__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Description__c'
+    );
+    String condition = relationshipCriteriaFields + ' != null';
     String sharingMode = LREngine.SharingMode.User.name();
-    String fieldToOrderBy = LookupChild__c.Description__c.getDescribe()
-      .getName();
+    String fieldToOrderBy = TestContext.applyNamespacePrefixIfAvailable(
+      'Description__c'
+    );
 
     // Configure rollups
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -1916,27 +2015,43 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField1 = LookupChild__c.Description__c.getDescribe()
-      .getName();
-    String aggregateField2 = LookupChild__c.Description2__c.getDescribe()
-      .getName();
-    String aggregateField3 = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateField4 = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateField5 = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Descriptions__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Descriptions2__c.getDescribe()
-      .getName();
-    String aggregateResultField3 = LookupParent__c.Colours__c.getDescribe()
-      .getName();
-    String aggregateResultField4 = LookupParent__c.Total__c.getDescribe()
-      .getName();
-    String aggregateResultField5 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
-    String condition = 'Description__c != null';
-    String relationshipCriteriaFields = 'Description__c';
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Description__c'
+    );
+    String aggregateField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Description2__c'
+    );
+    String aggregateField3 = TestContext.applyNamespacePrefixIfAvailable(
+      'Color__c'
+    );
+    String aggregateField4 = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateField5 = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Descriptions__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Descriptions2__c'
+    );
+    String aggregateResultField3 = TestContext.applyNamespacePrefixIfAvailable(
+      'Colours__c'
+    );
+    String aggregateResultField4 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total__c'
+    );
+    String aggregateResultField5 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Description__c'
+    );
+    String condition = relationshipCriteriaFields + ' != null';
     String sharingMode = LREngine.SharingMode.User.name();
     String fieldToOrderBy = null;
 
@@ -2125,19 +2240,36 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField1 = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateField2 = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Colours__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
-    String condition = 'Amount__c > 1';
-    String relationshipCriteriaFields = 'Amount__c';
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Color__c'
+    );
+    String aggregateField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Colours__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String condition = relationshipCriteriaFields + ' > 1';
     String sharingMode = LREngine.SharingMode.User.name();
-    String orderBy1 = 'Amount__c ASC NULLS FIRST, Color__c ASC NULLS FIRST';
-    String orderBy2 = 'Amount__c ASC NULLS FIRST, Color__c DESC NULLS FIRST';
+    String orderBy1 =
+      relationshipCriteriaFields +
+      ' ASC NULLS FIRST, ' +
+      aggregateField1 +
+      ' ASC NULLS FIRST';
+    String orderBy2 =
+      relationshipCriteriaFields +
+      ' ASC NULLS FIRST, ' +
+      aggregateField1 +
+      ' DESC NULLS FIRST';
 
     // Configure rollups
     LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
@@ -2289,16 +2421,25 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField1 = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateField2 = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Colours__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
-    String condition = 'Amount__c > 1';
-    String relationshipCriteriaFields = 'Amount__c';
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Color__c'
+    );
+    String aggregateField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String aggregateResultField1 = TestContext.applyNamespacePrefixIfAvailable(
+      'Colours__c'
+    );
+    String aggregateResultField2 = TestContext.applyNamespacePrefixIfAvailable(
+      'Total2__c'
+    );
+    String relationshipCriteriaFields = TestContext.applyNamespacePrefixIfAvailable(
+      'Amount__c'
+    );
+    String condition = relationshipCriteriaFields + ' > 1';
     String sharingMode = LREngine.SharingMode.User.name();
     String fieldToOrderBy = null;
 
@@ -2410,24 +2551,28 @@ private class RollupServiceTest4 {
     Schema.SObjectType childType = LookupChild__c.sObjectType;
     String parentObjectName = parentType.getDescribe().getName();
     String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateResultField = LookupParent__c.Colours__c.getDescribe()
-      .getName();
+    String relationshipField = TestContext.applyNamespacePrefixIfAvailable(
+      'LookupParent__c'
+    );
+    String aggregateField = TestContext.applyNamespacePrefixIfAvailable(
+      'Color__c'
+    );
+    String aggregateResultField = TestContext.applyNamespacePrefixIfAvailable(
+      'Colours__c'
+    );
     String condition =
-      LookupChild__c.Amount__c.getDescribe().getName() + ' > 1';
+      TestContext.applyNamespacePrefixIfAvailable('Amount__c') + ' > 1';
     List<String> relationshipCriteriaFields = new List<String>{
-      LookupChild__c.Amount__c.getDescribe().getName(),
+      TestContext.applyNamespacePrefixIfAvailable('Amount__c'),
       'Name',
       'Id',
       'IsDeleted'
     };
     String sharingMode = LREngine.SharingMode.User.name();
     String fieldToOrderBy =
-      LookupChild__c.Amount__c.getDescribe().getName() +
+      TestContext.applyNamespacePrefixIfAvailable('Amount__c') +
       ',' +
-      LookupChild__c.Color__c.getDescribe().getName() +
+      TestContext.applyNamespacePrefixIfAvailable('Color__c') +
       ' ASC,Name NULLS LAST,Id DESC NULLS FIRST';
 
     // Configure rollups
