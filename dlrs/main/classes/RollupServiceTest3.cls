@@ -639,7 +639,9 @@ private with sharing class RollupServiceTest3 {
     rollupSummary.RelationShipCriteria__c = null;
     rollupSummary.FieldToAggregate__c = 'CloseDate';
     rollupSummary.AggregateOperation__c = 'Max';
-    rollupSummary.AggregateResultField__c = 'SLAExpirationDate__c';
+    rollupSummary.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+      'SLAExpirationDate__c'
+    );
     rollupSummary.Active__c = true;
     rollupSummary.CalculationMode__c = 'Realtime';
     insert new List<LookupRollupSummary__c>{ rollupSummary };
@@ -698,7 +700,9 @@ private with sharing class RollupServiceTest3 {
     rollupSummary.RelationShipCriteria__c = 'CloseDate < TODAY';
     rollupSummary.FieldToAggregate__c = 'CloseDate';
     rollupSummary.AggregateOperation__c = 'Max';
-    rollupSummary.AggregateResultField__c = 'SLAExpirationDate__c';
+    rollupSummary.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+      'SLAExpirationDate__c'
+    );
     rollupSummary.Active__c = true;
     rollupSummary.CalculationMode__c = 'Realtime';
     insert new List<LookupRollupSummary__c>{ rollupSummary };
@@ -1787,7 +1791,9 @@ private with sharing class RollupServiceTest3 {
     rollupSummary.RelationShipCriteria__c = 'CloseDate < TODAY OR Amount > 100';
     rollupSummary.FieldToAggregate__c = 'CloseDate';
     rollupSummary.AggregateOperation__c = 'Max';
-    rollupSummary.AggregateResultField__c = 'SLAExpirationDate__c';
+    rollupSummary.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+      'SLAExpirationDate__c'
+    );
     rollupSummary.Active__c = true;
     rollupSummary.CalculationMode__c = 'Realtime';
     insert new List<LookupRollupSummary__c>{ rollupSummary };
