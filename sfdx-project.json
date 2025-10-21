@@ -21,9 +21,6 @@
     },
     {
       "path": "unpackaged/config/test"
-    },
-    {
-      "path": "unpackaged/config/test_triggers"
     }
   ],
   "namespace": "dlrs",
