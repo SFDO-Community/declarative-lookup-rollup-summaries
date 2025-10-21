@@ -244,7 +244,7 @@ public class RollupSummariesSelector {
       super(false, enforceSecurity, enforceSecurity);
     }
 
-    public List<Schema.SObjectField> getSObjectFieldList() {
+    public override List<Schema.SObjectField> getSObjectFieldList() {
       return new List<Schema.SObjectField>{
         LookupRollupSummary__c.Name,
         LookupRollupSummary__c.Active__c,
@@ -268,7 +268,7 @@ public class RollupSummariesSelector {
       };
     }
 
-    public Schema.SObjectType getSObjectType() {
+    public override Schema.SObjectType getSObjectType() {
       return LookupRollupSummary__c.sObjectType;
     }
 
@@ -295,7 +295,7 @@ public class RollupSummariesSelector {
       this.forEdit = forEdit;
     }
 
-    public List<Schema.SObjectField> getSObjectFieldList() {
+    public override List<Schema.SObjectField> getSObjectFieldList() {
       List<Schema.SObjectField> selectorFields = new List<Schema.SObjectField>{
         LookupRollupSummary2__mdt.Id,
         LookupRollupSummary2__mdt.Label,
@@ -328,7 +328,7 @@ public class RollupSummariesSelector {
       return selectorFields;
     }
 
-    public Schema.SObjectType getSObjectType() {
+    public override Schema.SObjectType getSObjectType() {
       return LookupRollupSummary2__mdt.sObjectType;
     }
 
