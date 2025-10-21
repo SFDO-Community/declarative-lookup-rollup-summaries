@@ -28,7 +28,7 @@
  * Performs various queries on the ApexClass object
  **/
 public class ApexClassesSelector extends fflib_SObjectSelector {
-  public List<Schema.SObjectField> getSObjectFieldList() {
+  public override List<Schema.SObjectField> getSObjectFieldList() {
     return new List<Schema.SObjectField>{
       ApexClass.SystemModstamp,
       ApexClass.Status,
@@ -47,7 +47,7 @@ public class ApexClassesSelector extends fflib_SObjectSelector {
     };
   }
 
-  public Schema.SObjectType getSObjectType() {
+  public override Schema.SObjectType getSObjectType() {
     return ApexClass.sObjectType;
   }
 
