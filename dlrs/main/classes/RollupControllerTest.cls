@@ -54,7 +54,9 @@ private class RollupControllerTest {
       rollupSummaryB.RelationShipCriteria__c = null;
       rollupSummaryB.FieldToAggregate__c = 'CloseDate';
       rollupSummaryB.AggregateOperation__c = 'Count';
-      rollupSummaryB.AggregateResultField__c = 'NumberOfLocations__c';
+      rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+        'NumberOfLocations__c'
+      );
       rollupSummaryB.Active__c = true;
       rollupSummaryB.CalculationMode__c = 'Realtime';
       insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
