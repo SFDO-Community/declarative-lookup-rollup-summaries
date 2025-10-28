@@ -4,7 +4,7 @@
     <deprecated>false</deprecated>
     <externalId>false</externalId>
     <inlineHelpText
-  >SOQL WHERE clause applied when querying Child Object records, e.g. Amount > 200</inlineHelpText>
+  >SOQL WHERE clause applied when querying Child Object records, e.g. Amount &gt; 200</inlineHelpText>
     <label>Relationship Criteria</label>
     <length>255</length>
     <required>false</required>
