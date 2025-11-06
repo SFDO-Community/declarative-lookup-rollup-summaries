@@ -113,19 +113,31 @@ public with sharing class RollupCalculateJob implements Database.Batchable<sObje
       // Retrieve organization info to put in the email
       Organization org = [SELECT Id, Name FROM Organization];
 
+      //Getting rollup name
+      String rollupName = rollup.isEmpty() ? '' : rollup[0].Name;
+
       // Errors are emailed to the user that scheduled this job
       Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
       mail.setToAddresses(new List<String>{ UserInfo.getUserId() });
       mail.setSubject(
         String.format(
-          'Apex job {0} failed to update rollups in {1} ({2})',
-          new List<String>{ BC.getJobId(), org.Name, org.Id }
+          'Apex job "{0}" failed to update rollups in "{1} (ID: {2})"',
+          new List<String>{ BC.getJobId(), org.Name, org.Id, rollupName, lookupId }
         )
       );
       mail.setPlainTextBody(
         String.format(
-          'Error: {0}. Parent record Ids {1}',
-          new List<String>{ e.getMessage(), String.join(ids, ',') }
+          'Rollup Execution Failed\n' +
+          '--------------------------------------------------------------------------------\n' +
+          'Lookup ID: {3}\n' +
+          'Lookup Name: {4}\n' +
+          'Apex Job ID: {0}\n\n' +
+          'Error Message: {5}\n\n' +
+          'Parent records in scope that caused the failure: {1}\n\n' +
+          'Organization Name: {6}\n' +
+          'Organization ID: {2}\n' +
+          '--------------------------------------------------------------------------------',
+          new List<String>{ BC.getJobId(), String.join(ids, ','), org.Id, lookupId, rollupName, e.getMessage(), org.Name}
         )
       );
       MessageService.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });

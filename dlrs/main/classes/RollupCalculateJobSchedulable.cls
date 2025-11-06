@@ -49,21 +49,37 @@ public with sharing class RollupCalculateJobSchedulable implements Schedulable {
       String jobRef = jobNameByTriggerId.size() == 0
         ? 'id ' + triggerId
         : 'named ' + jobNameByTriggerId.get(triggerId) + ' (' + triggerId + ')';
+
+      // Retrieve organization info to put in the email
+      Organization org = [SELECT Id, Name FROM Organization];
+
+      //Getting rollup name
+      String rollupName = rollup.isEmpty() ? '' : rollup[0].Name;
+
       // Errors are emailed to the user that scheduled this job
       Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
       mail.setToAddresses(new List<String>{ UserInfo.getUserId() });
       mail.setSubject(
         String.format(
-          'Apex scheduled job {0} failed to run rolllup',
+          'Apex scheduled job "{0}" failed to run rolllup',
           new List<String>{ jobRef }
         )
       );
       mail.setPlainTextBody(
         String.format(
-          'Error: {0} ' +
-            'Review the error, rollup definition and/or delete the Apex Scheduled job under Setup. ' +
-            'Check if the rollup still exists via the Manage Rollup Summaries and/or Lookup Rollup Summaries tabs. ',
-          new List<String>{ e.getMessage() }
+          'Failed Job Information\n' +
+          '--------------------------------------------------------------------------------\n' +
+          'Lookup ID: {0}\n' +
+          'Lookup Name: {1}\n' +
+          'Apex Scheduled Job Name: {2}\n' +
+          'Trigger ID: \n\n' +
+          'Error Message: {3}\n\n' +
+          'Organization Name: {4}\n' +
+          'Organization ID: {5}\n\n' +
+          'Review the error, rollup definition and/or delete the Apex Scheduled job under Setup.\n' +
+          'Check if the rollup still exists via the Manage Rollup Summaries and/or Lookup Rollup Summaries tabs.\n' +
+          '--------------------------------------------------------------------------------',
+          new List<String>{ rollupRecordId, rollupName, jobRef, e.getMessage(), org.Name, org.Id }
         )
       );
       MessageService.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
