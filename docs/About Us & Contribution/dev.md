@@ -24,7 +24,7 @@ It's easy:
 2. run `npm ci` - this will ensure our code formatting rules apply (via Prettier), and installs packages from the package-lock.json file
 3. create a _new branch_ from `main`, all branches must start with `feature/`, e.g. `feature/newSetupUX`(use a descriptive name)
 4. Deploy code to a Scratch Org via CCI or DX  
-    A. If using SFDX: append the scratch org creation command with "--nonamespace"  
+    A. If using SFDX: append the scratch org creation command with "--no-namespace"  
    &nbsp;Ex: `sf org create scratch --definition-file orgs/feature.json --no-namespace -a myTestOrgAlias`
 5. Work on it
 
