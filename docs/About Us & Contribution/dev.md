@@ -24,12 +24,12 @@ It's easy:
 2. run `npm ci` - this will ensure our code formatting rules apply (via Prettier), and installs packages from the package-lock.json file
 3. create a _new branch_ from `main`, all branches must start with `feature/`, e.g. `feature/newSetupUX`(use a descriptive name)
 4. Deploy code to a Scratch Org via CCI or DX  
-    A. If using SFDX: append the scratch org creation command with "--nonamespace"  
-   &nbsp;Ex: `sfdx force:org:create -f orgs/feature.json --nonamespace -a myTestOrgAlias`
+    A. If using SFDX: append the scratch org creation command with "--no-namespace"  
+   &nbsp;Ex: `sf org create scratch --definition-file orgs/feature.json --no-namespace -a myTestOrgAlias`
 5. Work on it
 
 When done:
 
 - Open up a PR and fill out the template. Once done, one of two things will happen
   1. If you are a DLRS team member, successful builds and reviews are required for merge
-  2. If you are not a member (yet) then a team member will pick up your PR, close it and open a new PR with your changes. That way your contribution will be preserved. From there it is back to 1)
+  2. If you are not a member (yet) then a team member will pick up your PR, close it and open a new PR with your changes. That way your contribution will be preserved. From there it is back to 1
