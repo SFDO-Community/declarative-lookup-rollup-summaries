@@ -190,12 +190,14 @@ public class RollupSummaries extends fflib_SObjectDomain {
           '\r\n'
         );
         for (String field : fieldList) {
+          String trimmedCriteriaField = field.trim();
+          if (trimmedCriteriaField.length() == 0) continue;
           SObjectField relationshipCriteriaField = childObject.getFieldsMap()
-            .get(field);
+            .get(trimmedCriteriaField);
           relationshipCriteriaFields.add(
             relationshipCriteriaField != null
               ? relationshipCriteriaField.getDescribe().getName()
-              : field
+              : trimmedCriteriaField
           );
         }
         lookupRollupSummary.RelationshipCriteriaFields = String.join(
@@ -353,14 +355,17 @@ public class RollupSummaries extends fflib_SObjectDomain {
         childObject != null &&
         lookupRollupSummary.RelationshipCriteriaFields != null
       ) {
+        
         String[] fieldList = lookupRollupSummary.RelationshipCriteriaFields.split(
           '[\r\n]+'
         );
         String[] fieldsInError = new List<String>();
-        for (String field : fieldList)
-          if (field.length() > 0)
-            if (childObject.getFieldsMap().get(field) == null)
-              fieldsInError.add(field);
+        for (String field : fieldList) {
+          String trimmedCriteriaField = field.trim();
+          if (trimmedCriteriaField.length() > 0)
+            if (childObject.getFieldsMap().get(trimmedCriteriaField) == null)
+              fieldsInError.add(trimmedCriteriaField);
+        }
         if (fieldsInError.size() == 1)
           lookupRollupSummary.Fields.RelationshipCriteriaFields.addError(
             error(
