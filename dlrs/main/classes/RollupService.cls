@@ -1059,7 +1059,8 @@ global with sharing class RollupService {
             '[\r\n]+'
           )
         ) {
-          lookupFields.add(criteriaField);
+          String trimmedCriteriaField = criteriaField.trim();
+          lookupFields.add(trimmedCriteriaField);
         }
       }
       // only include order by fields when query based rollup (concat, first, last, etc.) since changes to them
