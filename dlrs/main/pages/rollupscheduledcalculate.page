@@ -121,7 +121,7 @@
 						<apex:selectOption itemValue="6" itemLabel="June" />
 						<apex:selectOption itemValue="7" itemLabel="July" />
 						<apex:selectOption itemValue="8" itemLabel="August" />
-						<apex:selectOption itemValue="9" itemLabel="Septemer" />
+						<apex:selectOption itemValue="9" itemLabel="September" />
 						<apex:selectOption itemValue="10" itemLabel="October" />
 						<apex:selectOption itemValue="11" itemLabel="November" />
 						<apex:selectOption itemValue="12" itemLabel="December" />
