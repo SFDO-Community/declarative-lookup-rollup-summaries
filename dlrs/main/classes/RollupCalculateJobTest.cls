@@ -296,4 +296,34 @@ private class RollupCalculateJobTest {
       return '100000000000000';
     }
   }
+
+  @isTest
+  public static void testRollupNameNotFoundCase() {
+    String prefix = LookupRollupSummary2__mdt.sObjectType.getDescribe()
+      .getKeyPrefix();
+
+    String fakeRollupId = prefix + '00000000000000D';
+
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
+      new List<RollupSummary>()
+    );
+
+    Account a = new Account(Name = 'Test');
+    insert a;
+
+    RollupCalculateJob job = new RollupCalculateJob(fakeRollupId);
+
+    Test.startTest();
+    job.execute(new MockBatchableContext(), new List<SObject>{ a });
+    Test.stopTest();
+
+    List<LookupRollupSummaryLog__c> logs = [
+      SELECT Id, ParentId__c, ParentObject__c, ErrorMessage__c
+      FROM LookupRollupSummaryLog__c
+    ];
+
+    assert.areEqual(0, logs.size());
+  }
 }

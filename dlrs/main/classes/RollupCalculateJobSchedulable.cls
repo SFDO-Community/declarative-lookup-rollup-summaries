@@ -68,18 +68,25 @@ public with sharing class RollupCalculateJobSchedulable implements Schedulable {
       mail.setPlainTextBody(
         String.format(
           'Failed Job Information\n' +
-          '--------------------------------------------------------------------------------\n' +
-          'Lookup ID: {0}\n' +
-          'Lookup Name: {1}\n' +
-          'Apex Scheduled Job Name: {2}\n' +
-          'Trigger ID: \n\n' +
-          'Error Message: {3}\n\n' +
-          'Organization Name: {4}\n' +
-          'Organization ID: {5}\n\n' +
-          'Review the error, rollup definition and/or delete the Apex Scheduled job under Setup.\n' +
-          'Check if the rollup still exists via the Manage Rollup Summaries and/or Lookup Rollup Summaries tabs.\n' +
-          '--------------------------------------------------------------------------------',
-          new List<String>{ rollupRecordId, rollupName, jobRef, e.getMessage(), org.Name, org.Id }
+            '--------------------------------------------------------------------------------\n' +
+            'Lookup ID: {0}\n' +
+            'Lookup Name: {1}\n' +
+            'Apex Scheduled Job Name: {2}\n' +
+            'Trigger ID: \n\n' +
+            'Error Message: {3}\n\n' +
+            'Organization Name: {4}\n' +
+            'Organization ID: {5}\n\n' +
+            'Review the error, rollup definition and/or delete the Apex Scheduled job under Setup.\n' +
+            'Check if the rollup still exists via the Manage Rollup Summaries and/or Lookup Rollup Summaries tabs.\n' +
+            '--------------------------------------------------------------------------------',
+          new List<String>{
+            rollupRecordId,
+            rollupName,
+            jobRef,
+            e.getMessage(),
+            org.Name,
+            org.Id
+          }
         )
       );
       MessageService.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
