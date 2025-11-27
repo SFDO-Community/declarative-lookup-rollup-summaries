@@ -113,8 +113,9 @@ public with sharing class RollupCalculateJob implements Database.Batchable<sObje
       // Retrieve organization info to put in the email
       Organization org = [SELECT Id, Name FROM Organization];
 
-      //Getting rollup name
+      //Getting rollup name and unique name
       String rollupName = rollup.isEmpty() ? '' : rollup[0].Name;
+      String rollupUniqueName = rollup.isEmpty() ? '' : rollup[0].UniqueName;
 
       // Errors are emailed to the user that scheduled this job
       Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
@@ -123,35 +124,29 @@ public with sharing class RollupCalculateJob implements Database.Batchable<sObje
       mail.setSubject(
         String.format(
           'Apex job "{0}" failed to update rollups in "{1} (ID: {2})"',
-          new List<String>{
-            BC.getJobId(),
-            org.Name,
-            org.Id,
-            rollupName,
-            lookupId
-          }
+          new List<String>{ rollupName, org.Name, org.Id }
         )
       );
       mail.setPlainTextBody(
         String.format(
-          'Rollup Execution Failed\n' +
+          'Rollup Execution Failed\n\n' +
             '--------------------------------------------------------------------------------\n' +
-            'Lookup ID: {3}\n' +
-            'Lookup Name: {4}\n' +
-            'Apex Job ID: {0}\n\n' +
-            'Error Message: {5}\n\n' +
-            'Parent records in scope that caused the failure: {1}\n\n' +
-            'Organization Name: {6}\n' +
-            'Organization ID: {2}\n' +
+            'Organization Name: {0}\n' +
+            'Organization ID: {1}\n' +
+            'Lookup: {2} (Unique Name: {3}, ID: {4})\n' +
+            'Apex Job ID: {5}\n\n' +
+            'Error Message: {6}\n\n' +
+            'Parent records in scope that caused the failure: {7}\n' +
             '--------------------------------------------------------------------------------',
           new List<String>{
-            BC.getJobId(),
-            String.join(ids, ','),
+            org.Name,
             org.Id,
-            lookupId,
             rollupName,
+            rollupUniqueName,
+            lookupId,
+            BC.getJobId(),
             e.getMessage(),
-            org.Name
+            String.join(ids, ',')
           }
         )
       );
