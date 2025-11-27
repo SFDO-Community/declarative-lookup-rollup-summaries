@@ -118,7 +118,8 @@ public with sharing class RollupCalculateJob implements Database.Batchable<sObje
 
       // Errors are emailed to the user that scheduled this job
       Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
-      mail.setToAddresses(new List<String>{ UserInfo.getUserId() });
+      mail.setTargetObjectId(UserInfo.getUserId());
+      mail.setSaveAsActivity(false); // required when sending to user
       mail.setSubject(
         String.format(
           'Apex job "{0}" failed to update rollups in "{1} (ID: {2})"',
