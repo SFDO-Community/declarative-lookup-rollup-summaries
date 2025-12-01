@@ -219,7 +219,7 @@ public class RollupSummary {
       return (String) Record.get('RelationshipCriteriaFields__c');
     }
     set {
-      if (value != null) {
+      if (String.isBlank(value)) {
         Record.put('RelationshipCriteriaFields__c', value.trim());
       } else {
         Record.put('RelationshipCriteriaFields__c', null);
