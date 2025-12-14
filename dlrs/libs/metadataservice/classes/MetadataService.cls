@@ -36899,8 +36899,13 @@ public class MetadataService {
     };
   }
   public class MetadataPort {
-    public String endpoint_x =
-      URL.getOrgDomainUrl().toExternalForm() + '/services/Soap/m/34.0';
+    public String endpoint_x {
+      get{
+      return endpointUrl + endpointPath;
+    }
+    private set;}
+    public String endpointUrl = URL.getOrgDomainUrl().toExternalForm();
+    public String endpointPath = '/services/Soap/m/34.0';
     public Map<String, String> inputHttpHeaders_x;
     public Map<String, String> outputHttpHeaders_x;
     public String clientCertName_x;
