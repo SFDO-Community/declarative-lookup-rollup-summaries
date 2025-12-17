@@ -100,6 +100,39 @@ private class CustomMetadataServiceTest {
     Assert.areEqual(1, Limits.getDmlRows());
   }
 
+  @IsTest
+  static void testCreateServiceWithoutNamedCred() {
+    MetadataService.MetadataPort svc = CustomMetadataService.createService();
+    Assert.areEqual(URL.getOrgDomainUrl().toExternalForm(), svc.endpointUrl);
+    Assert.isTrue(svc.SessionHeader.sessionId.endsWith('!ApexTestSession'));
+  }
+
+  @IsTest
+  static void testCreateServiceWithNullNamedCred() {
+    DeclarativeLookupRollupSummaries__c settings = DeclarativeLookupRollupSummaries__c.getInstance();
+    settings.NamedCredentialForAPI__c = null;
+    insert settings;
+
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      MetadataService.MetadataPort svc = CustomMetadataService.createService();
+      Assert.areEqual(URL.getOrgDomainUrl().toExternalForm(), svc.endpointUrl);
+      Assert.isTrue(svc.SessionHeader.sessionId.endsWith('!ApexTestSession'));
+    }
+  }
+
+  @IsTest
+  static void testCreateServiceWithNamedCred() {
+    DeclarativeLookupRollupSummaries__c settings = DeclarativeLookupRollupSummaries__c.getInstance();
+    settings.NamedCredentialForAPI__c = 'TestCred';
+    insert settings;
+
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      MetadataService.MetadataPort svc = CustomMetadataService.createService();
+      Assert.areEqual('callout:TestCred', svc.endpointUrl);
+      Assert.areEqual('{!$Credential.OAuthToken}', svc.SessionHeader.sessionId);
+    }
+  }
+
   public class MetadataServiceDeleteSuccessCalloutMock implements WebServiceMock {
     public void doInvoke(
       Object stub,
