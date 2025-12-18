@@ -36900,12 +36900,13 @@ public class MetadataService {
   }
   public class MetadataPort {
     public String endpoint_x {
-      get{
-      return endpointUrl + endpointPath;
+      get {
+        return endpointUrl + endpointPath;
+      }
+      private set;
     }
-    private set;}
     public String endpointUrl = URL.getOrgDomainUrl().toExternalForm();
-    public String endpointPath = '/services/Soap/m/34.0';
+    public String endpointPath = '/services/Soap/m/63.0'; // changing to 64+ causes a break, please test deployment if increasing
     public Map<String, String> inputHttpHeaders_x;
     public Map<String, String> outputHttpHeaders_x;
     public String clientCertName_x;
