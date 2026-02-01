@@ -113,19 +113,41 @@ public with sharing class RollupCalculateJob implements Database.Batchable<sObje
       // Retrieve organization info to put in the email
       Organization org = [SELECT Id, Name FROM Organization];
 
+      //Getting rollup name and unique name
+      String rollupName = rollup.isEmpty() ? '' : rollup[0].Name;
+      String rollupUniqueName = rollup.isEmpty() ? '' : rollup[0].UniqueName;
+
       // Errors are emailed to the user that scheduled this job
       Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
-      mail.setToAddresses(new List<String>{ UserInfo.getUserId() });
+      mail.setTargetObjectId(UserInfo.getUserId());
+      mail.setSaveAsActivity(false); // required when sending to user
       mail.setSubject(
         String.format(
-          'Apex job {0} failed to update rollups in {1} ({2})',
-          new List<String>{ BC.getJobId(), org.Name, org.Id }
+          'Apex job "{0}" failed to update rollups in "{1} (ID: {2})"',
+          new List<String>{ rollupName, org.Name, org.Id }
         )
       );
       mail.setPlainTextBody(
         String.format(
-          'Error: {0}. Parent record Ids {1}',
-          new List<String>{ e.getMessage(), String.join(ids, ',') }
+          'Rollup Execution Failed\n\n' +
+            '--------------------------------------------------------------------------------\n' +
+            'Organization Name: {0}\n' +
+            'Organization ID: {1}\n' +
+            'Lookup: {2} (Unique Name: {3}, ID: {4})\n' +
+            'Apex Job ID: {5}\n\n' +
+            'Error Message: {6}\n\n' +
+            'Parent records in scope that caused the failure: {7}\n' +
+            '--------------------------------------------------------------------------------',
+          new List<String>{
+            org.Name,
+            org.Id,
+            rollupName,
+            rollupUniqueName,
+            lookupId,
+            BC.getJobId(),
+            e.getMessage(),
+            String.join(ids, ',')
+          }
         )
       );
       MessageService.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
