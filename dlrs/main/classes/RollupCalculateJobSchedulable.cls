@@ -49,21 +49,47 @@ public with sharing class RollupCalculateJobSchedulable implements Schedulable {
       String jobRef = jobNameByTriggerId.size() == 0
         ? 'id ' + triggerId
         : 'named ' + jobNameByTriggerId.get(triggerId) + ' (' + triggerId + ')';
+
+      // Retrieve organization info to put in the email
+      Organization org = [SELECT Id, Name FROM Organization];
+
+      //Getting rollup name and unique name
+      String rollupName = rollup.isEmpty() ? '' : rollup[0].Name;
+      String rollupuniqueName = rollup.isEmpty() ? '' : rollup[0].UniqueName;
+
       // Errors are emailed to the user that scheduled this job
       Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
-      mail.setToAddresses(new List<String>{ UserInfo.getUserId() });
+      mail.setTargetObjectId(UserInfo.getUserId());
+      mail.setSaveAsActivity(false); // required when sending to user
       mail.setSubject(
         String.format(
-          'Apex scheduled job {0} failed to run rolllup',
-          new List<String>{ jobRef }
+          'Apex scheduled job "{0}" failed to update rollups in "{1} (ID: {2})"',
+          new List<String>{ jobRef, org.Name, org.Id }
         )
       );
       mail.setPlainTextBody(
         String.format(
-          'Error: {0} ' +
-            'Review the error, rollup definition and/or delete the Apex Scheduled job under Setup. ' +
-            'Check if the rollup still exists via the Manage Rollup Summaries and/or Lookup Rollup Summaries tabs. ',
-          new List<String>{ e.getMessage() }
+          'Failed Job Information\n\n' +
+            'Review the error, rollup definition and/or delete the Apex Scheduled job under Setup.\n' +
+            'Check if the rollup still exists via the Manage Rollup Summaries and/or Lookup Rollup Summaries tabs.\n\n' +
+            '--------------------------------------------------------------------------------\n' +
+            'Organization Name: {0}\n' +
+            'Organization ID: {1}\n\n' +
+            'Lookup: {2} (Unique Name: {3}, ID: {4})\n' +
+            'Apex Scheduled Job Name: {5}\n' +
+            'Trigger ID: {6} \n\n' +
+            'Error Message: {7}\n' +
+            '--------------------------------------------------------------------------------',
+          new List<String>{
+            org.Name,
+            org.Id,
+            rollupName,
+            rollupuniqueName,
+            rollupRecordId,
+            jobRef,
+            triggerId,
+            e.getMessage()
+          }
         )
       );
       MessageService.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
