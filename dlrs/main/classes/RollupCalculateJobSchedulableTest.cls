@@ -82,4 +82,43 @@ private class RollupCalculateJobSchedulableTest {
     Assert.areEqual(rollupSummary.Id, logs[0].ParentId__c);
     Assert.areEqual(0, MessageService.sentEmailList.size());
   }
+
+  // Mock class to simulate SchedulableContext
+  public class MockSchedulableContext implements SchedulableContext {
+    public Id getTriggerId() {
+      // CronTigger fake Id
+      return '08e000000000000AAA';
+    }
+  }
+
+  @isTest
+  public static void testRollupNameNotFoundCase() {
+    String prefix = LookupRollupSummary2__mdt.sObjectType.getDescribe()
+      .getKeyPrefix();
+
+    String fakeRollupId = prefix + '00000000000000D';
+
+    //Selector finds no rollup, so when the schedulable runs it will throw exception
+    RollupSummariesSelector.setRollupCache(
+      false,
+      false,
+      new List<RollupSummary>()
+    );
+
+    RollupCalculateJobSchedulable job = new RollupCalculateJobSchedulable(
+      fakeRollupId,
+      null
+    );
+
+    Test.startTest();
+    job.execute(new MockSchedulableContext());
+    Test.stopTest();
+
+    List<LookupRollupSummaryLog__c> logs = [
+      SELECT Id, ParentId__c, ParentObject__c, ErrorMessage__c
+      FROM LookupRollupSummaryLog__c
+    ];
+
+    assert.areEqual(1, logs.size());
+  }
 }
