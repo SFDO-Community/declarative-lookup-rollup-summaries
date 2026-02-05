@@ -39,9 +39,7 @@ global with sharing class RollupService {
 
   global static Boolean checkMetadataAPIConnection() {
     try {
-      MetadataService.MetadataPort service = new MetadataService.MetadataPort();
-      service.SessionHeader = new MetadataService.SessionHeader_element();
-      service.SessionHeader.sessionId = UserInfo.getSessionId();
+      MetadataService.MetadataPort service = CustomMetadataService.createService();
       List<MetadataService.ListMetadataQuery> queries = new List<MetadataService.ListMetadataQuery>();
       MetadataService.ListMetadataQuery remoteSites = new MetadataService.ListMetadataQuery();
       remoteSites.type_x = 'RemoteSiteSetting';

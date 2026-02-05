@@ -192,10 +192,19 @@ public class CustomMetadataService {
   /**
    * Connect to the Metadata API
    **/
-  private static MetadataService.MetadataPort createService() {
+  public static MetadataService.MetadataPort createService() {
     MetadataService.MetadataPort service = new MetadataService.MetadataPort();
     service.SessionHeader = new MetadataService.SessionHeader_element();
     service.SessionHeader.sessionId = UserInfo.getSessionId();
+    String namedCredApiName = DeclarativeLookupRollupSummaries__c.getInstance()
+      .NamedCredentialForApi__c;
+    if (String.isNotBlank(namedCredApiName)) {
+      service.endpointUrl = String.format(
+        'callout:{0}',
+        new List<String>{ namedCredApiName }
+      );
+      service.SessionHeader.sessionId = '{!$Credential.OAuthToken}';
+    }
     return service;
   }
 

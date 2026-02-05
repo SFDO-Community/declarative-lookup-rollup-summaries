@@ -359,7 +359,7 @@ public with sharing class RollupController {
     );
 
     // Deploy zip file posted back from the page action function
-    MetadataService.MetadataPort service = createService();
+    MetadataService.MetadataPort service = CustomMetadataService.createService();
     MetadataService.DeployOptions deployOptions = new MetadataService.DeployOptions();
     deployOptions.testLevel = 'RunSpecifiedTests';
     deployOptions.runTests = new List<String>{ RollupTriggerTestName };
@@ -380,7 +380,7 @@ public with sharing class RollupController {
 
   public PageReference checkAsyncRequest() {
     // Check the status of the retrieve request
-    MetadataService.MetadataPort service = createService();
+    MetadataService.MetadataPort service = CustomMetadataService.createService();
     MetadataService.DeployResult deployResult = service.checkDeployStatus(
       AsyncResult.Id,
       true
@@ -616,12 +616,5 @@ public with sharing class RollupController {
       System.debug(e);
       return FALLBACK_COMPONENT_API_VERSION;
     }
-  }
-
-  private static MetadataService.MetadataPort createService() {
-    MetadataService.MetadataPort service = new MetadataService.MetadataPort();
-    service.SessionHeader = new MetadataService.SessionHeader_element();
-    service.SessionHeader.sessionId = UserInfo.getSessionId();
-    return service;
   }
 }
