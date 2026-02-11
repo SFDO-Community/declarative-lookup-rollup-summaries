@@ -790,4 +790,88 @@ private class RollupServiceTest6 {
       .NumberOfEmployees
     );
   }
+
+  @IsTest
+  static void testTrimWhitespaceFromRelationshipCriteriaFieldsInput() {
+    // Test supported?
+    if (!TestContext.isSupported())
+      return;
+
+    // Configure rollup
+    LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+    rollupSummary.Name = 'Test Whitespace Trim';
+    rollupSummary.ParentObject__c = 'Account';
+    rollupSummary.ChildObject__c = 'Opportunity';
+    rollupSummary.RelationShipField__c = 'AccountId';
+    rollupSummary.RelationShipCriteria__c = 'StageName != \'Prospecting\'';
+    rollupSummary.RelationshipCriteriaFields__c = ' StageName';
+    rollupSummary.FieldToAggregate__c = 'Amount';
+    rollupSummary.AggregateOperation__c = 'Sum';
+    rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+    rollupSummary.AggregateAllRows__c = true;
+    rollupSummary.Active__c = true;
+    rollupSummary.CalculationMode__c = 'Realtime';
+    insert new List<LookupRollupSummary__c>{ rollupSummary };
+
+    // Test data
+    Account account = new Account();
+    account.Name = 'Test Account';
+    insert account;
+    Opportunity opp = new Opportunity();
+    opp.Name = 'Test Opportunity';
+    opp.StageName = 'Closed Won';
+    opp.CloseDate = System.today();
+    opp.AccountId = account.Id;
+    opp.Amount = 100;
+
+    Test.startTest();
+    insert opp;
+    Test.stopTest();
+
+    // Assert rollup
+    Account reloadedAcct = [
+      SELECT AnnualRevenue 
+      FROM Account 
+      WHERE Id = :account.Id
+    ];
+    Assert.areEqual(
+      100, 
+      reloadedAcct.AnnualRevenue,
+      'Rollup should have been calculated even with whitespace in criteria fields'
+    );
+  }
+
+  @IsTest
+  static void testInvalidRelationshipCriteriaFieldWithWhitespace() {
+    // Test supported?
+    if (!TestContext.isSupported())
+      return;
+
+    // Configure rollup
+    LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+    rollupSummary.Name = 'Test Whitespace Trim';
+    rollupSummary.ParentObject__c = 'Account';
+    rollupSummary.ChildObject__c = 'Opportunity';
+    rollupSummary.RelationShipField__c = 'AccountId';
+    rollupSummary.RelationShipCriteria__c = 'StageName != \'Prospecting\'';
+    rollupSummary.RelationshipCriteriaFields__c = ' InvalidField';
+    rollupSummary.FieldToAggregate__c = 'Amount';
+    rollupSummary.AggregateOperation__c = 'Sum';
+    rollupSummary.AggregateResultField__c = 'AnnualRevenue';
+    rollupSummary.AggregateAllRows__c = true;
+    rollupSummary.Active__c = true;
+    rollupSummary.CalculationMode__c = 'Realtime';
+    
+    try {
+      insert new List<LookupRollupSummary__c>{ rollupSummary };
+      Assert.fail(
+        'Expected DmlException for invalid relationship criteria fields'
+      );
+    } catch (DmlException e) {
+      Assert.isTrue(
+        e.getMessage().contains('does not exist on the child object'),
+        'Expected error message for invalid relationship criteria fields'
+      );
+    }
+  }
 }
