@@ -176,9 +176,10 @@ public class RollupSummaries extends fflib_SObjectDomain {
         // Aggregate Result field
         aggregateResultField = parentObject.getFieldsMap()
           .get(lookupRollupSummary.AggregateResultField);
-        if (aggregateResultField != null)
+        if (aggregateResultField != null) {
           lookupRollupSummary.AggregateResultField = aggregateResultField.getDescribe()
             .getName();
+        }
       }
       // Check the list of fields expressed in the relationship critiera fields
       if (
@@ -190,12 +191,16 @@ public class RollupSummaries extends fflib_SObjectDomain {
           '\r\n'
         );
         for (String field : fieldList) {
+          String trimmedCriteriaField = field.trim();
+          if (String.isBlank(trimmedCriteriaField)) {
+            continue;
+          }
           SObjectField relationshipCriteriaField = childObject.getFieldsMap()
-            .get(field);
+            .get(trimmedCriteriaField);
           relationshipCriteriaFields.add(
             relationshipCriteriaField != null
               ? relationshipCriteriaField.getDescribe().getName()
-              : field
+              : trimmedCriteriaField
           );
         }
         lookupRollupSummary.RelationshipCriteriaFields = String.join(
@@ -357,11 +362,15 @@ public class RollupSummaries extends fflib_SObjectDomain {
           '[\r\n]+'
         );
         String[] fieldsInError = new List<String>();
-        for (String field : fieldList)
-          if (field.length() > 0)
-            if (childObject.getFieldsMap().get(field) == null)
-              fieldsInError.add(field);
-        if (fieldsInError.size() == 1)
+        for (String field : fieldList) {
+          String trimmedCriteriaField = field.trim();
+          if (!String.isBlank(trimmedCriteriaField)) {
+            if (childObject.getFieldsMap().get(trimmedCriteriaField) == null) {
+              fieldsInError.add(trimmedCriteriaField);
+            }
+          }
+        }
+        if (fieldsInError.size() == 1) {
           lookupRollupSummary.Fields.RelationshipCriteriaFields.addError(
             error(
               'Field ' +
@@ -371,7 +380,7 @@ public class RollupSummaries extends fflib_SObjectDomain {
               LookupRollupSummary__c.RelationshipCriteriaFields__c
             )
           );
-        else if (fieldsInError.size() > 1)
+        } else if (fieldsInError.size() > 1) {
           lookupRollupSummary.Fields.RelationshipCriteriaFields.addError(
             error(
               'Fields ' +
@@ -381,6 +390,7 @@ public class RollupSummaries extends fflib_SObjectDomain {
               LookupRollupSummary__c.RelationshipCriteriaFields__c
             )
           );
+        }
       }
       // Row limit is only supported for certain operations
       LREngine.RollupOperation operation = OPERATION_PICKLIST_TO_ENUMS.get(
