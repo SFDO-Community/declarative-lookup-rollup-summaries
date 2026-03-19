@@ -128,12 +128,14 @@ public with sharing class RollupSummaryEnhancedController {
     ApexPages.StandardController stdController
   ) {
     this.controller = stdController;
-    this.controller.addFields(
-      new List<String>{
-        LookupRollupSummary__c.ChildObject__c.getDescribe().getName(),
-        LookupRollupSummary__c.RelationshipField__c.getDescribe().getName()
-      }
-    );
+    if(!Test.isRunningTest()){
+      this.controller.addFields(
+        new List<String>{
+          LookupRollupSummary__c.ChildObject__c.getDescribe().getName(),
+          LookupRollupSummary__c.RelationshipField__c.getDescribe().getName()
+        }
+      );
+    }
     this.rus = (LookupRollupSummary__c) controller.getRecord();
     gd = Schema.getGlobalDescribe();
     numeric = new Set<String>();
