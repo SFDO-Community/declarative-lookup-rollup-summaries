@@ -26,4 +26,30 @@
 
 @IsTest
 private class RollupSummaryEnhancedControllerTest {
+
+  @IsTest static void testController(){
+    LookupRollupSummary__c summary = new LookupRollupSummary__c(
+      ParentObject__c = 'Account'
+    );
+    RollupSummaryEnhancedController ctlr = new RollupSummaryEnhancedController(new ApexPages.StandardController(summary));
+    List<SelectOption> parentFields = ctlr.parentFields;
+    Assert.isFalse(parentFields.isEmpty());
+    ctlr.setRelationshipField('Contact.AccountId');
+    Assert.areEqual('Contact.AccountId', summary.ChildObject__c);
+
+    List<SelectOption> parentObject = ctlr.parentObjects;
+    Assert.isFalse(parentObject.isEmpty());
+
+    List<SelectOption> childObjects = ctlr.childObjects;
+    Assert.isFalse(childObjects.isEmpty());
+
+    List<SelectOption> childFields = ctlr.childFields;
+    Assert.isFalse(childFields.isEmpty());
+
+    ctlr.calculateRelationshipField();
+
+    ctlr.save();
+
+    ctlr.getChildFields('Account');
+  }
 }
