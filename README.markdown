@@ -37,3 +37,7 @@ Contribute your non-developer skills - This project is in part contributed to as
 ## Note: Readme Content has been moved.
 
 As of Oct 25th, 2022 all content that used to be housed below here has been temporarily moved to a [wiki page.](https://github.com/SFDO-Community/declarative-lookup-rollup-summaries/wiki/Temp---old-readme-content---to-be-audited-for-parity-on-docs-pages-site-then-deleted)
+
+## Note: Apex in unpackaged/config/test must be written using namespace references.
+
+In development we use the CLI string replacement to strip the "dlrs\_\_" and "dlrs." references on deployment. We have these so they work when testing built packages.

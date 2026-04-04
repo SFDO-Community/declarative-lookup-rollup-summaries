@@ -115,7 +115,7 @@ private class RollupServiceTest6 {
     insert new List<SObject>{ child1, child2 };
 
     // Attempt to delete and ask child trigger to delete its parents also BEFORE calling rollup
-    TestContext.DeleteParentRecord = true;
+    TestContext.setExtendedTestingParam('DeleteParentRecord', true);
     delete new List<SObject>{ child1, child2 };
 
     // Assert no parent records
@@ -414,7 +414,7 @@ private class RollupServiceTest6 {
     );
 
     // Enable the Account (Parent) Trigger
-    TestContext.AccountTestTriggerEnabled = true;
+    TestContext.setExtendedTestingParam('AccountTestTriggerEnabled', true);
 
     // Merge?
     Database.merge(accountParentA, accountParentB.Id);
@@ -492,7 +492,7 @@ private class RollupServiceTest6 {
     );
 
     // Disable the Account (Parent) Trigger, this prevents the rollups from being recalculated
-    TestContext.AccountTestTriggerEnabled = false;
+    TestContext.setExtendedTestingParam('AccountTestTriggerEnabled', false);
 
     // Merge?
     Database.merge(accountParentA, accountParentB.Id);
@@ -558,7 +558,7 @@ private class RollupServiceTest6 {
     );
 
     // Disable the Account (Parent) Trigger (just to prove we don't need it as its a child merge)
-    TestContext.AccountTestTriggerEnabled = false;
+    TestContext.setExtendedTestingParam('AccountTestTriggerEnabled', false);
 
     // Merge contacts
     Database.merge(contactA, contactB.Id);
@@ -830,12 +830,12 @@ private class RollupServiceTest6 {
 
     // Assert rollup
     Account reloadedAcct = [
-      SELECT AnnualRevenue 
-      FROM Account 
+      SELECT AnnualRevenue
+      FROM Account
       WHERE Id = :account.Id
     ];
     Assert.areEqual(
-      100, 
+      100,
       reloadedAcct.AnnualRevenue,
       'Rollup should have been calculated even with whitespace in criteria fields'
     );
@@ -861,7 +861,7 @@ private class RollupServiceTest6 {
     rollupSummary.AggregateAllRows__c = true;
     rollupSummary.Active__c = true;
     rollupSummary.CalculationMode__c = 'Realtime';
-    
+
     try {
       insert new List<LookupRollupSummary__c>{ rollupSummary };
       Assert.fail(

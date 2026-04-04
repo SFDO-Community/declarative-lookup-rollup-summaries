@@ -1,5 +1,7 @@
 /**
  * NOTE: DO NOT PACKAGE THIS TRIGGER
+ *
+ * Write referencing the namespaced components. Namespaces will be removed by the CLI when deployed to dev environments
  **/
 
 /**
@@ -16,6 +18,6 @@ trigger UnpackagedRollupServiceTest5Trigger on Contact(
 ) {
   // Avoids the unit test triggers conflicting with manual testing in the org
   if (Test.isRunningTest()) {
-    RollupService.triggerHandler();
+    dlrs.RollupService.triggerHandler();
   }
 }

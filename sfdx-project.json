@@ -23,6 +23,20 @@
       "path": "unpackaged/config/test"
     }
   ],
+  "replacements": [
+    {
+      "glob": "unpackaged/config/test/**",
+      "stringToReplace": "dlrs.",
+      "replaceWithEnv": "NAMESPACE_DOT",
+      "allowUnsetEnvVariable": true
+    },
+    {
+      "glob": "unpackaged/config/test/**",
+      "stringToReplace": "dlrs__",
+      "replaceWithEnv": "NAMESPACE_DOUBLE_UNDER",
+      "allowUnsetEnvVariable": true
+    }
+  ],
   "namespace": "dlrs",
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "66.0"
