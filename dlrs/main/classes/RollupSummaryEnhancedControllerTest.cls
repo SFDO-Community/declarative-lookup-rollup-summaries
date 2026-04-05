@@ -26,12 +26,14 @@
 
 @IsTest
 private class RollupSummaryEnhancedControllerTest {
-
-  @IsTest static void testController(){
+  @IsTest
+  static void testController() {
     LookupRollupSummary__c summary = new LookupRollupSummary__c(
       ParentObject__c = 'Account'
     );
-    RollupSummaryEnhancedController ctlr = new RollupSummaryEnhancedController(new ApexPages.StandardController(summary));
+    RollupSummaryEnhancedController ctlr = new RollupSummaryEnhancedController(
+      new ApexPages.StandardController(summary)
+    );
     List<SelectOption> parentFields = ctlr.parentFields;
     Assert.isFalse(parentFields.isEmpty());
     ctlr.setRelationshipField('Contact.AccountId');
