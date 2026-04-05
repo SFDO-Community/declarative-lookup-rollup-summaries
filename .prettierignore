@@ -6,6 +6,17 @@
 .localdevserver
 .sfdx
 .vscode
+.github
 
 coverage/
+
+# imported library files
 dlrs/libs/
+dlrs/main/lwc/classSchedulerModal/cronstrue.js
+dlrs/main/lwc/autocompleteCombobox/js-levenshtein.js
+
+# if we reformat the XML we get from Salesforce then we'll get into a formatting fight with the platform
+**/*-meta.xml
+
+# at this point it is more risky to reformat the VF pages than to just leave them and slowly phase them out.
+**/pages/**/*.page
