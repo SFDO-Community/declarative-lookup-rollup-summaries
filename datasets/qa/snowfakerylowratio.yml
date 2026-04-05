@@ -48,12 +48,12 @@
     Status: Completed
     StartDate:
       date_between:
-          start_date: -1y
-          end_date: today
+        start_date: -1y
+        end_date: today
     EndDate:
       date_between:
-          start_date: ${{StartDate}}
-          end_date: today
+        start_date: ${{StartDate}}
+        end_date: today
 - object: Campaign
   count: 10
   nickname: CampaignSent
@@ -68,14 +68,14 @@
         - Planned
     StartDate:
       date_between:
-          start_date: -1y
-          end_date: +1y
+        start_date: -1y
+        end_date: +1y
     EndDate:
       date_between:
-          start_date: ${{StartDate}}
-          end_date: +1y
+        start_date: ${{StartDate}}
+        end_date: +1y
 #QA Lookup Parent Record to be referenced later for Second Lookup on Child
-- object: QALookupParent__c  
+- object: QALookupParent__c
   count: 1
   nickname: CustomParent2
   fields:
@@ -249,18 +249,18 @@
             Subject: The ${{Contact.Lastname}} Parent Case
           #QA Lookup Parent Record to with lookups to Account and Case
           friends:
-          - object: QALookupParent__c
-            count: 1
-            nickname: CustomParentAcctCase
-            fields:
-              Name: QALookupParentAcctCase
-              Account__c:
-                reference: ParentAccount
-              Case__c:
-                reference: ParentCase
-              Colours__c: Red;Yellow;Green;Blue
-              QA_Lookup_Amount_Min__c: 1000
-              Total__c: 5000
+            - object: QALookupParent__c
+              count: 1
+              nickname: CustomParentAcctCase
+              fields:
+                Name: QALookupParentAcctCase
+                Account__c:
+                  reference: ParentAccount
+                Case__c:
+                  reference: ParentCase
+                Colours__c: Red;Yellow;Green;Blue
+                QA_Lookup_Amount_Min__c: 1000
+                Total__c: 5000
         - object: Case
           count: 3 #3 cases for every contact
           nickname: CasewithReferences

@@ -144,33 +144,35 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   }
 
   updateColumnFilters() {
-    this.dtColumns = [...this.dtColumns].map(conf => {
+    this.dtColumns = [...this.dtColumns].map((conf) => {
       if (conf.filterable) {
         // reset actions
         if (conf.actions) {
-          conf.actions = conf.actions.filter(action => action.type !== "filter");
+          conf.actions = conf.actions.filter(
+            (action) => action.type !== "filter"
+          );
         } else {
           conf.actions = [];
         }
-  
+
         const availableValues = this.rollups.reduce((result, rollup) => {
           const fieldValue = rollup[conf.fieldName];
-  
+
           if (!result.includes(fieldValue)) {
-            result.push(fieldValue)
+            result.push(fieldValue);
           }
-  
+
           return result;
         }, []);
-  
+
         conf.actions.push({
           type: "filter",
           label: "All",
           checked: true,
           name: "All"
         });
-  
-        availableValues.sort().forEach(val => {
+
+        availableValues.sort().forEach((val) => {
           conf.actions.push({
             type: "filter",
             label: val,
@@ -184,16 +186,20 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
           // check if currently filtered value is still relevant
           if (availableValues.includes(filteredValue)) {
-            conf.actions.find(a => a.type === "filter" && a.name === "All").checked = false;
-            conf.actions.find(a => a.type === "filter" && a.name === filteredValue).checked = true;
+            conf.actions.find(
+              (a) => a.type === "filter" && a.name === "All"
+            ).checked = false;
+            conf.actions.find(
+              (a) => a.type === "filter" && a.name === filteredValue
+            ).checked = true;
           } else {
             // remove filter
             delete this.filters[conf.fieldName];
-            conf.iconName = '';
+            conf.iconName = "";
           }
         }
       }
-  
+
       return conf;
     });
   }
@@ -244,9 +250,9 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   }
 
   meetsColumnFilters(rollup) {
-    return Object.keys(this.filters).every(fieldName => {
-      return rollup[fieldName] === this.filters[fieldName].value
-    })
+    return Object.keys(this.filters).every((fieldName) => {
+      return rollup[fieldName] === this.filters[fieldName].value;
+    });
   }
 
   rollupSelectHandler(event) {
@@ -353,12 +359,18 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   handleHeaderAction(event) {
     const filteredFieldName = event.detail.columnDefinition.fieldName;
     const columnRef = [...this.dtColumns];
-    const currentColumn = columnRef.find(f => f.fieldName === filteredFieldName);
-    const previousAction = currentColumn.actions.find(action => action.checked);
-    const currentAction = currentColumn.actions.find(action => action.name === event.detail.action.name);
+    const currentColumn = columnRef.find(
+      (f) => f.fieldName === filteredFieldName
+    );
+    const previousAction = currentColumn.actions.find(
+      (action) => action.checked
+    );
+    const currentAction = currentColumn.actions.find(
+      (action) => action.name === event.detail.action.name
+    );
 
-    if (event.detail.action.type === 'filter') {
-      if (event.detail.action.name === 'All') {
+    if (event.detail.action.type === "filter") {
+      if (event.detail.action.name === "All") {
         delete this.filters[filteredFieldName];
         delete currentColumn.iconName;
       } else {
@@ -368,8 +380,8 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
             type: event.detail.columnDefinition.type,
             value: event.detail.action.name
           }
-        }
-        currentColumn.iconName = 'utility:filterList';
+        };
+        currentColumn.iconName = "utility:filterList";
       }
 
       this.calcRollupList();

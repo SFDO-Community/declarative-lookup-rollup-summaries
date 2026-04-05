@@ -21,22 +21,28 @@ public with sharing class ManageLookupRollupSummariesNewController {
   public Map<String, String> ChildObjectsDuplicates { get; set; }
   public Boolean fieldToOrderByNeeded { get; private set; }
   public Boolean realtimeSelected { get; private set; }
-  public Boolean hasTooManyObjects { get { return rollupableSObjectsNames.size() > 1000; } }
+  public Boolean hasTooManyObjects {
+    get {
+      return rollupableSObjectsNames.size() > 1000;
+    }
+  }
 
   private Set<String> rollupableSObjectsNames {
     get {
-      if(rollupableSObjectsNames == null) {
+      if (rollupableSObjectsNames == null) {
         rollupableSObjectsNames = new Set<String>();
 
         List<EntityDefinition> entityDefinitions = [
-          SELECT QualifiedApiName FROM EntityDefinition
-          WHERE IsCustomSetting = false
-          AND IsCustomizable = true
-          AND isApexTriggerable = true
+          SELECT QualifiedApiName
+          FROM EntityDefinition
+          WHERE
+            IsCustomSetting = FALSE
+            AND IsCustomizable = TRUE
+            AND isApexTriggerable = TRUE
           WITH SECURITY_ENFORCED
         ];
 
-        for(EntityDefinition entDef : entityDefinitions) {
+        for (EntityDefinition entDef : entityDefinitions) {
           rollupableSObjectsNames.add(entDef.QualifiedApiName);
         }
       }
@@ -48,11 +54,12 @@ public with sharing class ManageLookupRollupSummariesNewController {
 
   private Map<String, Schema.SObjectType> objectDescription {
     get {
-      if(objectDescription.isEmpty()) {
+      if (objectDescription.isEmpty()) {
         objectDescription = Schema.getGlobalDescribe();
       }
       return objectDescription;
-    } private set;
+    }
+    private set;
   }
 
   public ManageLookupRollupSummariesNewController() {
@@ -284,7 +291,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
 
   public List<SelectOption> getParentObjList() {
     List<Schema.SObjectType> parentObjList = objectDescription.values();
-    if(hasTooManyObjects) {
+    if (hasTooManyObjects) {
       return new List<SelectOption>();
     }
     List<SelectOption> objNames = new List<SelectOption>();
@@ -294,7 +301,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
       );
 
       //Filter out sObjects that can't be rolled up to avoid >1000 collection limit
-      if(!rollupableSObjectsNames.contains(description.getName())) {
+      if (!rollupableSObjectsNames.contains(description.getName())) {
         continue;
       }
 
@@ -305,10 +312,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
         objNames.add(
           new SelectOption(
             objName,
-            obj.getDescribe().getLabel() +
-            ' (' +
-            objName +
-            ')'
+            obj.getDescribe().getLabel() + ' (' + objName + ')'
           )
         );
       }
@@ -356,10 +360,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
           ) {
             ChildObjectsDuplicates.put(
               childObjectName,
-              String.valueOf(dr.getLabel()) +
-              ' (' +
-              childObjectName +
-              ')'
+              String.valueOf(dr.getLabel()) + ' (' + childObjectName + ')'
             );
           }
 
@@ -378,7 +379,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
         }
         for (String key : ChildObjectsDuplicates.keySet()) {
           //Filter out sObjects that can't be rolled up to avoid >1000 collection limit
-          if(!rollupableSObjectsNames.contains(key)) {
+          if (!rollupableSObjectsNames.contains(key)) {
             continue;
           }
 
@@ -401,10 +402,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
           parentObjFields.add(
             new SelectOption(
               fieldName,
-              String.valueOf(fr.getLabel()) +
-              ' (' +
-              fieldName +
-              ')'
+              String.valueOf(fr.getLabel()) + ' (' + fieldName + ')'
             )
           );
           //}
@@ -449,10 +447,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
           childObjFields.add(
             new SelectOption(
               fieldName,
-              String.valueOf(fr.getLabel()) +
-              ' (' +
-              fieldName +
-              ')'
+              String.valueOf(fr.getLabel()) + ' (' + fieldName + ')'
             )
           );
           //}
