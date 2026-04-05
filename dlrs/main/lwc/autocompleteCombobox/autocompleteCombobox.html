@@ -138,7 +138,12 @@
 
             <!--ERROR msg, if there is no records..-->
             <template if:false={optionsAvailable}>
-              <li class="slds-listbox__item" style="text-align: center; font-weight: bold;">{noResultsMessage}</li>
+              <li
+                class="slds-listbox__item"
+                style="text-align: center; font-weight: bold"
+              >
+                {noResultsMessage}
+              </li>
             </template>
           </ul>
         </div>
