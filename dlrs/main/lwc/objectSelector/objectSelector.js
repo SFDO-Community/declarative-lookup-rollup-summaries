@@ -6,7 +6,7 @@ export default class ObjectSelector extends LightningElement {
   // public properties with initial default values
   @api label = "Object";
   @api placeholder = "Select on object";
-  @api helperText = '';
+  @api helperText = "";
   @api iconName = "standard:custom"; // would be awesome to use the correct icon
   _currentSelection;
   @api
@@ -41,7 +41,7 @@ export default class ObjectSelector extends LightningElement {
       .catch((error) => {
         this.error = error;
         this.objects = {};
-      })
+      });
   }
 
   // use the UI API to determine the iconName for each object
@@ -84,12 +84,12 @@ export default class ObjectSelector extends LightningElement {
   }
 
   get objectOptions() {
-    return this.objects.map(o => {
+    return this.objects.map((o) => {
       return {
         value: o.fullName,
         label: `${o.label} (${o.fullName})`,
-        icon: o.iconName,
-      }
+        icon: o.iconName
+      };
     });
   }
 

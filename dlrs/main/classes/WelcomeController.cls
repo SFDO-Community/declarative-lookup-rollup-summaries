@@ -79,9 +79,7 @@ public with sharing class WelcomeController {
       ApexPages.addMessage(
         new ApexPages.Message(
           ApexPages.Severity.Info,
-          'Remote Site Setting ' +
-          RemoteSiteName +
-          ' has been created.'
+          'Remote Site Setting ' + RemoteSiteName + ' has been created.'
         )
       );
       MetadataConnectionWarning = false;
