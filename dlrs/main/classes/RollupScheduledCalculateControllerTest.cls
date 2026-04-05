@@ -110,9 +110,7 @@ private class RollupScheduledCalculateControllerTest {
     ][0];
     System.assertEquals('0 0 2 * * ?', cronTrigger.CronExpression);
     System.assertEquals(
-      'rollup_TestRollup (' +
-      standardController.getId() +
-      ')',
+      'rollup_TestRollup (' + standardController.getId() + ')',
       cronTrigger.CronJobDetail.Name
     );
   }
