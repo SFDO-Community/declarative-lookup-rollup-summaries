@@ -210,8 +210,7 @@ private class RollupServiceTest6 {
     // Assert
     System.assertEquals(
       1,
-      [SELECT Amount FROM Opportunity WHERE id = :opp.Id][0]
-      .Amount
+      [SELECT Amount FROM Opportunity WHERE id = :opp.Id][0].Amount
     );
   }
 
@@ -285,8 +284,7 @@ private class RollupServiceTest6 {
     // Assert rollup
     System.assertEquals(
       100,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
 
     // Delete Opportunity
@@ -295,8 +293,7 @@ private class RollupServiceTest6 {
     // Assert rollup
     System.assertEquals(
       100,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
   }
 
@@ -336,8 +333,7 @@ private class RollupServiceTest6 {
     // Assert rollup
     System.assertEquals(
       100,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
 
     // Delete Opportunity
@@ -346,8 +342,7 @@ private class RollupServiceTest6 {
     // Assert rollup
     System.assertEquals(
       0,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
 
     // Undelete Opportunity
@@ -356,8 +351,7 @@ private class RollupServiceTest6 {
     // Assert rollup
     System.assertEquals(
       100,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
   }
 
@@ -553,8 +547,7 @@ private class RollupServiceTest6 {
     // Assert realtime rollup
     System.assertEquals(
       'Fred,Bob',
-      [SELECT Description FROM Account WHERE Id = :accountA.Id][0]
-      .Description
+      [SELECT Description FROM Account WHERE Id = :accountA.Id][0].Description
     );
 
     // Disable the Account (Parent) Trigger (just to prove we don't need it as its a child merge)
@@ -577,8 +570,7 @@ private class RollupServiceTest6 {
 
     System.assertEquals(
       'Fred',
-      [SELECT Description FROM Account WHERE Id = :accountA.Id][0]
-      .Description
+      [SELECT Description FROM Account WHERE Id = :accountA.Id][0].Description
     );
   }
 

@@ -70,8 +70,7 @@ private class RollupActionCalculateTest {
     // Assert rollup
     System.assertEquals(
       100,
-      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id]
-      .AnnualRevenue
+      [SELECT AnnualRevenue FROM Account WHERE Id = :account.Id].AnnualRevenue
     );
   }
 }
