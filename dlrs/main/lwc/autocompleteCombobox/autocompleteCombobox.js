@@ -13,7 +13,7 @@ export default class AutocompleteCombobox extends LightningElement {
   @api searchThreshold = 1;
   @api searchRequired = false;
   @api maxSearchResults = -1;
-  @api noResultsMessage = 'No Results Found...';
+  @api noResultsMessage = "No Results Found...";
 
   @track selectedOption = {};
   @track _value = "";
@@ -68,8 +68,7 @@ export default class AutocompleteCombobox extends LightningElement {
       results = results.slice(0, this.maxSearchResults);
     }
     if (this.searchRequired) {
-      if (this.searchKey.length >= this.searchThreshold)
-        return results
+      if (this.searchKey.length >= this.searchThreshold) return results;
       return [];
     }
     return results;
@@ -83,8 +82,8 @@ export default class AutocompleteCombobox extends LightningElement {
       ".lookupInputContainer"
     );
     const clsList = lookupInputContainer.classList;
-    if (!clsList.contains('slds-is-open')) {
-      clsList.add('slds-is-open');
+    if (!clsList.contains("slds-is-open")) {
+      clsList.add("slds-is-open");
     }
   }
   hideDropdown() {
@@ -92,7 +91,7 @@ export default class AutocompleteCombobox extends LightningElement {
       ".lookupInputContainer"
     );
     const clsList = lookupInputContainer.classList;
-    if (clsList.contains('slds-is-open')) {
+    if (clsList.contains("slds-is-open")) {
       // Allow enough time for the click handler of the object list to run before we burn the elements
       // 310 is chosen because on some mobile devices clicks can take up to 300ms to fire
       // eslint-disable-next-line @lwc/lwc/no-async-operation
@@ -133,24 +132,26 @@ export default class AutocompleteCombobox extends LightningElement {
     try {
       if (searchKey.length >= this.searchThreshold) {
         const lowerCaseSearchKey = searchKey.toLowerCase();
-        this.filteredOptions = this._options.filter(({ value, label }) => {
-          return (
-            value.toLowerCase().includes(lowerCaseSearchKey) ||
-            label.toLowerCase().includes(lowerCaseSearchKey)
-          );
-        }).sort((a, b) => {
-          return (
-            // take the nearest of the Label and value
-            Math.min(
-              jsLevenshtein(lowerCaseSearchKey, a.value.toLowerCase()),
-              jsLevenshtein(lowerCaseSearchKey, a.label.toLowerCase())
-            ) -
-            Math.min(
-              jsLevenshtein(lowerCaseSearchKey, b.value.toLowerCase()),
-              jsLevenshtein(lowerCaseSearchKey, b.label.toLowerCase())
-            )
-          );
-        });
+        this.filteredOptions = this._options
+          .filter(({ value, label }) => {
+            return (
+              value.toLowerCase().includes(lowerCaseSearchKey) ||
+              label.toLowerCase().includes(lowerCaseSearchKey)
+            );
+          })
+          .sort((a, b) => {
+            return (
+              // take the nearest of the Label and value
+              Math.min(
+                jsLevenshtein(lowerCaseSearchKey, a.value.toLowerCase()),
+                jsLevenshtein(lowerCaseSearchKey, a.label.toLowerCase())
+              ) -
+              Math.min(
+                jsLevenshtein(lowerCaseSearchKey, b.value.toLowerCase()),
+                jsLevenshtein(lowerCaseSearchKey, b.label.toLowerCase())
+              )
+            );
+          });
       } else {
         this.filteredOptions = this._options;
       }

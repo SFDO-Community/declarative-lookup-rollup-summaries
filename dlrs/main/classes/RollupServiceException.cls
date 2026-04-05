@@ -37,10 +37,10 @@ public class RollupServiceException extends Exception {
   ) {
     return new RollupServiceException(
       'Lookup Rollup Summary  \'' +
-      lookup.Name +
-      '\' is invalid, your org configuration may have changed (' +
-      configInvalid +
-      ').'
+        lookup.Name +
+        '\' is invalid, your org configuration may have changed (' +
+        configInvalid +
+        ').'
     );
   }
 
@@ -49,9 +49,7 @@ public class RollupServiceException extends Exception {
    **/
   public static RollupServiceException rollupNotFound(Id lookupId) {
     return new RollupServiceException(
-      'Invalid rollup ' +
-      lookupId +
-      ' not found.'
+      'Invalid rollup ' + lookupId + ' not found.'
     );
   }
 
@@ -61,8 +59,8 @@ public class RollupServiceException extends Exception {
   public static RollupServiceException jobAlreadyRunning(String name) {
     return new RollupServiceException(
       'A calculate job for rollup \'' +
-      name +
-      '\' is already executing. If you suspect it is not aleady running try clearing the applicable record from the Lookup Rollup Calculate Jobs tab and try again.'
+        name +
+        '\' is already executing. If you suspect it is not aleady running try clearing the applicable record from the Lookup Rollup Calculate Jobs tab and try again.'
     );
   }
 
@@ -72,8 +70,8 @@ public class RollupServiceException extends Exception {
   public static RollupServiceException jobsExecuting(String className) {
     return new RollupServiceException(
       'A previous Declarative Rollup Summary scheduled job \'' +
-      className +
-      '\' is still running, this scheduled execution will not occur.'
+        className +
+        '\' is still running, this scheduled execution will not occur.'
     );
   }
 
