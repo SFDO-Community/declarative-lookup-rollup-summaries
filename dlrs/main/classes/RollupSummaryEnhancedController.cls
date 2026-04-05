@@ -41,10 +41,10 @@ public with sharing class RollupSummaryEnhancedController {
         new SelectOption(
           '',
           'Select' +
-          (String.isBlank(rus.ParentObject__c)
-            ? ''
-            : ' ' + rus.ParentObject__c) +
-          ' field...'
+            (String.isBlank(rus.ParentObject__c)
+              ? ''
+              : ' ' + rus.ParentObject__c) +
+            ' field...'
         )
       );
       if (String.isNotBlank(rus.ParentObject__c)) {
@@ -128,7 +128,7 @@ public with sharing class RollupSummaryEnhancedController {
     ApexPages.StandardController stdController
   ) {
     this.controller = stdController;
-    if(!Test.isRunningTest()){
+    if (!Test.isRunningTest()) {
       this.controller.addFields(
         new List<String>{
           LookupRollupSummary__c.ChildObject__c.getDescribe().getName(),
