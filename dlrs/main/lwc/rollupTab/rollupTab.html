@@ -1,0 +1,37 @@
+<template>
+  <template lwc:if={isLoading}>
+    <lightning-spinner
+      alternative-text="Loading"
+      size="large"
+    ></lightning-spinner>
+  </template>
+  <template lwc:else>
+    <c-rollup-record-header
+      rollup={rollup}
+      oneditclick={editRollupClickHandler}
+      onstartactivation={startActivation}
+      onstartdeactivation={startDeactivation}
+    ></c-rollup-record-header>
+    <lightning-layout multiple-rows>
+      <lightning-layout-item size="12" large-device-size="6">
+        <lightning-card>
+          <div class="slds-p-horizontal_small">
+            <c-rollup-detail rollup={rollup}></c-rollup-detail>
+          </div>
+        </lightning-card>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        style="padding-left: var(--lwc-templateGutters)"
+      >
+        <div class="slds-tabs_card">
+          <lightning-tabset>
+            <lightning-tab label="Overview"> Content for tab 1 </lightning-tab>
+            <lightning-tab label="Schedule"> Content for tab 2 </lightning-tab>
+          </lightning-tabset>
+        </div>
+      </lightning-layout-item>
+    </lightning-layout>
+  </template>
+</template>

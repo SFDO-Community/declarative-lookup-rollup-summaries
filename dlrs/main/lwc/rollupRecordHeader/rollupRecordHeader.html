@@ -1,0 +1,134 @@
+<template>
+  <lightning-breadcrumbs>
+    <lightning-breadcrumb
+      label="Manage Lookup Rollup Summaries"
+      href={breadcrumbManageLink}
+    >
+    </lightning-breadcrumb>
+    <lightning-breadcrumb label={breadcrumbName} href="#">
+    </lightning-breadcrumb>
+  </lightning-breadcrumbs>
+  <div class="slds-page-header">
+    <div class="slds-page-header__row">
+      <div class="slds-page-header__col-title">
+        <div class="slds-media">
+          <div class="slds-media__figure">
+            <lightning-icon
+              icon-name="standard:budget_allocation"
+              alternative-text="Rollup Summary"
+              title="Rollup Summary"
+            ></lightning-icon>
+          </div>
+          <div class="slds-media__body">
+            <div class="slds-page-header__name">
+              <div class="slds-page-header__name-title">
+                <h1>
+                  <span>Rollup Summary</span>
+                  <span
+                    class="slds-page-header__title slds-truncate"
+                    title="{rollup?.label}"
+                    >{rollup?.label}</span
+                  >
+                </h1>
+              </div>
+              <div class="slds-page-header__name-switcher slds-is-relative">
+                <div class="slds-dropdown-trigger slds-dropdown-trigger_click">
+                  <button
+                    class="slds-button slds-button_icon slds-button_icon-small"
+                    aria-haspopup="true"
+                    title="Switch list view"
+                  >
+                    <svg
+                      class="slds-button__icon slds-icon_x-small"
+                      aria-hidden="true"
+                    >
+                      <use
+                        xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#down"
+                      ></use>
+                    </svg>
+                    <span class="slds-assistive-text">Switch list view</span>
+                  </button>
+                </div>
+                <div
+                  class="slds-popover slds-popover_tooltip slds-nubbin_bottom-left slds-fall-into-ground"
+                  role="tooltip"
+                  id="dropdown-label"
+                  style="
+                    position: absolute;
+                    left: -12px;
+                    top: -48px;
+                    width: 190px;
+                  "
+                >
+                  <div class="slds-popover__body">
+                    Some helpful information.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slds-page-header__col-actions">
+        <div class="slds-page-header__controls">
+          <div class="slds-page-header__control">
+            <lightning-button-group>
+              <lightning-button
+                label="Edit"
+                title="Edit"
+                onclick={handleEditClick}
+              ></lightning-button>
+              <lightning-button
+                label="Activate"
+                onclick={activateClickHandler}
+                if:true={rollupCanBeActivated}
+              ></lightning-button>
+              <lightning-button
+                label="Recalculate Now"
+                lwc:if={rollup.id}
+                onclick={recalculateNowHandler}
+              ></lightning-button>
+              <lightning-button-menu
+                alternative-text="Show more"
+                menu-alignment="bottom-right"
+                lwc:if={rollup.id}
+              >
+                <lightning-menu-item
+                  label="Clone"
+                  lwc:if={rollup.id}
+                  onclick={cloneClickHandler}
+                ></lightning-menu-item>
+                <lightning-menu-item
+                  label="Deactivate"
+                  if:true={rollupCanBeDeactivated}
+                  onclick={deactivateClickHandler}
+                ></lightning-menu-item>
+                <lightning-menu-item
+                  label="Delete"
+                  lwc:if={rollup.id}
+                  onclick={deleteClickHandler}
+                ></lightning-menu-item>
+                <lightning-menu-item
+                  label="Manage Triggers"
+                  lwc:if={supportsTrigger}
+                  onclick={manageTriggerHandler}
+                ></lightning-menu-item>
+                <lightning-menu-item
+                  label="Schedule Recalculation"
+                  lwc:if={rollup.id}
+                  onclick={schedulRecalculateHandler}
+                ></lightning-menu-item>
+              </lightning-button-menu>
+            </lightning-button-group>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <c-flexible-path
+        steps={steps}
+        onnextactionclick={pathClickHandler}
+      ></c-flexible-path>
+    </div>
+  </div>
+</template>

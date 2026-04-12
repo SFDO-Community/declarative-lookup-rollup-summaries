@@ -1,0 +1,334 @@
+<template>
+  <template lwc:if={rollup}>
+    <lightning-layout multiple-rows>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          field-label="Label"
+          label="Label"
+          value={rollup.label}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="API Name"
+          value={rollup.developerName}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item size="12" class="slds-form-element_stacked">
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Description"
+          value={rollup.description}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+    </lightning-layout>
+
+    <!--Pick Objects-->
+
+    <h3 class="slds-section__title slds-theme--shade">
+      <span class="section-header-title slds-p-horizontal--small"
+        >Child Object</span
+      >
+    </h3>
+    <lightning-layout multiple-rows>
+      <lightning-layout-item size="12" class="slds-form-element_stacked">
+        <p>
+          Select the child object, the field that contains the data, and the
+          field that contains the reference to the parent object.
+        </p>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Child Object"
+          value={rollup.childObject}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Field to Aggregate"
+          value={rollup.fieldToAggregate}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Relationship Field"
+          value={rollup.relationshipField}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+    </lightning-layout>
+
+    <h3 class="slds-section__title slds-theme--shade">
+      <span class="section-header-title slds-p-horizontal--small"
+        >Parent Object</span
+      >
+    </h3>
+    <lightning-layout multiple-rows>
+      <lightning-layout-item size="12" class="slds-form-element_stacked">
+        <p>
+          Select the parent object to rollup to and the field that will receive
+          the resulting value
+        </p>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Parent Object"
+          value={rollup.parentObject}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Aggregate Result Field"
+          value={rollup.aggregateResultField}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+    </lightning-layout>
+    <!--Set Relationship-->
+
+    <h3 class="slds-section__title slds-theme--shade">
+      <span class="section-header-title slds-p-horizontal--small"
+        >Relationship Criteria</span
+      >
+    </h3>
+    <lightning-layout multiple-rows>
+      <lightning-layout-item size="12" class="slds-form-element_stacked">
+        <p>Define how child records will be qualified for the rollup</p>
+      </lightning-layout-item>
+      <lightning-layout-item size="12" class="slds-form-element_stacked">
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Relationship Criteria"
+          value={rollup.relationshipCriteria}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Relationship Criteria Fields"
+          value={relationshipCriteriaFieldsPills}
+          type="pill"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          label="Aggregate All Rows"
+          type="checkbox"
+          checkbox-label="Include Deleted &amp; Archived Records"
+          value={rollup.aggregateAllRows}
+        ></c-output-field>
+      </lightning-layout-item>
+    </lightning-layout>
+    <!--Summary settings-->
+
+    <h3 class="slds-section__title slds-theme--shade">
+      <span class="section-header-title slds-p-horizontal--small"
+        >Rollup Details</span
+      >
+    </h3>
+    <lightning-layout>
+      <lightning-layout-item size="12" class="slds-form-element_stacked">
+        <p>Select the type and configuration of the rollup action</p>
+      </lightning-layout-item>
+    </lightning-layout>
+    <lightning-layout multiple-rows>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Rollup Type"
+          value={rollup.aggregateOperation}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Concatenate Delimiter"
+          value={rollup.concatenateDelimiter}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Field(s) to Order By"
+          value={rollup.fieldToOrderBy}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Row Limit"
+          value={rollup.rowLimit}
+          type="number"
+        ></c-output-field>
+      </lightning-layout-item>
+    </lightning-layout>
+
+    <h3 class="slds-section__title slds-theme--shade">
+      <span class="section-header-title slds-p-horizontal--small"
+        >Calculation Mode</span
+      >
+    </h3>
+    <lightning-layout multiple-rows>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Calculation Mode"
+          value={rollup.calculationMode}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Calculation Sharing Mode"
+          value={rollup.calculationSharingMode}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+    </lightning-layout>
+
+    <h3 class="slds-section__title slds-theme--shade">
+      <span class="section-header-title slds-p-horizontal--small"
+        ><lightning-icon
+          icon-name="utility:chevronright"
+          size="x-small"
+          class="summary-right"
+        ></lightning-icon>
+        <lightning-icon
+          icon-name="utility:chevrondown"
+          size="x-small"
+          class="summary-down"
+        ></lightning-icon
+        >Advanced</span
+      >
+    </h3>
+    <lightning-layout multiple-rows>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Test Code (Child Object)"
+          value={rollup.testCode}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Test Code (Parent Object)"
+          value={rollup.testCodeParent}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Test Code Sees All Data?"
+          value={rollup.testCodeSeeAllData}
+          type="checkbox"
+        ></c-output-field>
+      </lightning-layout-item>
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        class="slds-form-element_stacked"
+      >
+        <c-output-field
+          class="slds-form__item slds-no-space slds-size_1-of-1"
+          label="Custom Permission name to bypass this rollup"
+          value={rollup.bypassPermissionApiName}
+          type="text"
+        ></c-output-field>
+      </lightning-layout-item>
+    </lightning-layout>
+  </template>
+</template>

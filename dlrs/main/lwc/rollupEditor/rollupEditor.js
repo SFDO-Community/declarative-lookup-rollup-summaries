@@ -12,9 +12,7 @@ import getFieldOptions from "@salesforce/apex/RollupEditorController.getFieldOpt
 import getManageTriggerPageUrl from "@salesforce/apex/RollupEditorController.getManageTriggerPageUrl";
 import getFullCalculatePageUrl from "@salesforce/apex/RollupEditorController.getFullCalculatePageUrl";
 import getScheduleCalculatePageUrl from "@salesforce/apex/RollupEditorController.getScheduleCalculatePageUrl";
-import hasChildTriggerDeployed from "@salesforce/apex/LookupRollupStatusCheckController.hasChildTriggerDeployed";
 import getScheduledFullCalculates from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledFullCalculates";
-import getScheduledJobs from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledJobs";
 import getOutstandingScheduledItemsForLookup from "@salesforce/apex/LookupRollupStatusCheckController.getOutstandingScheduledItemsForLookup";
 import ClassSchedulerModal from "c/classSchedulerModal";
 
@@ -200,42 +198,6 @@ export default class RollupEditor extends LightningModal {
     }
   }
 
-  async configureSteps() {
-    const newSteps = [];
-    const scheduledJobCount = await getScheduledJobs();
-    this.childTriggerIsDeployed = await hasChildTriggerDeployed({
-      lookupID: this.rollup.id
-    });
-    for (let s of STEP_TEMPLATES[this.rollup.calculationMode] ||
-      STEP_TEMPLATES.other) {
-      if (s.name === "deployTrigger") {
-        s.status = this.childTriggerIsDeployed
-          ? PATH_STATES.complete
-          : PATH_STATES.incomplete;
-      }
-      if (s.name === "scheduleJob") {
-        s.status =
-          scheduledJobCount > 0 ? PATH_STATES.complete : PATH_STATES.incomplete;
-      }
-      if (s.name === "activate") {
-        s.status = this.rollup.active
-          ? PATH_STATES.complete
-          : PATH_STATES.incomplete;
-      }
-      newSteps.push(s);
-    }
-
-    // mark first incomplete as current
-    const firstIncomplete = newSteps.find(
-      (s) => s.status === PATH_STATES.incomplete
-    );
-    if (firstIncomplete) {
-      firstIncomplete.status = PATH_STATES.current;
-    }
-
-    this.steps = newSteps;
-  }
-
   async getChildRelationshipFieldOptions() {
     if (this.rollup.childObject) {
       this.childRFieldOptions = (
@@ -256,27 +218,6 @@ export default class RollupEditor extends LightningModal {
 
   cancelClickHandler() {
     this.close();
-  }
-
-  cloneClickHandler() {
-    delete this.rollup.developerName;
-    delete this.rollup.id;
-    this.rollupId = undefined;
-    this.errors = {};
-  }
-
-  deleteClickHandler() {
-    this.close({ action: "delete", rollupName: this.rollup.developerName });
-  }
-
-  activateClickHandler() {
-    this.rollup.active = true;
-    this.runSave();
-  }
-
-  deactivateClickHandler() {
-    this.rollup.active = false;
-    this.runSave();
   }
 
   rollupTypeChangeHandler(event) {
@@ -380,7 +321,6 @@ export default class RollupEditor extends LightningModal {
 
   calculationModeChangeHandler(event) {
     this.rollup.calculationMode = event.detail.value;
-    this.configureSteps();
   }
 
   _makeApiSafe(val) {
@@ -494,13 +434,6 @@ export default class RollupEditor extends LightningModal {
     this.getParentRelationshipFieldOptions();
     this.rollup.aggregateResultField = undefined;
     this.configureSteps();
-  }
-
-  get supportsTrigger() {
-    return (
-      this.rollup.id &&
-      ["Scheduled", "Realtime"].includes(this.rollup.calculationMode)
-    );
   }
 
   get aggregateOptions() {

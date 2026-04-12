@@ -31,17 +31,14 @@ const STATUS_LABELS = {
 export default class ManageRollups extends NavigationMixin(LightningElement) {
   dtColumns = [
     {
-      type: "button",
+      type: "url",
       label: "Name",
       sortable: true,
-      fieldName: "label",
+      fieldName: "tabUrl",
       initialWidth: 300,
       typeAttributes: {
         label: { fieldName: "label" },
-        name: "rollup_select",
-        title: "Edit",
-        value: "edit",
-        variant: "base",
+        target: "_self",
         stretch: true
       }
     },
@@ -125,14 +122,25 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     this.isLoading = true;
     this.rollups = await getAllRollupConfigs();
 
-    Object.keys(this.rollups).forEach((k) => {
-      this.rollups[k] = {
-        ...this.rollups[k],
-        calculationMode:
-          STATUS_LABELS[this.rollups[k].calculationMode] ??
-          this.rollups[k].calculationMode
-      };
-    });
+    await Promise.all(
+      Object.keys(this.rollups).map(async (k) => {
+        this.rollups[k] = {
+          ...this.rollups[k],
+          tabUrl: await this[NavigationMixin.GenerateUrl]({
+            type: "standard__component",
+            attributes: {
+              componentName: this._buildApiName("rollupTab", true)
+            },
+            state: {
+              c__rollupName: this.rollups[k].developerName
+            }
+          }),
+          calculationMode:
+            STATUS_LABELS[this.rollups[k].calculationMode] ??
+            this.rollups[k].calculationMode
+        };
+      })
+    );
 
     if (this.rollups.length === 0) {
       // no rollups in the database, start to create a new one
@@ -259,9 +267,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     const action = event.detail.action;
     const row = event.detail.row;
     switch (action.name) {
-      case "rollup_select":
-        this.openEditor(row.developerName);
-        break;
       case "rollup_delete":
         this.requestDelete(row.developerName);
         break;
@@ -514,10 +519,13 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   }
 
   // use an imported API name and swap parts to apply namespace to other API names that we can't import correctly
-  _buildApiName(value) {
-    return SCHEDULE_ITEMS_OBJECT.objectApiName.replace(
-      "LookupRollupSummaryScheduleItems__c",
-      value
-    );
+  _buildApiName(value, useDefaultNamespace = false) {
+    let apiName = SCHEDULE_ITEMS_OBJECT.objectApiName;
+    if (useDefaultNamespace) {
+      if (apiName === "LookupRollupSummaryScheduleItems__c") {
+        apiName = "c__LookupRollupSummaryScheduleItems__c";
+      }
+    }
+    return apiName.replace("LookupRollupSummaryScheduleItems__c", value);
   }
 }

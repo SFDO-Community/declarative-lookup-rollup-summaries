@@ -1,14 +1,5 @@
 <template>
-  <lightning-modal-header label={cardHeader}>
-    <lightning-layout class="slds-p-horizontal_medium" lwc:if={rollup.id}>
-      <lightning-layout-item size="12" padding="around-small">
-        <c-flexible-path
-          steps={steps}
-          onnextactionclick={pathClickHandler}
-        ></c-flexible-path>
-      </lightning-layout-item>
-    </lightning-layout>
-  </lightning-modal-header>
+  <lightning-modal-header label={cardHeader}> </lightning-modal-header>
   <lightning-modal-body>
     <lightning-layout multiple-rows class="slds-p-horizontal_medium">
       <lightning-layout-item>
@@ -505,59 +496,23 @@
   </lightning-modal-body>
   <lightning-modal-footer>
     <lightning-layout horizontal-align="center">
-      <lightning-layout-item>
-        <lightning-button-group>
-          <lightning-button
-            label="Save &amp; Activate"
-            onclick={activateClickHandler}
-            if:true={rollupCanBeActivated}
-          ></lightning-button>
-          <lightning-button
-            label={saveButtonLabel}
-            onclick={runSave}
-          ></lightning-button>
-          <lightning-button
-            label="Recalculate Now"
-            lwc:if={rollup.id}
-            onclick={recalculateNowHandler}
-          ></lightning-button>
-          <lightning-button
-            label="Cancel"
-            variant="destructive"
-            onclick={cancelClickHandler}
-          ></lightning-button>
-          <lightning-button-menu
-            alternative-text="Show more"
-            menu-alignment="bottom-right"
-            lwc:if={rollup.id}
-          >
-            <lightning-menu-item
-              label="Clone"
-              lwc:if={rollup.id}
-              onclick={cloneClickHandler}
-            ></lightning-menu-item>
-            <lightning-menu-item
-              label="Deactivate &amp; Save"
-              if:true={rollupCanBeDeactivated}
-              onclick={deactivateClickHandler}
-            ></lightning-menu-item>
-            <lightning-menu-item
-              label="Delete"
-              lwc:if={rollup.id}
-              onclick={deleteClickHandler}
-            ></lightning-menu-item>
-            <lightning-menu-item
-              label="Manage Triggers"
-              lwc:if={supportsTrigger}
-              onclick={manageTriggerHandler}
-            ></lightning-menu-item>
-            <lightning-menu-item
-              label="Schedule Recalculation"
-              lwc:if={rollup.id}
-              onclick={schedulRecalculateHandler}
-            ></lightning-menu-item>
-          </lightning-button-menu>
-        </lightning-button-group>
+      <lightning-layout-item flexibility="grow"></lightning-layout-item>
+      <lightning-layout-item padding="horizontal-large">
+        <ul class="slds-button-group-row">
+          <li class="slds-button-group-item visible">
+            <lightning-button
+              label="Cancel"
+              onclick={cancelClickHandler}
+            ></lightning-button>
+          </li>
+          <li class="slds-button-group-item visible">
+            <lightning-button
+              label={saveButtonLabel}
+              variant="brand"
+              onclick={runSave}
+            ></lightning-button>
+          </li>
+        </ul>
       </lightning-layout-item>
     </lightning-layout>
 
