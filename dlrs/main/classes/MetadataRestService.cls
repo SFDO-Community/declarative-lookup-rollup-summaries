@@ -76,21 +76,49 @@ public with sharing class MetadataRestService {
     System.debug('Status:' + res.getStatus());
     String body = res.getBody();
     System.debug(body);
-    DeployRequestResult depRes = (DeployRequestResult) JSON.deserialize(
-      body,
-      DeployRequestResult.class
-    );
+    DeployRequestResult depRes;
+    try {
+      depRes = (DeployRequestResult) JSON.deserialize(
+        body,
+        DeployRequestResult.class
+      );
+    } catch (Exception e) {
+      System.debug(e);
+      UserNotification__e updateEvent = new UserNotification__e(
+        Type__c = 'DeploymentResult',
+        Payload__c = body
+      );
+      EventBus.publish(updateEvent);
+      throw new MetadataRestServiceException(body);
+    }
     return depRes;
   }
 
-  public DeployRequestResult getDeployStatus(Id deploymentId) {
+  public Id deployZipAsync(Blob zipFile, DeployOptions options) {
+    AsyncOptions asyncOpts = new AsyncOptions();
+    // enough to hopefully handle everything but never to fully run away
+    asyncOpts.MaximumQueueableStackDepth = 99;
+    return System.enqueueJob(
+      new DeploymentQueueable(zipFile, options),
+      asyncOpts
+    );
+  }
+
+  public DeployRequestResult getDeployStatus(
+    Id deploymentId,
+    Boolean includeDetails
+  ) {
     String path =
-      '/services/data/v' +
       // uses known fixed API version, not the dynamic latest
       // we expect Salesforce will change the DeployResult shape over time and want to control when we get that
-      FALLBACK_COMPONENT_API_VERSION +
-      '/metadata/deployRequest/' +
-      deploymentId;
+      String.format(
+        '/services/data/v{0}/metadata/deployRequest/{1}?includeDetails={2}',
+        new List<String>{
+          FALLBACK_COMPONENT_API_VERSION,
+          deploymentId,
+          String.valueOf(includeDetails == true)
+        }
+      );
     HttpRequest req = createRequest(path);
     req.setMethod('GET');
 
@@ -99,10 +127,16 @@ public with sharing class MetadataRestService {
     System.debug('Status:' + res.getStatus());
     String body = res.getBody();
     System.debug(body);
-    DeployRequestResult depRes = (DeployRequestResult) JSON.deserialize(
-      body,
-      DeployRequestResult.class
-    );
+    DeployRequestResult depRes;
+    try {
+      depRes = (DeployRequestResult) JSON.deserialize(
+        body,
+        DeployRequestResult.class
+      );
+    } catch (Exception e) {
+      System.debug(e);
+      throw new MetadataRestServiceException(body);
+    }
     return depRes;
   }
 
@@ -171,6 +205,70 @@ public with sharing class MetadataRestService {
     );
   }
 
+  public class DeploymentQueueable implements Queueable, Database.AllowsCallouts {
+    Blob zippedPackaged;
+    MetadataRestService.DeployOptions opts;
+    Id deploymentId;
+
+    public DeploymentQueueable(
+      Blob zippedPackage,
+      MetadataRestService.DeployOptions options
+    ) {
+      this.zippedPackaged = zippedPackage;
+      this.opts = options;
+    }
+
+    public void execute(QueueableContext ctx) {
+      if (deploymentId == null) {
+        startDeploy();
+      } else {
+        checkDeployment();
+      }
+    }
+
+    public void startDeploy() {
+      MetadataRestService svc = new MetadataRestService();
+      try {
+        MetadataRestService.DeployRequestResult res = svc.deployZip(
+          this.zippedPackaged,
+          this.opts
+        );
+        System.debug('Dep Id:' + res.id);
+        System.debug('Results:' + res);
+        this.deploymentId = res.id;
+        System.enqueueJob(this);
+      } catch (Exception e) {
+        UserNotification__e updateEvent = new UserNotification__e(
+          Type__c = 'DeploymentResult',
+          Payload__c = e.getMessage()
+        );
+        EventBus.publish(updateEvent);
+      }
+    }
+
+    public void checkDeployment() {
+      MetadataRestService svc = new MetadataRestService();
+      MetadataRestService.DeployRequestResult res = svc.getDeployStatus(
+        this.deploymentId,
+        true
+      );
+      System.debug('Results:' + res);
+      UserNotification__e updateEvent = new UserNotification__e(
+        Type__c = 'DeploymentResult',
+        Payload__c = JSON.serialize(res.deployResult)
+      );
+      EventBus.publish(updateEvent);
+      if (res.deployResult.done != true) {
+        // requeue and wait
+        AsyncOptions asyncOpts = new AsyncOptions();
+        Integer depth = AsyncInfo.getCurrentQueueableStackDepth();
+        if (depth > 15) {
+          asyncOpts.MinimumQueueableDelayInMinutes = 1;
+        }
+        System.enqueueJob(this, asyncOpts);
+      }
+    }
+  }
   public class DeployOptions {
     public Boolean allowMissingFiles;
     public Boolean checkOnly = false;
@@ -191,7 +289,7 @@ public with sharing class MetadataRestService {
     public Id createdBy;
     public String createdByName;
     public DateTime createdDate;
-    // public DeployDetails details;
+    public DeployDetails details;
     public Boolean done;
     public String errorMessage;
     public String errorStatusCode;
@@ -210,13 +308,73 @@ public with sharing class MetadataRestService {
     public Boolean success;
   }
 
-  // some day if/when we need it
-  // public class DeployDetails {
-  // }
+  public class DeployDetails {
+    public List<DeployMessage> componentFailures;
+    public List<DeployMessage> componentSuccesses;
+    public RunTestsResult runTestResult;
+  }
+
+  public class DeployMessage {
+    public Boolean changed;
+    public Integer columnNumber;
+    public String componentType;
+    public Boolean created;
+    public DateTime createdDate;
+    public Boolean deleted;
+    public String fileName;
+    public String fullName;
+    public Id id;
+    public Integer lineNumber;
+    public String problem;
+    public String problemType;
+    public Boolean success;
+  }
+
+  public class RunTestsResult {
+    public String apexLogId;
+    // public CodeCoverateResult codeCoverage;
+    public List<CodeCoverageWarning> codeCoverageWarnings;
+    public List<RunTestFailure> failures;
+    // public List<FlowCoverageResult> flowCoverage;
+    public List<FlowCoverageWarning> flowCoverageWarnings;
+    public Integer numFailures;
+    public Integer numTestsRun;
+    // public List<RunTestSuccess> successes;
+    public Double totalTime;
+  }
+
+  public class CodeCoverageWarning {
+    public Id id;
+    public String message;
+    public String name;
+    public String namespace;
+  }
+
+  public class RunTestFailure {
+    public Id id;
+    public String message;
+    public String methodName;
+    public String name;
+    public String namespace;
+    public Boolean seeAllData;
+    public String stackTrace;
+    // public Double time;
+    public String type;
+  }
+
+  public class FlowCoverageWarning {
+    public String flowId;
+    public String flowName;
+    public String flowNamespace;
+    public String message;
+  }
 
   public class DeployRequestResult {
     public Id id;
     public DeployOptions deployOptions;
     public DeployResult deployResult;
+  }
+
+  public class MetadataRestServiceException extends Exception {
   }
 }

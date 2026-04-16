@@ -6,13 +6,10 @@ import { NavigationMixin, CurrentPageReference } from "lightning/navigation";
 import getAllRollupConfigs from "@salesforce/apex/RollupEditorController.getAllRollupConfigs";
 import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
 import USER_ID from "@salesforce/user/Id";
+
 import RollupEditor, { CLASS_SCHEDULER_CONFIG } from "c/rollupEditor";
 import ClassSchedulerModal from "c/classSchedulerModal";
-
-// import so we can get a namespace from it
-// can't import the Platform Event or CMDT directly
-// because they get corrupted
-import SCHEDULE_ITEMS_OBJECT from "@salesforce/schema/LookupRollupSummaryScheduleItems__c";
+import { buildApiName } from "c/utils";
 
 import {
   subscribe,
@@ -101,7 +98,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   sortDirection = "desc";
   pendingSaveRollupName;
 
-  channelName = `/event/${this._buildApiName("UserNotification__e")}`;
+  channelName = `/event/${buildApiName("UserNotification__e")}`;
   subscription = {};
 
   rollups = {};
@@ -129,7 +126,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
           tabUrl: await this[NavigationMixin.GenerateUrl]({
             type: "standard__component",
             attributes: {
-              componentName: this._buildApiName("rollupTab", true)
+              componentName: buildApiName("rollupTab", true)
             },
             state: {
               c__rollupName: this.rollups[k].developerName
@@ -414,19 +411,17 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       this.isLoading = false;
       this.refreshRollups();
       if (
-        !USER_ID.startsWith(
-          response.data.payload[this._buildApiName("Recipient__c")]
-        )
+        !USER_ID.startsWith(response.data.payload[buildApiName("Recipient__c")])
       ) {
         // This message isn't for us, don't do anything
         return;
       }
       let title, message, messageData, variant, mode;
       const deploymentData = JSON.parse(
-        response.data.payload[this._buildApiName("Payload__c")]
+        response.data.payload[buildApiName("Payload__c")]
       );
 
-      switch (response.data.payload[this._buildApiName("Type__c")]) {
+      switch (response.data.payload[buildApiName("Type__c")]) {
         case "DeleteRequestResult":
           this.pendingSaveRollupName = undefined;
           if (deploymentData.success) {
@@ -516,16 +511,5 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       console.error("Received error from server: ", JSON.stringify(error));
       // Error contains the server-side error
     });
-  }
-
-  // use an imported API name and swap parts to apply namespace to other API names that we can't import correctly
-  _buildApiName(value, useDefaultNamespace = false) {
-    let apiName = SCHEDULE_ITEMS_OBJECT.objectApiName;
-    if (useDefaultNamespace) {
-      if (apiName === "LookupRollupSummaryScheduleItems__c") {
-        apiName = "c__LookupRollupSummaryScheduleItems__c";
-      }
-    }
-    return apiName.replace("LookupRollupSummaryScheduleItems__c", value);
   }
 }

@@ -237,7 +237,7 @@ public with sharing class TriggerGenerationService {
       ' on ' +
       sObjectName +
       '\n' +
-      '    (after delete, after insert, after undelete, after update)\n' +
+      '    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n' +
       '{\n' +
       '    ' +
       (namespace.length() > 0 ? namespace + '.' : '') +
@@ -282,7 +282,7 @@ public with sharing class TriggerGenerationService {
         '        ' +
         Utilities.classPrefix() +
         'RollupService.testHandler(obj);\n') +
-        '        Assert.isNotNull(obj.Id);') +
+        '        Assert.isNotNull(obj);') +
       '\n    }\n' +
       '}';
   }

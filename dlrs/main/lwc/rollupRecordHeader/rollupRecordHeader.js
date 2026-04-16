@@ -6,17 +6,13 @@ import LightningConfirm from "lightning/confirm";
 import { PATH_STATES } from "c/flexiblePath";
 import ClassSchedulerModal from "c/classSchedulerModal";
 import ManageChildTriggersModal from "c/manageChildTriggersModal";
+import { buildApiName } from "c/utils";
 
 import getScheduledJobs from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledJobs";
 import hasChildTriggerDeployed from "@salesforce/apex/LookupRollupStatusCheckController.hasChildTriggerDeployed";
 import getFullCalculatePageUrl from "@salesforce/apex/RollupEditorController.getFullCalculatePageUrl";
 import getScheduleCalculatePageUrl from "@salesforce/apex/RollupEditorController.getScheduleCalculatePageUrl";
 import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
-
-// import so we can get a namespace from it
-// can't import the Platform Event or CMDT directly
-// because they get corrupted
-import SCHEDULE_ITEMS_OBJECT from "@salesforce/schema/LookupRollupSummaryScheduleItems__c";
 
 const STEPS = Object.freeze({
   configure: {
@@ -103,7 +99,7 @@ export default class RollupRecordHeader extends NavigationMixin(
     this[NavigationMixin.GenerateUrl]({
       type: "standard__navItemPage",
       attributes: {
-        apiName: this._buildApiName("ManageLookupRollupSummaries2")
+        apiName: buildApiName("ManageLookupRollupSummaries2")
       }
     }).then((url) => {
       this.breadcrumbManageLink = url;
@@ -222,17 +218,6 @@ export default class RollupRecordHeader extends NavigationMixin(
         url
       }
     });
-  }
-
-  // use an imported API name and swap parts to apply namespace to other API names that we can't import correctly
-  _buildApiName(value, useDefaultNamespace = false) {
-    let apiName = SCHEDULE_ITEMS_OBJECT.objectApiName;
-    if (useDefaultNamespace) {
-      if (apiName === "LookupRollupSummaryScheduleItems__c") {
-        apiName = "c__LookupRollupSummaryScheduleItems__c";
-      }
-    }
-    return apiName.replace("LookupRollupSummaryScheduleItems__c", value);
   }
 
   get supportsTrigger() {

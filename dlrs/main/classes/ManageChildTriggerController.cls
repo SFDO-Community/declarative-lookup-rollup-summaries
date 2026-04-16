@@ -23,31 +23,22 @@ public with sharing class ManageChildTriggerController {
       changesByType.get('delete')
     );
     MetadataRestService.DeployOptions options = new MetadataRestService.DeployOptions();
-    options.testLevel = 'NoTestRun';
-
-    return System.enqueueJob(new DeploymentQueueable(packagedZip, options));
-  }
-
-  public class DeploymentQueueable implements Queueable, Database.AllowsCallouts {
-    Blob zippedPackaged;
-    MetadataRestService.DeployOptions opts;
-
-    public DeploymentQueueable(
-      Blob zippedPackage,
-      MetadataRestService.DeployOptions options
+    options.runTests = new List<String>();
+    options.testLevel = 'RunSpecifiedTests';
+    for (
+      TriggerGenerationService.GeneratedCode cde : changesByType.get('deploy')
     ) {
-      this.zippedPackaged = zippedPackage;
-      this.opts = options;
+      if (cde.mdtType == 'ApexClass') {
+        options.runTests.add(cde.assetName);
+      }
     }
+    if (options.runTests.isEmpty()) {
+      options.runTests.add('FakeTest');
+    }
+    options.allowMissingFiles = false;
+    options.purgeOnDelete = false;
+    options.rollbackOnError = true;
 
-    public void execute(QueueableContext ctx) {
-      MetadataRestService svc = new MetadataRestService();
-      MetadataRestService.DeployRequestResult res = svc.deployZip(
-        this.zippedPackaged,
-        this.opts
-      );
-      System.debug('Dep Id:' + res.id);
-      System.debug('Results:' + res);
-    }
+    return new MetadataRestService().deployZipAsync(packagedZip, options);
   }
 }

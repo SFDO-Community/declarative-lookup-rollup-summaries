@@ -4,6 +4,15 @@
   <!-- Checkbox to deploy "Merge" support on the parent if not already present? -->
   <lightning-card>
     <lightning-spinner lwc:if={isLoading}></lightning-spinner>
+    <div lwc:if={lastDeployStatus}>
+      Deployment is {lastDeployStatus}, {deploymentStateDetail}
+    </div>
+    <div lwc:if={deploymentErrors}>
+      Deployment Errors:
+      <template for:each={deploymentErrors} for:item="err">
+        <div key={deploymentErrors}>{err}</div>
+      </template>
+    </div>
     <lightning-layout multiple-rows>
       <template for:each={generatedApex} for:item="apx">
         <lightning-layout-item
