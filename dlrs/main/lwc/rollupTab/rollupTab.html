@@ -13,7 +13,11 @@
       onstartdeactivation={startDeactivation}
     ></c-rollup-record-header>
     <lightning-layout multiple-rows>
-      <lightning-layout-item size="12" large-device-size="6">
+      <lightning-layout-item
+        size="12"
+        large-device-size="6"
+        padding="around-small"
+      >
         <lightning-card>
           <div class="slds-p-horizontal_small">
             <c-rollup-detail rollup={rollup}></c-rollup-detail>
@@ -23,7 +27,7 @@
       <lightning-layout-item
         size="12"
         large-device-size="6"
-        style="padding-left: var(--lwc-templateGutters)"
+        padding="around-small"
       >
         <div class="slds-tabs_card">
           <lightning-tabset>

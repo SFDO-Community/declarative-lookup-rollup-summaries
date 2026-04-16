@@ -1,0 +1,23 @@
+<template>
+  <lightning-modal-header label="Manage Triggers"></lightning-modal-header>
+  <lightning-modal-body>
+    <c-manage-child-triggers
+      lwc:ref="manageTriggers"
+      rollup-name={rollupName}
+    ></c-manage-child-triggers>
+  </lightning-modal-body>
+  <lightning-modal-footer>
+    <lightning-button
+      class="slds-button"
+      variant="neutral"
+      label="Close"
+      onclick={handleDismiss}
+    ></lightning-button>
+    <lightning-button
+      class="slds-button slds-m-left_x-small"
+      variant="brand"
+      label="Deploy"
+      onclick={handleDeploy}
+    ></lightning-button>
+  </lightning-modal-footer>
+</template>

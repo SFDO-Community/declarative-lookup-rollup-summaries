@@ -79,6 +79,11 @@
                 onclick={handleEditClick}
               ></lightning-button>
               <lightning-button
+                label="Clone"
+                lwc:if={rollup.id}
+                onclick={cloneClickHandler}
+              ></lightning-button>
+              <lightning-button
                 label="Activate"
                 onclick={activateClickHandler}
                 if:true={rollupCanBeActivated}
@@ -88,15 +93,20 @@
                 lwc:if={rollup.id}
                 onclick={recalculateNowHandler}
               ></lightning-button>
+              <lightning-button
+                label="Manage Triggers"
+                lwc:if={supportsTrigger}
+                onclick={manageTriggerHandler}
+              ></lightning-button>
               <lightning-button-menu
                 alternative-text="Show more"
-                menu-alignment="bottom-right"
+                menu-alignment="top-right"
                 lwc:if={rollup.id}
               >
                 <lightning-menu-item
-                  label="Clone"
+                  label="Schedule Recalculation"
                   lwc:if={rollup.id}
-                  onclick={cloneClickHandler}
+                  onclick={schedulRecalculateHandler}
                 ></lightning-menu-item>
                 <lightning-menu-item
                   label="Deactivate"
@@ -107,16 +117,6 @@
                   label="Delete"
                   lwc:if={rollup.id}
                   onclick={deleteClickHandler}
-                ></lightning-menu-item>
-                <lightning-menu-item
-                  label="Manage Triggers"
-                  lwc:if={supportsTrigger}
-                  onclick={manageTriggerHandler}
-                ></lightning-menu-item>
-                <lightning-menu-item
-                  label="Schedule Recalculation"
-                  lwc:if={rollup.id}
-                  onclick={schedulRecalculateHandler}
                 ></lightning-menu-item>
               </lightning-button-menu>
             </lightning-button-group>

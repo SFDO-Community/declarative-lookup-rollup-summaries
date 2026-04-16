@@ -532,6 +532,17 @@ public class RollupSummaries extends fflib_SObjectDomain {
   }
 
   /**
+   * Trigger name for given SObject
+   **/
+  public static String makeTriggerName(String sObjectName) {
+    return calculateComponentName(
+      sObjectName,
+      'Trigger',
+      APEXTRIGGER_NAME_LENGTH
+    );
+  }
+
+  /**
    * Apex test name for given lookup rollup summary
    **/
   public static String makeTriggerTestName(RollupSummary lookupRollupSummary) {
@@ -544,6 +555,13 @@ public class RollupSummaries extends fflib_SObjectDomain {
       'Test',
       APEXCLASS_NAME_LENGTH
     );
+  }
+
+  /**
+   * Apex test name for given SObject
+   **/
+  public static String makeTriggerTestName(String sObjectName) {
+    return calculateComponentName(sObjectName, 'Test', APEXCLASS_NAME_LENGTH);
   }
 
   /**

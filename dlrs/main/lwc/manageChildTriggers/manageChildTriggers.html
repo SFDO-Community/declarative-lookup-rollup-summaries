@@ -1,0 +1,44 @@
+<template>
+  <!-- List of checkboxes for which items to deploy -->
+  <!-- Override the list of test classes used? (Maybe something set on the rollup or parsable in the trigger?) Does the new "testFor" syntax help here? -->
+  <!-- Checkbox to deploy "Merge" support on the parent if not already present? -->
+  <lightning-card>
+    <lightning-spinner lwc:if={isLoading}></lightning-spinner>
+    <lightning-layout multiple-rows>
+      <template for:each={generatedApex} for:item="apx">
+        <lightning-layout-item
+          size="7"
+          medium-device-size="5"
+          padding="around-medium"
+          key={apx.assetName}
+        >
+          <lightning-select
+            name={apx.assetName}
+            label={apx.assetName}
+            value={apx.changeType}
+            options={apx.changeOptions}
+          ></lightning-select>
+        </lightning-layout-item>
+      </template>
+    </lightning-layout>
+    <lightning-tabset>
+      <template for:each={generatedApex} for:item="apx">
+        <lightning-tab label={apx.assetName} key={apx.assetName}>
+          Type: <strong>{apx.mdtType}</strong> API Version:
+          <strong>{apx.apiVersion}</strong>
+          <template lwc:if={apx.needsApiUpdate}>
+            <span style="text-decoration: line-through"
+              >{apx.existingApiVersion}</span
+            > </template
+          ><br />
+          <pre>{apx.body}</pre>
+          <br />
+          <template lwc:if={apx.needsBodyUpdate}>
+            Existing:
+            <pre style="text-decoration: line-through">{apx.existingBody}</pre>
+          </template>
+        </lightning-tab>
+      </template>
+    </lightning-tabset>
+  </lightning-card>
+</template>

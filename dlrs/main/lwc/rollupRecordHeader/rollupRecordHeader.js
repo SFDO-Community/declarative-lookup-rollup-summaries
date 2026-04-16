@@ -5,12 +5,12 @@ import LightningConfirm from "lightning/confirm";
 
 import { PATH_STATES } from "c/flexiblePath";
 import ClassSchedulerModal from "c/classSchedulerModal";
+import ManageChildTriggersModal from "c/manageChildTriggersModal";
 
 import getScheduledJobs from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledJobs";
 import hasChildTriggerDeployed from "@salesforce/apex/LookupRollupStatusCheckController.hasChildTriggerDeployed";
 import getFullCalculatePageUrl from "@salesforce/apex/RollupEditorController.getFullCalculatePageUrl";
 import getScheduleCalculatePageUrl from "@salesforce/apex/RollupEditorController.getScheduleCalculatePageUrl";
-import getManageTriggerPageUrl from "@salesforce/apex/RollupEditorController.getManageTriggerPageUrl";
 import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
 
 // import so we can get a namespace from it
@@ -208,13 +208,10 @@ export default class RollupRecordHeader extends NavigationMixin(
   }
 
   async manageTriggerHandler() {
-    const url = await getManageTriggerPageUrl({ rollupId: this.rollup.id });
-    this[NavigationMixin.Navigate]({
-      type: "standard__webPage",
-      attributes: {
-        url
-      }
+    const result = await ManageChildTriggersModal.open({
+      rollupName: this.rollup.developerName
     });
+    console.log(result);
   }
 
   async recalculateNowHandler() {
