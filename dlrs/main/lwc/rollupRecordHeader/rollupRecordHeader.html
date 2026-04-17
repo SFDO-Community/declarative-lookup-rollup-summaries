@@ -2,11 +2,11 @@
   <lightning-breadcrumbs>
     <lightning-breadcrumb
       label="Manage Lookup Rollup Summaries"
+      onclick={breadcrumbManageLinkClickHandler}
       href={breadcrumbManageLink}
     >
     </lightning-breadcrumb>
-    <lightning-breadcrumb label={breadcrumbName} href="#">
-    </lightning-breadcrumb>
+    <lightning-breadcrumb label={breadcrumbName}> </lightning-breadcrumb>
   </lightning-breadcrumbs>
   <div class="slds-page-header">
     <div class="slds-page-header__row">
@@ -86,7 +86,13 @@
               <lightning-button
                 label="Activate"
                 onclick={activateClickHandler}
-                if:true={rollupCanBeActivated}
+                disabled={activationIsDisabled}
+                if:true={rollupIsInactive}
+              ></lightning-button>
+              <lightning-button
+                label="Deactivate"
+                if:true={rollupCanBeDeactivated}
+                onclick={deactivateClickHandler}
               ></lightning-button>
               <lightning-button
                 label="Recalculate Now"
@@ -107,11 +113,6 @@
                   label="Schedule Recalculation"
                   lwc:if={rollup.id}
                   onclick={schedulRecalculateHandler}
-                ></lightning-menu-item>
-                <lightning-menu-item
-                  label="Deactivate"
-                  if:true={rollupCanBeDeactivated}
-                  onclick={deactivateClickHandler}
                 ></lightning-menu-item>
                 <lightning-menu-item
                   label="Delete"

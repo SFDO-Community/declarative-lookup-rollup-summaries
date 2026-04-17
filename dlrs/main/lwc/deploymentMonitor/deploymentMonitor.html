@@ -1,8 +1,8 @@
 <template>
   <template lwc:if={deploymentId}>
-    Status: {deploymentStatus}<br />
+    Status: {deploymentStatus}
     <template lwc:if={deploymentStateDetail}>
-      Deployment Step: {deploymentStateDetail}
+      - {deploymentStateDetail}
     </template>
     <template for:each={errorsByCategory} for:item="errorObj">
       <div key={errorObj.label}>

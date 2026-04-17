@@ -146,6 +146,16 @@ export default class RollupRecordHeader extends NavigationMixin(
     this.steps = newSteps;
   }
 
+  breadcrumbManageLinkClickHandler(event) {
+    event.preventDefault();
+    this[NavigationMixin.Navigate]({
+      type: "standard__navItemPage",
+      attributes: {
+        apiName: buildApiName("ManageLookupRollupSummaries2")
+      }
+    });
+  }
+
   async pathClickHandler(event) {
     console.log("Path clicked", event.detail.label);
     switch (event.detail.name) {
@@ -185,7 +195,15 @@ export default class RollupRecordHeader extends NavigationMixin(
     this.dispatchEvent(new CustomEvent("editclick"));
   }
 
-  get rollupCanBeActivated() {
+  get activationIsDisabled() {
+    // if rollup requires a trigger but that trigger isn't installed
+    if (["Realtime", "Scheduled"].includes(this.rollup.calculationMode)) {
+      return !this.childTriggerIsDeployed;
+    }
+    return false;
+  }
+
+  get rollupIsInactive() {
     return this.rollup.id && !this.rollup.active;
   }
 
@@ -228,7 +246,11 @@ export default class RollupRecordHeader extends NavigationMixin(
   }
 
   activateClickHandler() {
-    this.dispatchEvent(new CustomEvent("startactivation"));
+    if (this.rollupIsInactive && !this.activationIsDisabled) {
+      this.dispatchEvent(new CustomEvent("startactivation"));
+    } else {
+      console.log("Unable to activate rollup");
+    }
   }
 
   deactivateClickHandler() {

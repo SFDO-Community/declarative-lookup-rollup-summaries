@@ -63,6 +63,11 @@ export default class RollupTab extends NavigationMixin(LightningElement) {
       switch (message.type) {
         case "DeploymentResult":
           if (res.done && res.success) {
+            if (res.id === this.lastSuccessfullDeployment) {
+              // we've already reacted to this, ignoring it
+              return;
+            }
+            this.lastSuccessfullDeployment = res.id;
             // there was a deployment that might impact us, refresh the data
             this.getRollup();
           }

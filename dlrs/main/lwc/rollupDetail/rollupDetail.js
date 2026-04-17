@@ -1,5 +1,12 @@
 import { LightningElement, api } from "lwc";
 
+// TODO: should centralize these
+const CALCULATION_MODES = {
+  Scheduled: "Watch for Changes and Process Later",
+  Realtime: "Realtime",
+  "Process Builder": "Invocable by Automation",
+  Developer: "Developer"
+};
 export default class RollupDetail extends LightningElement {
   @api
   rollup;
@@ -23,5 +30,12 @@ export default class RollupDetail extends LightningElement {
             name: field.trim()
           })))
     ];
+  }
+
+  get calculationMode() {
+    return (
+      CALCULATION_MODES[this.rollup.calculationMode] ??
+      this.rollup.calculationMode
+    );
   }
 }
