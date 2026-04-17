@@ -4,7 +4,6 @@ import { CurrentPageReference, NavigationMixin } from "lightning/navigation";
 import {
   subscribe,
   unsubscribe,
-  APPLICATION_SCOPE,
   MessageContext
 } from "lightning/messageService";
 
@@ -82,7 +81,7 @@ export default class RollupTab extends NavigationMixin(LightningElement) {
         this.messageContext,
         userNotification,
         (message) => handleMessage(message),
-        { scope: APPLICATION_SCOPE }
+        {}
       );
     }
   }

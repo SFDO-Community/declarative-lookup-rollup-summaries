@@ -4,7 +4,6 @@ import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import {
   subscribe,
   unsubscribe,
-  APPLICATION_SCOPE,
   MessageContext
 } from "lightning/messageService";
 
@@ -90,7 +89,7 @@ export default class DeploymentMonitor extends LightningElement {
         this.messageContext,
         userNotification,
         (message) => handleMessage(message),
-        { scope: APPLICATION_SCOPE }
+        {}
       );
     }
   }

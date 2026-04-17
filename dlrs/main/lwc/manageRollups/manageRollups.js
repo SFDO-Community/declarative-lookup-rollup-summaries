@@ -14,9 +14,10 @@ import { buildApiName } from "c/utils";
 import {
   subscribe,
   unsubscribe,
-  onError,
-  isEmpEnabled
-} from "lightning/empApi";
+  MessageContext
+} from "lightning/messageService";
+
+import userNotification from "@salesforce/messageChannel/UserNotification__c";
 
 const STATUS_LABELS = {
   Scheduled: "Watch and Process",
@@ -98,8 +99,8 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   sortDirection = "desc";
   pendingSaveRollupName;
 
-  channelName = `/event/${buildApiName("UserNotification__e")}`;
-  subscription = {};
+  @wire(MessageContext)
+  messageContext;
 
   rollups = {};
   rollupList = [];
@@ -110,9 +111,104 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   connectedCallback() {
     this.refreshRollups();
-    // Register error listener
-    this.registerErrorListener();
-    this.handleSubscribe();
+    this.subscribeToMessageChannel();
+  }
+
+  disconnectedCallback() {
+    this.unsubscribeToMessageChannel();
+  }
+
+  unsubscribeToMessageChannel() {
+    unsubscribe(this.subscription);
+    this.subscription = null;
+  }
+
+  subscribeToMessageChannel() {
+    // Handler for message received by component
+    // Callback invoked whenever a new event message is received
+    const handleMessage = (response) => {
+      // console.log("New message received: ", JSON.stringify(response));
+      // deployment probably changed the rollup definitions, should refresh
+      this.isLoading = false;
+      this.refreshRollups();
+      let title, message, messageData, variant, mode;
+      const deploymentData = JSON.parse(response.payload);
+
+      switch (response.type) {
+        case "DeleteRequestResult":
+          this.pendingSaveRollupName = undefined;
+          if (deploymentData.success) {
+            title = "Delete Completed!";
+            message = `${deploymentData.metadataNames} deleted successfully`;
+            variant = "success";
+            mode = "dismissible";
+          } else {
+            title = "Delete Failed!";
+            message = `Attempt to delete ${deploymentData.metadataNames} returned with errors [${deploymentData.error}]`;
+            variant = "error";
+            mode = "sticky";
+          }
+          break;
+        case "DeploymentResult":
+          if (deploymentData.status === "Succeeded") {
+            title = "Deployment Completed!";
+            message = "Metadata saved successfully";
+            variant = "success";
+            mode = "dismissible";
+          } else {
+            title = "Deployment Failed!";
+            message =
+              "Status of " +
+              deploymentData.status +
+              ", errors [" +
+              deploymentData.details.componentFailures
+                .map((failure) => `${failure.fullName}: ${failure.problem}`)
+                .join("\n") +
+              "], \n{0}";
+            // if you know a better way to build this URL please replace this
+            messageData = [
+              {
+                label: "Click to view Deployment",
+                url: `/lightning/setup/DeployStatus/page?address=%2Fchangemgmt%2FmonitorDeploymentsDetails.apexp%3FasyncId%3D${deploymentData.id}`
+              }
+            ];
+            variant = "error";
+            mode = "sticky";
+          }
+
+          if (this.pendingSaveRollupName) {
+            let pendingRollupName = this.pendingSaveRollupName;
+            if (deploymentData.status !== "Succeeded") {
+              // allows for recovery of non-saved rollup editor state
+              pendingRollupName = "pending-" + pendingRollupName;
+            }
+            this.pendingSaveRollupName = undefined;
+            this.openEditor(pendingRollupName);
+          }
+          break;
+        default:
+          break;
+      }
+
+      const evt = new ShowToastEvent({
+        title,
+        message,
+        messageData,
+        variant,
+        mode
+      });
+      this.dispatchEvent(evt);
+      // Response contains the payload of the new message received
+    };
+
+    if (!this.subscription) {
+      this.subscription = subscribe(
+        this.messageContext,
+        userNotification,
+        (message) => handleMessage(message),
+        {}
+      );
+    }
   }
 
   async refreshRollups() {
@@ -392,124 +488,5 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     previousAction.checked = false;
     currentAction.checked = true;
     this.dtColumns = columnRef;
-  }
-
-  disconnectedCallback() {
-    this.handleUnsubscribe();
-  }
-
-  // Handles subscribe button click
-  handleSubscribe() {
-    if (!isEmpEnabled) {
-      console.error("Emp API Is not currently enabled");
-      return;
-    }
-    // Callback invoked whenever a new event message is received
-    const messageCallback = (response) => {
-      // console.log("New message received: ", JSON.stringify(response));
-      // deployment probably changed the rollup definitions, should refresh
-      this.isLoading = false;
-      this.refreshRollups();
-      if (
-        !USER_ID.startsWith(response.data.payload[buildApiName("Recipient__c")])
-      ) {
-        // This message isn't for us, don't do anything
-        return;
-      }
-      let title, message, messageData, variant, mode;
-      const deploymentData = JSON.parse(
-        response.data.payload[buildApiName("Payload__c")]
-      );
-
-      switch (response.data.payload[buildApiName("Type__c")]) {
-        case "DeleteRequestResult":
-          this.pendingSaveRollupName = undefined;
-          if (deploymentData.success) {
-            title = "Delete Completed!";
-            message = `${deploymentData.metadataNames} deleted successfully`;
-            variant = "success";
-            mode = "dismissible";
-          } else {
-            title = "Delete Failed!";
-            message = `Attempt to delete ${deploymentData.metadataNames} returned with errors [${deploymentData.error}]`;
-            variant = "error";
-            mode = "sticky";
-          }
-          break;
-        case "DeploymentResult":
-          if (deploymentData.status === "Succeeded") {
-            title = "Deployment Completed!";
-            message = "Metadata saved successfully";
-            variant = "success";
-            mode = "dismissible";
-          } else {
-            title = "Deployment Failed!";
-            message =
-              "Status of " +
-              deploymentData.status +
-              ", errors [" +
-              deploymentData.details.componentFailures
-                .map((failure) => `${failure.fullName}: ${failure.problem}`)
-                .join("\n") +
-              "], \n{0}";
-            // if you know a better way to build this URL please replace this
-            messageData = [
-              {
-                label: "Click to view Deployment",
-                url: `/lightning/setup/DeployStatus/page?address=%2Fchangemgmt%2FmonitorDeploymentsDetails.apexp%3FasyncId%3D${deploymentData.id}`
-              }
-            ];
-            variant = "error";
-            mode = "sticky";
-          }
-
-          if (this.pendingSaveRollupName) {
-            let pendingRollupName = this.pendingSaveRollupName;
-            if (deploymentData.status !== "Succeeded") {
-              // allows for recovery of non-saved rollup editor state
-              pendingRollupName = "pending-" + pendingRollupName;
-            }
-            this.pendingSaveRollupName = undefined;
-            this.openEditor(pendingRollupName);
-          }
-          break;
-        default:
-          break;
-      }
-
-      const evt = new ShowToastEvent({
-        title,
-        message,
-        messageData,
-        variant,
-        mode
-      });
-      this.dispatchEvent(evt);
-      // Response contains the payload of the new message received
-    };
-
-    // Invoke subscribe method of empApi. Pass reference to messageCallback
-    subscribe(this.channelName, -1, messageCallback).then((response) => {
-      // Response contains the subscription information on subscribe call
-      console.log("EmpAPI Subscribe", JSON.stringify(response));
-      this.subscription = response;
-    });
-  }
-
-  // Handles unsubscribe button click
-  handleUnsubscribe() {
-    // Invoke unsubscribe method of empApi
-    unsubscribe(this.subscription, (response) => {
-      console.log("unsubscribe() response: ", JSON.stringify(response));
-      // Response is true for successful unsubscribe
-    });
-  }
-
-  registerErrorListener() {
-    // Invoke onError empApi method
-    onError((error) => {
-      console.error("Received error from server: ", JSON.stringify(error));
-      // Error contains the server-side error
-    });
   }
 }

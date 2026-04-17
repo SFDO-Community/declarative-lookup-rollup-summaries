@@ -177,7 +177,6 @@ export default class RollupEditor extends LightningModal {
         this.errors.record = [error.message];
       }
     }
-    this.configureSteps();
     await this.getRelationshipFieldOptions();
   }
 
@@ -248,7 +247,6 @@ export default class RollupEditor extends LightningModal {
           }
         );
         // recalculate Path after Schedule is created
-        this.configureSteps();
         break;
       case "save":
         this.runSave();
@@ -426,14 +424,12 @@ export default class RollupEditor extends LightningModal {
     this.getChildRelationshipFieldOptions();
     this.rollup.fieldToAggregate = undefined;
     this.rollup.relationshipField = undefined;
-    this.configureSteps();
   }
 
   parentObjectSelected(event) {
     this.rollup.parentObject = event.detail.selectedRecord;
     this.getParentRelationshipFieldOptions();
     this.rollup.aggregateResultField = undefined;
-    this.configureSteps();
   }
 
   get aggregateOptions() {
