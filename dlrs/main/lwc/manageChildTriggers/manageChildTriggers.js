@@ -160,6 +160,9 @@ export default class ManageChildTriggers extends LightningElement {
         ...deploymentData.details.componentFailures.map(
           (failure) => `${failure.fullName}: ${failure.problem}`
         ),
+        ...deploymentData.details.runTestResult.codeCoverageWarnings.map(
+          (failure) => `${failure.name}: ${failure.message}`
+        ),
         ...deploymentData.details.runTestResult.failures.map(
           (testRes) => `${testRes.name}: ${testRes.message}`
         )

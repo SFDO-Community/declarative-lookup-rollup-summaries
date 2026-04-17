@@ -22,18 +22,27 @@ public with sharing class ManageChildTriggerController {
       changesByType.get('deploy'),
       changesByType.get('delete')
     );
-    MetadataRestService.DeployOptions options = new MetadataRestService.DeployOptions();
-    options.runTests = new List<String>();
-    options.testLevel = 'RunSpecifiedTests';
+    Set<String> testClassesToRun = new Set<String>();
     for (
-      TriggerGenerationService.GeneratedCode cde : changesByType.get('deploy')
+      TriggerGenerationService.GeneratedCode generatedCode : changesByType.get(
+        'deploy'
+      )
     ) {
-      if (cde.mdtType == 'ApexClass') {
-        options.runTests.add(cde.assetName);
+      // could get fancy and try and see if it has the string "IsTest" somewhere
+      if (generatedCode.mdtType == 'ApexClass') {
+        testClassesToRun.add(generatedCode.assetName);
+      }
+      if (generatedCode.testedBy != null && !generatedCode.testedBy.isEmpty()) {
+        testClassesToRun.addAll(generatedCode.testedBy);
       }
     }
+
+    MetadataRestService.DeployOptions options = new MetadataRestService.DeployOptions();
+    options.testLevel = 'RunSpecifiedTests';
+    options.runTests = new List<String>(testClassesToRun);
+    // ensure at least one tests is specified, even if it doesn't exist
     if (options.runTests.isEmpty()) {
-      options.runTests.add('FakeTest');
+      options.runTests.add('FakeTestDoesntExist');
     }
     options.allowMissingFiles = false;
     options.purgeOnDelete = false;

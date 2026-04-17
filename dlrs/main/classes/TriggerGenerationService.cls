@@ -8,6 +8,7 @@ public with sharing class TriggerGenerationService {
       'folder' => 'triggers',
       'fileSuffix' => 'trigger'
     }
+    // TODO: add CustomMetadata support
   };
 
   public static List<GeneratedCode> generateApexForRollup(
@@ -150,6 +151,7 @@ public with sharing class TriggerGenerationService {
     String expectedTestClassName = RollupSummaries.makeTriggerTestName(
       sObjectName
     );
+    generatedTrigger.addTestedBy(expectedTestClassName);
 
     String generatedTestBody = generateTestClassBody(
       sobjectName,
@@ -194,6 +196,8 @@ public with sharing class TriggerGenerationService {
     public String existingBody;
     @AuraEnabled
     public String existingApiVersion;
+    @AuraEnabled
+    public List<String> testedBy = new List<String>();
 
     public GeneratedCode() {
     }
@@ -210,6 +214,10 @@ public with sharing class TriggerGenerationService {
       this.assetName = assetName;
       this.apiVersion = apiVersion;
       this.body = body;
+    }
+
+    public void addTestedBy(String testClassName) {
+      testedBy.add(testClassName);
     }
 
     public void setXmlContent(String xmlBody) {
@@ -237,7 +245,8 @@ public with sharing class TriggerGenerationService {
       ' on ' +
       sObjectName +
       '\n' +
-      '    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n' +
+      // before insert is used to help the generated test code succeed more often
+      '    (before insert, after delete, after insert, after undelete, after update)\n' +
       '{\n' +
       '    ' +
       (namespace.length() > 0 ? namespace + '.' : '') +
