@@ -104,6 +104,12 @@ public with sharing class MetadataRestService {
     );
   }
 
+  public Id getDeployStatusAsync(Id deploymentId, Boolean includeDetails) {
+    return System.enqueueJob(
+      new DeploymentStatusQueueable(deploymentId, includeDetails)
+    );
+  }
+
   public DeployRequestResult getDeployStatus(
     Id deploymentId,
     Boolean includeDetails
@@ -205,10 +211,26 @@ public with sharing class MetadataRestService {
     );
   }
 
+  public static void checkDeploymentAndPublish(
+    Id deploymentId,
+    Boolean includeDetails
+  ) {
+    MetadataRestService svc = new MetadataRestService();
+    MetadataRestService.DeployRequestResult res = svc.getDeployStatus(
+      deploymentId,
+      includeDetails
+    );
+    System.debug('Results:' + res);
+    UserNotification__e updateEvent = new UserNotification__e(
+      Type__c = 'DeploymentResult',
+      Payload__c = JSON.serialize(res.deployResult)
+    );
+    EventBus.publish(updateEvent);
+  }
+
   public class DeploymentQueueable implements Queueable, Database.AllowsCallouts {
     Blob zippedPackaged;
     MetadataRestService.DeployOptions opts;
-    Id deploymentId;
 
     public DeploymentQueueable(
       Blob zippedPackage,
@@ -219,14 +241,6 @@ public with sharing class MetadataRestService {
     }
 
     public void execute(QueueableContext ctx) {
-      if (deploymentId == null) {
-        startDeploy();
-      } else {
-        checkDeployment();
-      }
-    }
-
-    public void startDeploy() {
       MetadataRestService svc = new MetadataRestService();
       try {
         MetadataRestService.DeployRequestResult res = svc.deployZip(
@@ -235,8 +249,7 @@ public with sharing class MetadataRestService {
         );
         System.debug('Dep Id:' + res.id);
         System.debug('Results:' + res);
-        this.deploymentId = res.id;
-        System.enqueueJob(this);
+        checkDeploymentAndPublish(res.id, true);
       } catch (Exception e) {
         UserNotification__e updateEvent = new UserNotification__e(
           Type__c = 'DeploymentResult',
@@ -245,28 +258,18 @@ public with sharing class MetadataRestService {
         EventBus.publish(updateEvent);
       }
     }
+  }
 
-    public void checkDeployment() {
-      MetadataRestService svc = new MetadataRestService();
-      MetadataRestService.DeployRequestResult res = svc.getDeployStatus(
-        this.deploymentId,
-        true
-      );
-      System.debug('Results:' + res);
-      UserNotification__e updateEvent = new UserNotification__e(
-        Type__c = 'DeploymentResult',
-        Payload__c = JSON.serialize(res.deployResult)
-      );
-      EventBus.publish(updateEvent);
-      if (res.deployResult.done != true) {
-        // requeue and wait
-        AsyncOptions asyncOpts = new AsyncOptions();
-        Integer depth = AsyncInfo.getCurrentQueueableStackDepth();
-        if (depth > 15) {
-          asyncOpts.MinimumQueueableDelayInMinutes = 1;
-        }
-        System.enqueueJob(this, asyncOpts);
-      }
+  public class DeploymentStatusQueueable implements Queueable, Database.AllowsCallouts {
+    public Id deploymentId;
+    public Boolean includeDetails;
+
+    public DeploymentStatusQueueable(Id deploymentId, Boolean includeDetails) {
+      this.deploymentId = deploymentId;
+      this.includeDetails = includeDetails;
+    }
+    public void execute(QueueableContext ctx) {
+      checkDeploymentAndPublish(this.deploymentId, this.includeDetails);
     }
   }
   public class DeployOptions {

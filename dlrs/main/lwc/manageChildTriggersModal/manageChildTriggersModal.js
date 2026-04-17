@@ -6,6 +6,8 @@ export default class ManageChildTriggersModal extends LightningModal {
   @api
   rollupName;
 
+  disableButtons = false;
+
   handleDismiss() {
     this.close();
   }
@@ -13,5 +15,18 @@ export default class ManageChildTriggersModal extends LightningModal {
   handleDeploy() {
     // reach into the nested component to start the deploy
     this.refs.manageTriggers.deploy();
+  }
+
+  handleDeploymentStarted() {
+    this.disableButtons = true;
+  }
+
+  handleDeploymentCompleted(event) {
+    const deployResult = event.detail.deployResult;
+    if (deployResult.success) {
+      this.close();
+    } else {
+      this.disableButtons = false;
+    }
   }
 }

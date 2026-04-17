@@ -1,16 +1,8 @@
-import { wire, api, LightningElement } from "lwc";
-import {
-  subscribe,
-  unsubscribe,
-  APPLICATION_SCOPE,
-  MessageContext
-} from "lightning/messageService";
+import { api, LightningElement } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
 import getChildTriggerInfo from "@salesforce/apex/ManageChildTriggerController.getChildTriggerInfo";
 import startDeployment from "@salesforce/apex/ManageChildTriggerController.startDeployment";
-
-import userNotification from "@salesforce/messageChannel/UserNotification__c";
 
 const SELECT_OPTIONS = {
   ignore: {
@@ -54,24 +46,11 @@ export default class ManageChildTriggers extends LightningElement {
     return this.startDeployment();
   }
 
-  @wire(MessageContext)
-  messageContext;
-
-  subscription = null;
-
   isLoading = true;
   generatedApex = [];
-  lastDeployStatus;
-  deploymentStateDetail;
-  deploymentErrors;
 
   async connectedCallback() {
-    this.subscribeToMessageChannel();
     this.fetchGeneratedApex();
-  }
-
-  disconnectedCallback() {
-    this.unsubscribeToMessageChannel();
   }
 
   async fetchGeneratedApex() {
@@ -146,121 +125,16 @@ export default class ManageChildTriggers extends LightningElement {
         variant: "info"
       })
     );
+
+    this.dispatchEvent(new CustomEvent("deploymentstarted"));
   }
 
-  evalCompletedDeployment(deploymentData) {
-    let title, message, messageData, variant, mode;
-    if (deploymentData.status === "Succeeded") {
-      title = "Deployment Completed!";
-      message = "Metadata saved successfully";
-      variant = "success";
-      mode = "dismissible";
-    } else {
-      this.deploymentErrors = [
-        ...deploymentData.details.componentFailures.map(
-          (failure) => `${failure.fullName}: ${failure.problem}`
-        ),
-        ...deploymentData.details.runTestResult.codeCoverageWarnings.map(
-          (failure) => `${failure.name}: ${failure.message}`
-        ),
-        ...deploymentData.details.runTestResult.failures.map(
-          (testRes) => `${testRes.name}: ${testRes.message}`
-        )
-      ];
-      title = "Deployment Failed!";
-      message = "{0}";
-      // if you know a better way to build this URL please replace this
-      messageData = [
-        {
-          label: "Click to view Deployment",
-          url: `/lightning/setup/DeployStatus/page?address=%2Fchangemgmt%2FmonitorDeploymentsDetails.apexp%3FasyncId%3D${deploymentData.id}`
-        }
-      ];
-      variant = "error";
-      mode = "sticky";
-    }
-
-    const evt = new ShowToastEvent({
-      title,
-      message,
-      messageData,
-      variant,
-      mode
-    });
-    this.dispatchEvent(evt);
-    // update the generated Apex
-    this.fetchGeneratedApex();
-  }
-
-  unsubscribeToMessageChannel() {
-    unsubscribe(this.subscription);
-    this.subscription = null;
-  }
-
-  // Handler for message received by component
-  handleMessage(message) {
-    console.log("Message:", message);
-    if (message.type !== "DeploymentResult") {
-      return;
-    }
-    if (message.payload === undefined) {
-      return;
-    }
-    const res = JSON.parse(message.payload);
-    if (Array.isArray(res)) {
-      // must be an array of errors
-      this.reportDeploymentErrors(res);
-    }
-    this.lastDeployStatus = res.status;
-    this.deploymentStateDetail = res.stateDetail;
-    if (res.done === false) {
-      console.log("Deployment " + res.status);
-      return;
-    }
-    console.log("Deployment done ", res);
+  handleDeploymentCompleted(event) {
+    const deployResult = event.detail.deployResult;
+    console.log("Deploy Completion Event", deployResult);
     this.isLoading = false;
-    this.lastDeployStatus = undefined;
-    this.deploymentStateDetail = undefined;
-    this.evalCompletedDeployment(res);
-  }
-
-  reportDeploymentErrors(errors) {
-    let title, variant, mode;
-
-    this.deploymentErrors = errors.map((err) => err.message);
-    title = "Deployment Failed!";
-    variant = "error";
-    mode = "sticky";
-
-    const evt = new ShowToastEvent({
-      title,
-      variant,
-      mode
-    });
-    this.dispatchEvent(evt);
-    this.isLoading = false;
-  }
-
-  subscribeToMessageChannel() {
-    if (!this.subscription) {
-      this.subscription = subscribe(
-        this.messageContext,
-        userNotification,
-        (message) => this.handleMessage(message),
-        { scope: APPLICATION_SCOPE }
-      );
-    }
+    this.dispatchEvent(
+      new CustomEvent("deploymentcompleted", { detail: event.detail })
+    );
   }
 }
-
-/**
- * if the object can be merged then we need to ensure a trigger is added to the parent. Behavior is toggleable
- *
- * Display the planned Apex that will be deployed
- *
- * Merge parent trigger should be the same as child trigger code, I'm pretty sure.
- *
- * pass the text files down to Apex then Apex builds the ZIP and passes that for deployment using Async actions.
- * Those Async actions should behave like deleting using the new wizard does. Do the work in the Queueable Apex but notify the front-end using Platform Events
- * // backup using poling??
- */

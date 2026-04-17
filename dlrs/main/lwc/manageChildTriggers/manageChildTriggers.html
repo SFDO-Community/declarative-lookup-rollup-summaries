@@ -1,18 +1,11 @@
 <template>
-  <!-- List of checkboxes for which items to deploy -->
   <!-- Override the list of test classes used? (Maybe something set on the rollup or parsable in the trigger?) Does the new "testFor" syntax help here? -->
-  <!-- Checkbox to deploy "Merge" support on the parent if not already present? -->
   <lightning-card>
+    <c-deployment-monitor
+      publish-toast-on-completion
+      ondeploymentcompleted={handleDeploymentCompleted}
+    ></c-deployment-monitor>
     <lightning-spinner lwc:if={isLoading}></lightning-spinner>
-    <div lwc:if={lastDeployStatus}>
-      Deployment is {lastDeployStatus}, {deploymentStateDetail}
-    </div>
-    <div lwc:if={deploymentErrors}>
-      Deployment Errors:
-      <template for:each={deploymentErrors} for:item="err">
-        <div key={deploymentErrors}>{err}</div>
-      </template>
-    </div>
     <lightning-layout multiple-rows>
       <template for:each={generatedApex} for:item="apx">
         <lightning-layout-item

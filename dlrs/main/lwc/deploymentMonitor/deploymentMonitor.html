@@ -1,0 +1,16 @@
+<template>
+  <template lwc:if={deploymentId}>
+    Status: {deploymentStatus}<br />
+    <template lwc:if={deploymentStateDetail}>
+      Deployment Step: {deploymentStateDetail}
+    </template>
+    <template for:each={errorsByCategory} for:item="errorObj">
+      <div key={errorObj.label}>
+        {errorObj.label}<br />
+        <template for:each={errorObj.errors} for:item="err">
+          <div key={err}>{err}</div>
+        </template>
+      </div>
+    </template>
+  </template>
+</template>

@@ -4,6 +4,8 @@
     <c-manage-child-triggers
       lwc:ref="manageTriggers"
       rollup-name={rollupName}
+      ondeploymentstarted={handleDeploymentStarted}
+      ondeploymentcompleted={handleDeploymentCompleted}
     ></c-manage-child-triggers>
   </lightning-modal-body>
   <lightning-modal-footer>
@@ -18,6 +20,7 @@
       variant="brand"
       label="Start"
       onclick={handleDeploy}
+      disabled={disableButtons}
     ></lightning-button>
   </lightning-modal-footer>
 </template>

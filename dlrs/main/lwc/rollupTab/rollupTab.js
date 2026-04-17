@@ -1,21 +1,19 @@
 import { LightningElement, wire } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import { CurrentPageReference, NavigationMixin } from "lightning/navigation";
-import USER_ID from "@salesforce/user/Id";
-
-import RollupEditor, { CLASS_SCHEDULER_CONFIG } from "c/rollupEditor";
-import ClassSchedulerModal from "c/classSchedulerModal";
-import { buildApiName } from "c/utils";
-
-import getRollupConfig from "@salesforce/apex/RollupEditorController.getRollupConfig";
-import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollupConfig";
-
 import {
   subscribe,
   unsubscribe,
-  onError,
-  isEmpEnabled
-} from "lightning/empApi";
+  APPLICATION_SCOPE,
+  MessageContext
+} from "lightning/messageService";
+
+import RollupEditor, { CLASS_SCHEDULER_CONFIG } from "c/rollupEditor";
+import ClassSchedulerModal from "c/classSchedulerModal";
+
+import userNotification from "@salesforce/messageChannel/UserNotification__c";
+import getRollupConfig from "@salesforce/apex/RollupEditorController.getRollupConfig";
+import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollupConfig";
 
 export default class RollupTab extends NavigationMixin(LightningElement) {
   currentPageRef;
@@ -23,7 +21,8 @@ export default class RollupTab extends NavigationMixin(LightningElement) {
   rollup;
   isLoading = false;
 
-  channelName = `/event/${buildApiName("UserNotification__e")}`;
+  @wire(MessageContext)
+  messageContext;
 
   @wire(CurrentPageReference)
   updateCurrentPageRef(newPageRef) {
@@ -33,37 +32,37 @@ export default class RollupTab extends NavigationMixin(LightningElement) {
   }
 
   connectedCallback() {
-    // Register error listener
-    this.registerErrorListener();
-    this.handleSubscribe();
-  }
-  disconnectedCallback() {
-    this.handleUnsubscribe();
+    this.subscribeToMessageChannel();
   }
 
-  // Handles subscribe button click
-  handleSubscribe() {
-    // TODO: change to using the LMS instead of directly subscribing to the PE
-    if (!isEmpEnabled) {
-      console.error("Emp API Is not currently enabled");
-      return;
-    }
-    // Callback invoked whenever a new event message is received
-    const messageCallback = (response) => {
-      // deployment probably changed the rollup definitions, should refresh
-      if (
-        !USER_ID.startsWith(response.data.payload[buildApiName("Recipient__c")])
-      ) {
-        // This message isn't for us, don't do anything
+  disconnectedCallback() {
+    this.unsubscribeToMessageChannel();
+  }
+
+  unsubscribeToMessageChannel() {
+    unsubscribe(this.subscription);
+    this.subscription = null;
+  }
+
+  subscribeToMessageChannel() {
+    // Handler for message received by component
+    const handleMessage = (message) => {
+      if (message.type !== "DeploymentResult") {
         return;
       }
-      const deploymentData = JSON.parse(
-        response.data.payload[buildApiName("Payload__c")]
-      );
+      if (message.payload === undefined) {
+        return;
+      }
 
-      switch (response.data.payload[buildApiName("Type__c")]) {
+      const res = JSON.parse(message.payload);
+
+      if (Array.isArray(res)) {
+        return;
+      }
+
+      switch (message.type) {
         case "DeploymentResult":
-          if (deploymentData.done && deploymentData.success) {
+          if (res.done && res.success) {
             // there was a deployment that might impact us, refresh the data
             this.getRollup();
           }
@@ -73,29 +72,14 @@ export default class RollupTab extends NavigationMixin(LightningElement) {
       }
     };
 
-    // Invoke subscribe method of empApi. Pass reference to messageCallback
-    subscribe(this.channelName, -1, messageCallback).then((response) => {
-      // Response contains the subscription information on subscribe call
-      console.log("EmpAPI Subscribe", JSON.stringify(response));
-      this.subscription = response;
-    });
-  }
-
-  // Handles unsubscribe button click
-  handleUnsubscribe() {
-    // Invoke unsubscribe method of empApi
-    unsubscribe(this.subscription, (response) => {
-      console.log("unsubscribe() response: ", JSON.stringify(response));
-      // Response is true for successful unsubscribe
-    });
-  }
-
-  registerErrorListener() {
-    // Invoke onError empApi method
-    onError((error) => {
-      console.error("Received error from server: ", JSON.stringify(error));
-      // Error contains the server-side error
-    });
+    if (!this.subscription) {
+      this.subscription = subscribe(
+        this.messageContext,
+        userNotification,
+        (message) => handleMessage(message),
+        { scope: APPLICATION_SCOPE }
+      );
+    }
   }
 
   async getRollup() {
