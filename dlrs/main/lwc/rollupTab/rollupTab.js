@@ -9,6 +9,7 @@ import {
 
 import RollupEditor, { CLASS_SCHEDULER_CONFIG } from "c/rollupEditor";
 import ClassSchedulerModal from "c/classSchedulerModal";
+import { buildApiName } from "c/utils";
 
 import userNotification from "@salesforce/messageChannel/UserNotification__c";
 import getRollupConfig from "@salesforce/apex/RollupEditorController.getRollupConfig";
@@ -46,9 +47,6 @@ export default class RollupTab extends NavigationMixin(LightningElement) {
   subscribeToMessageChannel() {
     // Handler for message received by component
     const handleMessage = (message) => {
-      if (message.type !== "DeploymentResult") {
-        return;
-      }
       if (message.payload === undefined) {
         return;
       }
@@ -58,6 +56,8 @@ export default class RollupTab extends NavigationMixin(LightningElement) {
       if (Array.isArray(res)) {
         return;
       }
+
+      let title, msg, messageData, variant, mode;
 
       switch (message.type) {
         case "DeploymentResult":
@@ -71,9 +71,38 @@ export default class RollupTab extends NavigationMixin(LightningElement) {
             this.getRollup();
           }
           break;
+        case "DeleteRequestResult":
+          if (res.success) {
+            this[NavigationMixin.Navigate]({
+              type: "standard__navItemPage",
+              attributes: {
+                apiName: buildApiName("ManageLookupRollupSummaries2")
+              }
+            });
+
+            title = "Delete Completed!";
+            msg = `${res.metadataNames} deleted successfully`;
+            variant = "success";
+            mode = "dismissible";
+          } else {
+            title = "Delete Failed!";
+            msg = `Attempt to delete ${res.metadataNames} returned with errors [${res.error}]`;
+            variant = "error";
+            mode = "sticky";
+          }
+          break;
         default:
           break;
       }
+
+      const evt = new ShowToastEvent({
+        title,
+        message: msg,
+        messageData,
+        variant,
+        mode
+      });
+      this.dispatchEvent(evt);
     };
 
     if (!this.subscription) {
@@ -107,18 +136,6 @@ export default class RollupTab extends NavigationMixin(LightningElement) {
     });
 
     switch (result?.action) {
-      case "deloyStart":
-        this.isLoading = true;
-        this.dispatchEvent(
-          new ShowToastEvent({
-            title: "Deployment Started",
-            message:
-              "Started Metadata Record Updates in Deployment " + result.jobId,
-            variant: "info"
-          })
-        );
-        this.pendingSaveRollupName = result.rollupName;
-        break;
       case "navigate":
         this[NavigationMixin.Navigate](result.config);
         break;
@@ -161,7 +178,6 @@ export default class RollupTab extends NavigationMixin(LightningElement) {
         variant: "info"
       })
     );
-    this.pendingSaveRollupName = this.rollup.developerName;
   }
 
   cloneClickHandler() {

@@ -1,6 +1,11 @@
 <template>
   <lightning-modal-header label={cardHeader}> </lightning-modal-header>
   <lightning-modal-body>
+    <c-deployment-monitor
+      lwc:ref="deploymentMonitor"
+      publish-toast-on-completion
+      ondeploymentcompleted={handleDeploymentCompleted}
+    ></c-deployment-monitor>
     <lightning-layout multiple-rows class="slds-p-horizontal_medium">
       <lightning-layout-item>
         <c-rollup-editor-error errors={errors.record}></c-rollup-editor-error>
@@ -63,31 +68,6 @@
         <c-rollup-editor-error
           errors={errors.description}
         ></c-rollup-editor-error>
-      </lightning-layout-item>
-      <lightning-layout-item size="12" large-device-size="6" lwc:if={rollup.id}>
-        Outstanding Scheduled Items&nbsp;
-        <lightning-badge
-          label={outstandingScheduledItems.data}
-          icon-name={scheduledItemsIcon}
-        ></lightning-badge
-        >&nbsp;
-        <lightning-helptext
-          content="Scheduled items for this rollup created at least two days ago and not yet processed, possible indicator that RollupJob scheduled Apex may not be running correctly"
-        ></lightning-helptext>
-      </lightning-layout-item>
-      <lightning-layout-item size="12" large-device-size="6" lwc:if={rollup.id}>
-        Next Full Calculate&nbsp;
-        <lightning-formatted-date-time
-          class="slds-badge"
-          value={nextFullCalculateAt}
-          year="numeric"
-          month="numeric"
-          day="numeric"
-          hour="numeric"
-          minute="2-digit"
-          lwc:if={nextFullCalculateAt}
-        ></lightning-formatted-date-time>
-        <lightning-badge label="Not Scheduled" lwc:else></lightning-badge>
       </lightning-layout-item>
     </lightning-layout>
 

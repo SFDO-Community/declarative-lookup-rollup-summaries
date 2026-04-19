@@ -5,7 +5,6 @@ import { NavigationMixin, CurrentPageReference } from "lightning/navigation";
 
 import getAllRollupConfigs from "@salesforce/apex/RollupEditorController.getAllRollupConfigs";
 import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
-import USER_ID from "@salesforce/user/Id";
 
 import RollupEditor, { CLASS_SCHEDULER_CONFIG } from "c/rollupEditor";
 import ClassSchedulerModal from "c/classSchedulerModal";
@@ -97,7 +96,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   sortByField = "active";
   sortDirection = "desc";
-  pendingSaveRollupName;
 
   @wire(MessageContext)
   messageContext;
@@ -136,7 +134,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
       switch (response.type) {
         case "DeleteRequestResult":
-          this.pendingSaveRollupName = undefined;
           if (deploymentData.success) {
             title = "Delete Completed!";
             message = `${deploymentData.metadataNames} deleted successfully`;
@@ -147,43 +144,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
             message = `Attempt to delete ${deploymentData.metadataNames} returned with errors [${deploymentData.error}]`;
             variant = "error";
             mode = "sticky";
-          }
-          break;
-        case "DeploymentResult":
-          if (deploymentData.status === "Succeeded") {
-            title = "Deployment Completed!";
-            message = "Metadata saved successfully";
-            variant = "success";
-            mode = "dismissible";
-          } else {
-            title = "Deployment Failed!";
-            message =
-              "Status of " +
-              deploymentData.status +
-              ", errors [" +
-              deploymentData.details.componentFailures
-                .map((failure) => `${failure.fullName}: ${failure.problem}`)
-                .join("\n") +
-              "], \n{0}";
-            // if you know a better way to build this URL please replace this
-            messageData = [
-              {
-                label: "Click to view Deployment",
-                url: `/lightning/setup/DeployStatus/page?address=%2Fchangemgmt%2FmonitorDeploymentsDetails.apexp%3FasyncId%3D${deploymentData.id}`
-              }
-            ];
-            variant = "error";
-            mode = "sticky";
-          }
-
-          if (this.pendingSaveRollupName) {
-            let pendingRollupName = this.pendingSaveRollupName;
-            if (deploymentData.status !== "Succeeded") {
-              // allows for recovery of non-saved rollup editor state
-              pendingRollupName = "pending-" + pendingRollupName;
-            }
-            this.pendingSaveRollupName = undefined;
-            this.openEditor(pendingRollupName);
           }
           break;
         default:
@@ -375,21 +335,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     });
 
     switch (result?.action) {
-      case "delete":
-        this.requestDelete(result.rollupName);
-        break;
-      case "deloyStart":
-        this.isLoading = true;
-        this.dispatchEvent(
-          new ShowToastEvent({
-            title: "Deployment Started",
-            message:
-              "Started Metadata Record Updates in Deployment " + result.jobId,
-            variant: "info"
-          })
-        );
-        this.pendingSaveRollupName = result.rollupName;
-        break;
       case "navigate":
         this[NavigationMixin.Navigate](result.config);
         break;
@@ -440,10 +385,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
       .querySelector("lightning-input")
       .value.toLowerCase();
     this.calcRollupList();
-  }
-
-  handleRequestDelete(event) {
-    this.requestDelete(event.detail.rollupName);
   }
 
   handleOnSort(event) {

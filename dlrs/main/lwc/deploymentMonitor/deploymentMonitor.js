@@ -22,6 +22,12 @@ export default class DeploymentMonitor extends LightningElement {
   @api
   publishToastOnCompletion = false;
 
+  @api
+  monitorDeployment(deploymentId) {
+    this.deploymentId = deploymentId;
+    this.requestDeploymentUpdate();
+  }
+
   deploymentId;
   deploymentStatus;
   deploymentStateDetail;

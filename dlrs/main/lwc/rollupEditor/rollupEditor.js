@@ -1,58 +1,19 @@
-import { api, track, wire } from "lwc";
+import { api, track } from "lwc";
 
 import LightningModal from "lightning/modal";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
-
-import { PATH_STATES } from "c/flexiblePath";
 
 import getRollupConfig from "@salesforce/apex/RollupEditorController.getRollupConfig";
 import validateRollupConfig from "@salesforce/apex/RollupEditorController.validateRollupConfig";
 import saveRollupConfig from "@salesforce/apex/RollupEditorController.saveRollupConfig";
 import getFieldOptions from "@salesforce/apex/RollupEditorController.getFieldOptions";
-import getManageTriggerPageUrl from "@salesforce/apex/RollupEditorController.getManageTriggerPageUrl";
-import getFullCalculatePageUrl from "@salesforce/apex/RollupEditorController.getFullCalculatePageUrl";
-import getScheduleCalculatePageUrl from "@salesforce/apex/RollupEditorController.getScheduleCalculatePageUrl";
-import getScheduledFullCalculates from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledFullCalculates";
-import getOutstandingScheduledItemsForLookup from "@salesforce/apex/LookupRollupStatusCheckController.getOutstandingScheduledItemsForLookup";
-import ClassSchedulerModal from "c/classSchedulerModal";
+
+import { buildApiName } from "c/utils";
 
 const DEFAULT_ROLLUP_VALUES = Object.freeze({
   active: false,
   calculationMode: "Scheduled",
   calculationSharingMode: "System"
-});
-
-const STEPS = Object.freeze({
-  configure: {
-    label: "Configure",
-    name: "save",
-    nextActionLabel: "Save",
-    status: PATH_STATES.complete
-  },
-  schedule: {
-    label: "Schedule Job",
-    name: "scheduleJob",
-    nextActionLabel: "Schedule",
-    status: PATH_STATES.incomplete
-  },
-  trigger: {
-    label: "Deploy Trigger",
-    name: "deployTrigger",
-    nextActionLabel: "Manage Triggers",
-    status: PATH_STATES.incomplete
-  },
-  activate: {
-    label: "Activate",
-    name: "activate",
-    nextActionLabel: "Save & Activate",
-    status: PATH_STATES.incomplete
-  }
-});
-
-const STEP_TEMPLATES = Object.freeze({
-  Realtime: [STEPS.configure, STEPS.trigger, STEPS.activate],
-  Scheduled: [STEPS.configure, STEPS.schedule, STEPS.trigger, STEPS.activate],
-  other: [STEPS.configure, STEPS.activate]
 });
 
 export const CLASS_SCHEDULER_CONFIG = {
@@ -84,12 +45,7 @@ export const CLASS_SCHEDULER_CONFIG = {
 
 export default class RollupEditor extends LightningModal {
   isLoading = false;
-  childTriggerIsDeployed = false;
   rollupId;
-  nextFullCalculateAt = "";
-
-  @wire(getOutstandingScheduledItemsForLookup, { lookupID: "$rollupId" })
-  outstandingScheduledItems;
 
   @track
   rollup = { ...DEFAULT_ROLLUP_VALUES };
@@ -124,22 +80,6 @@ export default class RollupEditor extends LightningModal {
     await this.getRollup();
   }
 
-  get rollupCanBeActivated() {
-    return this.rollup.id && !this.rollup.active;
-  }
-
-  get rollupCanBeDeactivated() {
-    return this.rollup.id && this.rollup.active;
-  }
-
-  get scheduledItemsIcon() {
-    if (!this.rollup.id || !this.outstandingScheduledItems?.data) {
-      return "";
-    }
-
-    return "utility:warning";
-  }
-
   get relationshipCriteriaPlaceholder() {
     return "Example_Field1__c\r\nExample_Field2__c";
   }
@@ -170,9 +110,6 @@ export default class RollupEditor extends LightningModal {
         }
 
         this.rollupId = this.rollup.id;
-        this.nextFullCalculateAt = await getScheduledFullCalculates({
-          lookupID: this.rollupId
-        });
       } catch (error) {
         this.errors.record = [error.message];
       }
@@ -223,79 +160,6 @@ export default class RollupEditor extends LightningModal {
     this.rollup.aggregateOperation = event.detail.value;
   }
 
-  async pathClickHandler(event) {
-    console.log("Path clicked", event.detail.label);
-    switch (event.detail.name) {
-      case "deployTrigger":
-        this.manageTriggerHandler();
-        break;
-      case "activate":
-        this.activateClickHandler();
-        break;
-      case "scheduleJob":
-        await ClassSchedulerModal.open(CLASS_SCHEDULER_CONFIG).then(
-          (results) => {
-            if (results) {
-              try {
-                const evt = new ShowToastEvent(results);
-                this.dispatchEvent(evt);
-              } catch (err) {
-                // known issue with Lighting Locker can cause this to fail
-                console.error("Failed to create toast with outcome", err);
-              }
-            }
-          }
-        );
-        // recalculate Path after Schedule is created
-        break;
-      case "save":
-        this.runSave();
-        break;
-      default:
-        console.error("Unexpected action", event.detail.label);
-        break;
-    }
-  }
-
-  async manageTriggerHandler() {
-    const url = await getManageTriggerPageUrl({ rollupId: this.rollup.id });
-    this.close({
-      action: "navigate",
-      config: {
-        type: "standard__webPage",
-        attributes: {
-          url
-        }
-      }
-    });
-  }
-
-  async recalculateNowHandler() {
-    const url = await getFullCalculatePageUrl({ rollupId: this.rollup.id });
-    this.close({
-      action: "navigate",
-      config: {
-        type: "standard__webPage",
-        attributes: {
-          url
-        }
-      }
-    });
-  }
-
-  async schedulRecalculateHandler() {
-    const url = await getScheduleCalculatePageUrl({ rollupId: this.rollup.id });
-    this.close({
-      action: "navigate",
-      config: {
-        type: "standard__webPage",
-        attributes: {
-          url
-        }
-      }
-    });
-  }
-
   onLabelBlurHandler(event) {
     const devNameElem = this.template.querySelector(
       '[data-name="rollup_developerName"]'
@@ -308,7 +172,6 @@ export default class RollupEditor extends LightningModal {
   }
 
   relationshipFieldSelectedHandler(event) {
-    console.log("Relationship Field Selected", event.detail.selectedOption);
     const refs = event.detail?.selectedOption?.referencesTo;
     if (refs && refs.length === 1) {
       this.rollup.parentObject = refs[0];
@@ -336,25 +199,39 @@ export default class RollupEditor extends LightningModal {
       console.error("Record has errors", this.errors);
       return;
     }
-    const jobId = await saveRollupConfig({
+    const deploymentId = await saveRollupConfig({
       rollup: JSON.stringify(this.rollup)
     });
+    this.refs.deploymentMonitor.monitorDeployment(deploymentId);
 
-    try {
-      window.sessionStorage.setItem(
-        "pending-" + this.rollup.developerName,
-        JSON.stringify(this.rollup)
-      );
-    } catch (err) {
-      console.error("Error setting session storage", err);
+    this.dispatchEvent(
+      new ShowToastEvent({
+        title: "Deployment Started",
+        message: `Started deployment for ${this.rollup.label}`,
+        variant: "info"
+      })
+    );
+  }
+
+  handleDeploymentCompleted(event) {
+    this.isLoading = false;
+    if (!event.detail.deployResult.success) {
+      console.error("Deployment failed", event.detail.deployResult);
+      return;
     }
 
     this.close({
-      action: "deloyStart",
-      jobId,
-      rollupName: this.rollup.developerName
+      action: "navigate",
+      config: {
+        type: "standard__component",
+        attributes: {
+          componentName: buildApiName("rollupTab", true)
+        },
+        state: {
+          c__rollupName: this.rollup.developerName
+        }
+      }
     });
-    this.isLoading = false;
   }
 
   assembleRollupFromForm() {
