@@ -47,6 +47,7 @@ export default class ManageChildTriggers extends LightningElement {
   }
 
   isLoading = true;
+  isAdvancedMode = false;
   generatedApex = [];
 
   async connectedCallback() {
@@ -73,13 +74,19 @@ export default class ManageChildTriggers extends LightningElement {
         }
         if (apx.needsBodyUpdate || apx.needsApiUpdate) {
           apx.changeType = "update";
+          apx.changeIcon = "utility:warning";
+          apx.changeIconVariant = "warning";
           apx.changeOptions = EXISTING_CODE_WITH_UPDATES;
         } else {
           apx.changeType = "ignore";
+          apx.changeIcon = "utility:check";
+          apx.changeIconVariant = "";
           apx.changeOptions = EXISTING_CODE_OPTIONS;
         }
       } else {
         apx.changeType = "deploy";
+        apx.changeIcon = "utility:upload";
+        apx.changeIconVariant = "success";
         apx.changeOptions = NEW_CODE;
       }
     });
@@ -88,7 +95,11 @@ export default class ManageChildTriggers extends LightningElement {
       this.generatedApex.length ===
       this.generatedApex.filter((apx) => apx.changeType === "ignore").length
     ) {
-      this.generatedApex.forEach((apx) => (apx.changeType = "remove"));
+      this.generatedApex.forEach((apx) => {
+        apx.changeType = "remove";
+        apx.changeIconVariant = "error";
+        apx.changeIcon = "utility:clear";
+      });
     }
     this.isLoading = false;
   }
@@ -102,21 +113,31 @@ export default class ManageChildTriggers extends LightningElement {
       delete: [],
       deploy: []
     };
-    Array.from(this.template.querySelectorAll("lightning-select")).forEach(
-      (sel) => {
-        if (sel.value === "ignore") {
-          return;
-        }
+    const testsToRun = [];
+    if (this.isAdvancedMode) {
+      this.template.querySelectorAll("lightning-select").forEach((sel) => {
         const asset = this.generatedApex.find(
           (apx) => apx.assetName === sel.name
         );
-        changePlan[SELECT_OPTIONS[sel.value].action].push(
-          JSON.parse(JSON.stringify(asset))
-        );
+        asset.changeType = sel.value;
+      });
+      testsToRun.push(
+        ...this.refs.testsToRun.value.split(",").map((val) => val.trim())
+      );
+    }
+    this.generatedApex.forEach((asset) => {
+      if (asset.changeType === "ignore") {
+        return;
       }
-    );
-    console.log("Change Plan", changePlan);
-    const depId = await startDeployment({ changes: changePlan });
+      if (asset.testedBy) {
+        testsToRun.push(...asset.testedBy);
+      }
+      changePlan[SELECT_OPTIONS[asset.changeType].action].push(
+        JSON.parse(JSON.stringify(asset))
+      );
+    });
+    console.log("Change Plan", changePlan, testsToRun);
+    const depId = await startDeployment({ changes: changePlan, testsToRun });
     console.log("Async Job Id", depId);
     this.lastDeployStatus = "Started";
     this.dispatchEvent(
@@ -136,5 +157,9 @@ export default class ManageChildTriggers extends LightningElement {
     this.dispatchEvent(
       new CustomEvent("deploymentcompleted", { detail: event.detail })
     );
+  }
+
+  handleAdvancedToggle(event) {
+    this.isAdvancedMode = event.target.checked;
   }
 }

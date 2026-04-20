@@ -11,7 +11,8 @@ public with sharing class ManageChildTriggerController {
 
   @AuraEnabled
   public static Id startDeployment(
-    Map<String, List<Map<String, Object>>> changes
+    Map<String, List<Map<String, Object>>> changes,
+    List<String> testsToRun
   ) {
     Map<String, List<TriggerGenerationService.GeneratedCode>> changesByType = (Map<String, List<TriggerGenerationService.GeneratedCode>>) JSON.deserialize(
       JSON.serialize(changes),
@@ -23,6 +24,7 @@ public with sharing class ManageChildTriggerController {
       changesByType.get('delete')
     );
     Set<String> testClassesToRun = new Set<String>();
+    testClassesToRun.addAll(testsToRun);
     for (
       TriggerGenerationService.GeneratedCode generatedCode : changesByType.get(
         'deploy'
@@ -31,9 +33,6 @@ public with sharing class ManageChildTriggerController {
       // could get fancy and try and see if it has the string "IsTest" somewhere
       if (generatedCode.mdtType == 'ApexClass') {
         testClassesToRun.add(generatedCode.assetName);
-      }
-      if (generatedCode.testedBy != null && !generatedCode.testedBy.isEmpty()) {
-        testClassesToRun.addAll(generatedCode.testedBy);
       }
     }
 

@@ -14,14 +14,46 @@
           padding="around-medium"
           key={apx.assetName}
         >
-          <lightning-select
-            name={apx.assetName}
-            label={apx.assetName}
-            value={apx.changeType}
-            options={apx.changeOptions}
-          ></lightning-select>
+          <template lwc:if={isAdvancedMode}>
+            <lightning-select
+              name={apx.assetName}
+              label={apx.assetName}
+              value={apx.changeType}
+              options={apx.changeOptions}
+            ></lightning-select>
+          </template>
+          <template lwc:else>
+            <span
+              >{apx.assetName}
+              <lightning-icon
+                class="slds-p-left_x-small"
+                icon-name={apx.changeIcon}
+                variant={apx.changeIconVariant}
+                size="x-small"
+              ></lightning-icon
+            ></span>
+          </template>
         </lightning-layout-item>
       </template>
+    </lightning-layout>
+    <lightning-layout multiple-rows>
+      <lightning-layout-item size="6">
+        <lightning-input
+          type="toggle"
+          label="Advanced"
+          value={isAdvancedMode}
+          onchange={handleAdvancedToggle}
+          message-toggle-inactive=""
+          message-toggle-active=""
+        ></lightning-input>
+      </lightning-layout-item>
+      <lightning-layout-item size="12" lwc:if={isAdvancedMode}>
+        <lightning-input
+          label="Test Classes to use in Deployment"
+          field-level-help="Comma-separated names of test classes"
+          lwc:ref="testsToRun"
+        ></lightning-input>
+      </lightning-layout-item>
     </lightning-layout>
     <lightning-tabset>
       <template for:each={generatedApex} for:item="apx">

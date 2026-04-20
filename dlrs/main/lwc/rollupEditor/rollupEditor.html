@@ -6,6 +6,7 @@
       publish-toast-on-completion
       ondeploymentcompleted={handleDeploymentCompleted}
     ></c-deployment-monitor>
+    <lightning-spinner lwc:if={isLoading}></lightning-spinner>
     <lightning-layout multiple-rows class="slds-p-horizontal_medium">
       <lightning-layout-item>
         <c-rollup-editor-error errors={errors.record}></c-rollup-editor-error>
