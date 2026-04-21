@@ -115,6 +115,7 @@ export default class RollupEditor extends LightningModal {
       }
     }
     await this.getRelationshipFieldOptions();
+    this.setImpliedRelationshipCriteriaFields();
   }
 
   async getRelationshipFieldOptions() {
@@ -172,12 +173,19 @@ export default class RollupEditor extends LightningModal {
   }
 
   relationshipFieldSelectedHandler(event) {
+    this.rollup.relationshipField = event.detail?.selectedOption.value;
+    this.setImpliedRelationshipCriteriaFields();
     const refs = event.detail?.selectedOption?.referencesTo;
     if (refs && refs.length === 1) {
       this.rollup.parentObject = refs[0];
       this.rollup.aggregateResultField = undefined;
       this.getParentRelationshipFieldOptions();
     }
+  }
+
+  selectFieldToAggregate(event) {
+    this.rollup.fieldToAggregate = event.detail.selectedOption.value;
+    this.setImpliedRelationshipCriteriaFields();
   }
 
   calculationModeChangeHandler(event) {
@@ -197,6 +205,7 @@ export default class RollupEditor extends LightningModal {
     await this.runValidate();
     if (Object.keys(this.errors).length > 0) {
       console.error("Record has errors", this.errors);
+      this.isLoading = false;
       return;
     }
     const deploymentId = await saveRollupConfig({
@@ -307,6 +316,51 @@ export default class RollupEditor extends LightningModal {
     this.rollup.parentObject = event.detail.selectedRecord;
     this.getParentRelationshipFieldOptions();
     this.rollup.aggregateResultField = undefined;
+  }
+
+  relationshipCriteriaFieldSelectedHandler(event) {
+    const apiName = event.detail?.selectedOption?.value;
+    this.rollup.relationshipCriteriaFields += "\n" + apiName;
+
+    event.target.value = "";
+  }
+
+  handlePillRemove(event) {
+    const name = event.target.name;
+    this.rollup.relationshipCriteriaFields =
+      this.rollup.relationshipCriteriaFields
+        .split("\n")
+        .filter((val) => val.trim() !== name.trim())
+        .join("\n");
+  }
+
+  setImpliedRelationshipCriteriaFields() {
+    this.impliedRelationshipCriteriaFields = [];
+    if (this.rollup.fieldToAggregate) {
+      this.impliedRelationshipCriteriaFields.push({
+        label: this.rollup.fieldToAggregate,
+        name: this.rollup.fieldToAggregate,
+        tooltip: "DLRS automatically monitors the Field to Aggregate"
+      });
+    }
+    if (this.rollup.relationshipField) {
+      this.impliedRelationshipCriteriaFields.push({
+        label: this.rollup.relationshipField,
+        name: this.rollup.relationshipField,
+        tooltip: "DLRS automatically monitors the Relationship Field"
+      });
+    }
+  }
+
+  get relationshipCriteriaFieldsPills() {
+    return [
+      ...(this.rollup.relationshipCriteriaFields === undefined
+        ? []
+        : this.rollup.relationshipCriteriaFields?.split("\n").map((field) => ({
+            label: field.trim(),
+            name: field.trim()
+          })))
+    ];
   }
 
   get aggregateOptions() {

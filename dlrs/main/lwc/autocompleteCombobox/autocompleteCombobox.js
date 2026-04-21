@@ -24,6 +24,7 @@ export default class AutocompleteCombobox extends LightningElement {
   set value(val) {
     this._value = val;
     this.selectOptionByValue();
+    this.filterOptions(val);
     if (this._value) {
       this.showSelectionInput();
     } else {
@@ -68,7 +69,7 @@ export default class AutocompleteCombobox extends LightningElement {
       results = results.slice(0, this.maxSearchResults);
     }
     if (this.searchRequired) {
-      if (this.searchKey.length >= this.searchThreshold) return results;
+      if (this.searchKey?.length >= this.searchThreshold) return results;
       return [];
     }
     return results;
@@ -130,7 +131,7 @@ export default class AutocompleteCombobox extends LightningElement {
   // *** CONTROLLER
   filterOptions(searchKey) {
     try {
-      if (searchKey.length >= this.searchThreshold) {
+      if (searchKey?.length >= this.searchThreshold) {
         const lowerCaseSearchKey = searchKey.toLowerCase();
         this.filteredOptions = this._options
           .filter(({ value, label }) => {

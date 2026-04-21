@@ -13,53 +13,32 @@
         <span
           class="test-id__field-value slds-form-element__static slds-grow word-break-ie11"
         >
-          <lightning-formatted-number
-            lwc:if={isNumber}
-            value={value}
-            data-output-element-id="output-field"
-          ></lightning-formatted-number>
-          <lightning-formatted-text
-            lwc:elseif={isText}
-            value={value}
-          ></lightning-formatted-text>
-          <lightning-formatted-date-time
-            lwc:elseif={isDateTime}
-            value={value}
-          ></lightning-formatted-date-time>
-          <lightning-formatted-email
-            lwc:elseif={isEmail}
-            value={value}
-          ></lightning-formatted-email>
-          <lightning-input
-            lwc:if={isCheckbox}
-            type="checkbox"
-            checked={value}
-            label={checkboxLabel}
-            readonly
-          ></lightning-input>
-          <template lwc:if={isPill}>
-            <div class="slds-listbox_selection-group slds-is-expanded">
-              <ul
-                class="slds-listbox slds-is-relative slds-listbox_horizontal slds-truncate"
-              >
-                <template for:each={value} for:item="pill">
-                  <li class="slds-listbox-item slds-truncate" key={pill.name}>
-                    <div class="slds-pill">
-                      <span
-                        class="slds-pill__label"
-                        style="padding-right: var(--slds-g-spacing-2)"
-                        >{pill.label}
-
-                        <lightning-helptext
-                          lwc:if={pill.tooltip}
-                          content={pill.tooltip}
-                        ></lightning-helptext>
-                      </span>
-                    </div>
-                  </li>
-                </template>
-              </ul></div
-          ></template>
+          <slot>
+            <lightning-formatted-number
+              lwc:if={isNumber}
+              value={value}
+              data-output-element-id="output-field"
+            ></lightning-formatted-number>
+            <lightning-formatted-text
+              lwc:elseif={isText}
+              value={value}
+            ></lightning-formatted-text>
+            <lightning-formatted-date-time
+              lwc:elseif={isDateTime}
+              value={value}
+            ></lightning-formatted-date-time>
+            <lightning-formatted-email
+              lwc:elseif={isEmail}
+              value={value}
+            ></lightning-formatted-email>
+            <lightning-input
+              lwc:if={isCheckbox}
+              type="checkbox"
+              checked={value}
+              label={checkboxLabel}
+              readonly
+            ></lightning-input>
+          </slot>
         </span>
       </div>
     </div>

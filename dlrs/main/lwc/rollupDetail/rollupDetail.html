@@ -153,9 +153,33 @@
         <c-output-field
           class="slds-form__item slds-no-space slds-size_1-of-1"
           label="Relationship Criteria Fields"
-          value={relationshipCriteriaFieldsPills}
-          type="pill"
-        ></c-output-field>
+        >
+          <div class="slds-listbox_selection-group slds-is-expanded">
+            <ul
+              class="slds-listbox slds-is-relative slds-listbox_horizontal slds-truncate"
+            >
+              <template
+                for:each={relationshipCriteriaFieldsPills}
+                for:item="pill"
+              >
+                <li class="slds-listbox-item slds-truncate" key={pill.name}>
+                  <div class="slds-pill">
+                    <span
+                      class="slds-pill__label"
+                      style="padding-right: var(--slds-g-spacing-2)"
+                      >{pill.label}
+
+                      <lightning-helptext
+                        lwc:if={pill.tooltip}
+                        content={pill.tooltip}
+                      ></lightning-helptext>
+                    </span>
+                  </div>
+                </li>
+              </template>
+            </ul>
+          </div>
+        </c-output-field>
       </lightning-layout-item>
       <lightning-layout-item
         size="12"

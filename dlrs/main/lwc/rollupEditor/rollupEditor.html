@@ -114,6 +114,7 @@
           value={rollup.fieldToAggregate}
           options={childRFieldOptions}
           disabled={childFieldOptionsPending}
+          onchangeselection={selectFieldToAggregate}
         ></c-autocomplete-combobox>
         <c-rollup-editor-error
           errors={errors.fieldToAggregate}
@@ -226,6 +227,43 @@
           value={rollup.relationshipCriteriaFields}
           maxlength="255"
         ></lightning-textarea>
+        <div style="border: 1px solid black">
+          <template
+            for:each={impliedRelationshipCriteriaFields}
+            for:item="pill"
+          >
+            <li class="slds-listbox-item slds-truncate" key={pill.name}>
+              <div class="slds-pill">
+                <span
+                  class="slds-pill__label"
+                  style="padding-right: var(--slds-g-spacing-2)"
+                  >{pill.label}
+
+                  <lightning-helptext
+                    lwc:if={pill.tooltip}
+                    content={pill.tooltip}
+                  ></lightning-helptext>
+                </span>
+              </div>
+            </li>
+          </template>
+          <template for:each={relationshipCriteriaFieldsPills} for:item="pill">
+            <lightning-pill
+              label={pill.label}
+              name={pill.name}
+              key={pill.name}
+              variant="plain"
+              onremove={handlePillRemove}
+            ></lightning-pill>
+          </template>
+          <c-autocomplete-combobox
+            label="Relationship Criteria Fields"
+            helper-text="Fields that DLRS should monitor for changes"
+            options={childRFieldOptions}
+            placeholder="Lookup__c"
+            onchangeselection={relationshipCriteriaFieldSelectedHandler}
+          ></c-autocomplete-combobox>
+        </div>
         <c-rollup-editor-error
           errors={errors.relationshipCriteriaFields}
         ></c-rollup-editor-error>

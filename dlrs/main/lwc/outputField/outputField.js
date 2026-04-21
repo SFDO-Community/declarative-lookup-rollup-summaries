@@ -14,26 +14,22 @@ export default class OutputField extends LightningElement {
   type;
 
   get isNumber() {
-    return this.type.toLowerCase() === "number";
+    return this.type?.toLowerCase() === "number";
   }
 
   get isText() {
-    return this.type.toLowerCase() === "text";
+    return this.type?.toLowerCase() === "text";
   }
 
   get isDateTime() {
-    return this.type.toLowerCase() === "datetime";
+    return this.type?.toLowerCase() === "datetime";
   }
 
   get isEmail() {
-    return this.type.toLowerCase() === "email";
+    return this.type?.toLowerCase() === "email";
   }
 
   get isCheckbox() {
-    return this.type.toLowerCase() === "checkbox";
-  }
-
-  get isPill() {
-    return this.type.toLowerCase() === "pill";
+    return this.type?.toLowerCase() === "checkbox";
   }
 }
