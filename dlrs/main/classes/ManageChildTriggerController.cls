@@ -12,6 +12,7 @@ public with sharing class ManageChildTriggerController {
   @AuraEnabled
   public static Id startDeployment(
     Map<String, List<Map<String, Object>>> changes,
+    String testLevel,
     List<String> testsToRun
   ) {
     Map<String, List<TriggerGenerationService.GeneratedCode>> changesByType = (Map<String, List<TriggerGenerationService.GeneratedCode>>) JSON.deserialize(
@@ -37,11 +38,13 @@ public with sharing class ManageChildTriggerController {
     }
 
     MetadataRestService.DeployOptions options = new MetadataRestService.DeployOptions();
-    options.testLevel = 'RunSpecifiedTests';
-    options.runTests = new List<String>(testClassesToRun);
-    // ensure at least one tests is specified, even if it doesn't exist
-    if (options.runTests.isEmpty()) {
-      options.runTests.add('FakeTestDoesntExist');
+    options.testLevel = testLevel;
+    if ('RunSpecifiedTests'.equals(options.testLevel)) {
+      options.runTests = new List<String>(testClassesToRun);
+      // ensure at least one tests is specified, even if it doesn't exist
+      if (options.runTests.isEmpty()) {
+        options.runTests.add('FakeTestDoesntExist');
+      }
     }
     options.allowMissingFiles = false;
     options.purgeOnDelete = false;

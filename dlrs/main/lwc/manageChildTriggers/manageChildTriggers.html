@@ -17,6 +17,7 @@
           <template lwc:if={isAdvancedMode}>
             <lightning-select
               name={apx.assetName}
+              data-mdt-type={apx.mdtType}
               label={apx.assetName}
               value={apx.changeType}
               options={apx.changeOptions}
@@ -29,9 +30,12 @@
                 class="slds-p-left_x-small"
                 icon-name={apx.changeIcon}
                 variant={apx.changeIconVariant}
+                alternative-text={apx.changeIconAltText}
                 size="x-small"
-              ></lightning-icon
-            ></span>
+              ></lightning-icon>
+              <lightning-helptext content={apx.changeIconAltText}>
+              </lightning-helptext>
+            </span>
           </template>
         </lightning-layout-item>
       </template>
@@ -47,10 +51,19 @@
           message-toggle-active=""
         ></lightning-input>
       </lightning-layout-item>
-      <lightning-layout-item size="12" lwc:if={isAdvancedMode}>
+      <lightning-layout-item size="6" lwc:if={isAdvancedMode}>
+        <lightning-select
+          name="TestLevel"
+          label="Test Level"
+          value={testLevel}
+          options={testLevelOptions}
+          onchange={handleTestLevelChange}
+        ></lightning-select>
+      </lightning-layout-item>
+      <lightning-layout-item size="12" lwc:if={shouldDisplayTestInput}>
         <lightning-input
-          label="Test Classes to use in Deployment"
-          field-level-help="Comma-separated names of test classes"
+          label="Additional Test Classes"
+          field-level-help="Comma-separated names of test classes to run during deployment"
           lwc:ref="testsToRun"
         ></lightning-input>
       </lightning-layout-item>

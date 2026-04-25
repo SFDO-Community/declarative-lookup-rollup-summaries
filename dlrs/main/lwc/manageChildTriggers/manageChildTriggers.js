@@ -46,6 +46,23 @@ export default class ManageChildTriggers extends LightningElement {
     return this.startDeployment();
   }
 
+  testLevel = "RunSpecifiedTests";
+  testLevelOptions = [
+    {
+      label: "RunSpecifiedTests",
+      value: "RunSpecifiedTests"
+    },
+    // TODO: make this available when it comes out of beta
+    // {
+    //   label: "RunRelevantTests",
+    //   value: "RunRelevantTests"
+    // },
+    {
+      label: "RunLocalTests",
+      value: "RunLocalTests"
+    }
+  ];
+
   isLoading = true;
   isAdvancedMode = false;
   generatedApex = [];
@@ -76,17 +93,20 @@ export default class ManageChildTriggers extends LightningElement {
           apx.changeType = "update";
           apx.changeIcon = "utility:warning";
           apx.changeIconVariant = "warning";
+          apx.changeIconAltText = "Code will be updated via deployment";
           apx.changeOptions = EXISTING_CODE_WITH_UPDATES;
         } else {
           apx.changeType = "ignore";
           apx.changeIcon = "utility:check";
           apx.changeIconVariant = "";
+          apx.changeIconAltText = "Code will not be deployed";
           apx.changeOptions = EXISTING_CODE_OPTIONS;
         }
       } else {
         apx.changeType = "deploy";
         apx.changeIcon = "utility:upload";
         apx.changeIconVariant = "success";
+        apx.changeIconAltText = "Code will be created via deployment";
         apx.changeOptions = NEW_CODE;
       }
     });
@@ -99,6 +119,7 @@ export default class ManageChildTriggers extends LightningElement {
         apx.changeType = "remove";
         apx.changeIconVariant = "error";
         apx.changeIcon = "utility:clear";
+        apx.changeIconAltText = "Code will be removed";
       });
     }
     this.isLoading = false;
@@ -114,13 +135,17 @@ export default class ManageChildTriggers extends LightningElement {
       deploy: []
     };
     const testsToRun = [];
+    let testLevel = "RunSpecifiedTests";
     if (this.isAdvancedMode) {
-      this.template.querySelectorAll("lightning-select").forEach((sel) => {
-        const asset = this.generatedApex.find(
-          (apx) => apx.assetName === sel.name
-        );
-        asset.changeType = sel.value;
-      });
+      testLevel = this.testLevel;
+      this.template
+        .querySelectorAll("lightning-select[data-mdt-type]")
+        .forEach((sel) => {
+          const asset = this.generatedApex.find(
+            (apx) => apx.assetName === sel.name
+          );
+          asset.changeType = sel.value;
+        });
       testsToRun.push(
         ...this.refs.testsToRun.value.split(",").map((val) => val.trim())
       );
@@ -137,7 +162,11 @@ export default class ManageChildTriggers extends LightningElement {
       );
     });
     console.log("Change Plan", changePlan, testsToRun);
-    const depId = await startDeployment({ changes: changePlan, testsToRun });
+    const depId = await startDeployment({
+      changes: changePlan,
+      testLevel,
+      testsToRun
+    });
     console.log("Async Job Id", depId);
     this.lastDeployStatus = "Started";
     this.dispatchEvent(
@@ -161,5 +190,13 @@ export default class ManageChildTriggers extends LightningElement {
 
   handleAdvancedToggle(event) {
     this.isAdvancedMode = event.target.checked;
+  }
+
+  handleTestLevelChange(event) {
+    this.testLevel = event.target.value;
+  }
+
+  get shouldDisplayTestInput() {
+    return this.isAdvancedMode && this.testLevel === "RunSpecifiedTests";
   }
 }
