@@ -4,9 +4,11 @@
     style="display: block"
     data-source="lookupContainer"
   >
-    <label class="slds-form-element__label" for="autocomplete-comobobox-id"
-      >{label}</label
-    >
+    <template lwc:if={isNotHiddenLabelVariant}>
+      <label class="slds-form-element__label" for="autocomplete-comobobox-id"
+        >{label}</label
+      >
+    </template>
 
     <!-- Helper Text -->
     <div

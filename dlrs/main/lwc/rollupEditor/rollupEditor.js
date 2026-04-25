@@ -110,12 +110,12 @@ export default class RollupEditor extends LightningModal {
         }
 
         this.rollupId = this.rollup.id;
+        this.setImpliedRelationshipCriteriaFields();
       } catch (error) {
         this.errors.record = [error.message];
       }
     }
     await this.getRelationshipFieldOptions();
-    this.setImpliedRelationshipCriteriaFields();
   }
 
   async getRelationshipFieldOptions() {

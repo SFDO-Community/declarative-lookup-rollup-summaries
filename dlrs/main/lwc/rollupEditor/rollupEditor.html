@@ -218,52 +218,57 @@
         large-device-size="6"
         class="slds-form-element_stacked"
       >
-        <lightning-textarea
-          name="rollup_relationshipCriteriaFields"
-          data-name="rollup_relationshipCriteriaFields"
-          label="Relationship Criteria Fields"
-          field-level-help="Field API names on the child object which when changed will trigger recalculation, each on a new line (Field to Aggregate and Relationship Field are implicitly included)"
-          placeholder={relationshipCriteriaPlaceholder}
-          value={rollup.relationshipCriteriaFields}
-          maxlength="255"
-        ></lightning-textarea>
-        <div style="border: 1px solid black">
-          <template
-            for:each={impliedRelationshipCriteriaFields}
-            for:item="pill"
+        <label class="slds-form-element__label"
+          >Relationship Criteria Fields</label
+        >
+        <lightning-helptext
+          content="Field API names on the child object which when changed will trigger recalculation, each on a new line (Field to Aggregate and Relationship Field are implicitly included)"
+        ></lightning-helptext>
+        <div class="slds-pill_container">
+          <ul
+            class="slds-listbox slds-listbox_horizontal"
+            aria-label="Selected Options:"
+            aria-describedby="listbox-pill-default"
           >
-            <li class="slds-listbox-item slds-truncate" key={pill.name}>
-              <div class="slds-pill">
-                <span
-                  class="slds-pill__label"
-                  style="padding-right: var(--slds-g-spacing-2)"
-                  >{pill.label}
-
-                  <lightning-helptext
-                    lwc:if={pill.tooltip}
-                    content={pill.tooltip}
-                  ></lightning-helptext>
+            <template
+              for:each={impliedRelationshipCriteriaFields}
+              for:item="pill"
+            >
+              <li class="slds-listbox-item" key={pill.name}>
+                <span class="slds-pill">
+                  <span class="slds-pill__label" title={pill.label}
+                    >{pill.label}</span
+                  >
+                  <span class="slds-icon_container" title="Info">
+                    <lightning-helptext
+                      lwc:if={pill.tooltip}
+                      content={pill.tooltip}
+                    ></lightning-helptext>
+                  </span>
                 </span>
-              </div>
-            </li>
-          </template>
-          <template for:each={relationshipCriteriaFieldsPills} for:item="pill">
-            <lightning-pill
-              label={pill.label}
-              name={pill.name}
-              key={pill.name}
-              variant="plain"
-              onremove={handlePillRemove}
-            ></lightning-pill>
-          </template>
-          <c-autocomplete-combobox
-            label="Relationship Criteria Fields"
-            helper-text="Fields that DLRS should monitor for changes"
-            options={childRFieldOptions}
-            placeholder="Lookup__c"
-            onchangeselection={relationshipCriteriaFieldSelectedHandler}
-          ></c-autocomplete-combobox>
+              </li>
+            </template>
+            <template
+              for:each={relationshipCriteriaFieldsPills}
+              for:item="pill"
+            >
+              <lightning-pill
+                label={pill.label}
+                name={pill.name}
+                key={pill.name}
+                variant="plain"
+                onremove={handlePillRemove}
+              ></lightning-pill>
+            </template>
+          </ul>
         </div>
+        <c-autocomplete-combobox
+          label="Relationship Criteria Fields"
+          options={childRFieldOptions}
+          placeholder="Lookup__c"
+          onchangeselection={relationshipCriteriaFieldSelectedHandler}
+          variant="label-hidden"
+        ></c-autocomplete-combobox>
         <c-rollup-editor-error
           errors={errors.relationshipCriteriaFields}
         ></c-rollup-editor-error>
