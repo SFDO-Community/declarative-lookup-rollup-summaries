@@ -23,12 +23,10 @@ export default class RollupDetail extends LightningElement {
         name: this.rollup.relationshipField,
         tooltip: "DLRS automatically monitors the Relationship Field"
       },
-      ...(this.rollup.relationshipCriteriaFields === undefined
-        ? []
-        : this.rollup.relationshipCriteriaFields?.split("\n").map((field) => ({
-            label: field.trim(),
-            name: field.trim()
-          })))
+      this.rollup.relationshipCriteriaFields?.split("\n")?.map((field) => ({
+        label: field.trim(),
+        name: field.trim()
+      })) ?? []
     ];
   }
 

@@ -354,12 +354,10 @@ export default class RollupEditor extends LightningModal {
 
   get relationshipCriteriaFieldsPills() {
     return [
-      ...(this.rollup.relationshipCriteriaFields === undefined
-        ? []
-        : this.rollup.relationshipCriteriaFields?.split("\n").map((field) => ({
-            label: field.trim(),
-            name: field.trim()
-          })))
+      ...(this.rollup.relationshipCriteriaFields?.split("\n").map((field) => ({
+        label: field.trim(),
+        name: field.trim()
+      })) ?? [])
     ];
   }
 

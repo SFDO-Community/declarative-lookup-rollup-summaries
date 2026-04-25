@@ -16,7 +16,8 @@ This library was ported from the original C# implementation called [cron-express
 - Zero dependencies
 - Supports all cron expression special characters including * / , - ? L W, #
 - Supports 5, 6 (w/ seconds or year), or 7 (w/ seconds and year) part cron expressions
-- Supports [Quartz Job Scheduler](http://www.quartz-scheduler.org/) cron expressions
+- [Quartz Job Scheduler](http://www.quartz-scheduler.org/) cron expressions are supported
+- Supports time specification _nicknames_ (@yearly, @annually, @monthly, @weekly, @daily)
 - i18n support with 30+ languages
 
 ## Demo
@@ -90,9 +91,16 @@ cronstrue.toString("* * * ? * 2-6/2", { dayOfWeekStartIndexZero: false });
 
 cronstrue.toString("* * * 6-8 *", { monthStartIndexZero: true });
 > "Every minute, July through September"
+
+cronstrue.toString("@monthly");
+> "At 12:00 AM, on day 1 of the month"
 ```
 
 For more usage examples, including a demonstration of how cRonstrue can handle some very complex cron expressions, you can [reference the unit tests](https://github.com/bradymholt/cRonstrue/blob/main/test/cronstrue.ts).
+
+### i18n
+
+By default, only the English translation (`en`) is included when you import and use cRonstrue.  To use other languages, please see the [i18n section](#i18n-1) below.
 
 ### CLI Usage
 
@@ -118,10 +126,11 @@ An options object can be passed as the second parameter to `cronstrue.toString`.
 - **throwExceptionOnParseError: boolean** - If exception occurs when trying to parse expression and generate description, whether to throw or catch and output the Exception message as the description. (Default: true)
 - **verbose: boolean** - Whether to use a verbose description (Default: false)
 - **dayOfWeekStartIndexZero: boolean** - Whether to interpret cron expression DOW `1` as Sunday or Monday. (Default: true)
-- **monthStartIndexZero: boolean** - Wether to interpret January as `0` or `1`. (Default: false)
+- **monthStartIndexZero: boolean** - Whether to interpret January as `0` or `1`. (Default: false)
 - **use24HourTimeFormat: boolean** - If true, descriptions will use a [24-hour clock](https://en.wikipedia.org/wiki/24-hour_clock) (Default: false but some translations will default to true)
+- **trimHoursLeadingZero: boolean** - Whether to trim the leading zero that may appear in the hours description; e.g. "02:00 AM" -> "2:00 AM", "08:00" -> "8:00" (Default: false)
 - **locale: string** - The locale to use (Default: "en")
-- **tzOffset: number** - Your time offset (in hours) from UTC (Default: 0)
+- **logicalAndDayFields: boolean** - If true, descriptions for cron expressions with both day of month and day of week specified will follow a logical-AND wording rather than logical-OR wording; e.g. "...between day 11 and 17 of the month, only on Friday" rather than "...between day 11 and 17 of the month, and on Friday" (Default: false)
 
 ## i18n
 
@@ -169,6 +178,50 @@ cronstrue.toString("*/5 * * * *", { locale: "fr" }); // => Toutes les 5 minutes
 cronstrue.toString("*/5 * * * *", { locale: "es" }); // => Cada 5 minutos
 ```
 
+### Supported Locales
+
+The following locales can be passed in for the `locale` option.  Thank you to the author (shown below) of each translation!
+
+- en - English ([Brady Holt](https://github.com/bradymholt))
+- af - Afrikaans ([Michael van Niekerk](https://github.com/mvniekerk))
+- ar - Arabic ([Mohamed Nehad Shalabi](https://github.com/mohamednehad450))
+- be - Belarusian ([Kirill Mikulich](https://github.com/KirillMikulich))
+- bg - Bulgarian ([kamenf](https://github.com/kamenf))
+- ca - Catalan ([Francisco Javier Barrena](https://github.com/fjbarrena))
+- cs - Czech ([hanbar](https://github.com/hanbar))
+- da - Danish ([Rasmus Melchior Jacobsen](https://github.com/rmja))
+- de - German ([Michael Schuler](https://github.com/mschuler))
+- es - Spanish ([Ivan Santos](https://github.com/ivansg))
+- fa - Farsi ([A. Bahrami](https://github.com/alirezakoo))
+- fi - Finnish ([Mikael Rosenberg](https://github.com/MR77FI))
+- fr - French ([Arnaud TAMAILLON](https://github.com/Greybird))
+- he - Hebrew ([Ilan Firsov](https://github.com/IlanF))
+- hr - Croatian ([Rok Šekoranja](https://github.com/Rookxc))
+- hu - Hungarian ([Orcsity Norbert](https://github.com/Northber), Szabó Dániel)
+- id - Indonesia ([Hasan Basri](https://github.com/hasanbasri1993))
+- it - Italian ([rinaldihno](https://github.com/rinaldihno))
+- ja - Japanese ([Alin Sarivan](https://github.com/asarivan))
+- ko - Korean ([Ion Mincu](https://github.com/ionmincu))
+- my - Malay (Malaysia) ([Ikhwan Abdullah](https://github.com/leychay))
+- nb - Norwegian ([Siarhei Khalipski](https://github.com/KhalipskiSiarhei))
+- nl - Dutch ([TotalMace](https://github.com/TotalMace))
+- pl - Polish ([foka](https://github.com/foka))
+- pt_BR - Portuguese (Brazil) ([Renato Lima](https://github.com/natenho))
+- pt_PT - Portuguese (Portugal) ([POFerro](https://github.com/POFerro))
+- ro - Romanian ([Illegitimis](https://github.com/illegitimis))
+- ru - Russian ([LbISS](https://github.com/LbISS))
+- sk - Slovakian ([hanbar](https://github.com/hanbar))
+- sl - Slovenian ([Jani Bevk](https://github.com/jenzy))
+- sw - Swahili ([Leylow Lujuo](https://github.com/leyluj))
+- sv - Swedish ([roobin](https://github.com/roobin))
+- sr - Serbian ([Miloš Paunović](https://github.com/MilosPaunovic))
+- th - Thai ([Teerapat Prommarak](https://github.com/xeusteerapat))
+- tr - Turkish ([Mustafa SADEDİL](https://github.com/sadedil))
+- uk - Ukrainian ([Taras](https://github.com/tbudurovych))
+- vi - Vietnamese ([Nguyen Tan Phap](https://github.com/rikkapro0128))
+- zh_CN - Chinese (Simplified) ([Star Peng](https://github.com/starpeng))
+- zh_TW - Chinese (Traditional) ([Ricky Chiang](https://github.com/metavige))
+
 ## Frequently Asked Questions
 
 1. The cron expression I am passing in is not valid and this library is giving strange output.  What should I do?
@@ -195,52 +248,11 @@ cronstrue.toString("*/5 * * * *", { locale: "es" }); // => Cada 5 minutos
 
     No, cRonstrue does not support this.  This library simply describes a cron expression that is passed in.
 
-### Supported Locales
-
-The following locales can be passed in for the `locale` option.  Thank you to the author (shown below) of each translation!
-
-- en - English ([Brady Holt](https://github.com/bradymholt))
-- af - Afrikaans (Michael van Niekerk(https://github.com/mvniekerk))
-- ar - Arabic ([Mohamed Nehad Shalabi](https://github.com/mohamednehad450))
-- be - Belarusian ([Kirill Mikulich](https://github.com/KirillMikulich))
-- bg - Bulgarian ([kamenf](https://github.com/kamenf))
-- ca - Catalan ([Francisco Javier Barrena](https://github.com/fjbarrena))
-- cs - Czech ([hanbar](https://github.com/hanbar))
-- es - Spanish ([Ivan Santos](https://github.com/ivansg))
-- da - Danish ([Rasmus Melchior Jacobsen](https://github.com/rmja))
-- de - German ([Michael Schuler](https://github.com/mschuler))
-- fi - Finnish ([Mikael Rosenberg](https://github.com/MR77FI))
-- fr - French ([Arnaud TAMAILLON](https://github.com/Greybird))
-- fa - Farsi ([A. Bahrami](https://github.com/alirezakoo))
-- he - Hebrew ([Ilan Firsov](https://github.com/IlanF))
-- hu - Hungarian ([Orcsity Norbert](https://github.com/Northber), Szabó Dániel)
-- it - Italian ([rinaldihno](https://github.com/rinaldihno))
-- id - Indonesia ([Hasan Basri](https://github.com/hasanbasri1993))
-- ja - Japanese ([Alin Sarivan](https://github.com/asarivan))
-- ko - Korean ([Ion Mincu](https://github.com/ionmincu))
-- my - Malay (Malaysia) ([Ikhwan Abdullah](https://github.com/leychay))
-- nb - Norwegian ([Siarhei Khalipski](https://github.com/KhalipskiSiarhei))
-- nl - Dutch ([TotalMace](https://github.com/TotalMace))
-- pl - Polish ([foka](https://github.com/foka))
-- pt_BR - Portuguese (Brazil) ([Renato Lima](https://github.com/natenho))
-- pt_PT - Portuguese (Portugal) ([POFerro](https://github.com/POFerro))
-- ro - Romanian ([Illegitimis](https://github.com/illegitimis))
-- ru - Russian ([LbISS](https://github.com/LbISS))
-- sk - Slovakian ([hanbar](https://github.com/hanbar))
-- sl - Slovenian ([Jani Bevk](https://github.com/jenzy))
-- sw - Swahili ([Leylow Lujuo](https://github.com/leyluj))
-- sv - Swedish ([roobin](https://github.com/roobin))
-- th - Thai ([Teerapat Prommarak](https://github.com/xeusteerapat))
-- tr - Turkish ([Mustafa SADEDİL](https://github.com/sadedil))
-- uk - Ukrainian ([Taras](https://github.com/tbudurovych))
-- vi - Vietnamese ([Nguyen Tan Phap](https://github.com/rikkapro0128))
-- zh_CN - Chinese (Simplified) ([Star Peng](https://github.com/starpeng))
-- zh_TW - Chinese (Traditional) ([Ricky Chiang](https://github.com/metavige))
-
 ## Sponsors
 
 Thank you to the following sponsors of this project!
 
+<a href="https://github.com/microsoft"><img src="https://github.com/microsoft.png" width="50px" alt="robjtede" style="max-width: 100%;"></a>
 <a href="https://github.com/github"><img src="https://github.com/github.png" width="50px" alt="robjtede" style="max-width: 100%;"></a>
 <a href="https://github.com/DevUtilsApp"><img src="https://github.com/DevUtilsApp.png" width="50px" alt="robjtede" style="max-width: 100%;"></a>
 <a href="https://github.com/getsentry"><img src="https://github.com/getsentry.png" width="50px" alt="robjtede" style="max-width: 100%;"></a>

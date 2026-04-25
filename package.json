@@ -1,5 +1,5 @@
 {
-  "name": "DLRS-Local-Dev-Setup",
+  "name": "dlrs",
   "private": true,
   "version": "0.0.1",
   "description": "Declarative Lookup Rollup Summaries Tool Local Development Setup",
@@ -18,19 +18,21 @@
     "precommit": "lint-staged"
   },
   "devDependencies": {
-    "@lwc/eslint-plugin-lwc": "^1.1.1",
+    "@babel/core": "^7.29.0",
+    "@babel/eslint-parser": "^7.28.6",
+    "@lwc/eslint-plugin-lwc": "^3.5.0",
     "@prettier/plugin-xml": "^3.4.2",
-    "@salesforce/eslint-config-lwc": "^3.3.1",
-    "@salesforce/eslint-plugin-aura": "^2.1.0",
-    "@salesforce/eslint-plugin-lightning": "^1.0.0",
-    "@salesforce/sfdx-lwc-jest": "^1.1.0",
-    "eslint": "^7.29.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.27.0",
-    "eslint-plugin-jest": "^24.7.0",
-    "husky": "^6.0.0",
-    "lint-staged": "^11.2.6",
-    "prettier": "^3.8.1",
+    "@salesforce/eslint-config-lwc": "^4.1.2",
+    "@salesforce/eslint-plugin-aura": "^3.0.0",
+    "@salesforce/eslint-plugin-lightning": "^2.0.0",
+    "@salesforce/sfdx-lwc-jest": "^7.1.2",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jest": "^29.15.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
     "prettier-plugin-apex": "^2.2.6"
   },
   "resolutions": {
@@ -46,7 +48,7 @@
     ]
   },
   "dependencies": {
-    "cronstrue": "^2.48.0",
+    "cronstrue": "^3.14.0",
     "js-levenshtein": "^1.1.6"
   }
 }

@@ -111,8 +111,8 @@ export default class AutocompleteCombobox extends LightningElement {
     this.isLoading = true;
     window.clearTimeout(this.delayTimeout);
     this.searchKey = event.target.value;
+    // eslint-disable-next-line @lwc/lwc/no-async-operation
     this.delayTimeout = setTimeout(() => {
-      // eslint-disable-line
       this.filterOptions(this.searchKey);
       this.isLoading = false;
     }, DELAY);
@@ -160,7 +160,8 @@ export default class AutocompleteCombobox extends LightningElement {
       } else {
         this.filteredOptions = this._options;
       }
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       this.filteredOptions = this._options;
     }
   }
@@ -177,6 +178,7 @@ export default class AutocompleteCombobox extends LightningElement {
       });
       this.searchKey = this.selectedOption.label;
     } catch (error) {
+      console.error(error);
       this.selectedOption = {};
       this.searchKey = "";
     }
