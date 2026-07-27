@@ -28,12 +28,6 @@ public class TestContext {
   private TestContext() {
   }
 
-  public static Boolean OpportunityTestTriggerEnabled = true;
-
-  public static Boolean AccountTestTriggerEnabled = true;
-
-  public static Boolean DeleteParentRecord = false;
-
   /**
    * Tests are only executed when the test trigger is present (not packaged)
    **/
@@ -45,5 +39,14 @@ public class TestContext {
 
   public static String applyNamespacePrefixIfAvailable(String ref) {
     return Utilities.objectPrefix() + ref;
+  }
+
+  /**
+   * control parameters on test-only code that is used for extended package testing
+   */
+  public static void setExtendedTestingParam(String paramName, Boolean paramValue){
+    Type t = Type.forName(null, 'DlrsTestContext');
+    Callable instance = (Callable)t.newInstance();
+    instance.call('setParam', new Map<String, Object>{'paramName' => paramName, 'paramValue' => paramValue});
   }
 }

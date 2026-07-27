@@ -1,5 +1,7 @@
 /**
  * NOTE: DO NOT PACKAGE THIS TRIGGER
+ *
+ * Write referencing the namespaced components. Namespaces will be removed by the CLI when deployed to dev environments
  **/
 
 /**
@@ -16,8 +18,8 @@ trigger UnpackagedRollupServiceTestTrigger on Opportunity(
 ) {
   // Avoids the unit test triggers conflicting with manual testing in the org
   if (Test.isRunningTest()) {
-    if (TestContext.OpportunityTestTriggerEnabled) {
-      RollupService.triggerHandler();
+    if (DlrsTestContext.OpportunityTestTriggerEnabled) {
+      dlrs.RollupService.triggerHandler();
     }
   }
 }

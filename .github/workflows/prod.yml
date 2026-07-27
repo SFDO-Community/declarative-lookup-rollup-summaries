@@ -1,9 +1,14 @@
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
+
+# keep namespace references for unpackaged/config/test files
+env:
+  NAMESPACE_DOT: dlrs.
+  NAMESPACE_DOUBLE_UNDER: dlrs__
 jobs:
   upload-production-release-1gp:
     name: "Upload Production Release (1GP)"
     uses: SFDO-Community/standard-workflows/.github/workflows/production-1gp.yml@main
     secrets:
-      packaging-org-auth-url: '${{ secrets.PACKAGING_ORG_AUTH_URL }}'
-      dev-hub-auth-url: '${{ secrets.DEV_HUB_AUTH_URL }}'
+      packaging-org-auth-url: "${{ secrets.PACKAGING_ORG_AUTH_URL }}"
+      dev-hub-auth-url: "${{ secrets.DEV_HUB_AUTH_URL }}"

@@ -16,3 +16,9 @@ jobs:
     uses: "SFDO-Community/standard-workflows/.github/workflows/feature-namespaced.yml@main"
     secrets:
       dev-hub-auth-url: "${{ secrets.DEV_HUB_AUTH_URL }}"
+    # Would prefer to use namespaced test fixtures here to have a pre-merge test but GHA doesn't allow mixing "uses" and "env"
+    # https://github.com/orgs/community/discussions/25246
+    # I can't set it higher up because it would be incompatible with "feature-test"
+    # env:
+    #   NAMESPACE_DOT: dlrs.
+    #   NAMESPACE_DOUBLE_UNDER: dlrs__

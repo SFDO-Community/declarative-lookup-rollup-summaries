@@ -975,7 +975,7 @@ private with sharing class RollupServiceTest {
     RollupService.disableNpspTdtm();
 
     // Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
-    TestContext.AccountTestTriggerEnabled = false;
+    TestContext.setExtendedTestingParam('AccountTestTriggerEnabled', false);
 
     // Test data
     List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
@@ -1103,7 +1103,7 @@ private with sharing class RollupServiceTest {
     RollupService.disableNpspTdtm();
 
     // Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
-    TestContext.AccountTestTriggerEnabled = false;
+    TestContext.setExtendedTestingParam('AccountTestTriggerEnabled', false);
 
     // Test data
     List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
@@ -1748,7 +1748,7 @@ private with sharing class RollupServiceTest {
       return;
 
     // Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
-    TestContext.AccountTestTriggerEnabled = false;
+    TestContext.setExtendedTestingParam('AccountTestTriggerEnabled', false);
 
     // Configure rollup
     LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
