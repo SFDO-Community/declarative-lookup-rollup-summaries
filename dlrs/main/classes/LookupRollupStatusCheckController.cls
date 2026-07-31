@@ -18,22 +18,7 @@ public with sharing class LookupRollupStatusCheckController {
   @AuraEnabled
   public static Datetime getScheduledFullCalculates(String lookupID) {
     try {
-      LookupRollupSummary2__mdt LookupRollupSummary = (LookupRollupSummary2__mdt) new RollupSummariesSelector.CustomMetadataSelector(
-            false,
-            true
-          )
-          .selectById(new Set<String>{ lookupID })[0]
-        .Record;
-
-      if (LookupRollupSummary != null) {
-        String id = (LookupRollupSummary.id).to15();
-        List<CronTrigger> ct = new CronTriggersSelector()
-          .selectScheduledApexById(id);
-
-        if (!ct.isEmpty()) {
-          return ct[0].NextFireTime;
-        }
-      }
+      return RollupSchedulingService.getNextFullCalculateRunTime(lookupID);
     } catch (Exception e) {
     }
     return null;

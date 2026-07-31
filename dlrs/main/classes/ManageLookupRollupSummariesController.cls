@@ -235,15 +235,12 @@ public with sharing class ManageLookupRollupSummariesController {
     }
 
     try {
-      String id = (LookupRollupSummary.id).to15();
-      List<CronTrigger> ct = new CronTriggersSelector()
-        .selectScheduledApexById(id);
-
-      if (ct.isEmpty()) {
-        return 'No Schedule for Rollup';
-      } else {
-        return ct[0].NextFireTime.format();
-      }
+      Datetime nextRunTime = RollupSchedulingService.getNextFullCalculateRunTime(
+        LookupRollupSummary.id
+      );
+      return nextRunTime == null
+        ? 'No Schedule for Rollup'
+        : nextRunTime.format();
     } catch (Exception e) {
       return 'No Schedule for Rollup';
     }

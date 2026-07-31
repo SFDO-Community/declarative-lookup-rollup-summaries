@@ -1,6 +1,7 @@
 import { api, track, wire } from "lwc";
 
 import LightningModal from "lightning/modal";
+import LightningConfirm from "lightning/confirm";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
 import { PATH_STATES } from "c/flexiblePath";
@@ -12,6 +13,8 @@ import getFieldOptions from "@salesforce/apex/RollupEditorController.getFieldOpt
 import getManageTriggerPageUrl from "@salesforce/apex/RollupEditorController.getManageTriggerPageUrl";
 import getFullCalculatePageUrl from "@salesforce/apex/RollupEditorController.getFullCalculatePageUrl";
 import getScheduleCalculatePageUrl from "@salesforce/apex/RollupEditorController.getScheduleCalculatePageUrl";
+import getScheduledFullCalculateJob from "@salesforce/apex/RollupEditorController.getScheduledFullCalculateJob";
+import unscheduleFullCalculate from "@salesforce/apex/RollupEditorController.unscheduleFullCalculate";
 import hasChildTriggerDeployed from "@salesforce/apex/LookupRollupStatusCheckController.hasChildTriggerDeployed";
 import getScheduledFullCalculates from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledFullCalculates";
 import getScheduledJobs from "@salesforce/apex/LookupRollupStatusCheckController.getScheduledJobs";
@@ -274,9 +277,33 @@ export default class RollupEditor extends LightningModal {
     this.runSave();
   }
 
-  deactivateClickHandler() {
+  async deactivateClickHandler() {
+    let unscheduleJob = false;
+    const scheduledJob = this.rollup.id
+      ? await getScheduledFullCalculateJob({ rollupId: this.rollup.id })
+      : null;
+
+    if (scheduledJob) {
+      const confirmed = await LightningConfirm.open({
+        label: "Deactivate Rollup",
+        message: `This rollup has a Scheduled Full Calculate job named "${scheduledJob.jobName}". Deactivating will not remove it automatically.`,
+        theme: "warning"
+      });
+      if (!confirmed) {
+        return;
+      }
+
+      unscheduleJob = await LightningConfirm.open({
+        label: "Delete Scheduled Job",
+        message: `Also delete the scheduled Full Calculate job "${scheduledJob.jobName}"?`,
+        theme: "warning",
+        confirmButtonLabel: "Delete Job",
+        cancelButtonLabel: "Keep Job"
+      });
+    }
+
     this.rollup.active = false;
-    this.runSave();
+    await this.runSave(unscheduleJob);
   }
 
   rollupTypeChangeHandler(event) {
@@ -387,7 +414,7 @@ export default class RollupEditor extends LightningModal {
     return val.replace(/^([0-9])/, "X$1").replace(/[^0-9a-zA-Z]+/g, "_");
   }
 
-  async runSave() {
+  async runSave(unscheduleJob = false) {
     if (!this.assembleRollupFromForm()) {
       console.error("data form is invalid");
       return;
@@ -401,6 +428,10 @@ export default class RollupEditor extends LightningModal {
     const jobId = await saveRollupConfig({
       rollup: JSON.stringify(this.rollup)
     });
+
+    if (unscheduleJob && this.rollup.id) {
+      await unscheduleFullCalculate({ rollupId: this.rollup.id });
+    }
 
     try {
       window.sessionStorage.setItem(
