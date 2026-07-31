@@ -26,6 +26,7 @@
 
 public with sharing class RollupScheduledCalculateController {
   private ApexPages.StandardController standardController;
+  private String uniqueNameField;
   public String masterObjectWhere { get; set; }
   public String minute { get; set; }
   public List<SelectOption> minutes { get; set; }
@@ -39,7 +40,7 @@ public with sharing class RollupScheduledCalculateController {
     ApexPages.StandardController standardController
   ) {
     // Since thie controller is shared between custom object and custom mestadata, determine the applicable unique field
-    String uniqueNameField = ((Id) standardController.getId())
+    this.uniqueNameField = ((Id) standardController.getId())
         .getSObjectType() == Schema.LookupRollupSummary2__mdt.SObjectType
       ? 'DeveloperName'
       : 'UniqueName__c';
@@ -54,11 +55,10 @@ public with sharing class RollupScheduledCalculateController {
     // Calculate unique name
     String rollupUniqueName = (String) standardController.getRecord()
       .get(uniqueNameField);
-    uniqueNameForJob =
-      'rollup_' +
-      (rollupUniqueName == null || rollupUniqueName.equals('')
-        ? standardController.getId()
-        : rollupUniqueName + ' (' + standardController.getId() + ')');
+    uniqueNameForJob = RollupSchedulingService.buildFullCalculateJobName(
+      standardController.getId(),
+      rollupUniqueName
+    );
 
     // Deprication warning
     if (standardController.getRecord() instanceof LookupRollupSummary__c) {
@@ -127,13 +127,11 @@ public with sharing class RollupScheduledCalculateController {
       );
 
       // Kickoff the calculate job for this lookup
-      System.schedule(
-        uniqueNameForJob,
+      RollupSchedulingService.scheduleFullCalculate(
+        standardController.getId(),
         cronString,
-        new RollupCalculateJobSchedulable(
-          standardController.getId(),
-          masterObjectWhere
-        )
+        masterObjectWhere,
+        (String) standardController.getRecord().get(uniqueNameField)
       );
       ApexPages.addMessage(
         new ApexPages.Message(
