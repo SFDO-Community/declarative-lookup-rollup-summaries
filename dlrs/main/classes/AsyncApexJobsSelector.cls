@@ -119,4 +119,27 @@ public class AsyncApexJobsSelector extends fflib_SObjectSelector {
       .toSOQL();
     return Database.query(query);
   }
+
+  /**
+   * Get scheduled instances of classes with inactive created by users
+   **/
+  public List<AsyncApexJob> getScheduledJobsCreatedByInactiveUsers(
+    Set<String> classNames
+  ) {
+    String query = newQueryFactory()
+      .selectFields(
+        new List<String>{
+          'ApexClass.Name',
+          'CreatedById',
+          'CreatedBy.Name',
+          'CreatedBy.IsActive',
+          'CronTrigger.CronJobDetail.Name'
+        }
+      )
+      .setCondition(
+        'JobType = \'ScheduledApex\' AND Status != \'Aborted\' AND ApexClass.Name IN :classNames AND CreatedBy.IsActive = FALSE'
+      )
+      .toSOQL();
+    return Database.query(query);
+  }
 }

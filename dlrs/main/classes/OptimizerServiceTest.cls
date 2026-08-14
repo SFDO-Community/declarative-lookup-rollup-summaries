@@ -119,4 +119,20 @@ private class OptimizerServiceTest {
       'Status should have completed without warnings given no scheduled items in queue'
     );
   }
+
+  @IsTest
+  static void givenInactiveUserCheckRunnerExecutesSuccessfully() {
+    // Given
+    OptimizerService.NotificationReference nf = OptimizerService.NotificationReference.LookupRollupScheduledJobsInactiveUser;
+
+    // When
+    Test.startTest();
+    OptimizerService.Summary summary = OptimizerService.analyize(
+      new Set<OptimizerService.NotificationReference>{ nf }
+    );
+    Test.stopTest();
+
+    // Then
+    System.assertNotEquals(null, summary);
+  }
 }
