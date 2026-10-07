@@ -22,7 +22,7 @@ Part of the Salesforce.org [Commons program](https://help.salesforce.com/s/artic
 
 - [Documentation](https://sfdo-community-sprints.github.io/DLRS-Documentation/)
 - [Install DLRS](https://sfdo-community-sprints.github.io/DLRS-Documentation/Installation/)
-- [Release notes](https://sfdo-community-sprints.github.io/DLRS-Documentation/Changelog/)
+- [Release notes](https://sfdo-community-sprints.github.io/DLRS-Documentation/ReleaseNotes/)
 
 ## Questions and Community Support
 
