@@ -13239,7 +13239,7 @@ public class MetadataService {
             private set;
         }
         public String endpointUrl = URL.getOrgDomainUrl().toExternalForm();
-        public String endpointPath = '/services/Soap/m/66.0';
+        public String endpointPath = '/services/Soap/m/68.0';
         public Map<String,String> inputHttpHeaders_x;
         public Map<String,String> outputHttpHeaders_x;
         public String clientCertName_x;
