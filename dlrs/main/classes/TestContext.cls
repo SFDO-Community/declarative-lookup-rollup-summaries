@@ -46,4 +46,28 @@ public class TestContext {
   public static String applyNamespacePrefixIfAvailable(String ref) {
     return Utilities.objectPrefix() + ref;
   }
+
+  public static void ensurePermissionSetsAssigned(Id userId, Set<String> permissionSetNames) {
+    Set<String> missing = new Set<String>(permissionSetNames);
+    for (PermissionSetAssignment psa : [
+      SELECT PermissionSet.Name
+      FROM PermissionSetAssignment
+      WHERE AssigneeId = :userId
+    ]) {
+      missing.remove(psa.PermissionSet.Name);
+    }
+    if (missing.isEmpty()) {
+      return;
+    }
+    List<PermissionSet> ps = [
+      SELECT Id, Name
+      FROM PermissionSet
+      WHERE Name IN :missing
+    ];
+    List<PermissionSetAssignment> assignments = new List<PermissionSetAssignment>();
+    for (PermissionSet p : ps) {
+      assignments.add(new PermissionSetAssignment(AssigneeId = userId, PermissionSetId = p.Id));
+    }
+    Database.insert(assignments, System.AccessLevel.SYSTEM_MODE);
+  }
 }

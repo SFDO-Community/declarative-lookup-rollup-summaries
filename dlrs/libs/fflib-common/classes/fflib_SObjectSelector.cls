@@ -242,7 +242,7 @@ public abstract with sharing class fflib_SObjectSelector implements fflib_ISObje
    * @returns A list of SObject's
    **/
   public List<SObject> selectSObjectsById(Set<Id> idSet) {
-    return Database.query(buildQuerySObjectById());
+    return Database.query(buildQuerySObjectById(), System.AccessLevel.SYSTEM_MODE);
   }
 
   /**
@@ -254,7 +254,7 @@ public abstract with sharing class fflib_SObjectSelector implements fflib_ISObje
    * @returns A QueryLocator (typically for use in a Batch Apex job)
    **/
   public Database.QueryLocator queryLocatorById(Set<Id> idSet) {
-    return Database.getQueryLocator(buildQuerySObjectById());
+    return Database.getQueryLocator(buildQuerySObjectById(), System.AccessLevel.SYSTEM_MODE);
   }
 
   /**

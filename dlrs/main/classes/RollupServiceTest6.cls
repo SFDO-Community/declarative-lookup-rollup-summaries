@@ -74,52 +74,58 @@ private class RollupServiceTest6 {
     if (!TestContext.isSupported())
       return;
 
-    Schema.SObjectType parentType = LookupParent__c.sObjectType;
-    Schema.SObjectType childType = LookupChild__c.sObjectType;
-    String parentObjectName = parentType.getDescribe().getName();
-    String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField = LookupParent__c.Total__c.getDescribe()
-      .getName();
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Create rollup
-    LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
-    rollupSummary.Name = 'Test Rollup';
-    rollupSummary.ParentObject__c = parentObjectName;
-    rollupSummary.ChildObject__c = childObjectName;
-    rollupSummary.RelationShipField__c = relationshipField;
-    rollupSummary.FieldToAggregate__c = aggregateField;
-    rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
-    rollupSummary.AggregateResultField__c = aggregateResultField;
-    rollupSummary.Active__c = true;
-    rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
-    insert rollupSummary;
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      Schema.SObjectType parentType = LookupParent__c.sObjectType;
+      Schema.SObjectType childType = LookupChild__c.sObjectType;
+      String parentObjectName = parentType.getDescribe().getName();
+      String childObjectName = childType.getDescribe().getName();
+      String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
+        .getName();
+      String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+      String aggregateResultField = LookupParent__c.Total__c.getDescribe()
+        .getName();
 
-    // Insert parents
-    SObject parentA = parentType.newSObject();
-    parentA.put('Name', 'ParentA');
-    SObject parentB = parentType.newSObject();
-    parentB.put('Name', 'ParentA');
-    List<SObject> parents = new List<SObject>{ parentA, parentB };
-    insert parents;
+      // Create rollup
+      LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+      rollupSummary.Name = 'Test Rollup';
+      rollupSummary.ParentObject__c = parentObjectName;
+      rollupSummary.ChildObject__c = childObjectName;
+      rollupSummary.RelationShipField__c = relationshipField;
+      rollupSummary.FieldToAggregate__c = aggregateField;
+      rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+      rollupSummary.AggregateResultField__c = aggregateResultField;
+      rollupSummary.Active__c = true;
+      rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+      insert rollupSummary;
 
-    // Insert children
-    SObject child1 = childType.newSObject();
-    child1.put(relationshipField, parentA.Id);
-    child1.put(aggregateField, 42);
-    SObject child2 = childType.newSObject();
-    child2.put(relationshipField, parentB.Id);
-    child2.put(aggregateField, 42);
-    insert new List<SObject>{ child1, child2 };
+      // Insert parents
+      SObject parentA = parentType.newSObject();
+      parentA.put('Name', 'ParentA');
+      SObject parentB = parentType.newSObject();
+      parentB.put('Name', 'ParentA');
+      List<SObject> parents = new List<SObject>{ parentA, parentB };
+      insert parents;
 
-    // Attempt to delete and ask child trigger to delete its parents also BEFORE calling rollup
-    TestContext.DeleteParentRecord = true;
-    delete new List<SObject>{ child1, child2 };
+      // Insert children
+      SObject child1 = childType.newSObject();
+      child1.put(relationshipField, parentA.Id);
+      child1.put(aggregateField, 42);
+      SObject child2 = childType.newSObject();
+      child2.put(relationshipField, parentB.Id);
+      child2.put(aggregateField, 42);
+      insert new List<SObject>{ child1, child2 };
 
-    // Assert no parent records
-    System.assertEquals(0, [SELECT Id FROM LookupParent__c].size());
+      // Attempt to delete and ask child trigger to delete its parents also BEFORE calling rollup
+      TestContext.DeleteParentRecord = true;
+      delete new List<SObject>{ child1, child2 };
+
+      // Assert no parent records
+      System.assertEquals(0, [SELECT Id FROM LookupParent__c].size());
+    }
   }
 
   /**

@@ -124,77 +124,81 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    // Test data
-    List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      // Test data
+      List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
 
-    // Test data for rollup A
-    Decimal expectedResultA = 500;
-    RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
-    String conditionA = 'Amount > 200';
+      // Test data for rollup A
+      Decimal expectedResultA = 500;
+      RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
+      String conditionA = 'Amount > 200';
 
-    // Test data for rollup B
-    Decimal expectedResultB = 4;
-    RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
-    String conditionB = null;
+      // Test data for rollup B
+      Decimal expectedResultB = 4;
+      RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
+      String conditionB = null;
 
-    // Configure rollup A
-    LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-    rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-    rollupSummaryA.ParentObject__c = 'Account';
-    rollupSummaryA.ChildObject__c = 'Opportunity';
-    rollupSummaryA.RelationShipField__c = 'AccountId';
-    rollupSummaryA.RelationShipCriteria__c = conditionA;
-    rollupSummaryA.FieldToAggregate__c = 'Amount';
-    rollupSummaryA.AggregateOperation__c = operationA.name();
-    rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-    rollupSummaryA.Active__c = true;
-    rollupSummaryA.CalculationMode__c = 'Realtime';
+      // Configure rollup A
+      LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+      rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+      rollupSummaryA.ParentObject__c = 'Account';
+      rollupSummaryA.ChildObject__c = 'Opportunity';
+      rollupSummaryA.RelationShipField__c = 'AccountId';
+      rollupSummaryA.RelationShipCriteria__c = conditionA;
+      rollupSummaryA.FieldToAggregate__c = 'Amount';
+      rollupSummaryA.AggregateOperation__c = operationA.name();
+      rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+      rollupSummaryA.Active__c = true;
+      rollupSummaryA.CalculationMode__c = 'Realtime';
 
-    // Configure rollup B
-    LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-    rollupSummaryB.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-    rollupSummaryB.ParentObject__c = 'Account';
-    rollupSummaryB.ChildObject__c = 'Opportunity';
-    rollupSummaryB.RelationShipField__c = 'AccountId';
-    rollupSummaryB.RelationShipCriteria__c = conditionB;
-    rollupSummaryB.FieldToAggregate__c = 'CloseDate';
-    rollupSummaryB.AggregateOperation__c = operationB.name();
-    rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
-      'NumberOfLocations__c'
-    );
-    rollupSummaryB.Active__c = true;
-    rollupSummaryB.CalculationMode__c = 'Realtime';
+      // Configure rollup B
+      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+      rollupSummaryB.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+      rollupSummaryB.ParentObject__c = 'Account';
+      rollupSummaryB.ChildObject__c = 'Opportunity';
+      rollupSummaryB.RelationShipField__c = 'AccountId';
+      rollupSummaryB.RelationShipCriteria__c = conditionB;
+      rollupSummaryB.FieldToAggregate__c = 'CloseDate';
+      rollupSummaryB.AggregateOperation__c = operationB.name();
+      rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+        'NumberOfLocations__c'
+      );
+      rollupSummaryB.Active__c = true;
+      rollupSummaryB.CalculationMode__c = 'Realtime';
 
-    // Insert rollup definitions
-    insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
+      // Insert rollup definitions
+      insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
 
-    // Test data
-    Account account = new Account();
-    account.Name = 'Test Account';
-    account.AnnualRevenue = 0;
-    insert account;
-    List<Opportunity> opps = new List<Opportunity>();
-    for (Decimal rollupValue : rollups) {
-      Opportunity opp = new Opportunity();
-      opp.Name = 'Test Opportunity';
-      opp.StageName = 'Open';
-      opp.CloseDate = System.today();
-      opp.AccountId = account.Id;
-      opp.Amount = rollupValue;
-      opps.add(opp);
+      // Test data
+      Account account = new Account();
+      account.Name = 'Test Account';
+      account.AnnualRevenue = 0;
+      insert account;
+      List<Opportunity> opps = new List<Opportunity>();
+      for (Decimal rollupValue : rollups) {
+        Opportunity opp = new Opportunity();
+        opp.Name = 'Test Opportunity';
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        opp.AccountId = account.Id;
+        opp.Amount = rollupValue;
+        opps.add(opp);
+      }
+      insert opps;
+
+      // Assert rollup
+      Id accountId = account.Id;
+      Account accountResult = Database.query(
+        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      );
+      System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+      System.assertEquals(
+        expectedResultB,
+        accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
+      );
     }
-    insert opps;
-
-    // Assert rollup
-    Id accountId = account.Id;
-    Account accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-    );
-    System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
-    System.assertEquals(
-      expectedResultB,
-      accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
-    );
   }
 
   private testMethod static void testMultiRollupSumAndAvg() {
@@ -202,77 +206,81 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    // Test data
-    List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      // Test data
+      List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
 
-    // Test data for rollup A
-    Decimal expectedResultA = 600;
-    RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
-    String conditionA = null;
+      // Test data for rollup A
+      Decimal expectedResultA = 600;
+      RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
+      String conditionA = null;
 
-    // Test data for rollup B
-    Decimal expectedResultB = 150;
-    RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Avg;
-    String conditionB = null;
+      // Test data for rollup B
+      Decimal expectedResultB = 150;
+      RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Avg;
+      String conditionB = null;
 
-    // Configure rollup A
-    LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-    rollupSummaryA.Name = 'Total Opportunities into Annual Revenue on Account';
-    rollupSummaryA.ParentObject__c = 'Account';
-    rollupSummaryA.ChildObject__c = 'Opportunity';
-    rollupSummaryA.RelationShipField__c = 'AccountId';
-    rollupSummaryA.RelationShipCriteria__c = conditionA;
-    rollupSummaryA.FieldToAggregate__c = 'Amount';
-    rollupSummaryA.AggregateOperation__c = operationA.name();
-    rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-    rollupSummaryA.Active__c = true;
-    rollupSummaryA.CalculationMode__c = 'Realtime';
+      // Configure rollup A
+      LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+      rollupSummaryA.Name = 'Total Opportunities into Annual Revenue on Account';
+      rollupSummaryA.ParentObject__c = 'Account';
+      rollupSummaryA.ChildObject__c = 'Opportunity';
+      rollupSummaryA.RelationShipField__c = 'AccountId';
+      rollupSummaryA.RelationShipCriteria__c = conditionA;
+      rollupSummaryA.FieldToAggregate__c = 'Amount';
+      rollupSummaryA.AggregateOperation__c = operationA.name();
+      rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+      rollupSummaryA.Active__c = true;
+      rollupSummaryA.CalculationMode__c = 'Realtime';
 
-    // Configure rollup B
-    LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-    rollupSummaryB.Name = 'Avg Opportunities into Annual Revenue on Account';
-    rollupSummaryB.ParentObject__c = 'Account';
-    rollupSummaryB.ChildObject__c = 'Opportunity';
-    rollupSummaryB.RelationShipField__c = 'AccountId';
-    rollupSummaryB.RelationShipCriteria__c = conditionB;
-    rollupSummaryB.FieldToAggregate__c = 'Amount';
-    rollupSummaryB.AggregateOperation__c = operationB.name();
-    rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
-      'NumberOfLocations__c'
-    );
-    rollupSummaryB.Active__c = true;
-    rollupSummaryB.CalculationMode__c = 'Realtime';
+      // Configure rollup B
+      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+      rollupSummaryB.Name = 'Avg Opportunities into Annual Revenue on Account';
+      rollupSummaryB.ParentObject__c = 'Account';
+      rollupSummaryB.ChildObject__c = 'Opportunity';
+      rollupSummaryB.RelationShipField__c = 'AccountId';
+      rollupSummaryB.RelationShipCriteria__c = conditionB;
+      rollupSummaryB.FieldToAggregate__c = 'Amount';
+      rollupSummaryB.AggregateOperation__c = operationB.name();
+      rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+        'NumberOfLocations__c'
+      );
+      rollupSummaryB.Active__c = true;
+      rollupSummaryB.CalculationMode__c = 'Realtime';
 
-    // Insert rollup definitions
-    insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
+      // Insert rollup definitions
+      insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
 
-    // Test data
-    Account account = new Account();
-    account.Name = 'Test Account';
-    account.AnnualRevenue = 0;
-    insert account;
-    List<Opportunity> opps = new List<Opportunity>();
-    for (Decimal rollupValue : rollups) {
-      Opportunity opp = new Opportunity();
-      opp.Name = 'Test Opportunity';
-      opp.StageName = 'Open';
-      opp.CloseDate = System.today();
-      opp.AccountId = account.Id;
-      opp.Amount = rollupValue;
-      opps.add(opp);
+      // Test data
+      Account account = new Account();
+      account.Name = 'Test Account';
+      account.AnnualRevenue = 0;
+      insert account;
+      List<Opportunity> opps = new List<Opportunity>();
+      for (Decimal rollupValue : rollups) {
+        Opportunity opp = new Opportunity();
+        opp.Name = 'Test Opportunity';
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        opp.AccountId = account.Id;
+        opp.Amount = rollupValue;
+        opps.add(opp);
+      }
+      insert opps;
+
+      // Assert rollup
+      Id accountId = account.Id;
+      Account accountResult = Database.query(
+        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      );
+      System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+      System.assertEquals(
+        expectedResultB,
+        accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
+      );
     }
-    insert opps;
-
-    // Assert rollup
-    Id accountId = account.Id;
-    Account accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-    );
-    System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
-    System.assertEquals(
-      expectedResultB,
-      accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
-    );
   }
 
   private testMethod static void testMultiRollupNoConditions() {
@@ -280,79 +288,83 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    // Test data
-    List<Decimal> rollups = new List<Decimal>{ 10, 20, 30, 40 };
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      // Test data
+      List<Decimal> rollups = new List<Decimal>{ 10, 20, 30, 40 };
 
-    // Test data for rollup A
-    Decimal expectedResultA = 160;
-    RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Max;
-    String conditionA = null;
+      // Test data for rollup A
+      Decimal expectedResultA = 160;
+      RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Max;
+      String conditionA = null;
 
-    // Test data for rollup B
-    Decimal expectedResultB = 4;
-    RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
-    String conditionB = null;
+      // Test data for rollup B
+      Decimal expectedResultB = 4;
+      RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
+      String conditionB = null;
 
-    // Configure rollup A
-    LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-    rollupSummaryA.Name = 'Max Opportunities Amount';
-    rollupSummaryA.ParentObject__c = 'Account';
-    rollupSummaryA.ChildObject__c = 'Opportunity';
-    rollupSummaryA.RelationShipField__c = 'AccountId';
-    rollupSummaryA.RelationShipCriteria__c = conditionA;
-    rollupSummaryA.FieldToAggregate__c = 'Amount';
-    rollupSummaryA.AggregateOperation__c = operationA.name();
-    rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-    rollupSummaryA.Active__c = true;
-    rollupSummaryA.CalculationMode__c = 'Realtime';
+      // Configure rollup A
+      LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+      rollupSummaryA.Name = 'Max Opportunities Amount';
+      rollupSummaryA.ParentObject__c = 'Account';
+      rollupSummaryA.ChildObject__c = 'Opportunity';
+      rollupSummaryA.RelationShipField__c = 'AccountId';
+      rollupSummaryA.RelationShipCriteria__c = conditionA;
+      rollupSummaryA.FieldToAggregate__c = 'Amount';
+      rollupSummaryA.AggregateOperation__c = operationA.name();
+      rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+      rollupSummaryA.Active__c = true;
+      rollupSummaryA.CalculationMode__c = 'Realtime';
 
-    // Configure rollup B
-    LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-    rollupSummaryB.Name = 'Count Opportunities';
-    rollupSummaryB.ParentObject__c = 'Account';
-    rollupSummaryB.ChildObject__c = 'Opportunity';
-    rollupSummaryB.RelationShipField__c = 'AccountId';
-    rollupSummaryB.RelationShipCriteria__c = conditionB;
-    rollupSummaryB.FieldToAggregate__c = 'Amount';
-    rollupSummaryB.AggregateOperation__c = operationB.name();
-    rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
-      'NumberOfLocations__c'
-    );
-    rollupSummaryB.Active__c = true;
-    rollupSummaryB.CalculationMode__c = 'Realtime';
+      // Configure rollup B
+      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+      rollupSummaryB.Name = 'Count Opportunities';
+      rollupSummaryB.ParentObject__c = 'Account';
+      rollupSummaryB.ChildObject__c = 'Opportunity';
+      rollupSummaryB.RelationShipField__c = 'AccountId';
+      rollupSummaryB.RelationShipCriteria__c = conditionB;
+      rollupSummaryB.FieldToAggregate__c = 'Amount';
+      rollupSummaryB.AggregateOperation__c = operationB.name();
+      rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+        'NumberOfLocations__c'
+      );
+      rollupSummaryB.Active__c = true;
+      rollupSummaryB.CalculationMode__c = 'Realtime';
 
-    // Insert rollup definitions
-    insert new List<LookupRollupSummary__c>{ rollupSummaryB, rollupSummaryA };
+      // Insert rollup definitions
+      insert new List<LookupRollupSummary__c>{ rollupSummaryB, rollupSummaryA };
 
-    // Test data
-    Account account = new Account();
-    account.Name = 'Test Account';
-    account.AnnualRevenue = 0;
-    insert account;
-    List<Opportunity> opps = new List<Opportunity>();
-    Integer rollupIdx = 0;
-    for (Decimal rollupValue : rollups) {
-      rollupIdx++;
-      Opportunity opp = new Opportunity();
-      opp.Name = 'Test Opportunity';
-      opp.StageName = 'Open';
-      opp.CloseDate = System.today();
-      opp.AccountId = account.Id;
-      opp.Amount = rollupValue * rollupIdx;
-      opps.add(opp);
+      // Test data
+      Account account = new Account();
+      account.Name = 'Test Account';
+      account.AnnualRevenue = 0;
+      insert account;
+      List<Opportunity> opps = new List<Opportunity>();
+      Integer rollupIdx = 0;
+      for (Decimal rollupValue : rollups) {
+        rollupIdx++;
+        Opportunity opp = new Opportunity();
+        opp.Name = 'Test Opportunity';
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        opp.AccountId = account.Id;
+        opp.Amount = rollupValue * rollupIdx;
+        opps.add(opp);
+      }
+      insert opps;
+
+      // Assert rollup
+      Id accountId = account.Id;
+      Account accountResult = Database.query(
+        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      );
+      System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+      System.assertEquals(
+        expectedResultB,
+        accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
+      );
     }
-    insert opps;
-
-    // Assert rollup
-    Id accountId = account.Id;
-    Account accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-    );
-    System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
-    System.assertEquals(
-      expectedResultB,
-      accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
-    );
   }
 
   @IsTest
@@ -361,85 +373,91 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    // Test data
-    List<Decimal> rollups = new List<Decimal>{ 10, 20, 30, 40 };
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Test data for rollup A
-    Decimal expectedResultA = 0;
-    RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Max;
-    String conditionA = null;
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      // Test data
+      List<Decimal> rollups = new List<Decimal>{ 10, 20, 30, 40 };
 
-    // Test data for rollup B
-    Decimal expectedResultB = 4;
-    RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
-    String conditionB = null;
+      // Test data for rollup A
+      Decimal expectedResultA = 0;
+      RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Max;
+      String conditionA = null;
 
-    // Configure rollup A
-    LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-    rollupSummaryA.Name = 'Max Opportunities Amount';
-    rollupSummaryA.ParentObject__c = 'Account';
-    rollupSummaryA.UniqueName__c = 'MaxOppsAmount';
-    rollupSummaryA.ChildObject__c = 'Opportunity';
-    rollupSummaryA.RelationShipField__c = 'AccountId';
-    rollupSummaryA.RelationShipCriteria__c = conditionA;
-    rollupSummaryA.FieldToAggregate__c = 'Amount';
-    rollupSummaryA.AggregateOperation__c = operationA.name();
-    rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-    rollupSummaryA.Active__c = true;
-    rollupSummaryA.CalculationMode__c = 'Realtime';
+      // Test data for rollup B
+      Decimal expectedResultB = 4;
+      RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
+      String conditionB = null;
 
-    // Configure rollup B
-    LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-    rollupSummaryB.Name = 'Count Opportunities';
-    rollupSummaryB.ParentObject__c = 'Account';
-    rollupSummaryB.UniqueName__c = 'CountOppsPerAccount';
-    rollupSummaryB.ChildObject__c = 'Opportunity';
-    rollupSummaryB.RelationShipField__c = 'AccountId';
-    rollupSummaryB.RelationShipCriteria__c = conditionB;
-    rollupSummaryB.FieldToAggregate__c = 'Amount';
-    rollupSummaryB.AggregateOperation__c = operationB.name();
-    rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
-      'NumberOfLocations__c'
-    );
-    rollupSummaryB.Active__c = true;
-    rollupSummaryB.CalculationMode__c = 'Realtime';
+      // Configure rollup A
+      LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+      rollupSummaryA.Name = 'Max Opportunities Amount';
+      rollupSummaryA.ParentObject__c = 'Account';
+      rollupSummaryA.UniqueName__c = 'MaxOppsAmount';
+      rollupSummaryA.ChildObject__c = 'Opportunity';
+      rollupSummaryA.RelationShipField__c = 'AccountId';
+      rollupSummaryA.RelationShipCriteria__c = conditionA;
+      rollupSummaryA.FieldToAggregate__c = 'Amount';
+      rollupSummaryA.AggregateOperation__c = operationA.name();
+      rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+      rollupSummaryA.Active__c = true;
+      rollupSummaryA.CalculationMode__c = 'Realtime';
 
-    // Insert rollup definitions
-    insert new List<LookupRollupSummary__c>{ rollupSummaryB, rollupSummaryA };
+      // Configure rollup B
+      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+      rollupSummaryB.Name = 'Count Opportunities';
+      rollupSummaryB.ParentObject__c = 'Account';
+      rollupSummaryB.UniqueName__c = 'CountOppsPerAccount';
+      rollupSummaryB.ChildObject__c = 'Opportunity';
+      rollupSummaryB.RelationShipField__c = 'AccountId';
+      rollupSummaryB.RelationShipCriteria__c = conditionB;
+      rollupSummaryB.FieldToAggregate__c = 'Amount';
+      rollupSummaryB.AggregateOperation__c = operationB.name();
+      rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+        'NumberOfLocations__c'
+      );
+      rollupSummaryB.Active__c = true;
+      rollupSummaryB.CalculationMode__c = 'Realtime';
 
-    RollupService.bypass(rollupSummaryA.UniqueName__c);
+      // Insert rollup definitions
+      insert new List<LookupRollupSummary__c>{ rollupSummaryB, rollupSummaryA };
 
-    // Test data
-    Test.startTest();
-    Account account = new Account();
-    account.Name = 'Test Account';
-    account.AnnualRevenue = 0;
-    insert account;
-    List<Opportunity> opps = new List<Opportunity>();
-    Integer rollupIdx = 0;
-    for (Decimal rollupValue : rollups) {
-      rollupIdx++;
-      Opportunity opp = new Opportunity();
-      opp.Name = 'Test Opportunity';
-      opp.StageName = 'Open';
-      opp.CloseDate = System.today();
-      opp.AccountId = account.Id;
-      opp.Amount = rollupValue * rollupIdx;
-      opps.add(opp);
+      RollupService.bypass(rollupSummaryA.UniqueName__c);
+
+      // Test data
+      Test.startTest();
+      Account account = new Account();
+      account.Name = 'Test Account';
+      account.AnnualRevenue = 0;
+      insert account;
+      List<Opportunity> opps = new List<Opportunity>();
+      Integer rollupIdx = 0;
+      for (Decimal rollupValue : rollups) {
+        rollupIdx++;
+        Opportunity opp = new Opportunity();
+        opp.Name = 'Test Opportunity';
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        opp.AccountId = account.Id;
+        opp.Amount = rollupValue * rollupIdx;
+        opps.add(opp);
+      }
+      insert opps;
+      Test.stopTest();
+
+      // Assert rollup
+      Id accountId = account.Id;
+      Account accountResult = Database.query(
+        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      );
+      System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+      System.assertEquals(
+        expectedResultB,
+        accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
+      );
     }
-    insert opps;
-    Test.stopTest();
-
-    // Assert rollup
-    Id accountId = account.Id;
-    Account accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-    );
-    System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
-    System.assertEquals(
-      expectedResultB,
-      accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
-    );
   }
 
   private testMethod static void testCountByType() {
@@ -447,61 +465,67 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    // Test data
-    List<Decimal> rollups = new List<Decimal>{ 10, 20, 30, 40 };
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Test data for rollup B
-    Decimal expectedResultB = 2;
-    RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
-    String conditionB = null;
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      // Test data
+      List<Decimal> rollups = new List<Decimal>{ 10, 20, 30, 40 };
 
-    // Configure rollup B
-    LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-    rollupSummaryB.Name = 'Count Opportunities';
-    rollupSummaryB.ParentObject__c = 'Account';
-    rollupSummaryB.ChildObject__c = 'Opportunity';
-    rollupSummaryB.RelationShipField__c = 'AccountId';
-    rollupSummaryB.RelationShipCriteria__c = conditionB;
-    rollupSummaryB.FieldToAggregate__c = 'Type';
-    rollupSummaryB.AggregateOperation__c = operationB.name();
-    rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
-      'NumberOfLocations__c'
-    );
-    rollupSummaryB.Active__c = true;
-    rollupSummaryB.CalculationMode__c = 'Realtime';
+      // Test data for rollup B
+      Decimal expectedResultB = 2;
+      RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
+      String conditionB = null;
 
-    // Insert rollup definitions
-    insert new List<LookupRollupSummary__c>{ rollupSummaryB };
+      // Configure rollup B
+      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+      rollupSummaryB.Name = 'Count Opportunities';
+      rollupSummaryB.ParentObject__c = 'Account';
+      rollupSummaryB.ChildObject__c = 'Opportunity';
+      rollupSummaryB.RelationShipField__c = 'AccountId';
+      rollupSummaryB.RelationShipCriteria__c = conditionB;
+      rollupSummaryB.FieldToAggregate__c = 'Type';
+      rollupSummaryB.AggregateOperation__c = operationB.name();
+      rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+        'NumberOfLocations__c'
+      );
+      rollupSummaryB.Active__c = true;
+      rollupSummaryB.CalculationMode__c = 'Realtime';
 
-    // Test data
-    Account account = new Account();
-    account.Name = 'Test Account';
-    account.AnnualRevenue = 0;
-    insert account;
-    List<Opportunity> opps = new List<Opportunity>();
-    Integer rollupIdx = 0;
-    for (Decimal rollupValue : rollups) {
-      rollupIdx++;
-      Opportunity opp = new Opportunity();
-      opp.Name = 'Test Opportunity';
-      opp.StageName = 'Open';
-      opp.Type = rollupIdx > 2 ? 'New Customer' : null;
-      opp.CloseDate = System.today();
-      opp.AccountId = account.Id;
-      opp.Amount = rollupValue * rollupIdx;
-      opps.add(opp);
+      // Insert rollup definitions
+      insert new List<LookupRollupSummary__c>{ rollupSummaryB };
+
+      // Test data
+      Account account = new Account();
+      account.Name = 'Test Account';
+      account.AnnualRevenue = 0;
+      insert account;
+      List<Opportunity> opps = new List<Opportunity>();
+      Integer rollupIdx = 0;
+      for (Decimal rollupValue : rollups) {
+        rollupIdx++;
+        Opportunity opp = new Opportunity();
+        opp.Name = 'Test Opportunity';
+        opp.StageName = 'Open';
+        opp.Type = rollupIdx > 2 ? 'New Customer' : null;
+        opp.CloseDate = System.today();
+        opp.AccountId = account.Id;
+        opp.Amount = rollupValue * rollupIdx;
+        opps.add(opp);
+      }
+      insert opps;
+
+      // Assert rollup
+      Id accountId = account.Id;
+      Account accountResult = Database.query(
+        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      );
+      System.assertEquals(
+        expectedResultB,
+        accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
+      );
     }
-    insert opps;
-
-    // Assert rollup
-    Id accountId = account.Id;
-    Account accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-    );
-    System.assertEquals(
-      expectedResultB,
-      accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
-    );
   }
 
   private testMethod static void testCountById() {
@@ -509,60 +533,66 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    // Test data
-    List<Decimal> rollups = new List<Decimal>{ 10, 20, 30, 40 };
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Test data for rollup B
-    Decimal expectedResultB = 4;
-    RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
-    String conditionB = null;
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      // Test data
+      List<Decimal> rollups = new List<Decimal>{ 10, 20, 30, 40 };
 
-    // Configure rollup B
-    LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-    rollupSummaryB.Name = 'Count Opportunities';
-    rollupSummaryB.ParentObject__c = 'Account';
-    rollupSummaryB.ChildObject__c = 'Opportunity';
-    rollupSummaryB.RelationShipField__c = 'AccountId';
-    rollupSummaryB.RelationShipCriteria__c = conditionB;
-    rollupSummaryB.FieldToAggregate__c = 'Id';
-    rollupSummaryB.AggregateOperation__c = operationB.name();
-    rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
-      'NumberOfLocations__c'
-    );
-    rollupSummaryB.Active__c = true;
-    rollupSummaryB.CalculationMode__c = 'Realtime';
+      // Test data for rollup B
+      Decimal expectedResultB = 4;
+      RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
+      String conditionB = null;
 
-    // Insert rollup definitions
-    insert new List<LookupRollupSummary__c>{ rollupSummaryB };
+      // Configure rollup B
+      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+      rollupSummaryB.Name = 'Count Opportunities';
+      rollupSummaryB.ParentObject__c = 'Account';
+      rollupSummaryB.ChildObject__c = 'Opportunity';
+      rollupSummaryB.RelationShipField__c = 'AccountId';
+      rollupSummaryB.RelationShipCriteria__c = conditionB;
+      rollupSummaryB.FieldToAggregate__c = 'Id';
+      rollupSummaryB.AggregateOperation__c = operationB.name();
+      rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+        'NumberOfLocations__c'
+      );
+      rollupSummaryB.Active__c = true;
+      rollupSummaryB.CalculationMode__c = 'Realtime';
 
-    // Test data
-    Account account = new Account();
-    account.Name = 'Test Account';
-    account.AnnualRevenue = 0;
-    insert account;
-    List<Opportunity> opps = new List<Opportunity>();
-    Integer rollupIdx = 0;
-    for (Decimal rollupValue : rollups) {
-      rollupIdx++;
-      Opportunity opp = new Opportunity();
-      opp.Name = 'Test Opportunity';
-      opp.StageName = 'Open';
-      opp.CloseDate = System.today();
-      opp.AccountId = account.Id;
-      opp.Amount = rollupValue * rollupIdx;
-      opps.add(opp);
+      // Insert rollup definitions
+      insert new List<LookupRollupSummary__c>{ rollupSummaryB };
+
+      // Test data
+      Account account = new Account();
+      account.Name = 'Test Account';
+      account.AnnualRevenue = 0;
+      insert account;
+      List<Opportunity> opps = new List<Opportunity>();
+      Integer rollupIdx = 0;
+      for (Decimal rollupValue : rollups) {
+        rollupIdx++;
+        Opportunity opp = new Opportunity();
+        opp.Name = 'Test Opportunity';
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        opp.AccountId = account.Id;
+        opp.Amount = rollupValue * rollupIdx;
+        opps.add(opp);
+      }
+      insert opps;
+
+      // Assert rollup
+      Id accountId = account.Id;
+      Account accountResult = Database.query(
+        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      );
+      System.assertEquals(
+        expectedResultB,
+        accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
+      );
     }
-    insert opps;
-
-    // Assert rollup
-    Id accountId = account.Id;
-    Account accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-    );
-    System.assertEquals(
-      expectedResultB,
-      accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
-    );
   }
 
   private testMethod static void testMultiRollupWithTwoParents() {
@@ -570,109 +600,115 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    // Test data
-    List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Test data for rollup A
-    Decimal expectedResultA = 500;
-    RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
-    String conditionA = 'Amount > 200';
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      // Test data
+      List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
 
-    // Test data for rollup B
-    Decimal expectedResultB = 4;
-    RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
-    String conditionB = null;
+      // Test data for rollup A
+      Decimal expectedResultA = 500;
+      RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
+      String conditionA = 'Amount > 200';
 
-    // Test data for rollup C
-    Decimal expectedResultC = 600;
-    RollupSummaries.AggregateOperation operationC = RollupSummaries.AggregateOperation.Sum;
-    String conditionC = null;
+      // Test data for rollup B
+      Decimal expectedResultB = 4;
+      RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
+      String conditionB = null;
 
-    // Configure rollup A
-    LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-    rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-    rollupSummaryA.ParentObject__c = 'Account';
-    rollupSummaryA.ChildObject__c = 'Opportunity';
-    rollupSummaryA.RelationShipField__c = 'AccountId';
-    rollupSummaryA.RelationShipCriteria__c = conditionA;
-    rollupSummaryA.FieldToAggregate__c = 'Amount';
-    rollupSummaryA.AggregateOperation__c = operationA.name();
-    rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-    rollupSummaryA.Active__c = true;
-    rollupSummaryA.CalculationMode__c = 'Realtime';
+      // Test data for rollup C
+      Decimal expectedResultC = 600;
+      RollupSummaries.AggregateOperation operationC = RollupSummaries.AggregateOperation.Sum;
+      String conditionC = null;
 
-    // Configure rollup B
-    LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-    rollupSummaryB.Name = 'Total Opportunities into Number Of Locations on Accountt';
-    rollupSummaryB.ParentObject__c = 'Account';
-    rollupSummaryB.ChildObject__c = 'Opportunity';
-    rollupSummaryB.RelationShipField__c = 'AccountId';
-    rollupSummaryB.RelationShipCriteria__c = conditionB;
-    rollupSummaryB.FieldToAggregate__c = 'CloseDate';
-    rollupSummaryB.AggregateOperation__c = operationB.name();
-    rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
-      'NumberOfLocations__c'
-    );
-    rollupSummaryB.Active__c = true;
-    rollupSummaryB.CalculationMode__c = 'Realtime';
+      // Configure rollup A
+      LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+      rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+      rollupSummaryA.ParentObject__c = 'Account';
+      rollupSummaryA.ChildObject__c = 'Opportunity';
+      rollupSummaryA.RelationShipField__c = 'AccountId';
+      rollupSummaryA.RelationShipCriteria__c = conditionA;
+      rollupSummaryA.FieldToAggregate__c = 'Amount';
+      rollupSummaryA.AggregateOperation__c = operationA.name();
+      rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+      rollupSummaryA.Active__c = true;
+      rollupSummaryA.CalculationMode__c = 'Realtime';
 
-    // Configure rollup C
-    LookupRollupSummary__c rollupSummaryC = new LookupRollupSummary__c();
-    rollupSummaryC.Name = 'Total Opportunities into Num Sent on Campaign';
-    rollupSummaryC.ParentObject__c = 'Campaign';
-    rollupSummaryC.ChildObject__c = 'Opportunity';
-    rollupSummaryC.RelationShipField__c = 'CampaignId';
-    rollupSummaryC.RelationShipCriteria__c = conditionC;
-    rollupSummaryC.FieldToAggregate__c = 'TotalOpportunityQuantity';
-    rollupSummaryC.AggregateOperation__c = operationC.name();
-    rollupSummaryC.AggregateResultField__c = 'NumberSent';
-    rollupSummaryC.Active__c = true;
-    rollupSummaryC.CalculationMode__c = 'Realtime';
+      // Configure rollup B
+      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+      rollupSummaryB.Name = 'Total Opportunities into Number Of Locations on Accountt';
+      rollupSummaryB.ParentObject__c = 'Account';
+      rollupSummaryB.ChildObject__c = 'Opportunity';
+      rollupSummaryB.RelationShipField__c = 'AccountId';
+      rollupSummaryB.RelationShipCriteria__c = conditionB;
+      rollupSummaryB.FieldToAggregate__c = 'CloseDate';
+      rollupSummaryB.AggregateOperation__c = operationB.name();
+      rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+        'NumberOfLocations__c'
+      );
+      rollupSummaryB.Active__c = true;
+      rollupSummaryB.CalculationMode__c = 'Realtime';
 
-    // Insert rollup definitions
-    insert new List<LookupRollupSummary__c>{
-      rollupSummaryA,
-      rollupSummaryB,
-      rollupSummaryC
-    };
+      // Configure rollup C
+      LookupRollupSummary__c rollupSummaryC = new LookupRollupSummary__c();
+      rollupSummaryC.Name = 'Total Opportunities into Num Sent on Campaign';
+      rollupSummaryC.ParentObject__c = 'Campaign';
+      rollupSummaryC.ChildObject__c = 'Opportunity';
+      rollupSummaryC.RelationShipField__c = 'CampaignId';
+      rollupSummaryC.RelationShipCriteria__c = conditionC;
+      rollupSummaryC.FieldToAggregate__c = 'TotalOpportunityQuantity';
+      rollupSummaryC.AggregateOperation__c = operationC.name();
+      rollupSummaryC.AggregateResultField__c = 'NumberSent';
+      rollupSummaryC.Active__c = true;
+      rollupSummaryC.CalculationMode__c = 'Realtime';
 
-    // Test data
-    Account account = new Account();
-    account.Name = 'Test Account';
-    account.AnnualRevenue = 0;
-    insert account;
-    SObject camp = Schema.getGlobalDescribe().get('Campaign').newSObject();
-    camp.put('Name', 'Test Campaign');
-    insert camp;
-    List<Opportunity> opps = new List<Opportunity>();
-    for (Decimal rollupValue : rollups) {
-      Opportunity opp = new Opportunity();
-      opp.Name = 'Test Opportunity';
-      opp.StageName = 'Open';
-      opp.CloseDate = System.today();
-      opp.AccountId = account.Id;
-      opp.Amount = rollupValue;
-      opp.TotalOpportunityQuantity = rollupValue;
-      opp.put('CampaignId', camp.Id);
-      opps.add(opp);
+      // Insert rollup definitions
+      insert new List<LookupRollupSummary__c>{
+        rollupSummaryA,
+        rollupSummaryB,
+        rollupSummaryC
+      };
+
+      // Test data
+      Account account = new Account();
+      account.Name = 'Test Account';
+      account.AnnualRevenue = 0;
+      insert account;
+      SObject camp = Schema.getGlobalDescribe().get('Campaign').newSObject();
+      camp.put('Name', 'Test Campaign');
+      insert camp;
+      List<Opportunity> opps = new List<Opportunity>();
+      for (Decimal rollupValue : rollups) {
+        Opportunity opp = new Opportunity();
+        opp.Name = 'Test Opportunity';
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        opp.AccountId = account.Id;
+        opp.Amount = rollupValue;
+        opp.TotalOpportunityQuantity = rollupValue;
+        opp.put('CampaignId', camp.Id);
+        opps.add(opp);
+      }
+      insert opps;
+
+      // Assert rollups
+      Id accountId = account.Id;
+      Account accountResult = Database.query(
+        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      );
+      System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+      System.assertEquals(
+        expectedResultB,
+        accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
+      );
+      Id campId = camp.Id;
+      SObject campResult = Database.query(
+        'select NumberSent from Campaign where Id = :campId'
+      );
+      System.assertEquals(expectedResultC, campResult.get('NumberSent'));
     }
-    insert opps;
-
-    // Assert rollups
-    Id accountId = account.Id;
-    Account accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-    );
-    System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
-    System.assertEquals(
-      expectedResultB,
-      accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
-    );
-    Id campId = camp.Id;
-    SObject campResult = Database.query(
-      'select NumberSent from Campaign where Id = :campId'
-    );
-    System.assertEquals(expectedResultC, campResult.get('NumberSent'));
   }
 
   private testMethod static void testMultiRollupWithTwoParentsTenChunks() {
@@ -680,109 +716,117 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    // Test data
-    List<Decimal> rollups = new List<Decimal>{
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15
-    };
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Test data for rollup A
-    RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
-    String conditionA = null;
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      // Test data
+      List<Decimal> rollups = new List<Decimal>{
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      };
 
-    // Test data for rollup B
-    RollupSummaries.AggregateOperation operationC = RollupSummaries.AggregateOperation.Sum;
-    String conditionB = null;
+      // Test data for rollup A
+      RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
+      String conditionA = null;
 
-    // Configure rollup A
-    LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-    rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-    rollupSummaryA.ParentObject__c = 'Account';
-    rollupSummaryA.ChildObject__c = 'Opportunity';
-    rollupSummaryA.RelationShipField__c = 'AccountId';
-    rollupSummaryA.RelationShipCriteria__c = conditionA;
-    rollupSummaryA.FieldToAggregate__c = 'Amount';
-    rollupSummaryA.AggregateOperation__c = operationA.name();
-    rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-    rollupSummaryA.Active__c = true;
-    rollupSummaryA.CalculationMode__c = 'Realtime';
+      // Test data for rollup B
+      RollupSummaries.AggregateOperation operationC = RollupSummaries.AggregateOperation.Sum;
+      String conditionB = null;
 
-    // Configure rollup B
-    LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-    rollupSummaryB.Name = 'Total Opportunities into Num Sent on Campaign';
-    rollupSummaryB.ParentObject__c = 'Campaign';
-    rollupSummaryB.ChildObject__c = 'Opportunity';
-    rollupSummaryB.RelationShipField__c = 'CampaignId';
-    rollupSummaryB.RelationShipCriteria__c = conditionB;
-    rollupSummaryB.FieldToAggregate__c = 'TotalOpportunityQuantity';
-    rollupSummaryB.AggregateOperation__c = operationC.name();
-    rollupSummaryB.AggregateResultField__c = 'NumberSent';
-    rollupSummaryB.Active__c = true;
-    rollupSummaryB.CalculationMode__c = 'Realtime';
+      // Configure rollup A
+      LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+      rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+      rollupSummaryA.ParentObject__c = 'Account';
+      rollupSummaryA.ChildObject__c = 'Opportunity';
+      rollupSummaryA.RelationShipField__c = 'AccountId';
+      rollupSummaryA.RelationShipCriteria__c = conditionA;
+      rollupSummaryA.FieldToAggregate__c = 'Amount';
+      rollupSummaryA.AggregateOperation__c = operationA.name();
+      rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+      rollupSummaryA.Active__c = true;
+      rollupSummaryA.CalculationMode__c = 'Realtime';
 
-    // Insert rollup definitions
-    insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
+      // Configure rollup B
+      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+      rollupSummaryB.Name = 'Total Opportunities into Num Sent on Campaign';
+      rollupSummaryB.ParentObject__c = 'Campaign';
+      rollupSummaryB.ChildObject__c = 'Opportunity';
+      rollupSummaryB.RelationShipField__c = 'CampaignId';
+      rollupSummaryB.RelationShipCriteria__c = conditionB;
+      rollupSummaryB.FieldToAggregate__c = 'TotalOpportunityQuantity';
+      rollupSummaryB.AggregateOperation__c = operationC.name();
+      rollupSummaryB.AggregateResultField__c = 'NumberSent';
+      rollupSummaryB.Active__c = true;
+      rollupSummaryB.CalculationMode__c = 'Realtime';
 
-    // Test data
-    List<SObject> accountList = new List<SObject>();
-    List<SObject> campaignList = new List<SObject>();
+      // Insert rollup definitions
+      insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
 
-    List<Opportunity> opps = new List<Opportunity>();
-    Integer index = 0;
-    for (Decimal rollupValue : rollups) {
-      // add each Opportunity to a new Account/Campaign to produce chunking
-      accountList.add(new Account());
-      accountList[index].put('Name', 'Test Account');
-      accountList[index].put('AnnualRevenue', 0);
-      insert accountList[index];
+      // Test data
+      List<SObject> accountList = new List<SObject>();
+      List<SObject> campaignList = new List<SObject>();
 
-      campaignList.add(Schema.getGlobalDescribe().get('Campaign').newSObject());
-      campaignList[index].put('Name', 'Test Campaign');
-      insert campaignList[index];
+      List<Opportunity> opps = new List<Opportunity>();
+      Integer index = 0;
+      for (Decimal rollupValue : rollups) {
+        // add each Opportunity to a new Account/Campaign to produce chunking
+        accountList.add(new Account());
+        accountList[index].put('Name', 'Test Account');
+        accountList[index].put('AnnualRevenue', 0);
+        insert accountList[index];
 
-      Opportunity opp = new Opportunity();
-      opp.Name = 'Test Opportunity';
-      opp.StageName = 'Open';
-      opp.CloseDate = System.today();
-      opp.AccountId = accountList[index].Id;
-      opp.Amount = rollupValue;
-      opp.TotalOpportunityQuantity = rollupValue;
-      opp.put('CampaignId', campaignList[index].Id);
-      opps.add(opp);
+        campaignList.add(
+          Schema.getGlobalDescribe().get('Campaign').newSObject()
+        );
+        campaignList[index].put('Name', 'Test Campaign');
+        insert campaignList[index];
 
-      index++;
-    }
-    insert opps;
+        Opportunity opp = new Opportunity();
+        opp.Name = 'Test Opportunity';
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        opp.AccountId = accountList[index].Id;
+        opp.Amount = rollupValue;
+        opp.TotalOpportunityQuantity = rollupValue;
+        opp.put('CampaignId', campaignList[index].Id);
+        opps.add(opp);
 
-    // Assert rollups for each Account/Campaign
-    index = 0;
-    for (Decimal rollupValue : rollups) {
-      Id accountId = accountList[index].Id;
-      Account accountResult = Database.query(
-        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-      );
-      System.assertEquals(rollupValue, accountResult.AnnualRevenue);
+        index++;
+      }
+      insert opps;
 
-      Id campId = campaignList[index].Id;
-      SObject campResult = Database.query(
-        'select NumberSent from Campaign where Id = :campId'
-      );
-      System.assertEquals(rollupValue, campResult.get('NumberSent'));
+      // Assert rollups for each Account/Campaign
+      index = 0;
+      for (Decimal rollupValue : rollups) {
+        Id accountId = accountList[index].Id;
+        Account accountResult = Database.query(
+          'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+        );
+        System.assertEquals(rollupValue, accountResult.AnnualRevenue);
 
-      index++;
+        Id campId = campaignList[index].Id;
+        SObject campResult = Database.query(
+          'select NumberSent from Campaign where Id = :campId'
+        );
+        System.assertEquals(rollupValue, campResult.get('NumberSent'));
+
+        index++;
+      }
     }
   }
 
@@ -971,127 +1015,133 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    // If NPSP is present, disable NPSP TDTM triggers. They distort the limit counts.
-    RollupService.disableNpspTdtm();
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
-    TestContext.AccountTestTriggerEnabled = false;
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      Test.startTest();
+      // If NPSP is present, disable NPSP TDTM triggers. They distort the limit counts.
+      RollupService.disableNpspTdtm();
 
-    // Test data
-    List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
+      // Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
+      TestContext.AccountTestTriggerEnabled = false;
 
-    // Test data for rollup A
-    Decimal expectedResultA = 500;
-    RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
-    String conditionA = 'Amount > 200';
+      // Test data
+      List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
 
-    // Test data for rollup B
-    Decimal expectedResultB = 4;
-    RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
-    String conditionB = null;
+      // Test data for rollup A
+      Decimal expectedResultA = 500;
+      RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
+      String conditionA = 'Amount > 200';
 
-    // Configure rollup A
-    LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-    rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-    rollupSummaryA.ParentObject__c = 'Account';
-    rollupSummaryA.ChildObject__c = 'Opportunity';
-    rollupSummaryA.RelationShipField__c = 'AccountId';
-    rollupSummaryA.RelationShipCriteria__c = conditionA;
-    rollupSummaryA.FieldToAggregate__c = 'Amount';
-    rollupSummaryA.AggregateOperation__c = operationA.name();
-    rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-    rollupSummaryA.Active__c = true;
-    rollupSummaryA.CalculationMode__c = 'Realtime';
+      // Test data for rollup B
+      Decimal expectedResultB = 4;
+      RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
+      String conditionB = null;
 
-    // Configure rollup B
-    LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-    rollupSummaryB.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-    rollupSummaryB.ParentObject__c = 'Account';
-    rollupSummaryB.ChildObject__c = 'Opportunity';
-    rollupSummaryB.RelationShipField__c = 'AccountId';
-    rollupSummaryB.RelationShipCriteria__c = conditionB;
-    rollupSummaryB.FieldToAggregate__c = 'CloseDate';
-    rollupSummaryB.AggregateOperation__c = operationB.name();
-    rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
-      'NumberOfLocations__c'
-    );
-    rollupSummaryB.Active__c = true;
-    rollupSummaryB.CalculationMode__c = 'Realtime';
+      // Configure rollup A
+      LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+      rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+      rollupSummaryA.ParentObject__c = 'Account';
+      rollupSummaryA.ChildObject__c = 'Opportunity';
+      rollupSummaryA.RelationShipField__c = 'AccountId';
+      rollupSummaryA.RelationShipCriteria__c = conditionA;
+      rollupSummaryA.FieldToAggregate__c = 'Amount';
+      rollupSummaryA.AggregateOperation__c = operationA.name();
+      rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+      rollupSummaryA.Active__c = true;
+      rollupSummaryA.CalculationMode__c = 'Realtime';
 
-    // Insert rollup definitions
-    insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
+      // Configure rollup B
+      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+      rollupSummaryB.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+      rollupSummaryB.ParentObject__c = 'Account';
+      rollupSummaryB.ChildObject__c = 'Opportunity';
+      rollupSummaryB.RelationShipField__c = 'AccountId';
+      rollupSummaryB.RelationShipCriteria__c = conditionB;
+      rollupSummaryB.FieldToAggregate__c = 'CloseDate';
+      rollupSummaryB.AggregateOperation__c = operationB.name();
+      rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+        'NumberOfLocations__c'
+      );
+      rollupSummaryB.Active__c = true;
+      rollupSummaryB.CalculationMode__c = 'Realtime';
 
-    // Test data
-    Account account = new Account();
-    account.Name = 'Test Account';
-    account.AnnualRevenue = 0;
-    insert account;
-    List<Opportunity> opps = new List<Opportunity>();
-    for (Decimal rollupValue : rollups) {
-      Opportunity opp = new Opportunity();
-      opp.Name = 'Test Opportunity';
-      opp.StageName = 'Open';
-      opp.CloseDate = System.today();
-      opp.AccountId = account.Id;
-      opp.Amount = rollupValue;
-      opps.add(opp);
+      // Insert rollup definitions
+      insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
+
+      // Test data
+      Account account = new Account();
+      account.Name = 'Test Account';
+      account.AnnualRevenue = 0;
+      insert account;
+      List<Opportunity> opps = new List<Opportunity>();
+      for (Decimal rollupValue : rollups) {
+        Opportunity opp = new Opportunity();
+        opp.Name = 'Test Opportunity';
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        opp.AccountId = account.Id;
+        opp.Amount = rollupValue;
+        opps.add(opp);
+      }
+      insert opps;
+
+      // One query on ApexTrigger (validation when inserting rollups)
+      // One query on Database.newQueryLocator (validation when insert rollup a)
+      // One query on Rollup object
+      // One query on Opportunity for rollup a
+      // One query on Opportunity for rollup b
+      // One query on Parent for values to confirm DML needed
+      Integer queries = Limits.getQueries();
+      System.assertEquals(6, queries);
+
+      // One row for ApexTrigger
+      // Two rows for Rollup object
+      // Two rows for Opportunity for rollup a
+      // One rows for Opportunity for rollup b (since its a COUNT and only uses 1 row since Summer'18)
+      // One for Parent
+      Integer queryRows = Limits.getQueryRows();
+      System.assertEquals(7, queryRows);
+
+      // Assert rollup
+      Id accountId = account.Id;
+      Account accountResult = Database.query(
+        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      );
+      System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+      System.assertEquals(
+        expectedResultB,
+        accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
+      );
+
+      // Modify the opps, but only the Amount, this should result in only the Amount rollup executing
+      for (Opportunity opp : opps)
+        opp.Amount++;
+      update opps;
+
+      // + One query for the Account query above
+      // + One query on Opportunity for rollup a
+      // + One query on Parent for values to confirm DML needed
+      System.assertEquals(queries + 3, Limits.getQueries());
+
+      // + One query for the Account query above
+      // + Two rows for Opportunity for rollup a
+      // + One for Parent
+      System.assertEquals(queryRows + 4, Limits.getQueryRows());
+
+      // Assert rollup
+      accountResult = Database.query(
+        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      );
+      System.assertEquals(expectedResultA + 2, accountResult.AnnualRevenue);
+      System.assertEquals(
+        expectedResultB,
+        accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
+      );
+      Test.stopTest();
     }
-    insert opps;
-
-    // One query on ApexTrigger (in the TestContext.isSupported method)
-    // One query on ApexTrigger (validation when inserting rollups)
-    // One query on Database.newQueryLocator (validation when insert rollup a)
-    // One query on Rollup object
-    // One query on Opportunity for rollup a
-    // One query on Opportunity for rollup b
-    // One query on Parent for values to confirm DML needed
-    Integer queries = Limits.getQueries();
-    System.assertEquals(7, queries);
-
-    // One row for ApexTrigger (in the TestContext.isSupported method)
-    // One row for ApexTrigger
-    // Two rows for Rollup object
-    // Two rows for Opportunity for rollup a
-    // One rows for Opportunity for rollup b (since its a COUNT and only uses 1 row since Summer'18)
-    // One for Parent
-    Integer queryRows = Limits.getQueryRows();
-    System.assertEquals(8, queryRows);
-
-    // Assert rollup
-    Id accountId = account.Id;
-    Account accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-    );
-    System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
-    System.assertEquals(
-      expectedResultB,
-      accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
-    );
-
-    // Modify the opps, but only the Amount, this should result in only the Amount rollup executing
-    for (Opportunity opp : opps)
-      opp.Amount++;
-    update opps;
-
-    // + One query for the Account query above
-    // + One query on Opportunity for rollup a
-    // + One query on Parent for values to confirm DML needed
-    System.assertEquals(queries + 3, Limits.getQueries());
-
-    // + One query for the Account query above
-    // + Two rows for Opportunity for rollup a
-    // + One for Parent
-    System.assertEquals(queryRows + 4, Limits.getQueryRows());
-
-    // Assert rollup
-    accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-    );
-    System.assertEquals(expectedResultA + 2, accountResult.AnnualRevenue);
-    System.assertEquals(
-      expectedResultB,
-      accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
-    );
   }
 
   private testMethod static void testLimitsConsumedWithoutConditions() {
@@ -1099,124 +1149,130 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    // If NPSP is present, disable NPSP TDTM triggers. They distort the limit counts.
-    RollupService.disableNpspTdtm();
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
-    TestContext.AccountTestTriggerEnabled = false;
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      Test.startTest();
+      // If NPSP is present, disable NPSP TDTM triggers. They distort the limit counts.
+      RollupService.disableNpspTdtm();
 
-    // Test data
-    List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
+      // Disable the Account trigger for this test, its carefully caluculated test actuals are thrown when this is enabled as well
+      TestContext.AccountTestTriggerEnabled = false;
 
-    // Test data for rollup A
-    Decimal expectedResultA = 600;
-    RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
-    String conditionA = null;
+      // Test data
+      List<Decimal> rollups = new List<Decimal>{ 250, 250, 50, 50 };
 
-    // Test data for rollup B
-    Decimal expectedResultB = 4;
-    RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
-    String conditionB = null;
+      // Test data for rollup A
+      Decimal expectedResultA = 600;
+      RollupSummaries.AggregateOperation operationA = RollupSummaries.AggregateOperation.Sum;
+      String conditionA = null;
 
-    // Configure rollup A
-    LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-    rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-    rollupSummaryA.ParentObject__c = 'Account';
-    rollupSummaryA.ChildObject__c = 'Opportunity';
-    rollupSummaryA.RelationShipField__c = 'AccountId';
-    rollupSummaryA.RelationShipCriteria__c = conditionA;
-    rollupSummaryA.FieldToAggregate__c = 'Amount';
-    rollupSummaryA.AggregateOperation__c = operationA.name();
-    rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-    rollupSummaryA.Active__c = true;
-    rollupSummaryA.CalculationMode__c = 'Realtime';
+      // Test data for rollup B
+      Decimal expectedResultB = 4;
+      RollupSummaries.AggregateOperation operationB = RollupSummaries.AggregateOperation.Count;
+      String conditionB = null;
 
-    // Configure rollup B
-    LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-    rollupSummaryB.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-    rollupSummaryB.ParentObject__c = 'Account';
-    rollupSummaryB.ChildObject__c = 'Opportunity';
-    rollupSummaryB.RelationShipField__c = 'AccountId';
-    rollupSummaryB.RelationShipCriteria__c = conditionB;
-    rollupSummaryB.FieldToAggregate__c = 'CloseDate';
-    rollupSummaryB.AggregateOperation__c = operationB.name();
-    rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
-      'NumberOfLocations__c'
-    );
-    rollupSummaryB.Active__c = true;
-    rollupSummaryB.CalculationMode__c = 'Realtime';
+      // Configure rollup A
+      LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+      rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+      rollupSummaryA.ParentObject__c = 'Account';
+      rollupSummaryA.ChildObject__c = 'Opportunity';
+      rollupSummaryA.RelationShipField__c = 'AccountId';
+      rollupSummaryA.RelationShipCriteria__c = conditionA;
+      rollupSummaryA.FieldToAggregate__c = 'Amount';
+      rollupSummaryA.AggregateOperation__c = operationA.name();
+      rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
+      rollupSummaryA.Active__c = true;
+      rollupSummaryA.CalculationMode__c = 'Realtime';
 
-    // Insert rollup definitions
-    insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
+      // Configure rollup B
+      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+      rollupSummaryB.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
+      rollupSummaryB.ParentObject__c = 'Account';
+      rollupSummaryB.ChildObject__c = 'Opportunity';
+      rollupSummaryB.RelationShipField__c = 'AccountId';
+      rollupSummaryB.RelationShipCriteria__c = conditionB;
+      rollupSummaryB.FieldToAggregate__c = 'CloseDate';
+      rollupSummaryB.AggregateOperation__c = operationB.name();
+      rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
+        'NumberOfLocations__c'
+      );
+      rollupSummaryB.Active__c = true;
+      rollupSummaryB.CalculationMode__c = 'Realtime';
 
-    // Test data
-    Account account = new Account();
-    account.Name = 'Test Account';
-    account.AnnualRevenue = 0;
-    insert account;
-    List<Opportunity> opps = new List<Opportunity>();
-    for (Decimal rollupValue : rollups) {
-      Opportunity opp = new Opportunity();
-      opp.Name = 'Test Opportunity';
-      opp.StageName = 'Open';
-      opp.CloseDate = System.today();
-      opp.AccountId = account.Id;
-      opp.Amount = rollupValue;
-      opps.add(opp);
+      // Insert rollup definitions
+      insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
+
+      // Test data
+      Account account = new Account();
+      account.Name = 'Test Account';
+      account.AnnualRevenue = 0;
+      insert account;
+      List<Opportunity> opps = new List<Opportunity>();
+      for (Decimal rollupValue : rollups) {
+        Opportunity opp = new Opportunity();
+        opp.Name = 'Test Opportunity';
+        opp.StageName = 'Open';
+        opp.CloseDate = System.today();
+        opp.AccountId = account.Id;
+        opp.Amount = rollupValue;
+        opps.add(opp);
+      }
+      insert opps;
+
+      // One query on ApexTrigger (validation when inserting rollups)
+      // One query on Rollup object
+      // One query on Opportunity for both rollups
+      // One query on Parent for values to confirm DML needed
+      Integer queries = Limits.getQueries();
+      System.assertEquals(4, queries);
+
+      // One row for ApexTrigger
+      // Two rows for Rollup object
+      // Four rows for Opportunity for rollup a and b
+      // One for Parent
+      Integer queryRows = Limits.getQueryRows();
+      System.assertEquals(8, queryRows);
+
+      // Assert rollup
+      Id accountId = account.Id;
+      Account accountResult = Database.query(
+        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      );
+      System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
+      System.assertEquals(
+        expectedResultB,
+        accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
+      );
+
+      // Modify the opps, but only the Amount, this should result in only the Amount rollup executing
+      for (Opportunity opp : opps)
+        opp.Amount++;
+      update opps;
+
+      // + One query for the Account query above
+      // + One query on Opportunity for rollup a
+      // + One query on Parent for values to confirm DML needed
+      System.assertEquals(queries + 3, Limits.getQueries());
+
+      // + One query for the Account query above
+      // + Four rows for Opportunity for rollup a and
+      // + One for Parent
+      System.assertEquals(queryRows + 6, Limits.getQueryRows());
+
+      // Assert rollup
+      accountResult = Database.query(
+        'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
+      );
+      System.assertEquals(expectedResultA + 4, accountResult.AnnualRevenue);
+      System.assertEquals(
+        expectedResultB,
+        accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
+      );
+      Test.stopTest();
     }
-    insert opps;
-
-    // One query on ApexTrigger (in the TestContext.isSupported method)
-    // One query on ApexTrigger (validation when inserting rollups)
-    // One query on Rollup object
-    // One query on Opportunity for both rollups
-    // One query on Parent for values to confirm DML needed
-    Integer queries = Limits.getQueries();
-    System.assertEquals(5, queries);
-
-    // One row for ApexTrigger (in the TestContext.isSupported method)
-    // One row for ApexTrigger
-    // Two rows for Rollup object
-    // Four rows for Opportunity for rollup a and b
-    // One for Parent
-    Integer queryRows = Limits.getQueryRows();
-    System.assertEquals(9, queryRows);
-
-    // Assert rollup
-    Id accountId = account.Id;
-    Account accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-    );
-    System.assertEquals(expectedResultA, accountResult.AnnualRevenue);
-    System.assertEquals(
-      expectedResultB,
-      accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
-    );
-
-    // Modify the opps, but only the Amount, this should result in only the Amount rollup executing
-    for (Opportunity opp : opps)
-      opp.Amount++;
-    update opps;
-
-    // + One query for the Account query above
-    // + One query on Opportunity for rollup a
-    // + One query on Parent for values to confirm DML needed
-    System.assertEquals(queries + 3, Limits.getQueries());
-
-    // + One query for the Account query above
-    // + Four rows for Opportunity for rollup a and
-    // + One for Parent
-    System.assertEquals(queryRows + 6, Limits.getQueryRows());
-
-    // Assert rollup
-    accountResult = Database.query(
-      'select AnnualRevenue, NumberOfLocations__c from Account where Id = :accountId'
-    );
-    System.assertEquals(expectedResultA + 4, accountResult.AnnualRevenue);
-    System.assertEquals(
-      expectedResultB,
-      accountResult.get(ACCOUNT_NUMBER_OF_LOCATIONS)
-    );
   }
 
   private static void testSingleRollup(
@@ -1512,82 +1568,88 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    Schema.SObjectType parentType = LookupParent__c.sObjectType;
-    Schema.SObjectType childType = LookupChild__c.sObjectType;
-    String parentObjectName = parentType.getDescribe().getName();
-    String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateResultField = LookupParent__c.Colours__c.getDescribe()
-      .getName();
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Create a picklist rollup
-    LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
-    rollupSummary.Name = 'Test Rollup';
-    rollupSummary.ParentObject__c = parentObjectName;
-    rollupSummary.ChildObject__c = childObjectName;
-    rollupSummary.RelationShipField__c = relationshipField;
-    rollupSummary.FieldToAggregate__c = aggregateField;
-    rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Concatenate.name();
-    rollupSummary.AggregateResultField__c = aggregateResultField;
-    rollupSummary.ConcatenateDelimiter__c = ';';
-    rollupSummary.Active__c = true;
-    rollupSummary.CalculationMode__c = 'Realtime';
-    insert rollupSummary;
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      Schema.SObjectType parentType = LookupParent__c.sObjectType;
+      Schema.SObjectType childType = LookupChild__c.sObjectType;
+      String parentObjectName = parentType.getDescribe().getName();
+      String childObjectName = childType.getDescribe().getName();
+      String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
+        .getName();
+      String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
+      String aggregateResultField = LookupParent__c.Colours__c.getDescribe()
+        .getName();
 
-    // Insert parents
-    SObject parentA = parentType.newSObject();
-    parentA.put('Name', 'ParentA');
-    SObject parentB = parentType.newSObject();
-    parentB.put('Name', 'ParentB');
-    SObject parentC = parentType.newSObject();
-    parentC.put('Name', 'ParentC');
-    List<SObject> parents = new List<SObject>{ parentA, parentB, parentC };
-    insert parents;
+      // Create a picklist rollup
+      LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+      rollupSummary.Name = 'Test Rollup';
+      rollupSummary.ParentObject__c = parentObjectName;
+      rollupSummary.ChildObject__c = childObjectName;
+      rollupSummary.RelationShipField__c = relationshipField;
+      rollupSummary.FieldToAggregate__c = aggregateField;
+      rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Concatenate.name();
+      rollupSummary.AggregateResultField__c = aggregateResultField;
+      rollupSummary.ConcatenateDelimiter__c = ';';
+      rollupSummary.Active__c = true;
+      rollupSummary.CalculationMode__c = 'Realtime';
+      insert rollupSummary;
 
-    // Insert children
-    List<SObject> children = new List<SObject>();
-    for (SObject parent : parents) {
-      String name = (String) parent.get('Name');
-      SObject child1 = childType.newSObject();
-      child1.put(relationshipField, parent.Id);
-      child1.put(aggregateField, 'Red');
-      children.add(child1);
-      SObject child2 = childType.newSObject();
-      child2.put(relationshipField, parent.Id);
-      child2.put(aggregateField, 'Yellow');
-      children.add(child2);
-      if (name.equals('ParentA') || name.equals('ParentB')) {
-        SObject child3 = childType.newSObject();
-        child3.put(relationshipField, parent.Id);
-        child3.put(aggregateField, 'Blue');
-        children.add(child3);
+      // Insert parents
+      SObject parentA = parentType.newSObject();
+      parentA.put('Name', 'ParentA');
+      SObject parentB = parentType.newSObject();
+      parentB.put('Name', 'ParentB');
+      SObject parentC = parentType.newSObject();
+      parentC.put('Name', 'ParentC');
+      List<SObject> parents = new List<SObject>{ parentA, parentB, parentC };
+      insert parents;
+
+      // Insert children
+      List<SObject> children = new List<SObject>();
+      for (SObject parent : parents) {
+        String name = (String) parent.get('Name');
+        SObject child1 = childType.newSObject();
+        child1.put(relationshipField, parent.Id);
+        child1.put(aggregateField, 'Red');
+        children.add(child1);
+        SObject child2 = childType.newSObject();
+        child2.put(relationshipField, parent.Id);
+        child2.put(aggregateField, 'Yellow');
+        children.add(child2);
+        if (name.equals('ParentA') || name.equals('ParentB')) {
+          SObject child3 = childType.newSObject();
+          child3.put(relationshipField, parent.Id);
+          child3.put(aggregateField, 'Blue');
+          children.add(child3);
+        }
       }
-    }
-    insert children;
+      insert children;
 
-    // Assert rollups
-    Map<Id, SObject> assertParents = new Map<Id, SObject>(
-      Database.query(
-        String.format(
-          'select id, {0} from {1}',
-          new List<String>{ aggregateResultField, parentObjectName }
+      // Assert rollups
+      Map<Id, SObject> assertParents = new Map<Id, SObject>(
+        Database.query(
+          String.format(
+            'select id, {0} from {1}',
+            new List<String>{ aggregateResultField, parentObjectName }
+          )
         )
-      )
-    );
-    System.assertEquals(
-      'Red;Yellow;Blue',
-      (String) assertParents.get(parentA.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      'Red;Yellow;Blue',
-      (String) assertParents.get(parentB.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      'Red;Yellow',
-      (String) assertParents.get(parentC.id).get(aggregateResultField)
-    );
+      );
+      System.assertEquals(
+        'Red;Yellow;Blue',
+        (String) assertParents.get(parentA.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        'Red;Yellow;Blue',
+        (String) assertParents.get(parentB.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        'Red;Yellow',
+        (String) assertParents.get(parentC.id).get(aggregateResultField)
+      );
+    }
   }
 
   private testMethod static void testPicklistRollupWithLimits() {
@@ -1595,82 +1657,88 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    Schema.SObjectType parentType = LookupParent__c.sObjectType;
-    Schema.SObjectType childType = LookupChild__c.sObjectType;
-    String parentObjectName = parentType.getDescribe().getName();
-    String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateResultField = LookupParent__c.Colours__c.getDescribe()
-      .getName();
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Create a picklist rollup
-    LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
-    rollupSummary.Name = 'Test Rollup';
-    rollupSummary.ParentObject__c = parentObjectName;
-    rollupSummary.ChildObject__c = childObjectName;
-    rollupSummary.RelationShipField__c = relationshipField;
-    rollupSummary.FieldToAggregate__c = aggregateField;
-    rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Concatenate.name();
-    rollupSummary.AggregateResultField__c = aggregateResultField;
-    rollupSummary.ConcatenateDelimiter__c = ';';
-    rollupSummary.Active__c = true;
-    rollupSummary.CalculationMode__c = 'Realtime';
-    rollupSummary.RowLimit__c = 2;
-    rollupSummary.AggregateAllRows__c = true;
-    insert rollupSummary;
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      Schema.SObjectType parentType = LookupParent__c.sObjectType;
+      Schema.SObjectType childType = LookupChild__c.sObjectType;
+      String parentObjectName = parentType.getDescribe().getName();
+      String childObjectName = childType.getDescribe().getName();
+      String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
+        .getName();
+      String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
+      String aggregateResultField = LookupParent__c.Colours__c.getDescribe()
+        .getName();
 
-    // Insert parents
-    SObject parentA = parentType.newSObject();
-    parentA.put('Name', 'ParentA');
-    SObject parentB = parentType.newSObject();
-    parentB.put('Name', 'ParentB');
-    SObject parentC = parentType.newSObject();
-    parentC.put('Name', 'ParentC');
-    List<SObject> parents = new List<SObject>{ parentA, parentB, parentC };
-    insert parents;
+      // Create a picklist rollup
+      LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+      rollupSummary.Name = 'Test Rollup';
+      rollupSummary.ParentObject__c = parentObjectName;
+      rollupSummary.ChildObject__c = childObjectName;
+      rollupSummary.RelationShipField__c = relationshipField;
+      rollupSummary.FieldToAggregate__c = aggregateField;
+      rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Concatenate.name();
+      rollupSummary.AggregateResultField__c = aggregateResultField;
+      rollupSummary.ConcatenateDelimiter__c = ';';
+      rollupSummary.Active__c = true;
+      rollupSummary.CalculationMode__c = 'Realtime';
+      rollupSummary.RowLimit__c = 2;
+      rollupSummary.AggregateAllRows__c = true;
+      insert rollupSummary;
 
-    // Insert children
-    List<SObject> children = new List<SObject>();
-    for (SObject parent : parents) {
-      String name = (String) parent.get('Name');
-      SObject child1 = childType.newSObject();
-      child1.put(relationshipField, parent.Id);
-      child1.put(aggregateField, 'Red');
-      children.add(child1);
-      SObject child2 = childType.newSObject();
-      child2.put(relationshipField, parent.Id);
-      child2.put(aggregateField, 'Yellow');
-      children.add(child2);
-      SObject child3 = childType.newSObject();
-      child3.put(relationshipField, parent.Id);
-      child3.put(aggregateField, 'Blue');
-      children.add(child3);
-    }
-    insert children;
+      // Insert parents
+      SObject parentA = parentType.newSObject();
+      parentA.put('Name', 'ParentA');
+      SObject parentB = parentType.newSObject();
+      parentB.put('Name', 'ParentB');
+      SObject parentC = parentType.newSObject();
+      parentC.put('Name', 'ParentC');
+      List<SObject> parents = new List<SObject>{ parentA, parentB, parentC };
+      insert parents;
 
-    // Assert rollups
-    Map<Id, SObject> assertParents = new Map<Id, SObject>(
-      Database.query(
-        String.format(
-          'select id, {0} from {1}',
-          new List<String>{ aggregateResultField, parentObjectName }
+      // Insert children
+      List<SObject> children = new List<SObject>();
+      for (SObject parent : parents) {
+        String name = (String) parent.get('Name');
+        SObject child1 = childType.newSObject();
+        child1.put(relationshipField, parent.Id);
+        child1.put(aggregateField, 'Red');
+        children.add(child1);
+        SObject child2 = childType.newSObject();
+        child2.put(relationshipField, parent.Id);
+        child2.put(aggregateField, 'Yellow');
+        children.add(child2);
+        SObject child3 = childType.newSObject();
+        child3.put(relationshipField, parent.Id);
+        child3.put(aggregateField, 'Blue');
+        children.add(child3);
+      }
+      insert children;
+
+      // Assert rollups
+      Map<Id, SObject> assertParents = new Map<Id, SObject>(
+        Database.query(
+          String.format(
+            'select id, {0} from {1}',
+            new List<String>{ aggregateResultField, parentObjectName }
+          )
         )
-      )
-    );
-    System.assertEquals(
-      'Red;Yellow',
-      (String) assertParents.get(parentA.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      'Red;Yellow',
-      (String) assertParents.get(parentB.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      'Red;Yellow',
-      (String) assertParents.get(parentC.id).get(aggregateResultField)
-    );
+      );
+      System.assertEquals(
+        'Red;Yellow',
+        (String) assertParents.get(parentA.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        'Red;Yellow',
+        (String) assertParents.get(parentB.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        'Red;Yellow',
+        (String) assertParents.get(parentC.id).get(aggregateResultField)
+      );
+    }
   }
 
   private testMethod static void testLastRollupWithLimits() {
@@ -1678,68 +1746,74 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    Schema.SObjectType parentType = LookupParent__c.sObjectType;
-    Schema.SObjectType childType = LookupChild__c.sObjectType;
-    String parentObjectName = parentType.getDescribe().getName();
-    String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateResultField = LookupParent__c.Colours__c.getDescribe()
-      .getName();
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Create a picklist rollup
-    LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
-    rollupSummary.Name = 'Test Rollup';
-    rollupSummary.ParentObject__c = parentObjectName;
-    rollupSummary.ChildObject__c = childObjectName;
-    rollupSummary.RelationShipField__c = relationshipField;
-    rollupSummary.FieldToAggregate__c = aggregateField;
-    rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Last.name();
-    rollupSummary.AggregateResultField__c = aggregateResultField;
-    rollupSummary.FieldToOrderBy__c = aggregateField + ' DESC';
-    rollupSummary.Active__c = true;
-    rollupSummary.CalculationMode__c = 'Realtime';
-    rollupSummary.RowLimit__c = 2;
-    rollupSummary.AggregateAllRows__c = true;
-    insert rollupSummary;
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      Schema.SObjectType parentType = LookupParent__c.sObjectType;
+      Schema.SObjectType childType = LookupChild__c.sObjectType;
+      String parentObjectName = parentType.getDescribe().getName();
+      String childObjectName = childType.getDescribe().getName();
+      String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
+        .getName();
+      String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
+      String aggregateResultField = LookupParent__c.Colours__c.getDescribe()
+        .getName();
 
-    // Insert parents
-    SObject parent = parentType.newSObject();
-    parent.put('Name', 'ParentA');
-    List<SObject> parents = new List<SObject>{ parent };
-    insert parents;
+      // Create a picklist rollup
+      LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+      rollupSummary.Name = 'Test Rollup';
+      rollupSummary.ParentObject__c = parentObjectName;
+      rollupSummary.ChildObject__c = childObjectName;
+      rollupSummary.RelationShipField__c = relationshipField;
+      rollupSummary.FieldToAggregate__c = aggregateField;
+      rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Last.name();
+      rollupSummary.AggregateResultField__c = aggregateResultField;
+      rollupSummary.FieldToOrderBy__c = aggregateField + ' DESC';
+      rollupSummary.Active__c = true;
+      rollupSummary.CalculationMode__c = 'Realtime';
+      rollupSummary.RowLimit__c = 2;
+      rollupSummary.AggregateAllRows__c = true;
+      insert rollupSummary;
 
-    // Insert children
-    List<SObject> children = new List<SObject>();
-    String name = (String) parent.get('Name');
-    SObject child1 = childType.newSObject();
-    child1.put(relationshipField, parent.Id);
-    child1.put(aggregateField, '1');
-    children.add(child1);
-    SObject child2 = childType.newSObject();
-    child2.put(relationshipField, parent.Id);
-    child2.put(aggregateField, '2');
-    children.add(child2);
-    SObject child3 = childType.newSObject();
-    child3.put(relationshipField, parent.Id);
-    child3.put(aggregateField, '3');
-    children.add(child3);
-    insert children;
+      // Insert parents
+      SObject parent = parentType.newSObject();
+      parent.put('Name', 'ParentA');
+      List<SObject> parents = new List<SObject>{ parent };
+      insert parents;
 
-    // Assert rollups
-    Map<Id, SObject> assertParents = new Map<Id, SObject>(
-      Database.query(
-        String.format(
-          'select id, {0} from {1}',
-          new List<String>{ aggregateResultField, parentObjectName }
+      // Insert children
+      List<SObject> children = new List<SObject>();
+      String name = (String) parent.get('Name');
+      SObject child1 = childType.newSObject();
+      child1.put(relationshipField, parent.Id);
+      child1.put(aggregateField, '1');
+      children.add(child1);
+      SObject child2 = childType.newSObject();
+      child2.put(relationshipField, parent.Id);
+      child2.put(aggregateField, '2');
+      children.add(child2);
+      SObject child3 = childType.newSObject();
+      child3.put(relationshipField, parent.Id);
+      child3.put(aggregateField, '3');
+      children.add(child3);
+      insert children;
+
+      // Assert rollups
+      Map<Id, SObject> assertParents = new Map<Id, SObject>(
+        Database.query(
+          String.format(
+            'select id, {0} from {1}',
+            new List<String>{ aggregateResultField, parentObjectName }
+          )
         )
-      )
-    );
-    System.assertEquals(
-      '2',
-      (String) assertParents.get(parent.id).get(aggregateResultField)
-    );
+      );
+      System.assertEquals(
+        '2',
+        (String) assertParents.get(parent.id).get(aggregateResultField)
+      );
+    }
   }
 
   private testMethod static void testLimitsConsumedWithSingleChildChanged() {
@@ -1880,179 +1954,185 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    Schema.SObjectType parentType = LookupParent__c.sObjectType;
-    Schema.SObjectType childType = LookupChild__c.sObjectType;
-    String parentObjectName = parentType.getDescribe().getName();
-    String childObjectName = childType.getDescribe().getName();
-    String relationshipField1 = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String relationshipField2 = LookupChild__c.LookupParent2__c.getDescribe()
-      .getName();
-    String aggregateField1 = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateField2 = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField1 = LookupParent__c.Colours__c.getDescribe()
-      .getName();
-    String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
-      .getName();
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Configure rollups
-    LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-    rollupSummaryA.Name = 'Test Rollup';
-    rollupSummaryA.ParentObject__c = parentObjectName;
-    rollupSummaryA.ChildObject__c = childObjectName;
-    rollupSummaryA.RelationShipField__c = relationshipField1;
-    rollupSummaryA.FieldToAggregate__c = aggregateField1;
-    rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.Concatenate.name();
-    rollupSummaryA.AggregateResultField__c = aggregateResultField1;
-    rollupSummaryA.ConcatenateDelimiter__c = ';';
-    rollupSummaryA.Active__c = true;
-    rollupSummaryA.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      Schema.SObjectType parentType = LookupParent__c.sObjectType;
+      Schema.SObjectType childType = LookupChild__c.sObjectType;
+      String parentObjectName = parentType.getDescribe().getName();
+      String childObjectName = childType.getDescribe().getName();
+      String relationshipField1 = LookupChild__c.LookupParent__c.getDescribe()
+        .getName();
+      String relationshipField2 = LookupChild__c.LookupParent2__c.getDescribe()
+        .getName();
+      String aggregateField1 = LookupChild__c.Color__c.getDescribe().getName();
+      String aggregateField2 = LookupChild__c.Amount__c.getDescribe().getName();
+      String aggregateResultField1 = LookupParent__c.Colours__c.getDescribe()
+        .getName();
+      String aggregateResultField2 = LookupParent__c.Total2__c.getDescribe()
+        .getName();
 
-    LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-    rollupSummaryB.Name = 'Test Rollup';
-    rollupSummaryB.ParentObject__c = parentObjectName;
-    rollupSummaryB.ChildObject__c = childObjectName;
-    rollupSummaryB.RelationShipField__c = relationshipField2;
-    rollupSummaryB.FieldToAggregate__c = aggregateField2;
-    rollupSummaryB.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
-    rollupSummaryB.AggregateResultField__c = aggregateResultField2;
-    rollupSummaryB.Active__c = true;
-    rollupSummaryB.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+      // Configure rollups
+      LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
+      rollupSummaryA.Name = 'Test Rollup';
+      rollupSummaryA.ParentObject__c = parentObjectName;
+      rollupSummaryA.ChildObject__c = childObjectName;
+      rollupSummaryA.RelationShipField__c = relationshipField1;
+      rollupSummaryA.FieldToAggregate__c = aggregateField1;
+      rollupSummaryA.AggregateOperation__c = RollupSummaries.AggregateOperation.Concatenate.name();
+      rollupSummaryA.AggregateResultField__c = aggregateResultField1;
+      rollupSummaryA.ConcatenateDelimiter__c = ';';
+      rollupSummaryA.Active__c = true;
+      rollupSummaryA.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
 
-    List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c>{
-      rollupSummaryA,
-      rollupSummaryB
-    };
-    insert rollups;
+      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
+      rollupSummaryB.Name = 'Test Rollup';
+      rollupSummaryB.ParentObject__c = parentObjectName;
+      rollupSummaryB.ChildObject__c = childObjectName;
+      rollupSummaryB.RelationShipField__c = relationshipField2;
+      rollupSummaryB.FieldToAggregate__c = aggregateField2;
+      rollupSummaryB.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+      rollupSummaryB.AggregateResultField__c = aggregateResultField2;
+      rollupSummaryB.Active__c = true;
+      rollupSummaryB.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
 
-    // Insert parents
-    SObject parentA = parentType.newSObject();
-    parentA.put('Name', 'ParentA');
-    SObject parentB = parentType.newSObject();
-    parentB.put('Name', 'ParentB');
-    SObject parentC = parentType.newSObject();
-    parentC.put('Name', 'ParentC');
-    List<SObject> parents = new List<SObject>{ parentA, parentB, parentC };
-    insert parents;
+      List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c>{
+        rollupSummaryA,
+        rollupSummaryB
+      };
+      insert rollups;
 
-    // Insert children
-    SObject child1 = childType.newSObject();
-    child1.put(relationshipField1, parentA.Id);
-    child1.put(relationshipField2, parentB.Id);
-    child1.put(aggregateField1, 'Red');
-    child1.put(aggregateField2, 20);
-    SObject child2 = childType.newSObject();
-    child2.put(relationshipField1, parentA.Id);
-    child2.put(relationshipField2, parentB.Id);
-    child2.put(aggregateField1, 'Yellow');
-    child2.put(aggregateField2, 22);
+      // Insert parents
+      SObject parentA = parentType.newSObject();
+      parentA.put('Name', 'ParentA');
+      SObject parentB = parentType.newSObject();
+      parentB.put('Name', 'ParentB');
+      SObject parentC = parentType.newSObject();
+      parentC.put('Name', 'ParentC');
+      List<SObject> parents = new List<SObject>{ parentA, parentB, parentC };
+      insert parents;
 
-    List<SObject> children = new List<SObject>{ child1, child2 };
-    insert children;
+      // Insert children
+      SObject child1 = childType.newSObject();
+      child1.put(relationshipField1, parentA.Id);
+      child1.put(relationshipField2, parentB.Id);
+      child1.put(aggregateField1, 'Red');
+      child1.put(aggregateField2, 20);
+      SObject child2 = childType.newSObject();
+      child2.put(relationshipField1, parentA.Id);
+      child2.put(relationshipField2, parentB.Id);
+      child2.put(aggregateField1, 'Yellow');
+      child2.put(aggregateField2, 22);
 
-    // Assert rollups
-    Map<Id, SObject> assertParents = new Map<Id, SObject>(
-      Database.query(
-        String.format(
-          'select id, {0}, {1} from {2}',
-          new List<String>{
-            aggregateResultField1,
-            aggregateResultField2,
-            parentObjectName
-          }
+      List<SObject> children = new List<SObject>{ child1, child2 };
+      insert children;
+
+      // Assert rollups
+      Map<Id, SObject> assertParents = new Map<Id, SObject>(
+        Database.query(
+          String.format(
+            'select id, {0}, {1} from {2}',
+            new List<String>{
+              aggregateResultField1,
+              aggregateResultField2,
+              parentObjectName
+            }
+          )
         )
-      )
-    );
-    System.assertEquals(
-      'Red;Yellow',
-      (String) assertParents.get(parentA.id).get(aggregateResultField1)
-    );
-    System.assertEquals(
-      0.0,
-      (Decimal) assertParents.get(parentA.id).get(aggregateResultField2)
-    );
+      );
+      System.assertEquals(
+        'Red;Yellow',
+        (String) assertParents.get(parentA.id).get(aggregateResultField1)
+      );
+      System.assertEquals(
+        0.0,
+        (Decimal) assertParents.get(parentA.id).get(aggregateResultField2)
+      );
 
-    System.assertEquals(
-      null,
-      (String) assertParents.get(parentB.id).get(aggregateResultField1)
-    );
-    System.assertEquals(
-      42,
-      (Decimal) assertParents.get(parentB.id).get(aggregateResultField2)
-    );
+      System.assertEquals(
+        null,
+        (String) assertParents.get(parentB.id).get(aggregateResultField1)
+      );
+      System.assertEquals(
+        42,
+        (Decimal) assertParents.get(parentB.id).get(aggregateResultField2)
+      );
 
-    System.assertEquals(
-      null,
-      (String) assertParents.get(parentC.id).get(aggregateResultField1)
-    );
-    System.assertEquals(
-      null,
-      (Decimal) assertParents.get(parentC.id).get(aggregateResultField2)
-    );
+      System.assertEquals(
+        null,
+        (String) assertParents.get(parentC.id).get(aggregateResultField1)
+      );
+      System.assertEquals(
+        null,
+        (Decimal) assertParents.get(parentC.id).get(aggregateResultField2)
+      );
 
-    // change LookupParent2__c from Parent B to Parent C
-    child1.put(relationshipField2, parentC.Id);
+      // change LookupParent2__c from Parent B to Parent C
+      child1.put(relationshipField2, parentC.Id);
 
-    // Sample various limits prior to an update
-    Integer beforeQueries = Limits.getQueries();
-    Integer beforeRows = Limits.getQueryRows();
-    Integer beforeDMLRows = Limits.getDMLRows();
+      // Sample various limits prior to an update
+      Integer beforeQueries = Limits.getQueries();
+      Integer beforeRows = Limits.getQueryRows();
+      Integer beforeDMLRows = Limits.getDMLRows();
 
-    // update including all children but only one child and only one field (LookupParent2__c) on that child has changed
-    update children;
+      // update including all children but only one child and only one field (LookupParent2__c) on that child has changed
+      update children;
 
-    // Assert limits
-    // + One query on LookupChild__c for rollup
-    // + One query on Parent for values to confirm DML needed
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
+      // Assert limits
+      // + One query on LookupChild__c for rollup
+      // + One query on Parent for values to confirm DML needed
+      System.assertEquals(beforeQueries + 2, Limits.getQueries());
 
-    // + Two rows for LookupChild__c for rollup B (One on Parent B and One on Parent C)
-    // + Two for Parents
-    System.assertEquals(beforeRows + 4, Limits.getQueryRows());
+      // + Two rows for LookupChild__c for rollup B (One on Parent B and One on Parent C)
+      // + Two for Parents
+      System.assertEquals(beforeRows + 4, Limits.getQueryRows());
 
-    // + Two rows for LookupChild__c (from the update statement itself)
-    // + Two rows for LookupParent__c (One for B and One for C)
-    System.assertEquals(beforeDMLRows + 4, Limits.getDMLRows());
+      // + Two rows for LookupChild__c (from the update statement itself)
+      // + Two rows for LookupParent__c (One for B and One for C)
+      System.assertEquals(beforeDMLRows + 4, Limits.getDMLRows());
 
-    // Assert rollups
-    assertParents = new Map<Id, SObject>(
-      Database.query(
-        String.format(
-          'select id, {0}, {1} from {2}',
-          new List<String>{
-            aggregateResultField1,
-            aggregateResultField2,
-            parentObjectName
-          }
+      // Assert rollups
+      assertParents = new Map<Id, SObject>(
+        Database.query(
+          String.format(
+            'select id, {0}, {1} from {2}',
+            new List<String>{
+              aggregateResultField1,
+              aggregateResultField2,
+              parentObjectName
+            }
+          )
         )
-      )
-    );
-    System.assertEquals(
-      'Red;Yellow',
-      (String) assertParents.get(parentA.id).get(aggregateResultField1)
-    );
-    System.assertEquals(
-      0.0,
-      (Decimal) assertParents.get(parentA.id).get(aggregateResultField2)
-    );
+      );
+      System.assertEquals(
+        'Red;Yellow',
+        (String) assertParents.get(parentA.id).get(aggregateResultField1)
+      );
+      System.assertEquals(
+        0.0,
+        (Decimal) assertParents.get(parentA.id).get(aggregateResultField2)
+      );
 
-    System.assertEquals(
-      null,
-      (String) assertParents.get(parentB.id).get(aggregateResultField1)
-    );
-    System.assertEquals(
-      22,
-      (Decimal) assertParents.get(parentB.id).get(aggregateResultField2)
-    );
+      System.assertEquals(
+        null,
+        (String) assertParents.get(parentB.id).get(aggregateResultField1)
+      );
+      System.assertEquals(
+        22,
+        (Decimal) assertParents.get(parentB.id).get(aggregateResultField2)
+      );
 
-    System.assertEquals(
-      null,
-      (String) assertParents.get(parentC.id).get(aggregateResultField1)
-    );
-    System.assertEquals(
-      20,
-      (Decimal) assertParents.get(parentC.id).get(aggregateResultField2)
-    );
+      System.assertEquals(
+        null,
+        (String) assertParents.get(parentC.id).get(aggregateResultField1)
+      );
+      System.assertEquals(
+        20,
+        (Decimal) assertParents.get(parentC.id).get(aggregateResultField2)
+      );
+    }
   }
 
   private static void assertOrdering(
@@ -2342,143 +2422,149 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    Schema.SObjectType parentType = LookupParent__c.sObjectType;
-    Schema.SObjectType childType = LookupChild__c.sObjectType;
-    String parentObjectName = parentType.getDescribe().getName();
-    String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
-    String aggregateResultField = LookupParent__c.Colours__c.getDescribe()
-      .getName();
-    String orderByField = LookupChild__c.Amount__c.getDescribe().getName();
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Configure rollups
-    LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
-    rollupSummary.Name = 'Test Rollup';
-    rollupSummary.ParentObject__c = parentObjectName;
-    rollupSummary.ChildObject__c = childObjectName;
-    rollupSummary.RelationShipField__c = relationshipField;
-    rollupSummary.FieldToAggregate__c = aggregateField;
-    rollupSummary.FieldToOrderBy__c = orderByField;
-    rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.First.name();
-    rollupSummary.AggregateResultField__c = aggregateResultField;
-    rollupSummary.ConcatenateDelimiter__c = ';';
-    rollupSummary.Active__c = true;
-    rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      Schema.SObjectType parentType = LookupParent__c.sObjectType;
+      Schema.SObjectType childType = LookupChild__c.sObjectType;
+      String parentObjectName = parentType.getDescribe().getName();
+      String childObjectName = childType.getDescribe().getName();
+      String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
+        .getName();
+      String aggregateField = LookupChild__c.Color__c.getDescribe().getName();
+      String aggregateResultField = LookupParent__c.Colours__c.getDescribe()
+        .getName();
+      String orderByField = LookupChild__c.Amount__c.getDescribe().getName();
 
-    List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c>{
-      rollupSummary
-    };
-    insert rollups;
+      // Configure rollups
+      LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+      rollupSummary.Name = 'Test Rollup';
+      rollupSummary.ParentObject__c = parentObjectName;
+      rollupSummary.ChildObject__c = childObjectName;
+      rollupSummary.RelationShipField__c = relationshipField;
+      rollupSummary.FieldToAggregate__c = aggregateField;
+      rollupSummary.FieldToOrderBy__c = orderByField;
+      rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.First.name();
+      rollupSummary.AggregateResultField__c = aggregateResultField;
+      rollupSummary.ConcatenateDelimiter__c = ';';
+      rollupSummary.Active__c = true;
+      rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
 
-    // Insert parents
-    SObject parentA = parentType.newSObject();
-    parentA.put('Name', 'ParentA');
-    SObject parentB = parentType.newSObject();
-    parentB.put('Name', 'ParentB');
-    SObject parentC = parentType.newSObject();
-    parentC.put('Name', 'ParentC');
-    List<SObject> parents = new List<SObject>{ parentA, parentB, parentC };
-    insert parents;
+      List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c>{
+        rollupSummary
+      };
+      insert rollups;
 
-    // Insert children
-    List<SObject> children = new List<SObject>();
-    for (SObject parent : parents) {
-      SObject child1 = childType.newSObject();
-      child1.put(relationshipField, parent.Id);
-      child1.put(aggregateField, 'Red');
-      child1.put(orderByField, 10);
-      children.add(child1);
-      SObject child2 = childType.newSObject();
-      child2.put(relationshipField, parent.Id);
-      child2.put(aggregateField, 'Yellow');
-      child2.put(orderByField, 20);
-      children.add(child2);
-      SObject child3 = childType.newSObject();
-      child3.put(relationshipField, parent.Id);
-      child3.put(aggregateField, 'Blue');
-      child3.put(orderByField, 30);
-      children.add(child3);
-    }
-    insert children;
+      // Insert parents
+      SObject parentA = parentType.newSObject();
+      parentA.put('Name', 'ParentA');
+      SObject parentB = parentType.newSObject();
+      parentB.put('Name', 'ParentB');
+      SObject parentC = parentType.newSObject();
+      parentC.put('Name', 'ParentC');
+      List<SObject> parents = new List<SObject>{ parentA, parentB, parentC };
+      insert parents;
 
-    // Assert rollups
-    Map<Id, SObject> assertParents = new Map<Id, SObject>(
-      Database.query(
-        String.format(
-          'select id, {0} from {1}',
-          new List<String>{ aggregateResultField, parentObjectName }
-        )
-      )
-    );
-    System.assertEquals(
-      'Red',
-      (String) assertParents.get(parentA.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      'Red',
-      (String) assertParents.get(parentB.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      'Red',
-      (String) assertParents.get(parentC.id).get(aggregateResultField)
-    );
-
-    // change Amount__c to effect order by result of rollup
-    // this change will result in rollup being processed because it is a query based rollup
-    // and order by influences rolled up value
-    List<SObject> childrenToUpdate = new List<SObject>();
-    for (SObject child : children) {
-      Decimal orderByFieldValue = (Decimal) child.get(orderByField);
-      if (orderByFieldValue == 10) {
-        child.put(orderByField, 40);
-        childrenToUpdate.add(child);
+      // Insert children
+      List<SObject> children = new List<SObject>();
+      for (SObject parent : parents) {
+        SObject child1 = childType.newSObject();
+        child1.put(relationshipField, parent.Id);
+        child1.put(aggregateField, 'Red');
+        child1.put(orderByField, 10);
+        children.add(child1);
+        SObject child2 = childType.newSObject();
+        child2.put(relationshipField, parent.Id);
+        child2.put(aggregateField, 'Yellow');
+        child2.put(orderByField, 20);
+        children.add(child2);
+        SObject child3 = childType.newSObject();
+        child3.put(relationshipField, parent.Id);
+        child3.put(aggregateField, 'Blue');
+        child3.put(orderByField, 30);
+        children.add(child3);
       }
-    }
+      insert children;
 
-    // Sample various limits prior to an update
-    Integer beforeQueries = Limits.getQueries();
-    Integer beforeRows = Limits.getQueryRows();
-    Integer beforeDMLRows = Limits.getDMLRows();
-
-    // update children
-    update childrenToUpdate;
-
-    // Assert limits
-    // + One query on LookupChild__c for rollup
-    // + One query on Parent for values to confirm DML needed
-    System.assertEquals(beforeQueries + 2, Limits.getQueries());
-
-    // + Nine rows for LookupChild__c for rollup
-    // + Three for Parents
-    System.assertEquals(beforeRows + 12, Limits.getQueryRows());
-
-    // + Three rows for LookupChild__c (from the update statement itself)
-    // + Three rows for LookupParent__c for the rollup
-    System.assertEquals(beforeDMLRows + 6, Limits.getDMLRows());
-
-    // Assert rollups
-    assertParents = new Map<Id, SObject>(
-      Database.query(
-        String.format(
-          'select id, {0} from {1}',
-          new List<String>{ aggregateResultField, parentObjectName }
+      // Assert rollups
+      Map<Id, SObject> assertParents = new Map<Id, SObject>(
+        Database.query(
+          String.format(
+            'select id, {0} from {1}',
+            new List<String>{ aggregateResultField, parentObjectName }
+          )
         )
-      )
-    );
-    System.assertEquals(
-      'Yellow',
-      (String) assertParents.get(parentA.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      'Yellow',
-      (String) assertParents.get(parentB.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      'Yellow',
-      (String) assertParents.get(parentC.id).get(aggregateResultField)
-    );
+      );
+      System.assertEquals(
+        'Red',
+        (String) assertParents.get(parentA.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        'Red',
+        (String) assertParents.get(parentB.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        'Red',
+        (String) assertParents.get(parentC.id).get(aggregateResultField)
+      );
+
+      // change Amount__c to effect order by result of rollup
+      // this change will result in rollup being processed because it is a query based rollup
+      // and order by influences rolled up value
+      List<SObject> childrenToUpdate = new List<SObject>();
+      for (SObject child : children) {
+        Decimal orderByFieldValue = (Decimal) child.get(orderByField);
+        if (orderByFieldValue == 10) {
+          child.put(orderByField, 40);
+          childrenToUpdate.add(child);
+        }
+      }
+
+      // Sample various limits prior to an update
+      Integer beforeQueries = Limits.getQueries();
+      Integer beforeRows = Limits.getQueryRows();
+      Integer beforeDMLRows = Limits.getDMLRows();
+
+      // update children
+      update childrenToUpdate;
+
+      // Assert limits
+      // + One query on LookupChild__c for rollup
+      // + One query on Parent for values to confirm DML needed
+      System.assertEquals(beforeQueries + 2, Limits.getQueries());
+
+      // + Nine rows for LookupChild__c for rollup
+      // + Three for Parents
+      System.assertEquals(beforeRows + 12, Limits.getQueryRows());
+
+      // + Three rows for LookupChild__c (from the update statement itself)
+      // + Three rows for LookupParent__c for the rollup
+      System.assertEquals(beforeDMLRows + 6, Limits.getDMLRows());
+
+      // Assert rollups
+      assertParents = new Map<Id, SObject>(
+        Database.query(
+          String.format(
+            'select id, {0} from {1}',
+            new List<String>{ aggregateResultField, parentObjectName }
+          )
+        )
+      );
+      System.assertEquals(
+        'Yellow',
+        (String) assertParents.get(parentA.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        'Yellow',
+        (String) assertParents.get(parentB.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        'Yellow',
+        (String) assertParents.get(parentC.id).get(aggregateResultField)
+      );
+    }
   }
 
   private testMethod static void testSingleAggregateBasedRollupUpdateOrderByFieldChanged() {
@@ -2486,141 +2572,147 @@ private with sharing class RollupServiceTest {
     if (!TestContext.isSupported())
       return;
 
-    Schema.SObjectType parentType = LookupParent__c.sObjectType;
-    Schema.SObjectType childType = LookupChild__c.sObjectType;
-    String parentObjectName = parentType.getDescribe().getName();
-    String childObjectName = childType.getDescribe().getName();
-    String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
-      .getName();
-    String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
-    String aggregateResultField = LookupParent__c.Total__c.getDescribe()
-      .getName();
-    String orderByField = LookupChild__c.Color__c.getDescribe().getName();
+    Set<String> psNames = new Set<String>{ 'TestObjectAccess' };
+    TestContext.ensurePermissionSetsAssigned(UserInfo.getUserId(), psNames);
 
-    // Configure rollups
-    LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
-    rollupSummary.Name = 'Test Rollup';
-    rollupSummary.ParentObject__c = parentObjectName;
-    rollupSummary.ChildObject__c = childObjectName;
-    rollupSummary.RelationShipField__c = relationshipField;
-    rollupSummary.FieldToAggregate__c = aggregateField;
-    rollupSummary.FieldToOrderBy__c = orderByField;
-    rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
-    rollupSummary.AggregateResultField__c = aggregateResultField;
-    rollupSummary.ConcatenateDelimiter__c = ';';
-    rollupSummary.Active__c = true;
-    rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
+    // new context to recognize the new perm set
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      Schema.SObjectType parentType = LookupParent__c.sObjectType;
+      Schema.SObjectType childType = LookupChild__c.sObjectType;
+      String parentObjectName = parentType.getDescribe().getName();
+      String childObjectName = childType.getDescribe().getName();
+      String relationshipField = LookupChild__c.LookupParent__c.getDescribe()
+        .getName();
+      String aggregateField = LookupChild__c.Amount__c.getDescribe().getName();
+      String aggregateResultField = LookupParent__c.Total__c.getDescribe()
+        .getName();
+      String orderByField = LookupChild__c.Color__c.getDescribe().getName();
 
-    List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c>{
-      rollupSummary
-    };
-    insert rollups;
+      // Configure rollups
+      LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
+      rollupSummary.Name = 'Test Rollup';
+      rollupSummary.ParentObject__c = parentObjectName;
+      rollupSummary.ChildObject__c = childObjectName;
+      rollupSummary.RelationShipField__c = relationshipField;
+      rollupSummary.FieldToAggregate__c = aggregateField;
+      rollupSummary.FieldToOrderBy__c = orderByField;
+      rollupSummary.AggregateOperation__c = RollupSummaries.AggregateOperation.Sum.name();
+      rollupSummary.AggregateResultField__c = aggregateResultField;
+      rollupSummary.ConcatenateDelimiter__c = ';';
+      rollupSummary.Active__c = true;
+      rollupSummary.CalculationMode__c = RollupSummaries.CalculationMode.Realtime.name();
 
-    // Insert parents
-    SObject parentA = parentType.newSObject();
-    parentA.put('Name', 'ParentA');
-    SObject parentB = parentType.newSObject();
-    parentB.put('Name', 'ParentB');
-    SObject parentC = parentType.newSObject();
-    parentC.put('Name', 'ParentC');
-    List<SObject> parents = new List<SObject>{ parentA, parentB, parentC };
-    insert parents;
+      List<LookupRollupSummary__c> rollups = new List<LookupRollupSummary__c>{
+        rollupSummary
+      };
+      insert rollups;
 
-    // Insert children
-    List<SObject> children = new List<SObject>();
-    for (SObject parent : parents) {
-      SObject child1 = childType.newSObject();
-      child1.put(relationshipField, parent.Id);
-      child1.put(aggregateField, 10);
-      child1.put(orderByField, 'Red');
-      children.add(child1);
-      SObject child2 = childType.newSObject();
-      child2.put(relationshipField, parent.Id);
-      child2.put(aggregateField, 20);
-      child2.put(orderByField, 'Yellow');
-      children.add(child2);
-      SObject child3 = childType.newSObject();
-      child3.put(relationshipField, parent.Id);
-      child3.put(aggregateField, 12);
-      child3.put(orderByField, 'Blue');
-      children.add(child3);
-    }
-    insert children;
+      // Insert parents
+      SObject parentA = parentType.newSObject();
+      parentA.put('Name', 'ParentA');
+      SObject parentB = parentType.newSObject();
+      parentB.put('Name', 'ParentB');
+      SObject parentC = parentType.newSObject();
+      parentC.put('Name', 'ParentC');
+      List<SObject> parents = new List<SObject>{ parentA, parentB, parentC };
+      insert parents;
 
-    // Assert rollups
-    Map<Id, SObject> assertParents = new Map<Id, SObject>(
-      Database.query(
-        String.format(
-          'select id, {0} from {1}',
-          new List<String>{ aggregateResultField, parentObjectName }
-        )
-      )
-    );
-    System.assertEquals(
-      42,
-      (Decimal) assertParents.get(parentA.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      42,
-      (Decimal) assertParents.get(parentB.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      42,
-      (Decimal) assertParents.get(parentC.id).get(aggregateResultField)
-    );
-
-    // change Color__c to effect order by result of rollup
-    // this change will NOT result in rollup being processed because it is a aggregate based rollup
-    // and order by does NOT influence rolled up result
-    List<SObject> childrenToUpdate = new List<SObject>();
-    for (SObject child : children) {
-      String orderByFieldValue = (String) child.get(orderByField);
-      if (orderByFieldValue == 'Red') {
-        child.put(orderByField, 'Green');
-        childrenToUpdate.add(child);
+      // Insert children
+      List<SObject> children = new List<SObject>();
+      for (SObject parent : parents) {
+        SObject child1 = childType.newSObject();
+        child1.put(relationshipField, parent.Id);
+        child1.put(aggregateField, 10);
+        child1.put(orderByField, 'Red');
+        children.add(child1);
+        SObject child2 = childType.newSObject();
+        child2.put(relationshipField, parent.Id);
+        child2.put(aggregateField, 20);
+        child2.put(orderByField, 'Yellow');
+        children.add(child2);
+        SObject child3 = childType.newSObject();
+        child3.put(relationshipField, parent.Id);
+        child3.put(aggregateField, 12);
+        child3.put(orderByField, 'Blue');
+        children.add(child3);
       }
-    }
+      insert children;
 
-    // Sample various limits prior to an update
-    Integer beforeQueries = Limits.getQueries();
-    Integer beforeRows = Limits.getQueryRows();
-    Integer beforeDMLRows = Limits.getDMLRows();
-
-    // update children
-    update childrenToUpdate;
-
-    // Assert limits
-    // No query on LookupChild__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
-    System.assertEquals(beforeQueries, Limits.getQueries());
-
-    // No rows on LookupChild__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
-    System.assertEquals(beforeRows, Limits.getQueryRows());
-
-    // + Three rows for LookupChild__c (from the update statement itself)
-    // No query on LookupParent__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
-    System.assertEquals(beforeDMLRows + 3, Limits.getDMLRows());
-
-    // Assert rollups
-    assertParents = new Map<Id, SObject>(
-      Database.query(
-        String.format(
-          'select id, {0} from {1}',
-          new List<String>{ aggregateResultField, parentObjectName }
+      // Assert rollups
+      Map<Id, SObject> assertParents = new Map<Id, SObject>(
+        Database.query(
+          String.format(
+            'select id, {0} from {1}',
+            new List<String>{ aggregateResultField, parentObjectName }
+          )
         )
-      )
-    );
-    System.assertEquals(
-      42,
-      (Decimal) assertParents.get(parentA.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      42,
-      (Decimal) assertParents.get(parentB.id).get(aggregateResultField)
-    );
-    System.assertEquals(
-      42,
-      (Decimal) assertParents.get(parentC.id).get(aggregateResultField)
-    );
+      );
+      System.assertEquals(
+        42,
+        (Decimal) assertParents.get(parentA.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        42,
+        (Decimal) assertParents.get(parentB.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        42,
+        (Decimal) assertParents.get(parentC.id).get(aggregateResultField)
+      );
+
+      // change Color__c to effect order by result of rollup
+      // this change will NOT result in rollup being processed because it is a aggregate based rollup
+      // and order by does NOT influence rolled up result
+      List<SObject> childrenToUpdate = new List<SObject>();
+      for (SObject child : children) {
+        String orderByFieldValue = (String) child.get(orderByField);
+        if (orderByFieldValue == 'Red') {
+          child.put(orderByField, 'Green');
+          childrenToUpdate.add(child);
+        }
+      }
+
+      // Sample various limits prior to an update
+      Integer beforeQueries = Limits.getQueries();
+      Integer beforeRows = Limits.getQueryRows();
+      Integer beforeDMLRows = Limits.getDMLRows();
+
+      // update children
+      update childrenToUpdate;
+
+      // Assert limits
+      // No query on LookupChild__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
+      System.assertEquals(beforeQueries, Limits.getQueries());
+
+      // No rows on LookupChild__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
+      System.assertEquals(beforeRows, Limits.getQueryRows());
+
+      // + Three rows for LookupChild__c (from the update statement itself)
+      // No query on LookupParent__c because the changed Color__c should not be considered a change that would trigger the rollup to be processed
+      System.assertEquals(beforeDMLRows + 3, Limits.getDMLRows());
+
+      // Assert rollups
+      assertParents = new Map<Id, SObject>(
+        Database.query(
+          String.format(
+            'select id, {0} from {1}',
+            new List<String>{ aggregateResultField, parentObjectName }
+          )
+        )
+      );
+      System.assertEquals(
+        42,
+        (Decimal) assertParents.get(parentA.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        42,
+        (Decimal) assertParents.get(parentB.id).get(aggregateResultField)
+      );
+      System.assertEquals(
+        42,
+        (Decimal) assertParents.get(parentC.id).get(aggregateResultField)
+      );
+    }
   }
 
   @IsTest

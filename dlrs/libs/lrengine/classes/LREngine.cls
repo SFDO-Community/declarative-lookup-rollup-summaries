@@ -17,7 +17,7 @@ are met:
 THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR
 IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, 
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
 INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
 NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
@@ -28,7 +28,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
     LREngine("L"ookup "R"ollup Engine) : This class simplifies rolling up on the child records in lookup relationship.
 */
-public class LREngine {
+public inherited sharing class LREngine {
   /*
         Tempalte tokens
             0 : Fields to project
@@ -77,7 +77,7 @@ public class LREngine {
     private Decimal convertCurrencyWithoutSharing(String iso, Decimal val) {
       if (currencyConversionMap.isEmpty()) {
         String query = 'select IsoCode, ConversionRate from CurrencyType where IsActive = true';
-        for (sObject ct : Database.query(query))
+        for (sObject ct : Database.query(query, System.AccessLevel.SYSTEM_MODE))
           currencyConversionMap.put(
             (String) ct.get('IsoCode'),
             (Decimal) ct.get('ConversionRate')
@@ -89,9 +89,9 @@ public class LREngine {
 
   /**
         Key driver method that rolls up lookup fields based on the context. This is specially useful in Trigger context.
-        
+
         @param ctx Context the complete context required to rollup
-        @param detailRecordsFromTrigger child/detail records which are modified/created/deleted during the Trigger 
+        @param detailRecordsFromTrigger child/detail records which are modified/created/deleted during the Trigger
         @returns Array of in memory master objects. These objects are not updated back to the database
                 because we want client or calling code to have this freedom to do some post processing and update when required.
     */
@@ -112,9 +112,9 @@ public class LREngine {
   /**
         Key driver method that rolls up lookup fields based on the context. This is meant to be called from non trigger contexts like
         scheduled/batch apex, where we want to rollup on some master record ids.
-        
+
         @param Context the complete context required to rollup
-        @param masterIds Master record IDs whose child records should be rolled up. 
+        @param masterIds Master record IDs whose child records should be rolled up.
         @returns Array of in memory master objects. These objects are not updated back to the database
                 because we want client or calling code to have this freedom to do some post processing and update when required.
     */
@@ -125,9 +125,9 @@ public class LREngine {
   /**
         Key driver method that rolls up lookup fields based on the context. This is meant to be called from non trigger contexts like
         scheduled/batch apex, where we want to rollup on some master record ids.
-        
+
         @param Context the complete context required to rollup
-        @param masterIds Master record IDs whose child records should be rolled up. 
+        @param masterIds Master record IDs whose child records should be rolled up.
         @param validateOnly Checks the SOQL query is valid, throws an exception if not, returns null if valid
         @returns Array of in memory master objects. These objects are not updated back to the database
                 because we want client or calling code to have this freedom to do some post processing and update when required.
@@ -267,13 +267,12 @@ public class LREngine {
 
     // consider sharing rules or not?
     QueryExecutor qe = null;
-    if (ctx.SharingMode == SharingMode.User)
-      qe = new WithSharingQueryExecutor();
-    else if (ctx.SharingMode == SharingMode.System_x)
+    if (ctx.SharingMode == SharingMode.System_x) {
       qe = new WithoutSharingQueryExecutor();
-    else
-      // Default
+    } else {
+      // Default + User
       qe = new WithSharingQueryExecutor();
+    }
 
     // query results
     Object queryResults = qe.query(soql, masterIds);
@@ -473,7 +472,7 @@ public class LREngine {
   }
 
   /**
-       Which rollup operation you want to perform 
+       Which rollup operation you want to perform
     */
   public enum RollupOperation {
     Sum,
@@ -491,9 +490,9 @@ public class LREngine {
   /**
         Represents a "Single" roll up field, it contains
         - Master field where the rolled up info will be saved
-        - Detail field that will be rolled up via any operation i.e. sum, avg etc 
+        - Detail field that will be rolled up via any operation i.e. sum, avg etc
         - Operation to perform i.e. sum, avg, count etc
-            
+
     */
   public class RollupSummaryField {
     public Schema.Describefieldresult master;
@@ -685,7 +684,7 @@ public class LREngine {
   }
 
   /**
-        Context having all the information about the rollup to be done. 
+        Context having all the information about the rollup to be done.
         Please note : This class encapsulates many rollup summary fields with different operations.
     */
   public class Context {
@@ -805,12 +804,7 @@ public class LREngine {
    * Wraps platform query executor to permit override of sharing rule consideration or not
    **/
   public abstract class QueryExecutor {
-    public virtual List<SObject> query(String query, Set<Id> masterIds) {
-      if (masterIds == null || masterIds.isEmpty()) {
-        return new List<SObject>();
-      }
-      return Database.query(query);
-    }
+    public abstract List<SObject> query(String query, Set<Id> masterIds);
   }
 
   /**
@@ -818,16 +812,22 @@ public class LREngine {
    **/
   public with sharing class WithSharingQueryExecutor extends QueryExecutor {
     public override List<SObject> query(String query, Set<Id> masterIds) {
-      return super.query(query, masterIds);
+      if (masterIds == null || masterIds.isEmpty()) {
+        return new List<SObject>();
+      }
+      return Database.query(query, System.AccessLevel.SYSTEM_MODE);
     }
   }
 
   /**
-   * QUery executor that ignores sharing rules
+   * Query executor that ignores sharing rules
    **/
   public without sharing class WithoutSharingQueryExecutor extends QueryExecutor {
     public override List<SObject> query(String query, Set<Id> masterIds) {
-      return super.query(query, masterIds);
+      if (masterIds == null || masterIds.isEmpty()) {
+        return new List<SObject>();
+      }
+      return Database.query(query, System.AccessLevel.SYSTEM_MODE);
     }
   }
 }
