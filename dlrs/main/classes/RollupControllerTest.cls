@@ -1,689 +1,455 @@
-/**
- * Copyright (c) 2013, Andrew Fawcett
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- *   are permitted provided that the following conditions are met:
- *
- * - Redistributions of source code must retain the above copyright notice,
- *      this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright notice,
- *      this list of conditions and the following disclaimer in the documentation
- *      and/or other materials provided with the distribution.
- * - Neither the name of the Andrew Fawcett, nor the names of its contributors
- *      may be used to endorse or promote products derived from this software without
- *      specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
- *  THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- *  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- *  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
- *  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- **/
-
 @IsTest
 private class RollupControllerTest {
-  private testMethod static void testDeployedStatus() {
-    // Test supported?
-    if (!TestContext.isSupported())
-      return;
+  private static final Id FAKE_ID = '0Af000000004CVY';
+  private static final String FAKE_API_VERSION = '61.0';
 
-    System.runAs(setupTestUser()) {
-      setupMocks();
-
-      // Test data
-      LookupRollupSummary__c rollupSummaryA = new LookupRollupSummary__c();
-      rollupSummaryA.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-      rollupSummaryA.ParentObject__c = 'Account';
-      rollupSummaryA.ChildObject__c = 'Opportunity';
-      rollupSummaryA.RelationShipField__c = 'AccountId';
-      rollupSummaryA.RelationShipCriteria__c = null;
-      rollupSummaryA.FieldToAggregate__c = 'Amount';
-      rollupSummaryA.AggregateOperation__c = 'Sum';
-      rollupSummaryA.AggregateResultField__c = 'AnnualRevenue';
-      rollupSummaryA.Active__c = true;
-      rollupSummaryA.CalculationMode__c = 'Realtime';
-      LookupRollupSummary__c rollupSummaryB = new LookupRollupSummary__c();
-      rollupSummaryB.Name = 'Total Opportunities into Number Of Locations on Accountt';
-      rollupSummaryB.ParentObject__c = 'Account';
-      rollupSummaryB.ChildObject__c = 'Opportunity';
-      rollupSummaryB.RelationShipField__c = 'AccountId';
-      rollupSummaryB.RelationShipCriteria__c = null;
-      rollupSummaryB.FieldToAggregate__c = 'CloseDate';
-      rollupSummaryB.AggregateOperation__c = 'Count';
-      rollupSummaryB.AggregateResultField__c = TestContext.applyNamespacePrefixIfAvailable(
-        'NumberOfLocations__c'
-      );
-      rollupSummaryB.Active__c = true;
-      rollupSummaryB.CalculationMode__c = 'Realtime';
-      insert new List<LookupRollupSummary__c>{ rollupSummaryA, rollupSummaryB };
-
-      // Open test context, permits callouts following DML
-      Test.startTest();
-
-      // Assert initial state of controller when the trigger for the child object is deployed
-      RollupController controller = new RollupController(
-        new ApexPages.StandardController(rollupSummaryA)
-      );
-      System.assertEquals(true, controller.Deployed);
-      System.assertEquals(
-        'UnpackagedRollupServiceTestTrigger',
-        controller.RollupTriggerName
-      );
-      System.assertEquals(
-        'RollupSummariesTest',
-        controller.RollupTriggerTestName
-      );
-      System.assertEquals(
-        'UnpackagedRollupServiceTestTrigger',
-        controller.RollupTrigger.Name
-      );
-      System.assertEquals(
-        'RollupSummariesTest',
-        controller.RollupTriggerTest.Name
-      );
-      System.assertEquals(
-        controller.RollupTrigger.Body,
-        controller.getTriggerCode()
-      );
-      System.assertEquals(
-        controller.RollupTriggerTest.Body,
-        controller.getTriggerTestCode()
-      );
-      System.assertEquals(
-        '<?xml version="1.0" encoding="UTF-8"?>' +
-          '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-          '<version>' +
-          controller.componentApiVersion +
-          '</version>' +
-          '</Package>',
-        controller.getPackageXml()
-      );
-      System.assertEquals(
-        '<?xml version="1.0" encoding="UTF-8"?>' +
-          '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-          '<types>' +
-          '<members>' +
-          controller.RollupTriggerName +
-          '</members>' +
-          '<name>ApexTrigger</name>' +
-          '</types>' +
-          '<types>' +
-          '<members>' +
-          controller.RollupTriggerTestName +
-          '</members>' +
-          '<name>ApexClass</name>' +
-          '</types>' +
-          '<version>' +
-          controller.componentApiVersion +
-          '</version>' +
-          '</Package>',
-        controller.getDestructiveChangesXml()
-      );
-      System.assertEquals(
-        '<?xml version="1.0" encoding="UTF-8"?>' +
-          '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-          '<apiVersion>' +
-          controller.componentApiVersion +
-          '</apiVersion>' +
-          '<status>Active</status>' +
-          '</ApexTrigger>',
-        controller.getTriggerCodeMetadata()
-      );
-      System.assertEquals(
-        '<?xml version="1.0" encoding="UTF-8"?>' +
-          '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-          '<apiVersion>' +
-          controller.componentApiVersion +
-          '</apiVersion>' +
-          '<status>Active</status>' +
-          '</ApexClass>',
-        controller.getTriggerTestCodeMetadata()
-      );
-
-      // Undeploy (no need to emulate the zip contents prepared by the client as mock service does not bother with this)
-      controller.deployZip();
-
-      // Check deployment (mock service impl emulates a positive response)
-      // TODO: Revist this, broken since started making HTTP callouts in the init function
-      // controller.checkAsyncRequest();
-
-      Test.stopTest();
-
-      // Assert Active__c is false on lookups referencing this child object
-      // TODO: Revist this, broken since started making HTTP callouts in the init function
-      /*
-			List<LookupRollupSummary__c> lookups = [select Active__c from LookupRollupSummary__c];
-			System.assertEquals(false, lookups[0].Active__c);
-			System.assertEquals(false, lookups[1].Active__c);
-			*/
-    }
+  private static HttpCalloutMockImpl mockSuccessfulApiConnection() {
+    MetadataRestService.componentApiVersion = FAKE_API_VERSION;
+    HttpCalloutMockImpl mock = new HttpCalloutMockImpl();
+    mock.responses.add(makeJsonResponse(200, '{}'));
+    Test.setMock(HttpCalloutMock.class, mock);
+    return mock;
   }
 
-  private testMethod static void testNotDeployedStatus() {
-    // Test supported?
-    if (!TestContext.isSupported())
-      return;
-
-    System.runAs(setupTestUser()) {
-      setupMocks();
-
-      // Test data
-      LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
-      rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-      rollupSummary.ParentObject__c = 'Account';
-      rollupSummary.ChildObject__c = 'Contact';
-      rollupSummary.RelationShipField__c = 'AccountId';
-      rollupSummary.RelationShipCriteria__c = null;
-      rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
-      rollupSummary.AggregateOperation__c = 'Count';
-      rollupSummary.AggregateResultField__c = 'AnnualRevenue';
-      rollupSummary.Active__c = false;
-      rollupSummary.CalculationMode__c = 'Realtime';
-      insert rollupSummary;
-
-      // Open test context, permits callouts following DML
-      Test.startTest();
-
-      // Assert initial state of controller when the trigger for the child object is deployed
-      RollupController controller = new RollupController(
-        new ApexPages.StandardController(rollupSummary)
-      );
-      System.assertEquals(false, controller.Deployed);
-      System.assertEquals(null, controller.RollupTrigger);
-      System.assertEquals(null, controller.RollupTriggerTest);
-      System.assertEquals(
-        '/**\n' +
-          ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-          ' **/\n' +
-          'trigger ' +
-          controller.RollupTriggerName +
-          ' on ' +
-          rollupSummary.ChildObject__c +
-          '\n' +
-          '    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n' +
-          '{\n' +
-          '    ' +
-          Utilities.classPrefix() +
-          'RollupService.triggerHandler(Contact.SObjectType);\n' +
-          '}\n',
-        controller.getTriggerCode()
-      );
-      System.assertEquals(
-        '/**\n' +
-          ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-          ' **/\n' +
-          '@IsTest\n' +
-          'private class ' +
-          controller.RollupTriggerTestName +
-          '\n' +
-          '{\n' +
-          '    @IsTest\n' +
-          '    private static void testTrigger()\n' +
-          '    {\n' +
-          '        // Force the ' +
-          controller.RollupTriggerName +
-          ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-          '        ' +
-          Utilities.classPrefix() +
-          'RollupService.testHandler(new ' +
-          rollupSummary.ChildObject__c +
-          '());\n' +
-          '    }\n' +
-          '}',
-        controller.getTriggerTestCode()
-      );
-      System.assertEquals(
-        '<?xml version="1.0" encoding="UTF-8"?>' +
-          '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-          '<types>' +
-          '<members>' +
-          controller.RollupTriggerName +
-          '</members>' +
-          '<name>ApexTrigger</name>' +
-          '</types>' +
-          '<types>' +
-          '<members>' +
-          controller.RollupTriggerTestName +
-          '</members>' +
-          '<name>ApexClass</name>' +
-          '</types>' +
-          '<types>' +
-          '<members>' +
-          controller.RollupParentTriggerName +
-          '</members>' +
-          '<name>ApexTrigger</name>' +
-          '</types>' +
-          '<types>' +
-          '<members>' +
-          controller.RollupParentTriggerTestName +
-          '</members>' +
-          '<name>ApexClass</name>' +
-          '</types>' +
-          '<version>' +
-          controller.componentApiVersion +
-          '</version>' +
-          '</Package>',
-        controller.getPackageXml()
-      );
-      System.assertEquals(
-        '<?xml version="1.0" encoding="UTF-8"?>' +
-          '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-          '<apiVersion>' +
-          controller.componentApiVersion +
-          '</apiVersion>' +
-          '<status>Active</status>' +
-          '</ApexTrigger>',
-        controller.getTriggerCodeMetadata()
-      );
-      System.assertEquals(
-        '<?xml version="1.0" encoding="UTF-8"?>' +
-          '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-          '<apiVersion>' +
-          controller.componentApiVersion +
-          '</apiVersion>' +
-          '<status>Active</status>' +
-          '</ApexClass>',
-        controller.getTriggerTestCodeMetadata()
-      );
-
-      Test.stopTest();
-    }
+  private static RollupSummary makeRollupSummary(
+    String childObject,
+    String parentObject
+  ) {
+    return new RollupSummary(
+      new LookupRollupSummary__c(
+        Name = 'Test Rollup',
+        ChildObject__c = childObject,
+        ParentObject__c = parentObject,
+        FieldToAggregate__c = 'Amount',
+        AggregateOperation__c = 'Sum',
+        AggregateResultField__c = 'AnnualRevenue',
+        Active__c = true,
+        CalculationMode__c = 'Realtime'
+      )
+    );
   }
 
-  private testMethod static void testWithCustomTestCode() {
-    // Test supported?
-    if (!TestContext.isSupported())
-      return;
-
-    System.runAs(setupTestUser()) {
-      setupMocks();
-
-      // Test data
-      LookupRollupSummary__c rollupSummary = new LookupRollupSummary__c();
-      rollupSummary.Name = 'Total Opportunities greater than 200 into Annual Revenue on Account';
-      rollupSummary.ParentObject__c = 'Account';
-      rollupSummary.ChildObject__c = 'Contact';
-      rollupSummary.RelationShipField__c = 'AccountId';
-      rollupSummary.RelationShipCriteria__c = null;
-      rollupSummary.FieldToAggregate__c = 'LastCURequestDate';
-      rollupSummary.AggregateOperation__c = 'Count';
-      rollupSummary.AggregateResultField__c = 'AnnualRevenue';
-      rollupSummary.Active__c = false;
-      rollupSummary.CalculationMode__c = 'Realtime';
-      rollupSummary.TestCode__c = 'System.assertEquals(1,1);';
-      rollupSummary.TestCodeSeeAllData__c = true;
-      insert rollupSummary;
-
-      // Open test context, permits callouts following DML
-      Test.startTest();
-
-      // Assert initial state of controller when the trigger for the child object is deployed
-      RollupController controller = new RollupController(
-        new ApexPages.StandardController(rollupSummary)
-      );
-      System.assertEquals(
-        '/**\n' +
-          ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-          ' **/\n' +
-          '@IsTest\n' +
-          'private class ' +
-          controller.RollupTriggerTestName +
-          '\n' +
-          '{\n' +
-          '    @IsTest(SeeAllData=true)\n' +
-          '    private static void testTrigger()\n' +
-          '    {\n' +
-          'System.assertEquals(1,1);\n' +
-          '    }\n' +
-          '}',
-        controller.getTriggerTestCode()
-      );
-    }
+  private static RollupController makeController(
+    String childObject,
+    String parentObject
+  ) {
+    mockSuccessfulApiConnection();
+    return new RollupController(makeRollupSummary(childObject, parentObject));
   }
 
-  private testMethod static void testWithCustomParentTestCode() {
-    // Test supported?
-    if (!TestContext.isSupported())
-      return;
-
-    System.runAs(setupTestUser()) {
-      setupMocks();
-
-      // Custom Metadata test data
-      LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt();
-      Map<String, Object> fields = (Map<String, Object>) JSON.deserializeUntyped(
-        JSON.serializePretty(rollupSummary)
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.Label.getDescribe().getName(),
-        'Total Opportunities greater than 200 into Annual Revenue on Account'
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.DeveloperName.getDescribe().getName(),
-        'AccountRollup'
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.ParentObject__c.getDescribe().getName(),
-        'Account'
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.ChildObject__c.getDescribe().getName(),
-        'Contact'
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.RelationShipField__c.getDescribe().getName(),
-        'AccountId'
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.RelationShipCriteria__c.getDescribe()
-          .getName(),
-        null
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.FieldToAggregate__c.getDescribe().getName(),
-        'LastCURequestDate'
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.AggregateOperation__c.getDescribe().getName(),
-        'Count'
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.AggregateResultField__c.getDescribe()
-          .getName(),
-        'AnnualRevenue'
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.Active__c.getDescribe().getName(),
-        false
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.CalculationMode__c.getDescribe().getName(),
-        'Realtime'
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.TestCodeParent__c.getDescribe().getName(),
-        'System.assertEquals(1,1);'
-      );
-      fields.put(
-        LookupRollupSummary2__mdt.TestCodeSeeAllData__c.getDescribe().getName(),
-        true
-      );
-      rollupSummary = (LookupRollupSummary2__mdt) JSON.deserialize(
-        JSON.serialize(fields),
-        LookupRollupSummary2__mdt.class
-      );
-
-      // Open test context, permits callouts following DML
-      Test.startTest();
-
-      // Assert initial state of controller when the trigger for the child object is deployed
-      RollupController controller = new RollupController(
-        new RollupSummary(rollupSummary)
-      );
-      System.assertEquals(
-        '/**\n' +
-          ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-          ' **/\n' +
-          '@IsTest\n' +
-          'private class ' +
-          controller.RollupParentTriggerTestName +
-          '\n' +
-          '{\n' +
-          '    @IsTest(SeeAllData=true)\n' +
-          '    private static void testTrigger()\n' +
-          '    {\n' +
-          'System.assertEquals(1,1);\n' +
-          '    }\n' +
-          '}',
-        controller.getParentTriggerTestCode()
-      );
-    }
-  }
-
-  @IsTest
-  static void testSuccessGetLatestApiVersion() {
-    System.runAs(setupTestUser()) {
-      setupMocks();
-
-      LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt(
-        ParentObject__c = 'Account',
-        ChildObject__c = 'Contact'
-      );
-
-      // Open test context, permits callouts following DML
-      Test.startTest();
-
-      // Assert initial state of controller when the trigger for the child object is deployed
-      RollupController controller = new RollupController(
-        new RollupSummary(rollupSummary)
-      );
-      Test.stopTest();
-      Assert.areEqual('97.0', controller.componentApiVersion);
-    }
-  }
-
-  @IsTest
-  static void testFail1GetLatestApiVersion() {
-    System.runAs(setupTestUser()) {
-      // service/data mock for getting API version
-      HttpCalloutMockImpl mockCallout = new HttpCalloutMockImpl();
-
-      HTTPResponse res = new HTTPResponse();
-      // choosing to provide very high defaults so we can overcome the fallback value set in the class
-      res.setBody('{"success":"false"}');
-      res.setHeader('Content-Type', 'application/json');
-      res.setStatusCode(401);
-      mockCallout.responses.add(res);
-
-      Test.setMock(HttpCalloutMock.class, mockCallout);
-      Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-      LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt(
-        ParentObject__c = 'Account',
-        ChildObject__c = 'Contact'
-      );
-
-      // Open test context, permits callouts following DML
-      Test.startTest();
-
-      // Assert initial state of controller when the trigger for the child object is deployed
-      RollupController controller = new RollupController(
-        new RollupSummary(rollupSummary)
-      );
-      Test.stopTest();
-      Assert.areEqual(
-        RollupController.FALLBACK_COMPONENT_API_VERSION,
-        controller.componentApiVersion
-      );
-    }
-  }
-
-  @IsTest
-  static void testFail2GetLatestApiVersion() {
-    System.runAs(setupTestUser()) {
-      // service/data mock for getting API version
-      HttpCalloutMockImpl mockCallout = new HttpCalloutMockImpl();
-
-      HTTPResponse res = new HTTPResponse();
-      // choosing to provide very high defaults so we can overcome the fallback value set in the class
-      res.setBody('this is not json');
-      res.setHeader('Content-Type', 'application/json');
-      res.setStatusCode(200);
-      mockCallout.responses.add(res);
-
-      Test.setMock(HttpCalloutMock.class, mockCallout);
-      Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-      LookupRollupSummary2__mdt rollupSummary = new LookupRollupSummary2__mdt(
-        ParentObject__c = 'Account',
-        ChildObject__c = 'Contact'
-      );
-
-      // Open test context, permits callouts following DML
-      Test.startTest();
-
-      // Assert initial state of controller when the trigger for the child object is deployed
-      RollupController controller = new RollupController(
-        new RollupSummary(rollupSummary)
-      );
-      Test.stopTest();
-      Assert.areEqual(
-        RollupController.FALLBACK_COMPONENT_API_VERSION,
-        controller.componentApiVersion
-      );
-    }
-  }
-
-  /**
-   * Metadata API web service mock class for tests above
-   **/
-  private class WebServiceMockImpl implements WebServiceMock {
-    public void doInvoke(
-      Object stub,
-      Object request,
-      Map<String, Object> response,
-      String endpoint,
-      String soapAction,
-      String requestName,
-      String responseNS,
-      String responseName,
-      String responseType
-    ) {
-      if (request instanceof MetadataService.deploy_element) {
-        MetadataService.deployResponse_element response_x = new MetadataService.deployResponse_element();
-        response_x.result = new MetadataService.AsyncResult();
-        response_x.result.id = 'someid';
-        response_x.result.done = true;
-        response_x.result.state = 'Complete';
-        response.put('response_x', response_x);
-      } else if (request instanceof MetadataService.checkDeployStatus_element) {
-        System.assertEquals(
-          'someid',
-          ((MetadataService.checkDeployStatus_element) request).asyncProcessId
-        );
-        MetadataService.checkDeployStatusResponse_element response_x = new MetadataService.checkDeployStatusResponse_element();
-        response_x.result = new MetadataService.DeployResult();
-        response_x.result.details = new MetadataService.DeployDetails();
-        response_x.result.details.runTestResult = new MetadataService.RunTestsResult();
-        response_x.result.details.runTestResult.numFailures = 0;
-        response_x.result.details.componentFailures = new List<MetadataService.DeployMessage>();
-        response.put('response_x', response_x);
-      } else if (request instanceof MetadataService.checkDeployStatus_element) {
-        System.assertEquals(
-          'someid',
-          ((MetadataService.checkDeployStatus_element) request).asyncProcessId
-        );
-        MetadataService.checkDeployStatusResponse_element response_x = new MetadataService.checkDeployStatusResponse_element();
-        response_x.result = new MetadataService.DeployResult();
-        response_x.result.details = new MetadataService.DeployDetails();
-        response_x.result.details.runTestResult = new MetadataService.RunTestsResult();
-        response_x.result.details.runTestResult.numFailures = 0;
-        response_x.result.details.componentFailures = new List<MetadataService.DeployMessage>();
-        response.put('response_x', response_x);
-      } else if (request instanceof MetadataService.listMetadata_element) {
-        MetadataService.listMetadataResponse_element response_x = new MetadataService.listMetadataResponse_element();
-        response_x.result = new List<MetadataService.FileProperties>();
-        response.put('response_x', response_x);
+  private static Boolean hasMessage(
+    ApexPages.Severity severity,
+    String containsText
+  ) {
+    for (ApexPages.Message m : ApexPages.getMessages()) {
+      if (
+        m.getSeverity() == severity && m.getSummary().contains(containsText)
+      ) {
+        return true;
       }
-      return;
     }
+    return false;
   }
 
-  static User setupTestUser() {
-    //username global uniqueness is still enforced in tests
-    //make sure we get something unique to avoid issues with parallel tests
-    String uniqueness = DateTime.now() + ':' + Math.random();
-    uniqueness += new NullPointerException().getStackTraceString(); //includes the top level test method name without having to pass it
+  private static HttpResponse makeJsonResponse(
+    Integer statusCode,
+    String body
+  ) {
+    HttpResponse res = new HttpResponse();
+    res.setStatusCode(statusCode);
+    res.setHeader('Content-Type', 'application/json');
+    res.setBody(body);
+    return res;
+  }
 
-    // officially, there is no Read Only Profile anymore;
-    // its present for packaging org and scratch org support
-    List<Profile> profiles = [
-      SELECT id, Name
-      FROM Profile
-      WHERE Name = 'Read Only' OR Name = 'ReadOnly' OR Name = 'Standard User'
-      ORDER BY Name ASC
-    ];
-    system.assert(
-      profiles.size() > 0,
-      'setupTestUser() requires either Read Only or Standard User Profile'
+  private static Map<String, Blob> extractZipEntries(Blob zip) {
+    Map<String, Blob> entries = new Map<String, Blob>();
+    Compression.ZipReader reader = new Compression.ZipReader(zip);
+    for (Compression.ZipEntry entry : reader.getEntries()) {
+      entries.put(entry.getName(), reader.extract(entry));
+    }
+    return entries;
+  }
+
+  @IsTest
+  static void testConstructorAddsErrorMessageWhenApiConnectionFails() {
+    RollupController controller = new RollupController(
+      makeRollupSummary('Lead', 'Lead')
     );
-    User result = new User(
-      username = UserInfo.getUserId() +
-        '.' +
-        uniqueness.HashCode() +
-        '@' +
-        UserInfo.getOrganizationId() +
-        '.sfdcOrg',
-      alias = 'testExec',
-      email = 'apextests@example.com',
-      emailencodingkey = 'UTF-8',
-      lastname = 'Testing',
-      languagelocalekey = 'en_US',
-      localesidkey = 'en_US',
-      profileid = profiles[0].Id,
-      timezonesidkey = 'America/Los_Angeles'
+
+    Assert.isFalse(
+      controller.Deployed,
+      'Expected Deployed to remain false when the connection check fails'
     );
-    insert result;
-
-    // Grant permissions to DLRS
-    PermissionSetAssignment psa = new PermissionSetAssignment();
-    psa.AssigneeId = result.Id;
-    psa.PermissionSetId = [
-      SELECT Id
-      FROM PermissionSet
-      WHERE Name = 'LookupRollupSummariesFull'
-    ]
-    .Id;
-    insert psa;
-
-    // Account permission set
-    PermissionSet ps = new PermissionSet(Name = 'Account', Label = 'Account');
-    insert ps;
-    ObjectPermissions accountPerm = new ObjectPermissions(
-      SobjectType = 'Account',
-      ParentId = ps.Id,
-      PermissionsCreate = true,
-      PermissionsDelete = true,
-      PermissionsEdit = true,
-      PermissionsRead = true
+    Assert.isNull(
+      controller.apexCodeToDisplay,
+      'Expected init() to never run when the connection check fails'
     );
-    insert accountPerm;
+    Assert.isTrue(
+      hasMessage(ApexPages.Severity.ERROR, 'Salesforce API connection failure'),
+      'Expected a connection failure error message to be added'
+    );
+  }
 
-    // Grant permissions to Account
-    PermissionSetAssignment psa2 = new PermissionSetAssignment();
-    psa2.AssigneeId = result.Id;
-    psa2.PermissionSetId = ps.Id;
-    insert psa2;
+  @IsTest
+  static void testStandardControllerConstructorDelegatesToRollupSummaryConstructor() {
+    LookupRollupSummary__c rec = new LookupRollupSummary__c(
+      Name = 'Test Rollup',
+      ChildObject__c = 'Lead',
+      ParentObject__c = 'Lead',
+      RelationshipField__c = 'OwnerId',
+      FieldToAggregate__c = 'AnnualRevenue',
+      AggregateOperation__c = 'Sum',
+      AggregateResultField__c = 'NumberOfEmployees',
+      Active__c = false,
+      CalculationMode__c = 'Realtime'
+    );
+    insert rec;
+    RollupSummariesSelector.setRollupCache(
+      true,
+      true,
+      new List<RollupSummary>{ new RollupSummary(rec) }
+    );
 
+    Test.startTest();
+    mockSuccessfulApiConnection();
+    RollupController controller = new RollupController(
+      new ApexPages.StandardController(rec)
+    );
+    Test.stopTest();
+
+    Assert.isFalse(controller.Deployed);
+    Assert.areEqual(
+      2,
+      controller.apexCodeToDisplay.size(),
+      'Expected the record found by the StandardController Id to be used'
+    );
+  }
+
+  @IsTest
+  static void testConstructorInitializesViewStateForSingleObjectRollup() {
+    RollupController controller = makeController('Lead', 'Lead');
+
+    Assert.isFalse(controller.Deployed);
+    Assert.isNull(
+      controller.ParentMergeable,
+      'Expected the parent branch to never run when child and parent are the same object'
+    );
+    Assert.areEqual(
+      2,
+      controller.apexCodeToDisplay.size(),
+      'Expected the trigger + test class bodies for the child object'
+    );
+    Assert.isTrue(controller.existingCode.isEmpty());
+    Assert.isTrue(
+      hasMessage(
+        ApexPages.Severity.WARNING,
+        'Lookup Rollup Summaries tab is still functional'
+      ),
+      'Expected the legacy custom-object deprecation warning'
+    );
+    Assert.isTrue(
+      hasMessage(ApexPages.Severity.INFO, 'Click <b>Deploy</b>'),
+      'Expected the not-yet-deployed prompt message'
+    );
+  }
+
+  @IsTest
+  static void testConstructorInitializesViewStateForDifferentMergeableParent() {
+    RollupController controller = makeController('Contact', 'Account');
+
+    Assert.isFalse(controller.Deployed);
+    Assert.isTrue(
+      controller.ParentMergeable,
+      'Expected Account (the parent) to be recognized as mergeable'
+    );
+    Assert.isTrue(
+      controller.getParentTriggerRequired(),
+      'Expected ParentTriggerRequired to default to ParentMergeable when unset'
+    );
+    Assert.areEqual(
+      4,
+      controller.apexCodeToDisplay.size(),
+      'Expected trigger + test bodies for both the child and parent objects'
+    );
+  }
+
+  @IsTest
+  static void testSetParentTriggerRequiredFalseExcludesParentCode() {
+    RollupController controller = makeController('Contact', 'Account');
+
+    controller.setParentTriggerRequired(false);
+
+    Assert.isFalse(controller.getParentTriggerRequired());
+    Assert.areEqual(
+      2,
+      controller.apexCodeToDisplay.size(),
+      'Expected only the child trigger + test bodies once the parent trigger is opted out of'
+    );
+  }
+
+  @IsTest
+  static void testDeployZipDeploysChildOnlyWhenParentTriggerNotRequired() {
+    RollupController controller = makeController('Contact', 'Account');
+    controller.setParentTriggerRequired(false);
+
+    MetadataRestServiceStub stub = new MetadataRestServiceStub();
+    stub.deployZipResult = makeDeployRequestResult(FAKE_ID, false, null);
+    MetadataRestService.myInstance = (MetadataRestService) Test.createStub(
+      MetadataRestService.class,
+      stub
+    );
+
+    controller.deployZip();
+
+    Assert.areEqual(1, stub.deployZipCallCount);
+    Assert.areEqual(FAKE_ID, controller.deployRequestResult.id);
+
+    Assert.areEqual('RunSpecifiedTests', stub.lastDeployOptions.testLevel);
+    Assert.isFalse(stub.lastDeployOptions.allowMissingFiles);
+    Assert.isFalse(stub.lastDeployOptions.purgeOnDelete);
+    Assert.isTrue(stub.lastDeployOptions.rollbackOnError);
+
+    Map<String, Blob> entries = extractZipEntries(stub.lastZip);
+    Assert.isTrue(entries.containsKey('triggers/ContactTrigger.trigger'));
+    Assert.isTrue(entries.containsKey('classes/ContactTest.cls'));
+    Assert.isFalse(
+      entries.containsKey('triggers/AccountTrigger.trigger'),
+      'Expected the parent trigger to be excluded once its deployment was opted out of'
+    );
+    Assert.isFalse(
+      entries.containsKey('classes/AccountTest.cls'),
+      'Expected the parent test class to be excluded once its deployment was opted out of'
+    );
+  }
+
+  @IsTest
+  static void testDeployZipDeploysChildAndParentWhenParentTriggerRequired() {
+    RollupController controller = makeController('Contact', 'Account');
+    // Left at its default (ParentMergeable coalesces ParentTriggerRequired to true).
+
+    MetadataRestServiceStub stub = new MetadataRestServiceStub();
+    stub.deployZipResult = makeDeployRequestResult(FAKE_ID, false, null);
+    MetadataRestService.myInstance = (MetadataRestService) Test.createStub(
+      MetadataRestService.class,
+      stub
+    );
+
+    controller.deployZip();
+
+    Map<String, Blob> entries = extractZipEntries(stub.lastZip);
+    Assert.isTrue(entries.containsKey('triggers/ContactTrigger.trigger'));
+    Assert.isTrue(entries.containsKey('classes/ContactTest.cls'));
+    Assert.isTrue(
+      entries.containsKey('triggers/AccountTrigger.trigger'),
+      'Expected the parent trigger to be included when its deployment is required'
+    );
+    Assert.isTrue(
+      entries.containsKey('classes/AccountTest.cls'),
+      'Expected the parent test class to be included when its deployment is required'
+    );
+  }
+
+  @IsTest
+  static void testCheckAsyncRequestShowsProgressMessageWhenNotDone() {
+    RollupController controller = makeController('Lead', 'Lead');
+
+    MetadataRestServiceStub stub = new MetadataRestServiceStub();
+    stub.deployZipResult = makeDeployRequestResult(FAKE_ID, false, null);
+    stub.getDeployStatusResult = makeDeployRequestResult(FAKE_ID, false, null);
+    MetadataRestService.myInstance = (MetadataRestService) Test.createStub(
+      MetadataRestService.class,
+      stub
+    );
+
+    controller.deployZip();
+    controller.checkAsyncRequest();
+
+    Assert.areEqual(1, stub.getDeployStatusCallCount);
+    Assert.areEqual(FAKE_ID, stub.lastGetDeployStatusId);
+    Assert.isNotNull(
+      controller.deployRequestResult,
+      'Expected the in-flight result to be kept while the deployment is still running'
+    );
+    Assert.areEqual(1, controller.deployCount);
+    Assert.isTrue(
+      hasMessage(ApexPages.Severity.INFO, 'Deploying...'),
+      'Expected a progress message while the deployment is not yet done'
+    );
+  }
+
+  @IsTest
+  static void testCheckAsyncRequestCompletesClearsResultAndReinitializes() {
+    RollupController controller = makeController('Lead', 'Lead');
+
+    MetadataRestService.DeployDetails details = new MetadataRestService.DeployDetails();
+    details.runTestResult = new MetadataRestService.RunTestsResult();
+    details.runTestResult.numFailures = 0;
+
+    MetadataRestServiceStub stub = new MetadataRestServiceStub();
+    stub.deployZipResult = makeDeployRequestResult(FAKE_ID, false, null);
+    stub.getDeployStatusResult = makeDeployRequestResult(
+      FAKE_ID,
+      true,
+      details
+    );
+    MetadataRestService.myInstance = (MetadataRestService) Test.createStub(
+      MetadataRestService.class,
+      stub
+    );
+
+    controller.deployZip();
+    controller.checkAsyncRequest();
+
+    Assert.isNull(
+      controller.deployRequestResult,
+      'Expected the result to be cleared once the deployment is done'
+    );
+    Assert.isTrue(
+      hasMessage(ApexPages.Severity.INFO, 'Deployment complete.'),
+      'Expected a completion message'
+    );
+    // init() runs again once the deployment finishes, repopulating view state.
+    Assert.areEqual(2, controller.apexCodeToDisplay.size());
+  }
+
+  @IsTest
+  static void testCheckAsyncRequestReportsComponentAndTestFailures() {
+    RollupController controller = makeController('Lead', 'Lead');
+
+    MetadataRestService.DeployMessage failedComponent = new MetadataRestService.DeployMessage();
+    failedComponent.fileName = 'LeadTrigger.trigger';
+    failedComponent.lineNumber = 3;
+    failedComponent.columnNumber = 5;
+    failedComponent.problem = 'Invalid trigger syntax';
+
+    MetadataRestService.RunTestFailure testFailure = new MetadataRestService.RunTestFailure();
+    testFailure.name = 'LeadTest';
+    testFailure.methodName = 'testTrigger';
+    testFailure.message = 'System.AssertException: boom';
+    testFailure.stackTrace = 'Class.LeadTest.testTrigger: line 5';
+
+    MetadataRestService.CodeCoverageWarning coverageWarning = new MetadataRestService.CodeCoverageWarning();
+    coverageWarning.namespace = 'dlrs';
+    coverageWarning.name = 'LeadTrigger';
+    coverageWarning.message = 'Trigger has no test coverage';
+
+    MetadataRestService.CodeCoverageWarning unnamespacedCoverageWarning = new MetadataRestService.CodeCoverageWarning();
+    unnamespacedCoverageWarning.namespace = null;
+    unnamespacedCoverageWarning.name = 'LeadTest';
+    unnamespacedCoverageWarning.message = 'Test class has no assertions';
+
+    MetadataRestService.DeployDetails details = new MetadataRestService.DeployDetails();
+    details.componentFailures = new List<MetadataRestService.DeployMessage>{
+      failedComponent
+    };
+    details.runTestResult = new MetadataRestService.RunTestsResult();
+    details.runTestResult.numFailures = 1;
+    details.runTestResult.failures = new List<MetadataRestService.RunTestFailure>{
+      testFailure
+    };
+    details.runTestResult.codeCoverageWarnings = new List<MetadataRestService.CodeCoverageWarning>{
+      coverageWarning,
+      unnamespacedCoverageWarning
+    };
+
+    MetadataRestServiceStub stub = new MetadataRestServiceStub();
+    stub.deployZipResult = makeDeployRequestResult(FAKE_ID, false, null);
+    stub.getDeployStatusResult = makeDeployRequestResult(
+      FAKE_ID,
+      true,
+      details
+    );
+    MetadataRestService.myInstance = (MetadataRestService) Test.createStub(
+      MetadataRestService.class,
+      stub
+    );
+
+    controller.deployZip();
+    controller.checkAsyncRequest();
+
+    Assert.isTrue(
+      hasMessage(ApexPages.Severity.ERROR, 'Invalid trigger syntax'),
+      'Expected the component failure to be reported'
+    );
+    Assert.isTrue(
+      hasMessage(ApexPages.Severity.ERROR, 'System.AssertException: boom'),
+      'Expected the test failure to be reported'
+    );
+    Assert.isTrue(
+      hasMessage(
+        ApexPages.Severity.WARNING,
+        'dlrs.LeadTrigger:Trigger has no test coverage'
+      ),
+      'Expected the code coverage warning to be reported with its namespace prefix'
+    );
+    Assert.isTrue(
+      hasMessage(
+        ApexPages.Severity.WARNING,
+        'LeadTest:Test class has no assertions'
+      ),
+      'Expected a code coverage warning with no namespace to be reported without a prefix'
+    );
+  }
+
+  private static MetadataRestService.DeployRequestResult makeDeployRequestResult(
+    Id id,
+    Boolean done,
+    MetadataRestService.DeployDetails details
+  ) {
+    MetadataRestService.DeployRequestResult result = new MetadataRestService.DeployRequestResult();
+    result.id = id;
+    result.deployResult = new MetadataRestService.DeployResult();
+    result.deployResult.id = id;
+    result.deployResult.done = done;
+    result.deployResult.success = done;
+    result.deployResult.status = done ? 'Succeeded' : 'InProgress';
+    result.deployResult.details = details;
     return result;
   }
 
-  static void setupMocks() {
-    HttpCalloutMockImpl mockCallout = new HttpCalloutMockImpl();
-    HTTPResponse res = new HTTPResponse();
-    // choosing to provide very high API versions so we can overcome the fallback value set in the class
-    res.setBody(
-      '[{"label":"Winter \'97","url":"/services/data/v97.0","version":"97.0"},{"label":"Summer \'95","url":"/services/data/v95.0","version":"95.0"},{"label":"Spring \'96","url":"/services/data/v96.0","version":"96.0"}]'
-    );
-    res.setHeader('Content-Type', 'application/json');
-    res.setStatusCode(200);
-    mockCallout.responses.add(res);
-    Test.setMock(HttpCalloutMock.class, mockCallout);
-    // Mocking for the MetadataService
-    Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
+  private class HttpCalloutMockImpl implements HttpCalloutMock {
+    public List<HttpRequest> requests = new List<HttpRequest>();
+    public List<HttpResponse> responses = new List<HttpResponse>();
+    public Integer callCount = 0;
+
+    public HTTPResponse respond(HTTPRequest req) {
+      callCount++;
+      requests.add(req);
+      return responses.remove(0);
+    }
   }
 
-  private class HttpCalloutMockImpl implements HttpCalloutMock {
-    public List<HTTPRequest> requests = new List<HTTPRequest>();
-    public List<HttpResponse> responses = new List<HttpResponse>();
-    public HTTPResponse respond(HTTPRequest req) {
-      // report the inbound request so it can be validated
-      requests.add(req);
-      // respond with the queued up responses, FIFO
-      // may throw an exception if we don't have any items in the list
-      return responses.remove(0);
+  private class MetadataRestServiceStub implements System.StubProvider {
+    public Integer deployZipCallCount = 0;
+    public Blob lastZip;
+    public MetadataRestService.DeployOptions lastDeployOptions;
+    public MetadataRestService.DeployRequestResult deployZipResult;
+
+    public Integer getDeployStatusCallCount = 0;
+    public Id lastGetDeployStatusId;
+    public MetadataRestService.DeployRequestResult getDeployStatusResult;
+
+    public Object handleMethodCall(
+      Object stubbedObject,
+      String stubbedMethodName,
+      Type returnType,
+      List<Type> listOfParamTypes,
+      List<String> listOfParamNames,
+      List<Object> listOfArgs
+    ) {
+      if (stubbedMethodName == 'deployZip') {
+        deployZipCallCount++;
+        lastZip = (Blob) listOfArgs[0];
+        lastDeployOptions = (MetadataRestService.DeployOptions) listOfArgs[1];
+        return deployZipResult;
+      }
+      if (stubbedMethodName == 'getDeployStatus') {
+        getDeployStatusCallCount++;
+        lastGetDeployStatusId = (Id) listOfArgs[0];
+        return getDeployStatusResult;
+      }
+      return null;
     }
   }
 }

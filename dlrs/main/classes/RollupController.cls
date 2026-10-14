@@ -25,46 +25,26 @@
  **/
 
 /**
- * Handles the Manage Trigger and Calculate Custom Buttons
+ * Handles the Manage Trigger VF pages
  **/
 public with sharing class RollupController {
-  @TestVisible
-  private static String FALLBACK_COMPONENT_API_VERSION = '68.0';
+  public MetadataRestService.DeployRequestResult deployRequestResult {
+    get;
+    private set;
+  }
 
-  public String ZipData { get; set; }
+  public RollupSummary RollupSummary { get; private set; }
+  public Boolean Deployed { get; private set; }
+  public Boolean ParentMergeable { get; private set; }
+  public Boolean MetadataConnectionError { get; private set; }
+  public List<String> apexCodeToDisplay { get; private set; }
+  public List<TriggerGenerationService.GeneratedCode> existingCode {
+    get;
+    private set;
+  }
 
-  public MetadataService.AsyncResult AsyncResult { get; private set; }
-
-  public RollupSummary RollupSummary { get; set; }
-
-  public String RollupTriggerName { get; set; }
-
-  public String RollupTriggerTestName { get; set; }
-
-  public String RollupParentTriggerName { get; set; }
-
-  public String RollupParentTriggerTestName { get; set; }
-
-  public Boolean Deployed { get; set; }
-
-  public Boolean ParentMergeable { get; set; }
-
-  public Boolean ParentTriggerRequired { get; set; }
-
-  public ApexTrigger RollupTrigger { get; private set; }
-
-  public ApexClass RollupTriggerTest { get; private set; }
-
-  public ApexTrigger RollupParentTrigger { get; private set; }
-
-  public ApexClass RollupParentTriggerTest { get; private set; }
-
+  public Boolean ParentTriggerRequired;
   public Integer deployCount;
-
-  public Boolean MetadataConnectionError { get; set; }
-
-  @TestVisible
-  private String componentApiVersion;
 
   public RollupController(ApexPages.StandardController standardController) {
     // Query Lookup Rollup Summary record
@@ -74,280 +54,38 @@ public with sharing class RollupController {
     );
   }
 
-  @TestVisible
-  private RollupController(RollupSummary rollupSummary) {
-    this.RollupSummary = rollupSummary;
+  public Boolean getParentTriggerRequired() {
+    System.debug('getParentTriggerRequired');
+    return this.ParentTriggerRequired;
+  }
 
-    // Generate names for test and triggers to deploy / undeploy
-    RollupTriggerName = RollupSummaries.makeTriggerName(RollupSummary);
-    RollupTriggerTestName = RollupSummaries.makeTriggerTestName(RollupSummary);
-    RollupParentTriggerName = RollupSummaries.makeParentTriggerName(
-      RollupSummary
-    );
-    RollupParentTriggerTestName = RollupSummaries.makeParentTriggerTestName(
-      RollupSummary
-    );
-
-    // Does the parent object support merge?
-    Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
-    SObjectType parentObjectType = gd.get(RollupSummary.ParentObject);
-    ParentTriggerRequired = ParentMergeable = parentObjectType.getDescribe()
-      .isMergeable();
-
-    // Initialise view state
+  public void setParentTriggerRequired(Boolean value) {
+    System.debug('setParentTriggerRequired:' + value);
+    this.ParentTriggerRequired = value;
     init();
   }
 
-  public String getPackageXml() {
-    if (Deployed)
-      // package.xml for undeploy
-      return '<?xml version="1.0" encoding="UTF-8"?>' +
-        '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-        '<version>' +
-        componentApiVersion +
-        '</version>' +
-        '</Package>';
-    else
-      // package.xml for deploy
-      return '<?xml version="1.0" encoding="UTF-8"?>' +
-        '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-        '<types>' +
-        '<members>' +
-        RollupTriggerName +
-        '</members>' +
-        '<name>ApexTrigger</name>' +
-        '</types>' +
-        '<types>' +
-        '<members>' +
-        RollupTriggerTestName +
-        '</members>' +
-        '<name>ApexClass</name>' +
-        '</types>' +
-        (ParentTriggerRequired
-          ? ('<types>' +
-            '<members>' +
-            RollupParentTriggerName +
-            '</members>' +
-            '<name>ApexTrigger</name>' +
-            '</types>' +
-            '<types>' +
-            '<members>' +
-            RollupParentTriggerTestName +
-            '</members>' +
-            '<name>ApexClass</name>' +
-            '</types>')
-          : '') +
-        '<version>' +
-        componentApiVersion +
-        '</version>' +
-        '</Package>';
-  }
+  @TestVisible
+  private RollupController(RollupSummary rollupSummary) {
+    this.Deployed = false;
+    this.RollupSummary = rollupSummary;
 
-  public String getDestructiveChangesXml() {
-    return '<?xml version="1.0" encoding="UTF-8"?>' +
-      '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-      '<types>' +
-      '<members>' +
-      RollupTriggerName +
-      '</members>' +
-      '<name>ApexTrigger</name>' +
-      '</types>' +
-      '<types>' +
-      '<members>' +
-      RollupTriggerTestName +
-      '</members>' +
-      '<name>ApexClass</name>' +
-      '</types>' +
-      (ParentTriggerRequired
-        ? ('<types>' +
-          '<members>' +
-          RollupParentTriggerName +
-          '</members>' +
-          '<name>ApexTrigger</name>' +
-          '</types>' +
-          '<types>' +
-          '<members>' +
-          RollupParentTriggerTestName +
-          '</members>' +
-          '<name>ApexClass</name>' +
-          '</types>')
-        : '') +
-      '<version>' +
-      componentApiVersion +
-      '</version>' +
-      '</Package>';
-  }
-
-  /**
-   * CHILD OBJECT CODE
-   **/
-
-  public String getTriggerTestCodeMetadata() {
-    return '<?xml version="1.0" encoding="UTF-8"?>' +
-      '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-      '<apiVersion>' +
-      componentApiVersion +
-      '</apiVersion>' +
-      '<status>Active</status>' +
-      '</ApexClass>';
-  }
-
-  public String getTriggerTestCode() {
-    if (Deployed && RollupTriggerTest != null)
-      // Display currently deployed code for confirmation
-      return RollupTriggerTest.Body;
-    else {
-      // Deploy generated code
-      return '/**\n' +
-        ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-        ' **/\n' +
-        '@IsTest\n' +
-        'private class ' +
-        RollupTriggerTestName +
-        '\n' +
-        '{\n' +
-        (RollupSummary.TestCodeSeeAllData == true
-          ? '    @IsTest(SeeAllData=true)\n'
-          : '    @IsTest\n') +
-        '    private static void testTrigger()\n' +
-        '    {\n' +
-        ((RollupSummary.TestCode != null &&
-          RollupSummary.TestCode.length() > 0)
-          ? RollupSummary.TestCode + '\n'
-          : ('        // Force the ' +
-            RollupTriggerName +
-            ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-            '        ' +
-            Utilities.classPrefix() +
-            'RollupService.testHandler(new ' +
-            RollupSummary.ChildObject +
-            '());\n')) +
-        '    }\n' +
-        '}';
+    // Metadata API connection?
+    try {
+      MetadataRestService.checkAPIConnection();
+    } catch (Exception e) {
+      System.debug(e);
+      ApexPages.addMessage(
+        new ApexPages.Message(
+          ApexPages.Severity.Error,
+          'Salesforce API connection failure'
+        )
+      );
+      return;
     }
-  }
 
-  public String getTriggerCodeMetadata() {
-    return '<?xml version="1.0" encoding="UTF-8"?>' +
-      '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-      '<apiVersion>' +
-      componentApiVersion +
-      '</apiVersion>' +
-      '<status>Active</status>' +
-      '</ApexTrigger>';
-  }
-
-  public String getTriggerCode() {
-    if (Deployed && RollupTrigger != null) {
-      // Display currently deployed code for confirmation
-      return RollupTrigger.Body;
-    } else {
-      // Namespace?
-      String namespace = Utilities.namespace();
-      // Deploy generated code
-      return '/**\n' +
-        ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-        ' **/\n' +
-        'trigger ' +
-        RollupTriggerName +
-        ' on ' +
-        RollupSummary.ChildObject +
-        '\n' +
-        '    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n' +
-        '{\n' +
-        '    ' +
-        (namespace.length() > 0 ? namespace + '.' : '') +
-        'RollupService.triggerHandler(' +
-        RollupSummary.ChildObject +
-        '.SObjectType);\n' +
-        '}\n';
-    }
-  }
-
-  /**
-   * PARENT OBJECT CODE
-   **/
-
-  public String getParentTriggerTestCodeMetadata() {
-    return '<?xml version="1.0" encoding="UTF-8"?>' +
-      '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
-      '<apiVersion>' +
-      componentApiVersion +
-      '</apiVersion>' +
-      '<status>Active</status>' +
-      '</ApexClass>';
-  }
-
-  public String getParentTriggerTestCode() {
-    if (Deployed && RollupTriggerTest != null)
-      // Display currently deployed code for confirmation
-      return RollupParentTriggerTest.Body;
-    else {
-      // Namespace?
-      String namespace = Utilities.namespace();
-      // Deploy generated code
-      return '/**\n' +
-        ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-        ' **/\n' +
-        '@IsTest\n' +
-        'private class ' +
-        RollupParentTriggerTestName +
-        '\n' +
-        '{\n' +
-        (RollupSummary.TestCodeSeeAllData == true
-          ? '    @IsTest(SeeAllData=true)\n'
-          : '    @IsTest\n') +
-        '    private static void testTrigger()\n' +
-        '    {\n' +
-        ((RollupSummary.TestCodeParent != null &&
-          RollupSummary.TestCodeParent.length() > 0)
-          ? RollupSummary.TestCodeParent + '\n'
-          : ('        // Force the ' +
-            RollupTriggerName +
-            ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-            '        ' +
-            (namespace.length() > 0 ? namespace + '.' : '') +
-            'RollupService.testHandler(new ' +
-            RollupSummary.ParentObject +
-            '());\n')) +
-        '    }\n' +
-        '}';
-    }
-  }
-
-  public String getParentTriggerCodeMetadata() {
-    return '<?xml version="1.0" encoding="UTF-8"?>' +
-      '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
-      '<apiVersion>' +
-      componentApiVersion +
-      '</apiVersion>' +
-      '<status>Active</status>' +
-      '</ApexTrigger>';
-  }
-
-  public String getParentTriggerCode() {
-    if (Deployed && RollupTrigger != null) {
-      // Display currently deployed code for confirmation
-      return RollupParentTrigger.Body;
-    } else {
-      // Namespace?
-      String namespace = Utilities.namespace();
-      // Deploy generated code
-      return '/**\n' +
-        ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-        ' **/\n' +
-        'trigger ' +
-        RollupParentTriggerName +
-        ' on ' +
-        RollupSummary.ParentObject +
-        '\n' +
-        '    (before delete, before insert, before update, after delete, after insert, after undelete, after update)\n' +
-        '{\n' +
-        '    ' +
-        (namespace.length() > 0 ? namespace + '.' : '') +
-        'RollupService.triggerHandler();\n' +
-        '}\n';
-    }
+    // Initialise view state
+    init();
   }
 
   public PageReference deployZip() {
@@ -358,48 +96,78 @@ public with sharing class RollupController {
       )
     );
 
-    // Deploy zip file posted back from the page action function
-    MetadataService.MetadataPort service = CustomMetadataService.createService();
-    MetadataService.DeployOptions deployOptions = new MetadataService.DeployOptions();
-    deployOptions.testLevel = 'RunSpecifiedTests';
-    deployOptions.runTests = new List<String>{ RollupTriggerTestName };
-    if (ParentTriggerRequired) {
-      deployOptions.runTests.add(RollupParentTriggerTestName);
+    List<TriggerGenerationService.GeneratedCode> generatedApex = TriggerGenerationService.generateApexForRollup(
+      this.RollupSummary
+    );
+    List<TriggerGenerationService.GeneratedCode> itemsToDestroy = new List<TriggerGenerationService.GeneratedCode>();
+    List<TriggerGenerationService.GeneratedCode> itemsToDeploy = new List<TriggerGenerationService.GeneratedCode>();
+
+    List<String> testClassesToRun = new List<String>();
+
+    for (TriggerGenerationService.GeneratedCode gc : generatedApex) {
+      if ('ApexClass'.equals(gc.mdtType)) {
+        testClassesToRun.add(gc.assetName);
+      }
     }
-    deployOptions.allowMissingFiles = false;
-    deployOptions.autoUpdatePackage = false;
-    deployOptions.checkOnly = false;
-    deployOptions.ignoreWarnings = false;
-    deployOptions.performRetrieve = false;
-    deployOptions.purgeOnDelete = false;
-    deployOptions.rollbackOnError = true;
-    deployOptions.singlePackage = true;
-    AsyncResult = service.deploy(ZipData, DeployOptions);
+    if (this.Deployed) {
+      for (TriggerGenerationService.GeneratedCode gc : generatedApex) {
+        if (String.isNotBlank(gc.existingBody)) {
+          itemsToDestroy.add(gc);
+        }
+      }
+    } else {
+      for (TriggerGenerationService.GeneratedCode gc : generatedApex) {
+        if ('ApexClass'.equals(gc.mdtType)) {
+          testClassesToRun.add(gc.assetName);
+        }
+        if (this.RollupSummary.ChildObject.equals(gc.sObjectName)) {
+          itemsToDeploy.add(gc);
+        } else if (
+          this.RollupSummary.ParentObject.equals(gc.sObjectName) &&
+          ParentTriggerRequired
+        ) {
+          itemsToDeploy.add(gc);
+        }
+      }
+    }
+
+    Blob deploymentZip = TriggerGenerationService.getZipFromChangeSet(
+      itemsToDeploy,
+      itemsToDestroy
+    );
+
+    MetadataRestService.DeployOptions options = new MetadataRestService.DeployOptions();
+    options.testLevel = 'RunSpecifiedTests';
+    options.runTests = new List<String>(testClassesToRun);
+    options.allowMissingFiles = false;
+    options.purgeOnDelete = false;
+    options.rollbackOnError = true;
+
+    MetadataRestService svc = MetadataRestService.getInstance();
+    this.deployRequestResult = svc.deployZip(deploymentZip, options);
     return null;
   }
 
   public PageReference checkAsyncRequest() {
     // Check the status of the retrieve request
-    MetadataService.MetadataPort service = CustomMetadataService.createService();
-    MetadataService.DeployResult deployResult = service.checkDeployStatus(
-      AsyncResult.Id,
+    MetadataRestService svc = MetadataRestService.getInstance();
+    this.deployRequestResult = svc.getDeployStatus(
+      this.deployRequestResult.id,
       true
     );
-    if (deployResult.done) {
+    MetadataRestService.DeployResult depRes = this.deployRequestResult.deployResult;
+    if (depRes.done) {
       ApexPages.addMessage(
         new ApexPages.Message(
           ApexPages.Severity.Info,
-          Deployed ? 'Remove complete.' : 'Deployment complete.'
+          this.Deployed ? 'Remove complete.' : 'Deployment complete.'
         )
       );
 
       // Deployment errors?
-      if (
-        deployResult.details != null &&
-        deployResult.details.componentFailures != null
-      )
+      if (depRes.details != null && depRes.details.componentFailures != null)
         for (
-          MetadataService.DeployMessage deployMessage : deployResult.details.componentFailures
+          MetadataRestService.DeployMessage deployMessage : depRes.details.componentFailures
         )
           if (deployMessage.problem != null)
             ApexPages.addMessage(
@@ -415,10 +183,10 @@ public with sharing class RollupController {
               )
             );
       // Test errors?
-      MetadataService.RunTestsResult runTestResult = deployResult.details.runTestResult;
+      MetadataRestService.RunTestsResult runTestResult = depRes.details.runTestResult;
       if (runTestResult.numFailures > 0)
         for (
-          MetadataService.RunTestFailure testFailure : runTestResult.failures
+          MetadataRestService.RunTestFailure testFailure : runTestResult.failures
         )
           ApexPages.addMessage(
             new ApexPages.Message(
@@ -435,7 +203,7 @@ public with sharing class RollupController {
       // Code coverage warnings?
       if (runTestResult.codeCoverageWarnings != null)
         for (
-          MetadataService.CodeCoverageWarning codeCoverageWarning : runTestResult.codeCoverageWarnings
+          MetadataRestService.CodeCoverageWarning codeCoverageWarning : runTestResult.codeCoverageWarnings
         )
           ApexPages.addMessage(
             new ApexPages.Message(
@@ -449,10 +217,10 @@ public with sharing class RollupController {
             )
           );
 
-      AsyncResult = null;
+      this.deployRequestResult = null;
 
       // If this was an undeploy and was successful?
-      if (Deployed && !ApexPages.hasMessages(ApexPages.Severity.Error)) {
+      if (this.Deployed && !ApexPages.hasMessages(ApexPages.Severity.Error)) {
         // Determine active rollups for this child and deactivate them
         List<RollupSummary> rollups = new RollupSummariesSelector()
           .selectActiveByChildObject(
@@ -471,6 +239,8 @@ public with sharing class RollupController {
       }
 
       // Initialise view state to try again
+      this.ParentTriggerRequired = null;
+      this.Deployed = false;
       init();
     } else {
       ApexPages.addMessage(
@@ -485,47 +255,37 @@ public with sharing class RollupController {
   }
 
   private void init() {
-    // Metadata API connection?
-    MetadataConnectionError = !RollupService.checkMetadataAPIConnection();
-    if (MetadataConnectionError) {
-      ApexPages.addMessage(
-        new ApexPages.Message(
-          ApexPages.Severity.Error,
-          'Salesforce Metadata API connection failure, click the link below to configure.'
-        )
-      );
-      return;
-    }
-    componentApiVersion = getNewestApiVersion();
-
-    // Already deployed?
-    Set<String> triggerNames = new Set<String>{ RollupTriggerName };
-    Set<String> testNames = new Set<String>{ RollupTriggerTestName };
-    if (ParentMergeable) {
-      triggerNames.add(RollupParentTriggerName);
-      testNames.add(RollupParentTriggerTestName);
-    }
-    Map<String, ApexTrigger> apexTriggers = new ApexTriggersSelector()
-      .selectByName(triggerNames);
-    Map<String, ApexClass> apexClasses = new ApexClassesSelector()
-      .selectByName(testNames);
-    Deployed =
-      apexTriggers.containsKey(RollupTriggerName) &&
-      apexClasses.containsKey(RollupTriggerTestName);
-    RollupTrigger = Deployed ? apexTriggers.get(RollupTriggerName) : null;
-    RollupTriggerTest = Deployed
-      ? apexClasses.get(RollupTriggerTestName)
-      : null;
-    RollupParentTrigger = Deployed
-      ? apexTriggers.get(RollupParentTriggerName)
-      : null;
-    RollupParentTriggerTest = Deployed
-      ? apexClasses.get(RollupParentTriggerTestName)
-      : null;
-    ParentTriggerRequired = Deployed
-      ? RollupParentTrigger != null && RollupParentTriggerTest != null
-      : ParentTriggerRequired;
     deployCount = 0;
+
+    this.apexCodeToDisplay = new List<String>();
+    this.existingCode = new List<TriggerGenerationService.GeneratedCode>();
+    List<TriggerGenerationService.GeneratedCode> generatedApex = TriggerGenerationService.generateApexForRollup(
+      this.RollupSummary
+    );
+
+    // TODO: cleanup evaluations here
+
+    for (TriggerGenerationService.GeneratedCode gc : generatedApex) {
+      if (this.RollupSummary.ChildObject.equals(gc.sObjectName)) {
+        apexCodeToDisplay.add(gc.existingBody ?? gc.body);
+        if (String.isNotBlank(gc.existingBody)) {
+          this.Deployed = true;
+          this.existingCode.add(gc);
+        }
+      } else if (this.RollupSummary.ParentObject.equals(gc.sObjectName)) {
+        this.ParentMergeable = true;
+        this.ParentTriggerRequired = this.ParentTriggerRequired ??
+          this.ParentMergeable;
+        if (this.ParentTriggerRequired == true) {
+          if (this.Deployed == false || String.isNotBlank(gc.existingBody)) {
+            apexCodeToDisplay.add(gc.existingBody ?? gc.body);
+          }
+          if (String.isNotBlank(gc.existingBody)) {
+            this.existingCode.add(gc);
+          }
+        }
+      }
+    }
 
     // Deprication warning
     if (RollupSummary.Record instanceof LookupRollupSummary__c) {
@@ -538,34 +298,12 @@ public with sharing class RollupController {
     }
 
     // Message to confirm current status
-    if (Deployed) {
-      ApexPages.addMessage(
-        new ApexPages.Message(
-          ApexPages.Severity.Info,
-          'Apex Trigger <b>' + RollupTriggerName + '</b> is installed.'
-        )
-      );
-      ApexPages.addMessage(
-        new ApexPages.Message(
-          ApexPages.Severity.Info,
-          'Apex Class <b>' + RollupTriggerTestName + '</b> is installed.'
-        )
-      );
-      if (RollupParentTrigger != null) {
+    if (this.Deployed) {
+      for (TriggerGenerationService.GeneratedCode gc : this.existingCode) {
         ApexPages.addMessage(
           new ApexPages.Message(
             ApexPages.Severity.Info,
-            'Apex Trigger <b>' + RollupParentTriggerName + '</b> is installed.'
-          )
-        );
-      }
-      if (RollupParentTriggerTest != null) {
-        ApexPages.addMessage(
-          new ApexPages.Message(
-            ApexPages.Severity.Info,
-            'Apex Trigger <b>' +
-              RollupParentTriggerTestName +
-              '</b> is installed.'
+            gc.mdtType + ' <b>' + gc.assetName + '</b> is installed.'
           )
         );
       }
@@ -582,39 +320,6 @@ public with sharing class RollupController {
           'Click <b>Deploy</b> to install the Apex Trigger and Apex Class for this child object.'
         )
       );
-    }
-  }
-
-  /**
-   * Call salesforce API to get current max supported API version
-   */
-  private String getNewestApiVersion() {
-    HttpRequest req = new HttpRequest();
-    req.setMethod('GET');
-    // submit a Versions request
-    req.setEndpoint(URL.getOrgDomainUrl().toExternalForm() + '/services/data/');
-    // Salesforce REST API Dev Guide says this endpoint doesn't need authentication
-
-    try {
-      Http http = new Http();
-      HTTPResponse res = http.send(req);
-      if (res.getStatusCode() != 200) {
-        return FALLBACK_COMPONENT_API_VERSION;
-      }
-      String body = res.getBody();
-      List<Object> data = (List<Object>) JSON.deserializeUntyped(body);
-      Decimal maxVersion = Decimal.valueOf(FALLBACK_COMPONENT_API_VERSION);
-      for (Object obj : data) {
-        Map<String, Object> apiV = (Map<String, Object>) obj;
-        Decimal newV = Decimal.valueOf((String) apiV.get('version'));
-        if (newV > maxVersion) {
-          maxVersion = newV;
-        }
-      }
-      return String.valueOf(maxVersion);
-    } catch (Exception e) {
-      System.debug(e);
-      return FALLBACK_COMPONENT_API_VERSION;
     }
   }
 }
