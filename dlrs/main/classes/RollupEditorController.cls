@@ -172,6 +172,18 @@ public with sharing class RollupEditorController {
     return pageRef.getUrl();
   }
 
+  @AuraEnabled(cacheable=true)
+  public static RollupSchedulingService.ScheduledJobInfo getScheduledFullCalculateJob(
+    Id rollupId
+  ) {
+    return RollupSchedulingService.getScheduledFullCalculateJob(rollupId);
+  }
+
+  @AuraEnabled
+  public static void unscheduleFullCalculate(Id rollupId) {
+    RollupSchedulingService.unscheduleFullCalculate(rollupId);
+  }
+
   private static Map<String, List<String>> collectErrors(RollupSummary rollup) {
     Map<String, List<String>> errorMap = new Map<String, List<String>>();
     if (rollup.Error != null) {

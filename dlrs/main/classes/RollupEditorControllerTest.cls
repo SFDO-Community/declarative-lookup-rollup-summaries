@@ -149,6 +149,23 @@ public with sharing class RollupEditorControllerTest {
   }
 
   @IsTest
+  static void testGetScheduledFullCalculateJobWhenMissing() {
+    Assert.isNull(
+      RollupEditorController.getScheduledFullCalculateJob(lup.Id)
+    );
+  }
+
+  @IsTest
+  static void testUnscheduleFullCalculateWhenMissing() {
+    Test.startTest();
+    RollupEditorController.unscheduleFullCalculate(lup.Id);
+    Test.stopTest();
+    Assert.isNull(
+      RollupEditorController.getScheduledFullCalculateJob(lup.Id)
+    );
+  }
+
+  @IsTest
   static void testRollupConfig() {
     RollupEditorController.RollupConfig cfg = new RollupEditorController.RollupConfig(
       lup

@@ -5,6 +5,8 @@ import { NavigationMixin, CurrentPageReference } from "lightning/navigation";
 
 import getAllRollupConfigs from "@salesforce/apex/RollupEditorController.getAllRollupConfigs";
 import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
+import getScheduledFullCalculateJob from "@salesforce/apex/RollupEditorController.getScheduledFullCalculateJob";
+import unscheduleFullCalculate from "@salesforce/apex/RollupEditorController.unscheduleFullCalculate";
 import USER_ID from "@salesforce/user/Id";
 import RollupEditor, { CLASS_SCHEDULER_CONFIG } from "c/rollupEditor";
 import ClassSchedulerModal from "c/classSchedulerModal";
@@ -301,22 +303,65 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   }
 
   async requestDelete(rollupName) {
-    const confirmed = await LightningConfirm.open({
-      message: `Are you sure you want to delete the rollup named: ${rollupName}`,
-      label: "Delete Rollup Configuration",
-      theme: "warning"
-    });
-    if (confirmed) {
-      this.dispatchEvent(
-        new ShowToastEvent({
-          title: "Delete Started",
-          message: `Started request to delete ${rollupName}`,
-          variant: "info"
-        })
-      );
-      this.isLoading = true;
-      deleteRollupConfig({ rollupName: rollupName });
+    const rollup = Object.values(this.rollups).find(
+      (r) => r.developerName === rollupName
+    );
+    let unscheduleJob = false;
+
+    if (rollup?.id) {
+      const scheduledJob = await getScheduledFullCalculateJob({
+        rollupId: rollup.id
+      });
+      if (scheduledJob) {
+        const confirmed = await LightningConfirm.open({
+          label: "Delete Rollup Configuration",
+          message: `Are you sure you want to delete the rollup named "${rollupName}"? It has a Scheduled Full Calculate job named "${scheduledJob.jobName}" that will continue to run unless removed.`,
+          theme: "warning"
+        });
+        if (!confirmed) {
+          return;
+        }
+
+        unscheduleJob = await LightningConfirm.open({
+          label: "Delete Scheduled Job",
+          message: `Also delete the scheduled Full Calculate job "${scheduledJob.jobName}"?`,
+          theme: "warning",
+          confirmButtonLabel: "Delete Job",
+          cancelButtonLabel: "Keep Job"
+        });
+      } else {
+        const confirmed = await LightningConfirm.open({
+          message: `Are you sure you want to delete the rollup named: ${rollupName}`,
+          label: "Delete Rollup Configuration",
+          theme: "warning"
+        });
+        if (!confirmed) {
+          return;
+        }
+      }
+    } else {
+      const confirmed = await LightningConfirm.open({
+        message: `Are you sure you want to delete the rollup named: ${rollupName}`,
+        label: "Delete Rollup Configuration",
+        theme: "warning"
+      });
+      if (!confirmed) {
+        return;
+      }
     }
+
+    this.dispatchEvent(
+      new ShowToastEvent({
+        title: "Delete Started",
+        message: `Started request to delete ${rollupName}`,
+        variant: "info"
+      })
+    );
+    this.isLoading = true;
+    if (unscheduleJob && rollup?.id) {
+      await unscheduleFullCalculate({ rollupId: rollup.id });
+    }
+    deleteRollupConfig({ rollupName: rollupName });
   }
 
   runCreateNew() {

@@ -34,18 +34,19 @@ public with sharing class CronTriggersSelector extends fflib_SObjectSelector {
   }
 
   public List<CronTrigger> selectScheduledApexById(String id) {
-    id = '%' + id + '%';
+    return selectFullCalculateJobsByRollupId(id);
+  }
 
-    List<CronTrigger> ct = Database.query(
+  public List<CronTrigger> selectFullCalculateJobsByRollupId(String rollupId) {
+    String idPattern = '%' + String.valueOf(rollupId).substring(0, 15) + '%';
+
+    return Database.query(
       newQueryFactory()
         .selectfield('CronJobDetail.Name')
         .setCondition(
-          'CronJobDetail.JobType = \'7\' AND CronJobDetail.Name LIKE :id'
+          'CronJobDetail.JobType = \'7\' AND CronJobDetail.Name LIKE :idPattern'
         )
-        .setLimit(1)
         .tosoql()
     );
-
-    return ct;
   }
 }
