@@ -2,6 +2,22 @@
 private class TriggerGenerationServiceTest {
   private static final String FAKE_API_VERSION = '61.0';
 
+  private static String oppTriggerName =
+    Utilities.componentPrefix() + 'OpportunityTrigger';
+  private static String oppTestName =
+    Utilities.componentPrefix() + 'OpportunityTest';
+  private static String accTriggerName =
+    Utilities.componentPrefix() + 'AccountTrigger';
+  private static String accTestName =
+    Utilities.componentPrefix() + 'AccountTest';
+  private static String contactTriggerName =
+    Utilities.componentPrefix() + 'ContactTrigger';
+  private static String contactTestName =
+    Utilities.componentPrefix() + 'ContactTest';
+  private static String leadTriggerName =
+    Utilities.componentPrefix() + 'LeadTrigger';
+  private static String leadTestName = Utilities.componentPrefix() + 'LeadTest';
+
   @IsTest
   static void testGenerateApexForRollupSameObjectSkipsParentCode() {
     MetadataRestService.componentApiVersion = FAKE_API_VERSION;
@@ -19,24 +35,24 @@ private class TriggerGenerationServiceTest {
 
     TriggerGenerationService.GeneratedCode triggerCode = generated[0];
     Assert.areEqual('ApexTrigger', triggerCode.mdtType);
-    Assert.areEqual('LeadTrigger', triggerCode.assetName);
+    Assert.areEqual(leadTriggerName, triggerCode.assetName);
     Assert.areEqual(FAKE_API_VERSION, triggerCode.apiVersion);
     Assert.isTrue(
       triggerCode.body.contains('trigger LeadTrigger on Lead'),
       'Expected the trigger body to declare a trigger on the child object'
     );
     Assert.areEqual(
-      new List<String>{ 'LeadTest' },
+      new List<String>{ leadTestName },
       triggerCode.testedBy,
       'Expected the trigger to record its generated test class as covering it'
     );
 
     TriggerGenerationService.GeneratedCode testCode = generated[1];
     Assert.areEqual('ApexClass', testCode.mdtType);
-    Assert.areEqual('LeadTest', testCode.assetName);
+    Assert.areEqual(leadTestName, testCode.assetName);
     Assert.areEqual(FAKE_API_VERSION, testCode.apiVersion);
     Assert.isTrue(
-      testCode.body.contains('private class LeadTest'),
+      testCode.body.contains('private class ' + leadTestName),
       'Expected the generated test class body to declare the expected class name'
     );
   }
@@ -58,10 +74,10 @@ private class TriggerGenerationServiceTest {
       generated.size(),
       'Expected child + parent trigger/test when the parent supports merge and differs from the child'
     );
-    Assert.areEqual('OpportunityTrigger', generated[0].assetName);
-    Assert.areEqual('OpportunityTest', generated[1].assetName);
-    Assert.areEqual('AccountTrigger', generated[2].assetName);
-    Assert.areEqual('AccountTest', generated[3].assetName);
+    Assert.areEqual(oppTriggerName, generated[0].assetName);
+    Assert.areEqual(oppTestName, generated[1].assetName);
+    Assert.areEqual(accTriggerName, generated[2].assetName);
+    Assert.areEqual(accTestName, generated[3].assetName);
   }
 
   @IsTest
@@ -79,8 +95,8 @@ private class TriggerGenerationServiceTest {
       generated.size(),
       'Expected only child code since the parent object does not support merge'
     );
-    Assert.areEqual('ContactTrigger', generated[0].assetName);
-    Assert.areEqual('ContactTest', generated[1].assetName);
+    Assert.areEqual(contactTriggerName, generated[0].assetName);
+    Assert.areEqual(contactTestName, generated[1].assetName);
   }
 
   @IsTest

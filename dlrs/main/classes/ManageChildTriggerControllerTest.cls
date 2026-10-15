@@ -2,6 +2,18 @@
 private class ManageChildTriggerControllerTest {
   private static final String FAKE_API_VERSION = '61.0';
 
+  private static String oppTriggerName =
+    Utilities.componentPrefix() + 'OpportunityTrigger';
+  private static String oppTestName =
+    Utilities.componentPrefix() + 'OpportunityTest';
+  private static String accTriggerName =
+    Utilities.componentPrefix() + 'AccountTrigger';
+  private static String accTestName =
+    Utilities.componentPrefix() + 'AccountTest';
+  private static String leadTriggerName =
+    Utilities.componentPrefix() + 'LeadTrigger';
+  private static String leadTestName = Utilities.componentPrefix() + 'LeadTest';
+
   private static RollupSummary makeAndCacheRollupSummary(
     Id rollupId,
     String childObject,
@@ -53,8 +65,8 @@ private class ManageChildTriggerControllerTest {
       generated.size(),
       'Expected the generated code for the rollup found by the given Id'
     );
-    Assert.areEqual('LeadTrigger', generated[0].assetName);
-    Assert.areEqual('LeadTest', generated[1].assetName);
+    Assert.areEqual(leadTriggerName, generated[0].assetName);
+    Assert.areEqual(leadTestName, generated[1].assetName);
   }
 
   @IsTest
@@ -73,11 +85,11 @@ private class ManageChildTriggerControllerTest {
 
     Map<String, Map<String, List<String>>> changes = new Map<String, Map<String, List<String>>>{
       'deploy' => new Map<String, List<String>>{
-        'ApexTrigger' => new List<String>{ 'OpportunityTrigger' },
-        'ApexClass' => new List<String>{ 'OpportunityTest' }
+        'ApexTrigger' => new List<String>{ oppTriggerName },
+        'ApexClass' => new List<String>{ oppTestName }
       },
       'delete' => new Map<String, List<String>>{
-        'ApexTrigger' => new List<String>{ 'AccountTrigger' }
+        'ApexTrigger' => new List<String>{ accTriggerName }
       }
     };
 
@@ -116,18 +128,18 @@ private class ManageChildTriggerControllerTest {
     Assert.isTrue(
       new Set<String>(options.runTests)
         .containsAll(
-          new Set<String>{ 'OpportunityTest', 'SomeExplicitlyRequestedTest' }
+          new Set<String>{ oppTestName, 'SomeExplicitlyRequestedTest' }
         ),
       'Expected runTests to include both the deployed test class and the explicitly requested test'
     );
 
     Map<String, Blob> entries = extractZipEntries(stub.lastZip);
     Assert.isTrue(
-      entries.containsKey('triggers/OpportunityTrigger.trigger'),
+      entries.containsKey('triggers/' + oppTriggerName + '.trigger'),
       'Expected the deployed trigger body to be included'
     );
     Assert.isTrue(
-      entries.containsKey('classes/OpportunityTest.cls'),
+      entries.containsKey('classes/' + oppTestName + '.cls'),
       'Expected the deployed test class body to be included'
     );
     Assert.isTrue(
@@ -135,11 +147,11 @@ private class ManageChildTriggerControllerTest {
       'Expected a destructive changes manifest for the deleted trigger'
     );
     Assert.isFalse(
-      entries.containsKey('triggers/AccountTrigger.trigger'),
+      entries.containsKey('triggers/' + accTriggerName + '.trigger'),
       'Expected no body file for a trigger being destroyed'
     );
     Assert.isFalse(
-      entries.containsKey('classes/AccountTest.cls'),
+      entries.containsKey('classes/' + accTestName + '.cls'),
       'Expected the untouched AccountTest to be excluded from the deployment entirely'
     );
   }

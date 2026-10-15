@@ -3,6 +3,15 @@ private class RollupControllerTest {
   private static final Id FAKE_ID = '0Af000000004CVY';
   private static final String FAKE_API_VERSION = '61.0';
 
+  private static String contactTriggerName =
+    Utilities.componentPrefix() + 'ContactTrigger';
+  private static String contactTestName =
+    Utilities.componentPrefix() + 'ContactTest';
+  private static String accTriggerName =
+    Utilities.componentPrefix() + 'AccountTrigger';
+  private static String accTestName =
+    Utilities.componentPrefix() + 'AccountTest';
+
   private static HttpCalloutMockImpl mockSuccessfulApiConnection() {
     MetadataRestService.componentApiVersion = FAKE_API_VERSION;
     HttpCalloutMockImpl mock = new HttpCalloutMockImpl();
@@ -211,14 +220,16 @@ private class RollupControllerTest {
     Assert.isTrue(stub.lastDeployOptions.rollbackOnError);
 
     Map<String, Blob> entries = extractZipEntries(stub.lastZip);
-    Assert.isTrue(entries.containsKey('triggers/ContactTrigger.trigger'));
-    Assert.isTrue(entries.containsKey('classes/ContactTest.cls'));
+    Assert.isTrue(
+      entries.containsKey('triggers/' + contactTriggerName + '.trigger')
+    );
+    Assert.isTrue(entries.containsKey('classes/' + contactTestName + '.cls'));
     Assert.isFalse(
-      entries.containsKey('triggers/AccountTrigger.trigger'),
+      entries.containsKey('triggers/' + accTriggername + '.trigger'),
       'Expected the parent trigger to be excluded once its deployment was opted out of'
     );
     Assert.isFalse(
-      entries.containsKey('classes/AccountTest.cls'),
+      entries.containsKey('classes/' + accTestName + '.cls'),
       'Expected the parent test class to be excluded once its deployment was opted out of'
     );
   }
@@ -238,14 +249,16 @@ private class RollupControllerTest {
     controller.deployZip();
 
     Map<String, Blob> entries = extractZipEntries(stub.lastZip);
-    Assert.isTrue(entries.containsKey('triggers/ContactTrigger.trigger'));
-    Assert.isTrue(entries.containsKey('classes/ContactTest.cls'));
     Assert.isTrue(
-      entries.containsKey('triggers/AccountTrigger.trigger'),
+      entries.containsKey('triggers/' + contactTriggerName + '.trigger')
+    );
+    Assert.isTrue(entries.containsKey('classes/' + contactTestName + '.cls'));
+    Assert.isTrue(
+      entries.containsKey('triggers/' + accTriggerName + '.trigger'),
       'Expected the parent trigger to be included when its deployment is required'
     );
     Assert.isTrue(
-      entries.containsKey('classes/AccountTest.cls'),
+      entries.containsKey('classes/' + accTestName + '.cls'),
       'Expected the parent test class to be included when its deployment is required'
     );
   }
