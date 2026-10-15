@@ -83,13 +83,13 @@ public virtual class fflib_SObjectUnitOfWork implements fflib_ISObjectUnitOfWork
 
   public class SimpleDML implements IDML {
     public void dmlInsert(List<SObject> objList) {
-      insert objList;
+      Database.insert(objList, System.AccessLevel.SYSTEM_MODE);
     }
     public void dmlUpdate(List<SObject> objList) {
-      update objList;
+      Database.update(objList, System.AccessLevel.SYSTEM_MODE);
     }
     public void dmlDelete(List<SObject> objList) {
-      delete objList;
+      Database.delete(objList, System.AccessLevel.SYSTEM_MODE);
     }
   }
   /**
