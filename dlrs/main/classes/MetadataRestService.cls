@@ -1,0 +1,555 @@
+public with sharing class MetadataRestService {
+  @TestVisible
+  public static String FALLBACK_COMPONENT_API_VERSION = '67.0';
+
+  @TestVisible
+  private static String componentApiVersion;
+
+  @TestVisible
+  private static MetadataRestService myInstance;
+
+  private static final String BOUNDARY_STRING = 'CONTENT_BOUNDARY_MARK';
+
+  public static MetadataRestService getInstance() {
+    if (myInstance == null) {
+      myInstance = new MetadataRestService();
+    }
+    return myInstance;
+  }
+
+  /**
+   * test the REST API and make sure we have a valid ability to connect
+   */
+  public static Boolean checkAPIConnection() {
+    String limitsPath =
+      '/services/data/v' +
+      FALLBACK_COMPONENT_API_VERSION +
+      '/limits';
+    HttpRequest req = createRequest(limitsPath);
+    req.setMethod('GET');
+
+    Http http = new Http();
+    HTTPResponse res = http.send(req);
+    System.debug(res.getBody());
+    if (res.getStatusCode() != 200) {
+      throw new MetadataRestServiceException(
+        'Unable to connect to REST API, status code ' + res.getStatusCode()
+      );
+    }
+    return true;
+  }
+
+  public MetadataRestService() {
+  }
+
+  /**
+   * Call salesforce API to get current max supported API version
+   */
+  public static String retrieveBestApiVersion() {
+    // use the cached value if it is set
+    if (componentApiVersion != null) {
+      return componentApiVersion;
+    }
+
+    HttpRequest req = new HttpRequest();
+    req.setMethod('GET');
+    // submit a Versions request
+    req.setEndpoint(URL.getOrgDomainUrl().toExternalForm() + '/services/data/');
+    // Salesforce REST API Dev Guide says this endpoint doesn't need authentication
+
+    try {
+      Http http = new Http();
+      HTTPResponse res = http.send(req);
+      if (res.getStatusCode() != 200) {
+        return FALLBACK_COMPONENT_API_VERSION;
+      }
+      String body = res.getBody();
+      List<Object> data = (List<Object>) JSON.deserializeUntyped(body);
+      Decimal maxVersion = Decimal.valueOf(FALLBACK_COMPONENT_API_VERSION);
+      for (Object obj : data) {
+        Map<String, Object> apiV = (Map<String, Object>) obj;
+        Decimal newV = Decimal.valueOf((String) apiV.get('version'));
+        if (newV > maxVersion) {
+          maxVersion = newV;
+        }
+      }
+      componentApiVersion = String.valueOf(maxVersion);
+      return componentApiVersion;
+    } catch (Exception e) {
+      System.debug(e);
+      componentApiVersion = FALLBACK_COMPONENT_API_VERSION;
+      return FALLBACK_COMPONENT_API_VERSION;
+    }
+  }
+
+  /**
+   * Deploy a zip file to Salesforce's Metadata REST API using configured deployment options
+   *
+   * @param zipFile the packaged zip file to be deployed
+   * @param options the options used to configure the deployment behavior
+   */
+  public DeployRequestResult deployZip(Blob zipFile, DeployOptions options) {
+    String path =
+      '/services/data/v' +
+      // uses known fixed API version, not the dynamic latest
+      // we expect Salesforce will change the DeployResult shape over time and want to control when we get that
+      FALLBACK_COMPONENT_API_VERSION +
+      '/metadata/deployRequest';
+    HttpRequest req = createRequest(path);
+    req.setMethod('POST');
+    req.setHeader(
+      'Content-Type',
+      'multipart/form-data; boundary=' + BOUNDARY_STRING
+    );
+
+    req.setBodyAsBlob(getDeployRequestMultiPartBody(zipFile, options));
+    Http http = new Http();
+    HTTPResponse res = http.send(req);
+    System.debug('Status:' + res.getStatus());
+    String body = res.getBody();
+    DeployRequestResult depRes;
+    try {
+      depRes = (DeployRequestResult) JSON.deserialize(
+        body,
+        DeployRequestResult.class
+      );
+    } catch (Exception e) {
+      System.debug(e);
+      UserNotification__e updateEvent = new UserNotification__e(
+        Type__c = 'DeploymentResult',
+        Payload__c = body
+      );
+      EventBus.publish(updateEvent);
+      throw new MetadataRestServiceException(body);
+    }
+    return depRes;
+  }
+
+  public Id deployZipAsync(Blob zipFile, DeployOptions options) {
+    AsyncOptions asyncOpts = new AsyncOptions();
+    // enough to hopefully handle everything but never to fully run away
+    asyncOpts.MaximumQueueableStackDepth = 99;
+    return System.enqueueJob(
+      new DeploymentQueueable(zipFile, options),
+      asyncOpts
+    );
+  }
+
+  public Id getDeployStatusAsync(Id deploymentId, Boolean includeDetails) {
+    return System.enqueueJob(
+      new DeploymentStatusQueueable(deploymentId, includeDetails)
+    );
+  }
+
+  public DeployRequestResult getDeployStatus(
+    Id deploymentId,
+    Boolean includeDetails
+  ) {
+    String path =
+      // uses known fixed API version, not the dynamic latest
+      // we expect Salesforce will change the DeployResult shape over time and want to control when we get that
+      String.format(
+        '/services/data/v{0}/metadata/deployRequest/{1}?includeDetails={2}',
+        new List<String>{
+          FALLBACK_COMPONENT_API_VERSION,
+          deploymentId,
+          String.valueOf(includeDetails == true)
+        }
+      );
+    HttpRequest req = createRequest(path);
+    req.setMethod('GET');
+
+    Http http = new Http();
+    HTTPResponse res = http.send(req);
+    System.debug('Status:' + res.getStatus());
+    String body = res.getBody();
+    System.debug(body);
+    DeployRequestResult depRes;
+    try {
+      depRes = (DeployRequestResult) JSON.deserialize(
+        body,
+        DeployRequestResult.class
+      );
+    } catch (Exception e) {
+      System.debug(e);
+      throw new MetadataRestServiceException(body);
+    }
+    return depRes;
+  }
+
+  private static HTTPRequest createRequest(String path) {
+    HttpRequest req = new HttpRequest();
+    String sessionId = UserInfo.getSessionId();
+    String endpoint = URL.getOrgDomainUrl().toExternalForm();
+    String namedCredApiName = DeclarativeLookupRollupSummaries__c.getInstance()
+      .NamedCredentialForApi__c;
+    if (String.isNotBlank(namedCredApiName)) {
+      endpoint = String.format(
+        'callout:{0}',
+        new List<String>{ namedCredApiName }
+      );
+      sessionId = '{!$Credential.OAuthToken}';
+    }
+    if (String.isNotBlank(path)) {
+      endpoint += path;
+    }
+
+    req.setEndpoint(endpoint);
+    req.setHeader('Authorization', 'Bearer ' + sessionId);
+    return req;
+  }
+
+  /**
+   * Given a zip file and DeployOptions, build a binary multi-part payload for the HTTP Request
+   *
+   * @param zipFile the packaged zip file to be deployed
+   * @param options the deploy options that should be serialized into the API request
+   */
+  private Blob getDeployRequestMultiPartBody(
+    Blob zipFile,
+    DeployOptions options
+  ) {
+    // pack the DeployOptions class in a container so we get the expected JSON output
+    Map<String, Object> depOptsContainer = new Map<String, Object>{
+      'deployOptions' => options
+    };
+    /* Build a multi-part HTTP request, the first part is JSON with the DeployOptions, the second part is the binary file
+    important to understand how this works because we're not really sending strings over the wire.
+    everything is normalized to Blob then those blobs are converted to HEX strings, we do this because then we can combine HEX string
+    once that is all ready then we convert the unified HEX into a final Blob payload that has it all together
+    alternate options juggle BASE64 encoding and have to mess with padding when combining encoded text. We get to skip all of that. */
+    String multiPartOpeningText =
+      // multipart structure is defined in RFC2046 section 5.1.1
+      '--' +
+      BOUNDARY_STRING +
+      '\n' +
+      'Content-Disposition: form-data; name="json"\n' +
+      'Content-Type: application/json\n\n' +
+      JSON.serialize(depOptsContainer) +
+      '\n\n' +
+      '--' +
+      BOUNDARY_STRING +
+      '\n' +
+      'Content-Disposition: form-data; name="file"; filename="deploy.zip"\n' +
+      'Content-Type: application/zip\n\n';
+
+    // All of the encoding happens here to attempt to minimize our memory footprint.
+    // We don't want to run out of heap space because we were holding three or four different copies of our data
+    return EncodingUtil.convertFromHex(
+      EncodingUtil.convertToHex(Blob.valueOf(multiPartOpeningText)) +
+        EncodingUtil.convertToHex(zipFile) +
+        EncodingUtil.convertToHex(Blob.valueOf('\n--' + BOUNDARY_STRING + '--'))
+    );
+  }
+
+  public static void checkDeploymentAndPublish(
+    Id deploymentId,
+    Boolean includeDetails
+  ) {
+    MetadataRestService svc = MetadataRestService.getInstance();
+    MetadataRestService.DeployRequestResult res = svc.getDeployStatus(
+      deploymentId,
+      includeDetails
+    );
+    System.debug('Results:' + res);
+    UserNotification__e updateEvent = new UserNotification__e(
+      Type__c = 'DeploymentResult',
+      Payload__c = JSON.serialize(res.deployResult)
+    );
+    EventBus.publish(updateEvent);
+  }
+
+  public class DeploymentQueueable implements Queueable, Database.AllowsCallouts {
+    Blob zippedPackaged;
+    MetadataRestService.DeployOptions opts;
+
+    public DeploymentQueueable(
+      Blob zippedPackage,
+      MetadataRestService.DeployOptions options
+    ) {
+      this.zippedPackaged = zippedPackage;
+      this.opts = options;
+    }
+
+    public void execute(QueueableContext ctx) {
+      MetadataRestService svc = MetadataRestService.getInstance();
+      try {
+        MetadataRestService.DeployRequestResult res = svc.deployZip(
+          this.zippedPackaged,
+          this.opts
+        );
+        System.debug('Dep Id:' + res.id);
+        System.debug('Results:' + res);
+        checkDeploymentAndPublish(res.id, true);
+      } catch (Exception e) {
+        UserNotification__e updateEvent = new UserNotification__e(
+          Type__c = 'DeploymentResult',
+          Payload__c = e.getMessage()
+        );
+        EventBus.publish(updateEvent);
+      }
+    }
+  }
+
+  public class DeploymentStatusQueueable implements Queueable, Database.AllowsCallouts {
+    public Id deploymentId;
+    public Boolean includeDetails;
+
+    public DeploymentStatusQueueable(Id deploymentId, Boolean includeDetails) {
+      this.deploymentId = deploymentId;
+      this.includeDetails = includeDetails;
+    }
+    public void execute(QueueableContext ctx) {
+      checkDeploymentAndPublish(this.deploymentId, this.includeDetails);
+    }
+  }
+  public class DeployOptions {
+    public Boolean allowMissingFiles;
+    public Boolean checkOnly = false;
+    public Boolean ignoreWarnings = false;
+    public Boolean purgeOnDelete;
+    public Boolean rollbackOnError = false;
+    public List<String> runTests;
+    public Boolean singlePackage = true;
+    public String testLevel;
+  }
+
+  public class DeployResult {
+    public Id id;
+    public Id canceledBy;
+    public String canceledByName;
+    public Boolean checkOnly;
+    public DateTime completedDate;
+    public Id createdBy;
+    public String createdByName;
+    public DateTime createdDate;
+    public DeployDetails details;
+    public Boolean done;
+    public String errorMessage;
+    public String errorStatusCode;
+    public Boolean ignoreWarnings;
+    public DateTime lastModifiedDate;
+    public Integer numberComponentErrors;
+    public Integer numberComponentsTotal;
+    public Integer numberTestErrors;
+    public Integer numberTestsCompleted;
+    public Integer numberTestsTotal;
+    public Boolean runTestsEnabled;
+    public Boolean rollbackOnError;
+    public DateTime startDate;
+    public String stateDetail;
+    public String status;
+    public Boolean success;
+  }
+
+  public class DeployDetails {
+    public List<DeployMessage> componentFailures;
+    public List<DeployMessage> componentSuccesses;
+    public RunTestsResult runTestResult;
+  }
+
+  public class DeployMessage {
+    public Boolean changed;
+    public Integer columnNumber;
+    public String componentType;
+    public Boolean created;
+    public DateTime createdDate;
+    public Boolean deleted;
+    public String fileName;
+    public String fullName;
+    public Id id;
+    public Integer lineNumber;
+    public String problem;
+    public String problemType;
+    public Boolean success;
+  }
+
+  public class RunTestsResult {
+    public String apexLogId;
+    // public CodeCoverateResult codeCoverage;
+    public List<CodeCoverageWarning> codeCoverageWarnings;
+    public List<RunTestFailure> failures;
+    // public List<FlowCoverageResult> flowCoverage;
+    public List<FlowCoverageWarning> flowCoverageWarnings;
+    public Integer numFailures;
+    public Integer numTestsRun;
+    // public List<RunTestSuccess> successes;
+    public Double totalTime;
+  }
+
+  public class CodeCoverageWarning {
+    public Id id;
+    public String message;
+    public String name;
+    public String namespace;
+  }
+
+  public class RunTestFailure {
+    public Id id;
+    public String message;
+    public String methodName;
+    public String name;
+    public String namespace;
+    public Boolean seeAllData;
+    public String stackTrace;
+    // public Double time;
+    public String type;
+  }
+
+  public class FlowCoverageWarning {
+    public String flowId;
+    public String flowName;
+    public String flowNamespace;
+    public String message;
+  }
+
+  public class DeployRequestResult {
+    public Id id;
+    public DeployOptions deployOptions;
+    public DeployResult deployResult;
+  }
+
+  public class MetadataRestServiceException extends Exception {
+  }
+
+  public class DeploymentZipBuilder {
+    private Map<String, Blob> files = new Map<String, Blob>();
+    private Map<String, Set<String>> deployingMdt = new Map<String, Set<String>>();
+    private Map<String, Set<String>> destroyedMdtPre = new Map<String, Set<String>>();
+    private Map<String, Set<String>> destroyedMdtPost = new Map<String, Set<String>>();
+
+    public DeploymentZipBuilder() {
+    }
+
+    public DeploymentZipBuilder addForDeployment(
+      String mdtType,
+      String mdtName,
+      List<DeploymentFile> files
+    ) {
+      if (String.isBlank(mdtType)) {
+        throw new IllegalArgumentException('mdtType must not be blank');
+      }
+      if (String.isBlank(mdtName)) {
+        throw new IllegalArgumentException('mdtName must not be blank');
+      }
+      if (files == null || files.isEmpty()) {
+        throw new IllegalArgumentException(
+          'at least one "files" entry must be provided'
+        );
+      }
+      Set<String> entitiesForType = deployingMdt.get(mdtType);
+      if (entitiesForType == null) {
+        entitiesForType = new Set<String>();
+        deployingMdt.put(mdtType, entitiesForType);
+      }
+      entitiesForType.add(mdtName);
+
+      for (DeploymentFile f : files) {
+        this.files.put(f.path, f.content);
+      }
+      return this;
+    }
+
+    public DeploymentZipBuilder addForPreDestruction(
+      String mdtType,
+      String mdtName
+    ) {
+      Set<String> entitiesForType = destroyedMdtPre.get(mdtType);
+      if (entitiesForType == null) {
+        entitiesForType = new Set<String>();
+        destroyedMdtPre.put(mdtType, entitiesForType);
+      }
+      entitiesForType.add(mdtName);
+      return this;
+    }
+
+    public DeploymentZipBuilder addForPostDestruction(
+      String mdtType,
+      String mdtName
+    ) {
+      Set<String> entitiesForType = destroyedMdtPost.get(mdtType);
+      if (entitiesForType == null) {
+        entitiesForType = new Set<String>();
+        destroyedMdtPost.put(mdtType, entitiesForType);
+      }
+      entitiesForType.add(mdtName);
+      return this;
+    }
+
+    public Blob buildZip() {
+      // add static entries to to files map
+
+      files.put('package.xml', Blob.valueOf(getPackageXml(deployingMdt, true)));
+
+      if (!destroyedMdtPre.isEmpty()) {
+        files.put(
+          'destructiveChangesPre.xml',
+          Blob.valueOf(getPackageXml(destroyedMdtPre, false))
+        );
+      }
+      if (!destroyedMdtPost.isEmpty()) {
+        files.put(
+          'destructiveChangesPost.xml',
+          Blob.valueOf(getPackageXml(destroyedMdtPost, false))
+        );
+      }
+      // build and return zip file
+      Compression.ZipWriter writer = new Compression.ZipWriter();
+
+      for (String path : files.keySet()) {
+        writer.addEntry(path, files.get(path));
+      }
+
+      return writer.getArchive();
+    }
+
+    private String getPackageXml(
+      Map<String, Set<String>> packageMdt,
+      Boolean includeVersion
+    ) {
+      XmlStreamWriter w = new XmlStreamWriter();
+      w.writeStartDocument('UTF-8', '1.0');
+      w.writeStartElement(null, 'Package', null);
+      w.writedefaultNamespace('http://soap.sforce.com/2006/04/metadata');
+
+      for (String mdtType : packageMdt.keySet()) {
+        // TODO: test for null mdtType
+        w.writeStartElement(null, 'types', null);
+        for (String member : packageMdt.get(mdtType)) {
+          // TODO: test for null member
+          w.writeStartElement(null, 'members', null);
+          w.writeCharacters(member.escapeXml());
+          w.writeEndElement(); //end members
+        }
+
+        w.writeStartElement(null, 'name', null);
+        w.writeCharacters(mdtType.escapeXml());
+        w.writeEndElement(); //end name
+
+        w.writeEndElement(); //end types
+      }
+
+      if (includeVersion == true) {
+        w.writeStartElement(null, 'version', null);
+        w.writeCharacters(FALLBACK_COMPONENT_API_VERSION.escapeXml());
+        w.writeEndElement(); //end version
+      }
+
+      w.writeEndElement(); //end package
+      w.writeEndDocument();
+      String xmlOutput = w.getXmlString();
+      w.close();
+      return xmlOutput;
+    }
+  }
+
+  public class DeploymentFile {
+    public String path;
+    public Blob content;
+
+    public DeploymentFile(String path, String content) {
+      this.path = path;
+      this.content = Blob.valueOf(content);
+    }
+  }
+}

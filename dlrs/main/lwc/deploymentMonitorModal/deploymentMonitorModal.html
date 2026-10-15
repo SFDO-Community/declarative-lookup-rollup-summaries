@@ -1,0 +1,8 @@
+<template>
+  <lightning-modal-header label={headerLabel}></lightning-modal-header>
+  <lightning-modal-body>
+    <div class="slds-is-relative" style="min-height: 10rem;">
+      <c-deployment-monitor lwc:spread={deploymentManagerProps} lwc:on={myHandlers}></c-deployment-monitor>
+    </div>
+  </lightning-modal-body>
+</template>

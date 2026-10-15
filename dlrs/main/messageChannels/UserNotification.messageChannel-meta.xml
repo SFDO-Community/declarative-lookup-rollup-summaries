@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>UserNotification</masterLabel>
+    <isExposed>false</isExposed>
+    <description>Distribution Mechanism for User Notification Platform Events</description>
+    <lightningMessageFields>
+        <fieldName>recipient</fieldName>
+        <description>Target User this event is intended to be received by</description>
+    </lightningMessageFields>
+    <lightningMessageFields>
+        <fieldName>payload</fieldName>
+        <description>JSON payload</description>
+    </lightningMessageFields>
+    <lightningMessageFields>
+        <fieldName>type</fieldName>
+        <description>Categorical type</description>
+    </lightningMessageFields>
+</LightningMessageChannel>
