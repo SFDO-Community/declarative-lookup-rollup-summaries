@@ -38,7 +38,7 @@ private class TriggerGenerationServiceTest {
     Assert.areEqual(leadTriggerName, triggerCode.assetName);
     Assert.areEqual(FAKE_API_VERSION, triggerCode.apiVersion);
     Assert.isTrue(
-      triggerCode.body.contains('trigger LeadTrigger on Lead'),
+      triggerCode.body.contains('trigger ' + leadTriggerName + ' on Lead'),
       'Expected the trigger body to declare a trigger on the child object'
     );
     Assert.areEqual(
