@@ -15,24 +15,19 @@ public with sharing class RollupCalculateJobSchedulable implements Schedulable {
       // Enqueue the job to recalcualte the given rollup parent records
       RollupService.runJobToCalculate(rollupRecordId, masterWhereClause);
     } catch (Exception e) {
-      LookupRollupSummaryLog__c logEntry = new LookupRollupSummaryLog__c();
       List<RollupSummary> rollup = new RollupSummariesSelector()
         .selectById(new Set<String>{ rollupRecordId });
-      logEntry.ParentId__c = rollupRecordId;
-      if (!rollup.isEmpty()) {
-        // Log the failure updating the master record for review
-        logEntry.ParentObject__c = rollup[0]
-          .Record.getSObjectType()
-          .getDescribe()
-          .getName();
-      }
+      String parentObj = !rollup.isEmpty()
+        ? rollup[0].Record.getSObjectType().getDescribe().getName()
+        : 'RollupCalculateJobSchedulable';
 
-      logEntry.ErrorMessage__c =
+      RollupLogger.log(
+        rollupRecordId,
+        parentObj,
         e.getMessage() +
         ' : ' +
-        e.getStackTraceString();
-
-      upsert logEntry ParentId__c;
+        e.getStackTraceString()
+      );
 
       if (
         DeclarativeLookupRollupSummaries__c.getInstance()
@@ -92,7 +87,7 @@ public with sharing class RollupCalculateJobSchedulable implements Schedulable {
           }
         )
       );
-      MessageService.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
+      RollupLogger.sendSafeEmail(mail);
     }
   }
 }

@@ -29,17 +29,35 @@
  **/
 global with sharing class RollupJob implements Schedulable, Database.Batchable<sObject> {
   global void execute(SchedulableContext sc) {
-    // Run the job to process the scheduled records for rolling up
-    RollupService.runJobToProcessScheduledItems();
+    try {
+      // Run the job to process the scheduled records for rolling up
+      RollupService.runJobToProcessScheduledItems();
+    } catch (Exception e) {
+      RollupLogger.log('RollupJob', 'RollupJob', e);
+    }
   }
 
   public Database.QueryLocator start(Database.BatchableContext BC) {
-    if (
-      DeclarativeLookupRollupSummaries__c.getInstance()
-        .DisableDLRSGlobally__c == true
-    ) {
-      System.debug('DLRS is disabled, will not execute');
-      // return an "empty" iteration so it doesn't run the execute method
+    try {
+      if (
+        DeclarativeLookupRollupSummaries__c.getInstance()
+          .DisableDLRSGlobally__c == true
+      ) {
+        System.debug('DLRS is disabled, will not execute');
+        // return an "empty" iteration so it doesn't run the execute method
+        return Database.getQueryLocator(
+          [
+            SELECT Id
+            FROM LookupRollupSummaryScheduleItems__c
+            LIMIT 0
+          ]
+        );
+      }
+
+      // Query all the currently available scheduled records indicating records requiring rollups
+      return new RollupSummaryScheduleItemsSelector().selectAllQueryLocator();
+    } catch (Exception e) {
+      RollupLogger.log('RollupJob', 'RollupJob', e);
       return Database.getQueryLocator(
         [
           SELECT Id
@@ -48,9 +66,6 @@ global with sharing class RollupJob implements Schedulable, Database.Batchable<s
         ]
       );
     }
-
-    // Query all the currently available scheduled records indicating records requiring rollups
-    return new RollupSummaryScheduleItemsSelector().selectAllQueryLocator();
   }
 
   public void execute(
@@ -63,16 +78,13 @@ global with sharing class RollupJob implements Schedulable, Database.Batchable<s
         (List<LookupRollupSummaryScheduleItems__c>) rollupSummaryScheduleItems
       );
     } catch (Exception e) {
-      LookupRollupSummaryLog__c logEntry = new LookupRollupSummaryLog__c();
-      logEntry.ParentId__c = 'RollupJob';
-      logEntry.ParentObject__c = 'RollupJob';
-
-      logEntry.ErrorMessage__c =
+      RollupLogger.log(
+        'RollupJob',
+        'RollupJob',
         e.getMessage() +
         ' : ' +
-        e.getStackTraceString();
-
-      upsert logEntry ParentId__c;
+        e.getStackTraceString()
+      );
 
       if (
         DeclarativeLookupRollupSummaries__c.getInstance()
@@ -108,7 +120,7 @@ global with sharing class RollupJob implements Schedulable, Database.Batchable<s
           new List<String>{ e.getMessage(), String.join(ids, ',') }
         )
       );
-      MessageService.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
+      RollupLogger.sendSafeEmail(mail);
     }
   }
 

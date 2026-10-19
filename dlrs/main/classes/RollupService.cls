@@ -629,7 +629,7 @@ global with sharing class RollupService {
     }
 
     // Insert any logs for master records that failed to update (upsert to only show last message per parent)
-    upsert rollupSummaryLogs ParentId__c;
+    RollupLogger.logAll(rollupSummaryLogs);
 
     // Delete any old logs entries for master records that have now been updated successfully
     delete [
@@ -772,7 +772,7 @@ global with sharing class RollupService {
     }
 
     // Insert any logs for master records that failed to update (upsert to only show last message per parent)
-    upsert rollupSummaryLogs ParentId__c;
+    RollupLogger.logAll(rollupSummaryLogs);
 
     // Delete any old logs entries for master records that have now been updated successfully
     delete [

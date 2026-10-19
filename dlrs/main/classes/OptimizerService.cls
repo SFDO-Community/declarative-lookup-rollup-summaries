@@ -130,7 +130,48 @@ global with sharing class OptimizerService {
     LookupShadowRecordsNeedDeleting,
     LookupRollupSummaryScheduleItemsCount,
     LookupRollupSummaryScheduleItemsFieldDeletion,
-    LookupRollupSummaryScheduleItemsWithFullCalcScheduleJob
+    LookupRollupSummaryScheduleItemsWithFullCalcScheduleJob,
+    LookupRollupScheduledJobsInactiveUser
+  }
+
+  /**
+   * Notifies the user if any DLRS scheduled jobs are owned/created by inactive users
+   **/
+  public class LookupRollupScheduledJobsInactiveUser extends OptimizationCheckRunner {
+    public override Notification execute() {
+      Set<String> dlrsClassNames = new Set<String>{
+        'RollupJob',
+        'RollupCalculateJobSchedulable',
+        'RollupCalculateJob'
+      };
+
+      List<AsyncApexJob> inactiveUserJobs = new AsyncApexJobsSelector()
+        .getScheduledJobsCreatedByInactiveUsers(dlrsClassNames);
+
+      if (!inactiveUserJobs.isEmpty()) {
+        List<String> jobDetails = new List<String>();
+        for (AsyncApexJob job : inactiveUserJobs) {
+          String jobName = job.CronTrigger != null &&
+            job.CronTrigger.CronJobDetail != null
+            ? job.CronTrigger.CronJobDetail.Name
+            : job.ApexClass.Name;
+          jobDetails.add(
+            jobName + ' (Scheduled by inactive user: ' + job.CreatedBy.Name + ')'
+          );
+        }
+
+        Notification notification = new Notification();
+        notification.Id = NotificationReference.LookupRollupScheduledJobsInactiveUser;
+        notification.Status = NotificationStatus.Attention;
+        notification.Message =
+          'One or more DLRS scheduled jobs are scheduled by inactive users and will fail: ' +
+          String.join(jobDetails, '; ') +
+          '. Please delete and reschedule these jobs under an active administrator.';
+        notification.MoreInfoURL = 'https://sfdo-community-sprints.github.io/DLRS-Documentation/Architecture/calculates.html';
+        return notification;
+      }
+      return null;
+    }
   }
 
   /**

@@ -41,31 +41,36 @@ public with sharing class RollupCalculateJob implements Database.Batchable<sObje
   }
 
   public Database.QueryLocator start(Database.BatchableContext BC) {
-    List<RollupSummary> lookups = new RollupSummariesSelector()
-      .selectById(new Set<String>{ (String) lookupId });
+    try {
+      List<RollupSummary> lookups = new RollupSummariesSelector()
+        .selectById(new Set<String>{ (String) lookupId });
 
-    if (lookups.size() == 0) {
-      throw RollupServiceException.rollupNotFound(lookupId);
-    }
+      if (lookups.size() == 0) {
+        throw RollupServiceException.rollupNotFound(lookupId);
+      }
 
-    RollupSummary lookup = lookups[0];
+      RollupSummary lookup = lookups[0];
 
-    if (
-      Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
-      BypassHandler.isBypassed(lookup.UniqueName)
-    ) {
-      System.debug('Rollup is disabled, will not execute ' + lookupId);
-      // return an "empty" iteration so it doesn't run the execute method
-      return Database.getQueryLocator(
-        'SELECT Id FROM ' + lookup.ParentObject + ' LIMIT 0'
+      if (
+        Utilities.userHasCustomPermission(lookup.BypassCustPermApiName) ||
+        BypassHandler.isBypassed(lookup.UniqueName)
+      ) {
+        System.debug('Rollup is disabled, will not execute ' + lookupId);
+        // return an "empty" iteration so it doesn't run the execute method
+        return Database.getQueryLocator(
+          'SELECT Id FROM ' + lookup.ParentObject + ' LIMIT 0'
+        );
+      }
+
+      // Query all the parent records as per the lookup definition
+      return RollupService.masterRecordsAsQueryLocator(
+        lookupId,
+        masterWhereClause
       );
+    } catch (Exception e) {
+      RollupLogger.log(lookupId, 'RollupCalculateJob', e);
+      throw e;
     }
-
-    // Query all the parent records as per the lookup definition
-    return RollupService.masterRecordsAsQueryLocator(
-      lookupId,
-      masterWhereClause
-    );
   }
 
   public void execute(
@@ -79,24 +84,19 @@ public with sharing class RollupCalculateJob implements Database.Batchable<sObje
         new Map<Id, Sobject>(masterRecords).keySet()
       );
     } catch (Exception e) {
-      LookupRollupSummaryLog__c logEntry = new LookupRollupSummaryLog__c();
       List<RollupSummary> rollup = new RollupSummariesSelector()
         .selectById(new Set<String>{ lookupId });
-      logEntry.ParentId__c = lookupId;
-      if (!rollup.isEmpty()) {
-        // Log the failure updating the master record for review
-        logEntry.ParentObject__c = rollup[0]
-          .Record.getSObjectType()
-          .getDescribe()
-          .getName();
-      }
+      String parentObj = !rollup.isEmpty()
+        ? rollup[0].Record.getSObjectType().getDescribe().getName()
+        : 'RollupCalculateJob';
 
-      logEntry.ErrorMessage__c =
+      RollupLogger.log(
+        lookupId,
+        parentObj,
         e.getMessage() +
         ' : ' +
-        e.getStackTraceString();
-
-      upsert logEntry ParentId__c;
+        e.getStackTraceString()
+      );
 
       if (
         DeclarativeLookupRollupSummaries__c.getInstance()
@@ -150,12 +150,20 @@ public with sharing class RollupCalculateJob implements Database.Batchable<sObje
           }
         )
       );
-      MessageService.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
+      RollupLogger.sendSafeEmail(mail);
     }
   }
 
   public void finish(Database.BatchableContext BC) {
-    // Clear the Job Id which was preventing another calculate job running while this one was running
-    RollupService.clearCalculateJobId(new Set<String>{ lookupId });
+    try {
+      // Clear the Job Id which was preventing another calculate job running while this one was running
+      RollupService.clearCalculateJobId(new Set<String>{ lookupId });
+    } catch (Exception e) {
+      RollupLogger.log(
+        lookupId,
+        'RollupCalculateJob',
+        'Failed to clear calculate job id: ' + e.getMessage()
+      );
+    }
   }
 }

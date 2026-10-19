@@ -397,6 +397,33 @@ private class RollupJobTest {
     Assert.areEqual(0, MessageService.sentEmailList.size());
   }
 
+  @IsTest
+  static void testSchedulableExecute() {
+    RollupJob job = new RollupJob();
+    Test.startTest();
+    job.execute((SchedulableContext) null);
+    Test.stopTest();
+  }
+
+  @IsTest
+  static void testStartMethod() {
+    Account a = new Account(Name = 'Test Account');
+    insert a;
+
+    LookupRollupSummaryScheduleItems__c scheduledItem = new LookupRollupSummaryScheduleItems__c();
+    scheduledItem.Name = a.Id;
+    scheduledItem.ParentId__c = a.Id;
+    scheduledItem.QualifiedParentID__c = a.Id + '#fakeId';
+    insert scheduledItem;
+
+    RollupJob job = new RollupJob();
+    Test.startTest();
+    Database.QueryLocator ql = job.start(new MockBatchableContext());
+    Test.stopTest();
+
+    Assert.isNotNull(ql);
+  }
+
   public class MockBatchableContext implements Database.BatchableContext {
     public Id getJobId() {
       return '100000000000000';
