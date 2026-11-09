@@ -47,12 +47,16 @@ public class TestContext {
     return Utilities.objectPrefix() + ref;
   }
 
-  public static void ensurePermissionSetsAssigned(Id userId, Set<String> permissionSetNames) {
+  public static void ensurePermissionSetsAssigned(
+    Id userId,
+    Set<String> permissionSetNames
+  ) {
     Set<String> missing = new Set<String>(permissionSetNames);
     for (PermissionSetAssignment psa : [
       SELECT PermissionSet.Name
       FROM PermissionSetAssignment
       WHERE AssigneeId = :userId
+      WITH SYSTEM_MODE
     ]) {
       missing.remove(psa.PermissionSet.Name);
     }
@@ -63,10 +67,13 @@ public class TestContext {
       SELECT Id, Name
       FROM PermissionSet
       WHERE Name IN :missing
+      WITH SYSTEM_MODE
     ];
     List<PermissionSetAssignment> assignments = new List<PermissionSetAssignment>();
     for (PermissionSet p : ps) {
-      assignments.add(new PermissionSetAssignment(AssigneeId = userId, PermissionSetId = p.Id));
+      assignments.add(
+        new PermissionSetAssignment(AssigneeId = userId, PermissionSetId = p.Id)
+      );
     }
     Database.insert(assignments, System.AccessLevel.SYSTEM_MODE);
   }

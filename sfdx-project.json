@@ -1,23 +1,11 @@
 {
   "packageDirectories": [
     {
-      "path": "dlrs/libs/fflib-apexmocks"
-    },
-    {
-      "path": "dlrs/libs/fflib-common"
-    },
-    {
-      "path": "dlrs/libs/lrengine"
-    },
-    {
-      "path": "dlrs/libs/metadataservice"
-    },
-    {
-      "path": "dlrs/main"
-    },
-    {
-      "path": "dlrs/default",
+      "path": "dlrs/main",
       "default": true
+    },
+    {
+      "path": "dlrs/libs"
     },
     {
       "path": "unpackaged/config/test"
