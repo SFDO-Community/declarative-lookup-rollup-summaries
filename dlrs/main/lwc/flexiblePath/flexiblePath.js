@@ -46,6 +46,7 @@ export default class FlexiblePath extends LightningElement {
   }
 
   handlePathStepClick(event) {
+    event.preventDefault();
     const step = this.steps.find(
       (s) => s.name === event.currentTarget.dataset.step
     );
@@ -61,7 +62,8 @@ export default class FlexiblePath extends LightningElement {
     }
   }
 
-  handleNextActionClick() {
+  handleNextActionClick(event) {
+    event.preventDefault();
     const nextAction = this.nextAction;
     this.dispatchEvent(
       new CustomEvent("nextactionclick", {

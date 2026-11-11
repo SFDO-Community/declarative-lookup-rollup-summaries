@@ -1,0 +1,144 @@
+<template>
+  <template lwc:if={isNotDeploying}>
+    <lightning-card>
+      <div class="slds-card__body slds-card__body_inner">
+        <lightning-spinner lwc:if={isLoading}></lightning-spinner>
+        <div class="slds-text-longform">
+          <p>
+            DLRS uses triggers for rollups
+            in&nbsp;<strong>Realtime</strong>&nbsp;or&nbsp;<strong
+              >Watch for Changes and Process Later</strong
+            >&nbsp;modes. This helps it detect when a record has a relevant
+            change and rollups should be run. Use the "Customize" toggle to
+            adjust which items are changed and which tests are run.
+          </p>
+          <template lwc:if={isHealthy}>
+            <div class="slds-text-heading_medium slds-m-bottom_medium">
+              Everything is installed and up to date!&nbsp;
+              <lightning-icon
+                icon-name="utility:success"
+                variant="success"
+                size="small"
+              ></lightning-icon>
+            </div>
+            <p>
+              Anything set to "Remove" when you start the deployment will be
+              taken out of the org.
+            </p>
+          </template>
+          <template lwc:if={needsUpdates}>
+            <div class="slds-text-heading_medium slds-m-bottom_medium">
+              Updates are available for some of your existing components&nbsp;
+              <lightning-icon
+                icon-name="utility:replace"
+                variant="warning"
+                size="small"
+              ></lightning-icon>
+            </div>
+          </template>
+          <p>Press "Start" to apply the following changes.</p>
+        </div>
+        <lightning-layout multiple-rows>
+          <template for:each={generatedApex} for:item="apx">
+            <lightning-layout-item
+              size="7"
+              medium-device-size="5"
+              padding="around-small"
+              key={apx.assetName}
+            >
+              <!-- <template lwc:if={isAdvancedMode}> -->
+              <lightning-select
+                name={apx.assetName}
+                data-mdt-type={apx.mdtType}
+                label={apx.assetName}
+                value={apx.changeType}
+                disabled={isBasicMode}
+                options={apx.changeOptions}
+              ></lightning-select>
+              <template lwc:if="{apx.rollupsUsingThisCode.length > 0}">
+                Used by {apx.rollupsUsingThisCode.length} active
+                rollup{apx.rollupsUsingThisCode.length > 1 ? "s" : ""}
+              </template>
+            </lightning-layout-item>
+          </template>
+        </lightning-layout>
+      </div>
+    </lightning-card>
+    <lightning-card>
+      <div class="slds-card__body slds-card__body_inner">
+        <lightning-layout multiple-rows>
+          <lightning-layout-item size="12" padding="around-small">
+            <lightning-input
+              type="toggle"
+              label="Customize"
+              value={isAdvancedMode}
+              onchange={handleAdvancedToggle}
+              message-toggle-inactive=""
+              message-toggle-active=""
+            ></lightning-input>
+          </lightning-layout-item>
+          <lightning-layout-item
+            size="7"
+            medium-device-size="5"
+            padding="around-small"
+            lwc:if={isAdvancedMode}
+          >
+            <lightning-select
+              name="TestLevel"
+              label="Test Level"
+              value={testLevel}
+              options={testLevelOptions}
+              onchange={handleTestLevelChange}
+            ></lightning-select>
+          </lightning-layout-item>
+          <lightning-layout-item
+            size="12"
+            medium-device-size="10"
+            padding="around-small"
+            lwc:if={shouldDisplayTestInput}
+          >
+            <lightning-input
+              label="Additional Test Classes"
+              field-level-help="Comma-separated names of test classes to run during deployment"
+              lwc:ref="testsToRun"
+            ></lightning-input>
+          </lightning-layout-item>
+        </lightning-layout>
+        <lightning-tabset lwc:if={isAdvancedMode}>
+          <template for:each={generatedApex} for:item="apx">
+            <lightning-tab label={apx.assetName} key={apx.assetName}>
+              <div class="slds-text-heading_small">{apx.mdtType}</div>
+              <br />
+              <span>API Version:</span>
+              <template lwc:if={apx.needsApiUpdate}>
+                <lightning-badge
+                  class="slds-theme_warning slds-m-horizontal_x-small"
+                  label={apx.existingApiVersion}
+                ></lightning-badge>
+                <span>will update to</span></template
+              ><lightning-badge
+                class="slds-badge_inverse slds-m-horizontal_x-small"
+                label={apx.apiVersion}
+              ></lightning-badge>
+              <c-formatted-apex apex-code={apx.body}></c-formatted-apex>
+              <template lwc:if={apx.needsBodyUpdate}>
+                <p>Existing contents that will be updated:</p>
+                <c-formatted-apex
+                  apex-code={apx.existingBody}
+                ></c-formatted-apex>
+              </template>
+            </lightning-tab>
+          </template>
+        </lightning-tabset>
+      </div>
+    </lightning-card>
+  </template>
+  <lightning-layout>
+    <lightning-layout-item padding="horizontal-medium" size="12">
+      <c-deployment-monitor
+        lwc:ref="deploymentMonitor"
+        ondeploymentcompleted={handleDeploymentCompleted}
+      ></c-deployment-monitor>
+    </lightning-layout-item>
+  </lightning-layout>
+</template>

@@ -345,9 +345,7 @@ public class RollupSummaries extends fflib_SObjectDomain {
         )
           lookupRollupSummary.Fields.Active.addError(
             error(
-              'Apex Trigger ' +
-                triggerName +
-                ' has not been deployed. Click Manage Child Trigger and try again.',
+              'Apex Trigger ' + triggerName + ' has not been deployed.',
               lookupRollupSummary.Record,
               LookupRollupSummary__c.Active__c
             )
@@ -532,6 +530,17 @@ public class RollupSummaries extends fflib_SObjectDomain {
   }
 
   /**
+   * Trigger name for given SObject
+   **/
+  public static String makeTriggerName(String sObjectName) {
+    return calculateComponentName(
+      sObjectName,
+      'Trigger',
+      APEXTRIGGER_NAME_LENGTH
+    );
+  }
+
+  /**
    * Apex test name for given lookup rollup summary
    **/
   public static String makeTriggerTestName(RollupSummary lookupRollupSummary) {
@@ -544,6 +553,13 @@ public class RollupSummaries extends fflib_SObjectDomain {
       'Test',
       APEXCLASS_NAME_LENGTH
     );
+  }
+
+  /**
+   * Apex test name for given SObject
+   **/
+  public static String makeTriggerTestName(String sObjectName) {
+    return calculateComponentName(sObjectName, 'Test', APEXCLASS_NAME_LENGTH);
   }
 
   /**

@@ -47,6 +47,8 @@
   },
   "dependencies": {
     "cronstrue": "^2.48.0",
+    "highlight.js": "^11.12.0",
+    "highlightjs-apex": "^1.66.0",
     "js-levenshtein": "^1.1.6"
   }
 }

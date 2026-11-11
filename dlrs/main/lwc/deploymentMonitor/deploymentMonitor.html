@@ -1,0 +1,102 @@
+<template>
+  <template lwc:if={spinnerOnly}>
+    <lightning-spinner></lightning-spinner>
+  </template>
+  <template lwc:else>
+    <template lwc:if={_deploymentId}>
+      <lightning-layout multiple-rows>
+        <lightning-layout-item size="12">
+          <lightning-layout horizontal-align="center">
+            <lightning-layout-item>
+              <h3 class="slds-text-heading_small">
+                <lightning-layout vertical-align="center">
+                  <lightning-layout-item>
+                    Status: <span>{deploymentStatus}</span>
+                  </lightning-layout-item>
+                  <lightning-layout-item>
+                    <span
+                      class="slds-is-relative slds-m-horizontal_medium"
+                      lwc:if="{!deploymentDone}"
+                    >
+                      <lightning-spinner size="x-small"></lightning-spinner>
+                    </span>
+                    <span lwc:else>
+                      <lightning-icon
+                        icon-name="{deploymentFailed ? 'utility:error' : 'utility:success'}"
+                        variant="{deploymentFailed ? 'error' : 'success'}"
+                        class="slds-m-horizontal_medium"
+                        size="medium"
+                      ></lightning-icon>
+                    </span>
+                  </lightning-layout-item>
+                </lightning-layout>
+              </h3>
+            </lightning-layout-item>
+          </lightning-layout>
+        </lightning-layout-item>
+        <lightning-layout-item size="12">
+          <div class="slds-m-vertical_medium">
+            <lightning-progress-indicator
+              current-step={deploymentStatus}
+              has-error={deploymentFailed}
+              type="base"
+            >
+              <template for:each={displayedProgressSteps} for:item="step">
+                <lightning-progress-step
+                  key={step.label}
+                  label={step.label}
+                  value={step.label}
+                ></lightning-progress-step>
+              </template>
+            </lightning-progress-indicator>
+          </div>
+        </lightning-layout-item>
+        <template lwc:if={deploymentStateDetail}>
+          <lightning-layout-item size="12">
+            <lightning-layout horizontal-align="center">
+              <lightning-layout-item>
+                {deploymentStateDetail}
+              </lightning-layout-item>
+            </lightning-layout>
+          </lightning-layout-item>
+        </template>
+        <template lwc:if={hasComponentProgress}>
+          <lightning-layout-item size="12" class="slds-m-vertical_medium">
+            <p>Components ({completedComponents}/{numberComponentsTotal})</p>
+            <lightning-progress-bar
+              value={componentProgress}
+              size="large"
+              variant="circular"
+            ></lightning-progress-bar>
+          </lightning-layout-item>
+        </template>
+        <template lwc:if={hasTestProgress}>
+          <lightning-layout-item size="12">
+            <p>Tests ({numberTestsCompleted}/{numberTestsTotal})</p>
+            <lightning-progress-bar
+              value={testProgress}
+              size="large"
+              variant="circular"
+            ></lightning-progress-bar>
+          </lightning-layout-item>
+        </template>
+
+        <template lwc:if={hasErrors}>
+          <lightning-layout-item size="12" class="slds-m-vertical_medium">
+            <template for:each={errorsByCategory} for:item="errorObj">
+              <div key={errorObj.label} class="slds-text-color_error">
+                {errorObj.label}<br />
+                <template for:each={errorObj.errors} for:item="err">
+                  <div key={err}>{err}</div>
+                </template>
+              </div>
+            </template>
+          </lightning-layout-item>
+        </template>
+        <lightning-layout-item size="12" class="slds-m-vertical_medium">
+          <a href={deploymentUrl} target="_blank">View in Setup</a>
+        </lightning-layout-item>
+      </lightning-layout>
+    </template>
+  </template>
+</template>

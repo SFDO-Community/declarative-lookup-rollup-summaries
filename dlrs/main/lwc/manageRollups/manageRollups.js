@@ -5,21 +5,9 @@ import { NavigationMixin, CurrentPageReference } from "lightning/navigation";
 
 import getAllRollupConfigs from "@salesforce/apex/RollupEditorController.getAllRollupConfigs";
 import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
-import USER_ID from "@salesforce/user/Id";
 import RollupEditor, { CLASS_SCHEDULER_CONFIG } from "c/rollupEditor";
 import ClassSchedulerModal from "c/classSchedulerModal";
-
-// import so we can get a namespace from it
-// can't import the Platform Event or CMDT directly
-// because they get corrupted
-import SCHEDULE_ITEMS_OBJECT from "@salesforce/schema/LookupRollupSummaryScheduleItems__c";
-
-import {
-  subscribe,
-  unsubscribe,
-  onError,
-  isEmpEnabled
-} from "lightning/empApi";
+import DeploymentMonitorModal from "c/deploymentMonitorModal";
 
 const STATUS_LABELS = {
   Scheduled: "Watch and Process",
@@ -104,9 +92,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   sortDirection = "desc";
   pendingSaveRollupName;
 
-  channelName = `/event/${this._buildApiName("UserNotification__e")}`;
-  subscription = {};
-
   rollups = {};
   rollupList = [];
   searchFilter = "";
@@ -116,9 +101,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   connectedCallback() {
     this.refreshRollups();
-    // Register error listener
-    this.registerErrorListener();
-    this.handleSubscribe();
   }
 
   async refreshRollups() {
@@ -272,6 +254,7 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   async openEditor(rollupName) {
     const result = await RollupEditor.open({
+      whenRollupUpdated: this.refreshRollups.bind(this),
       description: "Rollup Config Editor",
       rollupName
     });
@@ -279,18 +262,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     switch (result?.action) {
       case "delete":
         this.requestDelete(result.rollupName);
-        break;
-      case "deloyStart":
-        this.isLoading = true;
-        this.dispatchEvent(
-          new ShowToastEvent({
-            title: "Deployment Started",
-            message:
-              "Started Metadata Record Updates in Deployment " + result.jobId,
-            variant: "info"
-          })
-        );
-        this.pendingSaveRollupName = result.rollupName;
         break;
       case "navigate":
         this[NavigationMixin.Navigate](result.config);
@@ -315,6 +286,22 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
         })
       );
       this.isLoading = true;
+      // Start listening for updates
+      DeploymentMonitorModal.open({
+        label: "Deploying Rollup Changes",
+        headerLabel: "Deleting...",
+        size: "small",
+        deploymentManagerProps: {
+          trackDeployments: true,
+          spinnerOnly: true,
+          publishToastOnCompletion: true
+        }
+      }).then(() => {
+        // after the delete is completed and the modal closes, cleanup and refresh
+        this.isLoading = false;
+        this.refreshRollups();
+      });
+      // start the delete action (the Modal is async so doesn't have to complete before this runs)
       deleteRollupConfig({ rollupName: rollupName });
     }
   }
@@ -390,134 +377,5 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
     previousAction.checked = false;
     currentAction.checked = true;
     this.dtColumns = columnRef;
-  }
-
-  disconnectedCallback() {
-    this.handleUnsubscribe();
-  }
-
-  // Handles subscribe button click
-  handleSubscribe() {
-    if (!isEmpEnabled) {
-      console.error("Emp API Is not currently enabled");
-      return;
-    }
-    // Callback invoked whenever a new event message is received
-    const messageCallback = (response) => {
-      // console.log("New message received: ", JSON.stringify(response));
-      // deployment probably changed the rollup definitions, should refresh
-      this.isLoading = false;
-      this.refreshRollups();
-      if (
-        !USER_ID.startsWith(
-          response.data.payload[this._buildApiName("Recipient__c")]
-        )
-      ) {
-        // This message isn't for us, don't do anything
-        return;
-      }
-      let title, message, messageData, variant, mode;
-      const deploymentData = JSON.parse(
-        response.data.payload[this._buildApiName("Payload__c")]
-      );
-
-      switch (response.data.payload[this._buildApiName("Type__c")]) {
-        case "DeleteRequestResult":
-          this.pendingSaveRollupName = undefined;
-          if (deploymentData.success) {
-            title = "Delete Completed!";
-            message = `${deploymentData.metadataNames} deleted successfully`;
-            variant = "success";
-            mode = "dismissible";
-          } else {
-            title = "Delete Failed!";
-            message = `Attempt to delete ${deploymentData.metadataNames} returned with errors [${deploymentData.error}]`;
-            variant = "error";
-            mode = "sticky";
-          }
-          break;
-        case "DeploymentResult":
-          if (deploymentData.status === "Succeeded") {
-            title = "Deployment Completed!";
-            message = "Metadata saved successfully";
-            variant = "success";
-            mode = "dismissible";
-          } else {
-            title = "Deployment Failed!";
-            message =
-              "Status of " +
-              deploymentData.status +
-              ", errors [" +
-              deploymentData.details.componentFailures
-                .map((failure) => `${failure.fullName}: ${failure.problem}`)
-                .join("\n") +
-              "], \n{0}";
-            // if you know a better way to build this URL please replace this
-            messageData = [
-              {
-                label: "Click to view Deployment",
-                url: `/lightning/setup/DeployStatus/page?address=%2Fchangemgmt%2FmonitorDeploymentsDetails.apexp%3FasyncId%3D${deploymentData.id}`
-              }
-            ];
-            variant = "error";
-            mode = "sticky";
-          }
-
-          if (this.pendingSaveRollupName) {
-            let pendingRollupName = this.pendingSaveRollupName;
-            if (deploymentData.status !== "Succeeded") {
-              // allows for recovery of non-saved rollup editor state
-              pendingRollupName = "pending-" + pendingRollupName;
-            }
-            this.pendingSaveRollupName = undefined;
-            this.openEditor(pendingRollupName);
-          }
-          break;
-        default:
-          break;
-      }
-
-      const evt = new ShowToastEvent({
-        title,
-        message,
-        messageData,
-        variant,
-        mode
-      });
-      this.dispatchEvent(evt);
-      // Response contains the payload of the new message received
-    };
-
-    // Invoke subscribe method of empApi. Pass reference to messageCallback
-    subscribe(this.channelName, -1, messageCallback).then((response) => {
-      // Response contains the subscription information on subscribe call
-      console.log("EmpAPI Subscribe", JSON.stringify(response));
-      this.subscription = response;
-    });
-  }
-
-  // Handles unsubscribe button click
-  handleUnsubscribe() {
-    // Invoke unsubscribe method of empApi
-    unsubscribe(this.subscription, (response) => {
-      console.log("unsubscribe() response: ", JSON.stringify(response));
-      // Response is true for successful unsubscribe
-    });
-  }
-
-  registerErrorListener() {
-    // Invoke onError empApi method
-    onError((error) => {
-      console.error("Received error from server: ", JSON.stringify(error));
-      // Error contains the server-side error
-    });
-  }
-
-  // use an imported API name and swap parts to apply namespace to other API names that we can't import correctly
-  _buildApiName(value) {
-    return SCHEDULE_ITEMS_OBJECT.objectApiName.replace(
-      "LookupRollupSummaryScheduleItems__c",
-      value
-    );
   }
 }

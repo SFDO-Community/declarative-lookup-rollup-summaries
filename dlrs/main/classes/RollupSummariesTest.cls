@@ -218,7 +218,7 @@ private class RollupSummariesTest {
     System.assertEquals(
       'Apex Trigger ' +
         RollupSummaries.makeTriggerName(new RollupSummary(rollupSummary)) +
-        ' has not been deployed. Click Manage Child Trigger and try again.',
+        ' has not been deployed.',
       fflib_SObjectDomain.Errors.getAll()[0].message
     );
     System.assertEquals(
