@@ -1,6 +1,6 @@
 public with sharing class MetadataRestService {
   @TestVisible
-  public static String FALLBACK_COMPONENT_API_VERSION = '67.0';
+  public static String FALLBACK_COMPONENT_API_VERSION = '68.0';
 
   @TestVisible
   private static String componentApiVersion;
