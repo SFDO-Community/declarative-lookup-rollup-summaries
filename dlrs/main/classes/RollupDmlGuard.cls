@@ -83,7 +83,7 @@ public with sharing class RollupDmlGuard {
     // what adding a lock would do
     // at some future point we can add a setting to enable locking here if needed
     String query = queryFactory.toSOQL();
-    return new Map<Id, SObject>(Database.query(query));
+    return new Map<Id, SObject>(Database.query(query, System.AccessLevel.SYSTEM_MODE));
   }
 
   /**

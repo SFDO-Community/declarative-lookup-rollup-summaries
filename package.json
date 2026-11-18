@@ -18,20 +18,20 @@
     "precommit": "lint-staged"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/eslint-parser": "^7.28.6",
+    "@babel/core": "^8.1.2",
+    "@babel/eslint-parser": "^8.1.2",
     "@lwc/eslint-plugin-lwc": "^3.5.0",
     "@prettier/plugin-xml": "^3.4.2",
     "@salesforce/eslint-config-lwc": "^4.1.2",
     "@salesforce/eslint-plugin-aura": "^3.0.0",
     "@salesforce/eslint-plugin-lightning": "^2.0.0",
     "@salesforce/sfdx-lwc-jest": "^7.1.2",
-    "eslint": "^9.39.4",
+    "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jest": "^29.15.2",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
+    "lint-staged": "^17.6.1",
     "prettier": "^3.8.3",
     "prettier-plugin-apex": "^2.2.6"
   },
@@ -49,6 +49,8 @@
   },
   "dependencies": {
     "cronstrue": "^3.14.0",
+    "highlight.js": "^11.12.0",
+    "highlightjs-apex": "^1.66.0",
     "js-levenshtein": "^1.1.6"
   }
 }

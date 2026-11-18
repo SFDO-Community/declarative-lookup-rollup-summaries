@@ -5,18 +5,9 @@ import { NavigationMixin, CurrentPageReference } from "lightning/navigation";
 
 import getAllRollupConfigs from "@salesforce/apex/RollupEditorController.getAllRollupConfigs";
 import deleteRollupConfig from "@salesforce/apex/RollupEditorController.deleteRollupConfig";
-
 import RollupEditor, { CLASS_SCHEDULER_CONFIG } from "c/rollupEditor";
 import ClassSchedulerModal from "c/classSchedulerModal";
-import { buildApiName } from "c/utils";
-
-import {
-  subscribe,
-  unsubscribe,
-  MessageContext
-} from "lightning/messageService";
-
-import userNotification from "@salesforce/messageChannel/UserNotification__c";
+import DeploymentMonitorModal from "c/deploymentMonitorModal";
 
 const STATUS_LABELS = {
   Scheduled: "Watch and Process",
@@ -97,9 +88,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
   sortByField = "active";
   sortDirection = "desc";
 
-  @wire(MessageContext)
-  messageContext;
-
   rollups = {};
   rollupList = [];
   searchFilter = "";
@@ -109,66 +97,6 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   connectedCallback() {
     this.refreshRollups();
-    this.subscribeToMessageChannel();
-  }
-
-  disconnectedCallback() {
-    this.unsubscribeToMessageChannel();
-  }
-
-  unsubscribeToMessageChannel() {
-    unsubscribe(this.subscription);
-    this.subscription = null;
-  }
-
-  subscribeToMessageChannel() {
-    // Handler for message received by component
-    // Callback invoked whenever a new event message is received
-    const handleMessage = (response) => {
-      // console.log("New message received: ", JSON.stringify(response));
-      // deployment probably changed the rollup definitions, should refresh
-      this.isLoading = false;
-      this.refreshRollups();
-      let title, message, messageData, variant, mode;
-      const deploymentData = JSON.parse(response.payload);
-
-      switch (response.type) {
-        case "DeleteRequestResult":
-          if (deploymentData.success) {
-            title = "Delete Completed!";
-            message = `${deploymentData.metadataNames} deleted successfully`;
-            variant = "success";
-            mode = "dismissible";
-          } else {
-            title = "Delete Failed!";
-            message = `Attempt to delete ${deploymentData.metadataNames} returned with errors [${deploymentData.error}]`;
-            variant = "error";
-            mode = "sticky";
-          }
-          break;
-        default:
-          break;
-      }
-
-      const evt = new ShowToastEvent({
-        title,
-        message,
-        messageData,
-        variant,
-        mode
-      });
-      this.dispatchEvent(evt);
-      // Response contains the payload of the new message received
-    };
-
-    if (!this.subscription) {
-      this.subscription = subscribe(
-        this.messageContext,
-        userNotification,
-        (message) => handleMessage(message),
-        {}
-      );
-    }
   }
 
   async refreshRollups() {
@@ -330,11 +258,15 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
 
   async openEditor(rollupName) {
     const result = await RollupEditor.open({
+      whenRollupUpdated: this.refreshRollups.bind(this),
       description: "Rollup Config Editor",
       rollupName
     });
 
     switch (result?.action) {
+      case "delete":
+        this.requestDelete(result.rollupName);
+        break;
       case "navigate":
         this[NavigationMixin.Navigate](result.config);
         break;
@@ -358,6 +290,22 @@ export default class ManageRollups extends NavigationMixin(LightningElement) {
         })
       );
       this.isLoading = true;
+      // Start listening for updates
+      DeploymentMonitorModal.open({
+        label: "Deploying Rollup Changes",
+        headerLabel: "Deleting...",
+        size: "small",
+        deploymentManagerProps: {
+          trackDeployments: true,
+          spinnerOnly: true,
+          publishToastOnCompletion: true
+        }
+      }).then(() => {
+        // after the delete is completed and the modal closes, cleanup and refresh
+        this.isLoading = false;
+        this.refreshRollups();
+      });
+      // start the delete action (the Modal is async so doesn't have to complete before this runs)
       deleteRollupConfig({ rollupName: rollupName });
     }
   }

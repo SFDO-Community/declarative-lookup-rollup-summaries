@@ -1,23 +1,11 @@
 {
   "packageDirectories": [
     {
-      "path": "dlrs/libs/fflib-apexmocks"
-    },
-    {
-      "path": "dlrs/libs/fflib-common"
-    },
-    {
-      "path": "dlrs/libs/lrengine"
-    },
-    {
-      "path": "dlrs/libs/metadataservice"
-    },
-    {
-      "path": "dlrs/main"
-    },
-    {
-      "path": "dlrs/default",
+      "path": "dlrs/main",
       "default": true
+    },
+    {
+      "path": "dlrs/libs"
     },
     {
       "path": "unpackaged/config/test"
@@ -25,5 +13,5 @@
   ],
   "namespace": "dlrs",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "66.0"
+  "sourceApiVersion": "68.0"
 }

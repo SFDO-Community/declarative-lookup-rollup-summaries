@@ -39,7 +39,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
             IsCustomSetting = FALSE
             AND IsCustomizable = TRUE
             AND isApexTriggerable = TRUE
-          WITH SECURITY_ENFORCED
+          WITH USER_MODE
         ];
 
         for (EntityDefinition entDef : entityDefinitions) {
@@ -98,20 +98,20 @@ public with sharing class ManageLookupRollupSummariesNewController {
       return null;
     }
     // URL parameter? - AJB 16/11/21: as above, this can be commented out for now as there's no functionality for handling editing records
-    /*selectedLookup = (Id) ApexPages.currentPage().getParameters().get('id');                
+    /*selectedLookup = (Id) ApexPages.currentPage().getParameters().get('id');
         if(selectedLookup!=null) {
-            LookupRollupSummary = (LookupRollupSummary2__mdt) 
+            LookupRollupSummary = (LookupRollupSummary2__mdt)
                 new RollupSummariesSelector.CustomMetadataSelector(false, true).
                 selectById(new Set<String> { selectedLookup })[0].Record;
-        } 
+        }
         else {
-            selectedLookup = ApexPages.currentPage().getParameters().get('developerName');          
+            selectedLookup = ApexPages.currentPage().getParameters().get('developerName');
             if(selectedLookup!=null) {
-                LookupRollupSummary = (LookupRollupSummary2__mdt) 
+                LookupRollupSummary = (LookupRollupSummary2__mdt)
                     new RollupSummariesSelector.CustomMetadataSelector(false, true).
                     selectByDeveloperName(new Set<String> { selectedLookup })[0].Record;
                 selectedLookup = LookupRollupSummary.Id;
-            }                       
+            }
         //}*/
     return null;
   }
@@ -132,7 +132,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
         RollupService.create(new List<SObject>{ LookupRollupSummary });
       }
       /* AJB 18/11/21: no update functionality so this just reduces code coverage at the moment
-            else        
+            else
                 RollupService.update_x(new List<SObject> { LookupRollupSummary }); */
       // Reload this page (and thus the rollup list in a new request, metadata changes are not visible until this request ends)
       PageReference newPage = Page.managelookuprollupsummaries;
@@ -193,7 +193,7 @@ public with sharing class ManageLookupRollupSummariesNewController {
             // Reload this page (and thus the rollup list in a new request, metadata changes are not visible until this request ends)
             PageReference newPage = Page.managelookuprollupsummaries;
             newPage.setRedirect(true);
-            return newPage;                 
+            return newPage;
         } catch (Exception e) {
             ApexPages.addMessages(e);
         }*/

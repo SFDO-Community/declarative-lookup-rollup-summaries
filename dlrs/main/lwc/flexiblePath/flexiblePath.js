@@ -62,7 +62,8 @@ export default class FlexiblePath extends LightningElement {
     }
   }
 
-  handleNextActionClick() {
+  handleNextActionClick(event) {
+    event.preventDefault();
     const nextAction = this.nextAction;
     this.dispatchEvent(
       new CustomEvent("nextactionclick", {

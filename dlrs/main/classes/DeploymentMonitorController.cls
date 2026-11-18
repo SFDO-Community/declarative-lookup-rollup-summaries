@@ -8,7 +8,8 @@ public with sharing class DeploymentMonitorController {
   @AuraEnabled
   public static void requestDeploymentStatusCheck(Id deploymentId) {
     try {
-      new MetadataRestService().getDeployStatusAsync(deploymentId, true);
+      MetadataRestService.getInstance()
+        .getDeployStatusAsync(deploymentId, true);
     } catch (Exception e) {
       throw new AuraHandledException(e.getMessage());
     }

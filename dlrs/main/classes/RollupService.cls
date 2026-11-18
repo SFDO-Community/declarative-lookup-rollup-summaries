@@ -1335,7 +1335,7 @@ global with sharing class RollupService {
         scheduledItems,
         LookupRollupSummaryScheduleItems__c.QualifiedParentID__c,
         false /* allOrNone */,
-        AccessLevel.SYSTEM_MODE
+        System.AccessLevel.SYSTEM_MODE
       );
       // iterate through errors, only return an exception for something other than DUPLICATE_VALUE
       // because DUPLICATE_VALUE errors are usually sharing problems and we're happy as long as the record is in the database
@@ -1687,14 +1687,16 @@ global with sharing class RollupService {
       : new UpdateWithoutSharing(masterRecords).updateRecords(allOrNothing);
   }
 
-  private virtual class Updater {
+  private abstract class Updater {
     protected List<SObject> masterRecords;
 
     public Updater(List<SObject> masterRecords) {
       this.masterRecords = masterRecords;
     }
 
-    public virtual List<Database.Saveresult> updateRecords(
+    public abstract List<Database.Saveresult> writeRecords(List<SObject> masterRecords, Database.DMLOptions dml);
+
+    public List<Database.Saveresult> updateRecords(
       boolean allOrNothing
     ) {
       // sort (selection sort) masterRecords to avoid having more than 10 chunks in a single database operation
@@ -1734,7 +1736,7 @@ global with sharing class RollupService {
       dml.OptAllOrNone = allOrNothing;
 
       try {
-        return Database.update(masterRecords, dml);
+        return writeRecords(masterRecords, dml);
       } catch (DMLException e) {
         // Determine if the exception is due to parent record/s having been deleted
         Boolean throwException = true;
@@ -1768,10 +1770,8 @@ global with sharing class RollupService {
       super(masterRecords);
     }
 
-    public override List<Database.Saveresult> updateRecords(
-      boolean allOrNothing
-    ) {
-      return super.updateRecords(allOrNothing);
+    public override List<Database.SaveResult> writeRecords(List<SObject> masterRecords, Database.DMLOptions dml){
+      return Database.update(masterRecords, dml, System.AccessLevel.SYSTEM_MODE);
     }
   }
 
@@ -1780,10 +1780,8 @@ global with sharing class RollupService {
       super(masterRecords);
     }
 
-    public override List<Database.Saveresult> updateRecords(
-      boolean allOrNothing
-    ) {
-      return super.updateRecords(allOrNothing);
+    public override List<Database.SaveResult> writeRecords(List<SObject> masterRecords, Database.DMLOptions dml){
+      return Database.update(masterRecords, dml, System.AccessLevel.SYSTEM_MODE);
     }
   }
 }

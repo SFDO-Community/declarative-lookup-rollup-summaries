@@ -11,29 +11,46 @@ public with sharing class ManageChildTriggerController {
 
   @AuraEnabled
   public static Id startDeployment(
-    Map<String, List<Map<String, Object>>> changes,
+    String rollupName,
+    Map<String, Map<String, List<String>>> changes,
     String testLevel,
     List<String> testsToRun
   ) {
-    Map<String, List<TriggerGenerationService.GeneratedCode>> changesByType = (Map<String, List<TriggerGenerationService.GeneratedCode>>) JSON.deserialize(
-      JSON.serialize(changes),
-      Map<String, List<TriggerGenerationService.GeneratedCode>>.class
+    RollupSummary rollup = new RollupSummariesSelector(true, true)
+      .selectById(new Set<String>{ rollupName })[0];
+    // regenerate all the code because we don't trust the UI, it can tell us what to do with something but it can't tell us the definition
+    List<TriggerGenerationService.GeneratedCode> generatedCode = TriggerGenerationService.generateApexForRollup(
+      rollup
     );
+    List<TriggerGenerationService.GeneratedCode> codeToDeploy = new List<TriggerGenerationService.GeneratedCode>();
+    List<TriggerGenerationService.GeneratedCode> codeToDelete = new List<TriggerGenerationService.GeneratedCode>();
+    Map<String, List<String>> toDelete = changes.get('delete');
+    Map<String, List<String>> toDeploy = changes.get('deploy');
+    // cross-check what the UI wants us to do with what we generated
+    for (TriggerGenerationService.GeneratedCode code : generatedCode) {
+      if (
+        toDelete.containsKey(code.mdtType) &&
+        toDelete.get(code.mdtType).contains(code.assetName)
+      ) {
+        codeToDelete.add(code);
+      } else if (
+        toDeploy.containsKey(code.mdtType) &&
+        toDeploy.get(code.mdtType).contains(code.assetName)
+      ) {
+        codeToDeploy.add(code);
+      }
+    }
 
     Blob packagedZip = TriggerGenerationService.getZipFromChangeSet(
-      changesByType.get('deploy'),
-      changesByType.get('delete')
+      codeToDeploy,
+      codeToDelete
     );
     Set<String> testClassesToRun = new Set<String>();
     testClassesToRun.addAll(testsToRun);
-    for (
-      TriggerGenerationService.GeneratedCode generatedCode : changesByType.get(
-        'deploy'
-      )
-    ) {
+    for (TriggerGenerationService.GeneratedCode code : codeToDeploy) {
       // could get fancy and try and see if it has the string "IsTest" somewhere
-      if (generatedCode.mdtType == 'ApexClass') {
-        testClassesToRun.add(generatedCode.assetName);
+      if (code.mdtType == 'ApexClass') {
+        testClassesToRun.add(code.assetName);
       }
     }
 
@@ -50,6 +67,7 @@ public with sharing class ManageChildTriggerController {
     options.purgeOnDelete = false;
     options.rollbackOnError = true;
 
-    return new MetadataRestService().deployZipAsync(packagedZip, options);
+    return MetadataRestService.getInstance()
+      .deployZipAsync(packagedZip, options);
   }
 }

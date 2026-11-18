@@ -1,11 +1,43 @@
 public with sharing class MetadataRestService {
   @TestVisible
-  private static String FALLBACK_COMPONENT_API_VERSION = '66.0';
+  public static String FALLBACK_COMPONENT_API_VERSION = '67.0';
 
   @TestVisible
   private static String componentApiVersion;
 
+  @TestVisible
+  private static MetadataRestService myInstance;
+
   private static final String BOUNDARY_STRING = 'CONTENT_BOUNDARY_MARK';
+
+  public static MetadataRestService getInstance() {
+    if (myInstance == null) {
+      myInstance = new MetadataRestService();
+    }
+    return myInstance;
+  }
+
+  /**
+   * test the REST API and make sure we have a valid ability to connect
+   */
+  public static Boolean checkAPIConnection() {
+    String limitsPath =
+      '/services/data/v' +
+      FALLBACK_COMPONENT_API_VERSION +
+      '/limits';
+    HttpRequest req = createRequest(limitsPath);
+    req.setMethod('GET');
+
+    Http http = new Http();
+    HTTPResponse res = http.send(req);
+    System.debug(res.getBody());
+    if (res.getStatusCode() != 200) {
+      throw new MetadataRestServiceException(
+        'Unable to connect to REST API, status code ' + res.getStatusCode()
+      );
+    }
+    return true;
+  }
 
   public MetadataRestService() {
   }
@@ -75,7 +107,6 @@ public with sharing class MetadataRestService {
     HTTPResponse res = http.send(req);
     System.debug('Status:' + res.getStatus());
     String body = res.getBody();
-    System.debug(body);
     DeployRequestResult depRes;
     try {
       depRes = (DeployRequestResult) JSON.deserialize(
@@ -146,7 +177,7 @@ public with sharing class MetadataRestService {
     return depRes;
   }
 
-  private HTTPRequest createRequest(String path) {
+  private static HTTPRequest createRequest(String path) {
     HttpRequest req = new HttpRequest();
     String sessionId = UserInfo.getSessionId();
     String endpoint = URL.getOrgDomainUrl().toExternalForm();
@@ -215,7 +246,7 @@ public with sharing class MetadataRestService {
     Id deploymentId,
     Boolean includeDetails
   ) {
-    MetadataRestService svc = new MetadataRestService();
+    MetadataRestService svc = MetadataRestService.getInstance();
     MetadataRestService.DeployRequestResult res = svc.getDeployStatus(
       deploymentId,
       includeDetails
@@ -241,7 +272,7 @@ public with sharing class MetadataRestService {
     }
 
     public void execute(QueueableContext ctx) {
-      MetadataRestService svc = new MetadataRestService();
+      MetadataRestService svc = MetadataRestService.getInstance();
       try {
         MetadataRestService.DeployRequestResult res = svc.deployZip(
           this.zippedPackaged,
@@ -379,5 +410,146 @@ public with sharing class MetadataRestService {
   }
 
   public class MetadataRestServiceException extends Exception {
+  }
+
+  public class DeploymentZipBuilder {
+    private Map<String, Blob> files = new Map<String, Blob>();
+    private Map<String, Set<String>> deployingMdt = new Map<String, Set<String>>();
+    private Map<String, Set<String>> destroyedMdtPre = new Map<String, Set<String>>();
+    private Map<String, Set<String>> destroyedMdtPost = new Map<String, Set<String>>();
+
+    public DeploymentZipBuilder() {
+    }
+
+    public DeploymentZipBuilder addForDeployment(
+      String mdtType,
+      String mdtName,
+      List<DeploymentFile> files
+    ) {
+      if (String.isBlank(mdtType)) {
+        throw new IllegalArgumentException('mdtType must not be blank');
+      }
+      if (String.isBlank(mdtName)) {
+        throw new IllegalArgumentException('mdtName must not be blank');
+      }
+      if (files == null || files.isEmpty()) {
+        throw new IllegalArgumentException(
+          'at least one "files" entry must be provided'
+        );
+      }
+      Set<String> entitiesForType = deployingMdt.get(mdtType);
+      if (entitiesForType == null) {
+        entitiesForType = new Set<String>();
+        deployingMdt.put(mdtType, entitiesForType);
+      }
+      entitiesForType.add(mdtName);
+
+      for (DeploymentFile f : files) {
+        this.files.put(f.path, f.content);
+      }
+      return this;
+    }
+
+    public DeploymentZipBuilder addForPreDestruction(
+      String mdtType,
+      String mdtName
+    ) {
+      Set<String> entitiesForType = destroyedMdtPre.get(mdtType);
+      if (entitiesForType == null) {
+        entitiesForType = new Set<String>();
+        destroyedMdtPre.put(mdtType, entitiesForType);
+      }
+      entitiesForType.add(mdtName);
+      return this;
+    }
+
+    public DeploymentZipBuilder addForPostDestruction(
+      String mdtType,
+      String mdtName
+    ) {
+      Set<String> entitiesForType = destroyedMdtPost.get(mdtType);
+      if (entitiesForType == null) {
+        entitiesForType = new Set<String>();
+        destroyedMdtPost.put(mdtType, entitiesForType);
+      }
+      entitiesForType.add(mdtName);
+      return this;
+    }
+
+    public Blob buildZip() {
+      // add static entries to to files map
+
+      files.put('package.xml', Blob.valueOf(getPackageXml(deployingMdt, true)));
+
+      if (!destroyedMdtPre.isEmpty()) {
+        files.put(
+          'destructiveChangesPre.xml',
+          Blob.valueOf(getPackageXml(destroyedMdtPre, false))
+        );
+      }
+      if (!destroyedMdtPost.isEmpty()) {
+        files.put(
+          'destructiveChangesPost.xml',
+          Blob.valueOf(getPackageXml(destroyedMdtPost, false))
+        );
+      }
+      // build and return zip file
+      Compression.ZipWriter writer = new Compression.ZipWriter();
+
+      for (String path : files.keySet()) {
+        writer.addEntry(path, files.get(path));
+      }
+
+      return writer.getArchive();
+    }
+
+    private String getPackageXml(
+      Map<String, Set<String>> packageMdt,
+      Boolean includeVersion
+    ) {
+      XmlStreamWriter w = new XmlStreamWriter();
+      w.writeStartDocument('UTF-8', '1.0');
+      w.writeStartElement(null, 'Package', null);
+      w.writedefaultNamespace('http://soap.sforce.com/2006/04/metadata');
+
+      for (String mdtType : packageMdt.keySet()) {
+        // TODO: test for null mdtType
+        w.writeStartElement(null, 'types', null);
+        for (String member : packageMdt.get(mdtType)) {
+          // TODO: test for null member
+          w.writeStartElement(null, 'members', null);
+          w.writeCharacters(member.escapeXml());
+          w.writeEndElement(); //end members
+        }
+
+        w.writeStartElement(null, 'name', null);
+        w.writeCharacters(mdtType.escapeXml());
+        w.writeEndElement(); //end name
+
+        w.writeEndElement(); //end types
+      }
+
+      if (includeVersion == true) {
+        w.writeStartElement(null, 'version', null);
+        w.writeCharacters(FALLBACK_COMPONENT_API_VERSION.escapeXml());
+        w.writeEndElement(); //end version
+      }
+
+      w.writeEndElement(); //end package
+      w.writeEndDocument();
+      String xmlOutput = w.getXmlString();
+      w.close();
+      return xmlOutput;
+    }
+  }
+
+  public class DeploymentFile {
+    public String path;
+    public Blob content;
+
+    public DeploymentFile(String path, String content) {
+      this.path = path;
+      this.content = Blob.valueOf(content);
+    }
   }
 }

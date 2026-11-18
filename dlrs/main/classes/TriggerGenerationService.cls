@@ -8,32 +8,37 @@ public with sharing class TriggerGenerationService {
       'folder' => 'triggers',
       'fileSuffix' => 'trigger'
     }
-    // TODO: add CustomMetadata support
   };
 
   public static List<GeneratedCode> generateApexForRollup(
     RollupSummary summary
   ) {
+    Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
+    SObjectType childObjectType = gd.get(summary.ChildObject);
     List<GeneratedCode> generatedCode = new List<GeneratedCode>();
     // generate Child Trigger and supporting Test Class
     generatedCode.addAll(
       generateCode(
         summary.ChildObject,
         summary.TestCode,
-        summary.TestCodeSeeAllData
+        summary.TestCodeSeeAllData,
+        childObjectType.getDescribe().isMergeable()
       )
     );
 
     // Does the parent object support merge?
-    Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe();
     SObjectType parentObjectType = gd.get(summary.ParentObject);
-    if (parentObjectType.getDescribe().isMergeable()) {
+    if (
+      summary.ChildObject != summary.ParentObject &&
+      parentObjectType.getDescribe().isMergeable()
+    ) {
       // generate Parent Trigger and supporting Test Class
       generatedCode.addAll(
         generateCode(
           summary.ParentObject,
           summary.TestCodeParent,
-          summary.TestCodeSeeAllData
+          summary.TestCodeSeeAllData,
+          parentObjectType.getDescribe().isMergeable()
         )
       );
     }
@@ -45,88 +50,54 @@ public with sharing class TriggerGenerationService {
     List<GeneratedCode> changesToDeploy,
     List<GeneratedCode> changesToDestroy
   ) {
-    Compression.ZipWriter writer = new Compression.ZipWriter();
+    MetadataRestService.DeploymentZipBuilder builder = new MetadataRestService.DeploymentZipBuilder();
+    List<String> apexTestClasses = new List<String>();
+    for (GeneratedCode gc : changesToDeploy) {
+      List<MetadataRestService.DeploymentFile> files = new List<MetadataRestService.DeploymentFile>();
 
-    String packageXml = getPackageXml(changesToDeploy, true);
-    writer.addEntry('package.xml', Blob.valueOf(packageXml));
-    if (changesToDestroy != null && !changesToDestroy.isEmpty()) {
-      String destructiveChangesXml = getPackageXml(changesToDestroy, false);
-      writer.addEntry(
-        'destructiveChangesPost.xml',
-        Blob.valueOf(destructiveChangesXml)
+      Map<String, String> mdtInfo = MDT_INFO.get(gc.mdtType);
+      String apexXml = getMdtXmlContent(gc.mdtType, gc.apiVersion);
+      files.add(
+        new MetadataRestService.DeploymentFile(
+          String.format(
+            '{0}/{1}.{2}-meta.xml',
+            new List<String>{
+              mdtInfo.get('folder'),
+              gc.assetName,
+              mdtInfo.get('fileSuffix')
+            }
+          ),
+          apexXml
+        )
       );
+      files.add(
+        new MetadataRestService.DeploymentFile(
+          String.format(
+            '{0}/{1}.{2}',
+            new List<String>{
+              mdtInfo.get('folder'),
+              gc.assetName,
+              mdtInfo.get('fileSuffix')
+            }
+          ),
+          gc.body
+        )
+      );
+      builder.addForDeployment(gc.mdtType, gc.assetName, files);
     }
 
-    for (GeneratedCode cde : changesToDeploy) {
-      Map<String, String> mdtInfo = MDT_INFO.get(cde.mdtType);
-      String apexXml = getMdtXmlContent(cde.mdtType, cde.apiVersion);
-      writer.addEntry(
-        mdtInfo.get('folder') +
-          '/' +
-          cde.assetName +
-          '.' +
-          mdtInfo.get('fileSuffix') +
-          '-meta.xml',
-        Blob.valueOf(apexXml)
-      );
-      writer.addEntry(
-        mdtInfo.get('folder') +
-          '/' +
-          cde.assetName +
-          '.' +
-          mdtInfo.get('fileSuffix'),
-        Blob.valueOf(cde.body)
-      );
+    for (GeneratedCode gc : changesToDestroy) {
+      builder.addForPreDestruction(gc.mdtType, gc.assetName);
     }
 
-    return writer.getArchive();
-  }
-
-  public static String getPackageXml(
-    List<GeneratedCode> metadataToDeploy,
-    Boolean includeVersion
-  ) {
-    Map<String, List<String>> itemsByType = new Map<String, List<String>>();
-    for (GeneratedCode cde : metadataToDeploy) {
-      if (!itemsByType.containsKey(cde.mdtType)) {
-        itemsByType.put(cde.mdtType, new List<String>());
-      }
-      itemsByType.get(cde.mdtType).add(cde.assetName);
-    }
-    List<String> xmlTypes = new List<String>();
-    for (String mdtType : itemsByType.keySet()) {
-      List<String> members = new List<String>();
-      for (String member : itemsByType.get(mdtType)) {
-        members.add('<members>' + member + '</members>');
-      }
-      xmlTypes.add(
-        '<types>' +
-          String.join(members, '') +
-          '<name>' +
-          mdtType +
-          '</name></types>'
-      );
-    }
-    if (includeVersion == true) {
-      return '<?xml version="1.0" encoding="UTF-8"?>' +
-        '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-        String.join(xmlTypes, '') +
-        '<version>' +
-        MetadataRestService.retrieveBestApiVersion() +
-        '</version>' +
-        '</Package>';
-    } else {
-      return '<?xml version="1.0" encoding="UTF-8"?>' +
-        '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-        String.join(xmlTypes, '') +
-        '</Package>';
-    }
+    return builder.buildZip();
   }
 
   private static List<GeneratedCode> generateCode(
     String sObjectName,
     String testMethodBody,
-    Boolean testSeesAllData
+    Boolean testSeesAllData,
+    Boolean supportsMerging
   ) {
     String apiVersion = MetadataRestService.retrieveBestApiVersion();
 
@@ -145,6 +116,10 @@ public with sharing class TriggerGenerationService {
       .selectByName(new Set<String>{ expectedTriggerName });
     ApexTrigger triggerObj = apexTriggers.get(expectedTriggerName);
     if (triggerObj != null) {
+      generatedTrigger.rollupsUsingThisCode = countRollupsUsingTrigger(
+        sObjectName,
+        supportsMerging
+      );
       generatedTrigger.setExisting(triggerObj.Body, triggerObj.ApiVersion);
     }
 
@@ -179,6 +154,42 @@ public with sharing class TriggerGenerationService {
     return new List<GeneratedCode>{ generatedTrigger, generatedTestCode };
   }
 
+  /**
+   * Get a list of active rollups, optionally including those where this object is the parent and not just the child
+   */
+  private static List<String> countRollupsUsingTrigger(
+    String objectName,
+    Boolean includeAsParent
+  ) {
+    RollupSummariesSelector selector = new RollupSummariesSelector(true, true);
+    List<RollupSummaries.CalculationMode> calculationModes = new List<RollupSummaries.CalculationMode>{
+      RollupSummaries.CalculationMode.Realtime,
+      RollupSummaries.CalculationMode.Scheduled
+    };
+    Set<String> objNames = new Set<String>{ objectName };
+    Set<String> rollupNames = new Set<String>();
+    for (
+      RollupSummary sum : selector.selectActiveByChildObject(
+        calculationModes,
+        objNames
+      )
+    ) {
+      rollupNames.add(sum.UniqueName);
+    }
+
+    if (includeAsParent == true) {
+      for (
+        RollupSummary sum : selector.selectActiveByParentObject(
+          calculationModes,
+          objNames
+        )
+      ) {
+        rollupNames.add(sum.UniqueName);
+      }
+    }
+    return new List<String>(rollupNames);
+  }
+
   public class GeneratedCode {
     @AuraEnabled
     public String sObjectName;
@@ -192,6 +203,8 @@ public with sharing class TriggerGenerationService {
     public String assetXml;
     @AuraEnabled
     public String body;
+    @AuraEnabled
+    public List<String> rollupsUsingThisCode;
     @AuraEnabled
     public String existingBody;
     @AuraEnabled
@@ -214,6 +227,7 @@ public with sharing class TriggerGenerationService {
       this.assetName = assetName;
       this.apiVersion = apiVersion;
       this.body = body;
+      this.rollupsUsingThisCode = new List<String>();
     }
 
     public void addTestedBy(String testClassName) {
@@ -237,23 +251,25 @@ public with sharing class TriggerGenerationService {
     // Namespace?
     String namespace = Utilities.namespace();
     // Deploy generated code
-    return '/**\n' +
-      ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-      ' **/\n' +
-      'trigger ' +
-      triggerName +
-      ' on ' +
-      sObjectName +
-      '\n' +
-      // before insert is used to help the generated test code succeed more often
-      '    (before insert, after delete, after insert, after undelete, after update)\n' +
-      '{\n' +
-      '    ' +
-      (namespace.length() > 0 ? namespace + '.' : '') +
-      'RollupService.triggerHandler(' +
-      sObjectName +
-      '.SObjectType);\n' +
-      '}';
+    // before insert is used to help the generated test code succeed more often
+    return '''
+    /**
+     * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)
+     **/
+    trigger ${triggerName} on ${sObjectName}
+        (before insert, after delete, after insert, after undelete, after update)
+    {
+        ${namespacePrefix}RollupService.triggerHandler(Schema.${sObjectName}.SObjectType);
+    }'''
+      .template(
+        new Map<String, String>{
+          'triggerName' => triggerName,
+          'sObjectName' => sObjectName,
+          'namespacePrefix' => String.isNotBlank(namespace)
+            ? namespace + '.'
+            : ''
+        }
+      );
   }
 
   public static String generateTestClassBody(
@@ -263,50 +279,55 @@ public with sharing class TriggerGenerationService {
     String triggerName,
     Boolean seesAllData
   ) {
-    String testMethodBody = null;
+    String namespace = Utilities.namespace();
+    Map<String, String> templateData = new Map<String, String>{
+      'className' => className,
+      'triggerName' => triggerName,
+      'seesAllDataString' => (seesAllData == true ? '(SeeAllData=true)' : ''),
+      'sObjectName' => sObjectName,
+      'namespacePrefix' => String.isNotBlank(namespace) ? namespace + '.' : ''
+    };
+    // default the testMethodBody, might be overwritten by configuration
+    String testMethodBody = '''
+      // Force the ${triggerName} to be invoked, fails the test if org config or other Apex code prevents this.
+              SObject obj = new Schema.${sObjectName}();
+              ${namespacePrefix}RollupService.testHandler(obj);
+              Assert.isNotNull(obj);'''
+      .template(templateData);
     if (String.isNotBlank(methodBody)) {
       testMethodBody = methodBody;
     }
+    templateData.put('testMethodBody', testMethodBody);
     // Deploy generated code
-    return '/**\n' +
-      ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
-      ' **/\n' +
-      '@IsTest\n' +
-      'private class ' +
-      className +
-      '\n' +
-      '{\n' +
-      // TODO: when non-beta, add support for "testFor" annotation
-      '    @IsTest' +
-      (seesAllData == true ? '(SeeAllData=true)' : '') +
-      '\n    private static void testTrigger()\n' +
-      '    {\n' +
-      (testMethodBody ??
-        ('        // Force the ' +
-        triggerName +
-        ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
-        '        SObject obj = new ' +
-        sObjectName +
-        '();\n' +
-        '        ' +
-        Utilities.classPrefix() +
-        'RollupService.testHandler(obj);\n') +
-        '        Assert.isNotNull(obj);') +
-      '\n    }\n' +
-      '}';
+    // TODO: when non-beta add "testFor" annotation
+    return '''
+    /**
+     * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)
+     **/
+    @IsTest
+    private class ${className}
+    {
+        @IsTest${seesAllDataString}
+        private static void testTrigger()
+        {
+            ${testMethodBody}
+        }
+    }'''
+      .template(templateData);
   }
 
   private static String getMdtXmlContent(String mdtType, String apiVersion) {
-    return '<?xml version="1.0" encoding="UTF-8"?>' +
-      '<' +
-      mdtType +
-      ' xmlns="http://soap.sforce.com/2006/04/metadata">' +
-      '<apiVersion>' +
-      apiVersion +
-      '</apiVersion>' +
-      '<status>Active</status>' +
-      '</' +
-      mdtType +
-      '>';
+    return '''
+      <?xml version="1.0" encoding="UTF-8"?>
+      <${mdtType} xmlns="http://soap.sforce.com/2006/04/metadata">
+        <apiVersion>${apiVersion}</apiVersion>
+        <status>Active</status>
+      </${mdtType}>'''
+      .template(
+        new Map<String, String>{
+          'mdtType' => mdtType,
+          'apiVersion' => apiVersion
+        }
+      );
   }
 }

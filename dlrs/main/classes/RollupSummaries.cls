@@ -345,9 +345,7 @@ public class RollupSummaries extends fflib_SObjectDomain {
         )
           lookupRollupSummary.Fields.Active.addError(
             error(
-              'Apex Trigger ' +
-                triggerName +
-                ' has not been deployed. Click Manage Child Trigger and try again.',
+              'Apex Trigger ' + triggerName + ' has not been deployed.',
               lookupRollupSummary.Record,
               LookupRollupSummary__c.Active__c
             )

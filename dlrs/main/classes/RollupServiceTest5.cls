@@ -775,7 +775,7 @@ private class RollupServiceTest5 {
     // Assert HasOptedOutOfEmail is True
     System.assertEquals(
       true,
-      [SELECT HasOptedOutOfEmail FROM Lead WHERE Id = :lead.Id]
+      [SELECT HasOptedOutOfEmail FROM Lead WHERE Id = :lead.Id WITH SYSTEM_MODE]
       .HasOptedOutOfEmail
     );
 
@@ -786,7 +786,7 @@ private class RollupServiceTest5 {
     // Assert HasOptedOutOfEmail is False
     System.assertEquals(
       false,
-      [SELECT HasOptedOutOfEmail FROM Lead WHERE Id = :lead.Id]
+      [SELECT HasOptedOutOfEmail FROM Lead WHERE Id = :lead.Id WITH SYSTEM_MODE]
       .HasOptedOutOfEmail
     );
 
@@ -796,7 +796,7 @@ private class RollupServiceTest5 {
     // Assert HasOptedOutOfEmail is False
     System.assertEquals(
       false,
-      [SELECT HasOptedOutOfEmail FROM Lead WHERE Id = :lead.Id]
+      [SELECT HasOptedOutOfEmail FROM Lead WHERE Id = :lead.Id WITH SYSTEM_MODE]
       .HasOptedOutOfEmail
     );
   }
